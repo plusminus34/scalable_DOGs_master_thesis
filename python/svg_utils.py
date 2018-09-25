@@ -44,7 +44,7 @@ def get_curve_color(style_classes,attrib):
 		#print "attrib[class'] = ", attrib['class']
 		try:
 			cls = attrib['class']
-			print 'cls = ', cls
+			#print 'cls = ', cls
 			try:
 				color_undecoded = style_classes[cls]['stroke']
 			except:
