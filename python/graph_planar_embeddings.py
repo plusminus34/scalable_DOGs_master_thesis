@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import math
 
 def comb_embedding_from_graph(G):
 	# vertices should be zero based
@@ -10,10 +11,17 @@ def comb_embedding_from_graph(G):
 	for node in G.nodes():
 		origin = pos[node]
 		v_A = list(A[node][1])
-		nb_pos = [pos[nb] for nb in v_A]
-		#print 'nb_pos = ', nb_pos
-		sorted(v_A, key=lambda sort_clockwise_center: clockwiseangle_and_distance(nb_pos, origin))
-		print 'vA after = ', vA
+		nb_pos = [[pos[nb][0],pos[nb][1]] for nb in v_A]
+		#print 'pos[nb] = ', list[pos[nb]]
+		print '--- node = ', node, ' at position = ', origin
+		#print 'nb_pos before = ', nb_pos
+		print 'v_A before = ', v_A
+		nb_pos = sorted(nb_pos, key=lambda nb_pos: clockwiseangle_and_distance(nb_pos,origin))
+		print 'nb_pos after = ', nb_pos
+		#sorted(v_A, key=lambda v_A: clockwiseangle_and_distance(v_A,nb_pos,origin))
+		#v_A = [x for _,x in sorted(zip(nb_pos,v_A),key=lambda nb_pos: clockwiseangle_and_distance(nb_pos,origin))]
+		#print 'v_A after = ', v_A
+		print '------\n'
 
 def Faces(edges,embedding):
 	"""
@@ -54,8 +62,8 @@ def Faces(edges,embedding):
 	if (len(path) != 0): faces.append(path)
 	return iter(faces)
 
-def clockwiseangle_and_distance(point):#, origin):
-	print 'point = ', point
+#def clockwiseangle_and_distance(vA, point, origin):
+def clockwiseangle_and_distance(point, origin):
 	refvec = [0, 1]
 	# Vector between point and the origin: v = p - o
 	vector = [point[0]-origin[0], point[1]-origin[1]]
@@ -75,7 +83,8 @@ def clockwiseangle_and_distance(point):#, origin):
 		return 2*math.pi+angle, lenvector
 	# I return first the angle because that's the primary sorting criterium
 	# but if two vectors have the same angle then the shorter distance should come first.
-	return angle, lenvector
+	#return angle, lenvector
+	return angle
 
 """
 In [1]: import networkx as nx
@@ -95,28 +104,33 @@ Out[7]: {1: (1, 1), 2: (2, 2)}
 
 In [8]: nx.draw(G,pos)
 """
-origin = [2,3]
 def test_functions():
 	G = nx.Graph()
 	G.add_node(0,pos=(0,0))
 	G.add_node(1,pos=(1,0))
 	G.add_node(2,pos=(0,1))
 	G.add_node(3,pos=(1,1))
+	G.add_node(4,pos=(2,1))
 
 
 	G.add_edge(0,1)
 	G.add_edge(0,2)
 	G.add_edge(1,3)
 	G.add_edge(2,3)
+	G.add_edge(0,3)
+	G.add_edge(4,3)
+	G.add_edge(4,1)
 
 	pos=nx.get_node_attributes(G,'pos')
 	nx.draw(G,pos)
 
-	
-	pts = [[1,4],[2,4],[3,4],[1,3],[2,3],[3,3],[1,2],[2,2],[3,2]]
-	sorted(pts, key=lambda sort_clockwise_center: clockwiseangle_and_distance)
-
-	#comb_embedding_from_graph(G)
+	comb_embedding_from_graph(G)
+	#pts = [[1,4],[2,4],[3,4],[1,3],[2,3],[3,3],[1,2],[2,2],[3,2]]
+	#print 'pts before = ', pts
+	#origin = [2,3]
+	#sorted(pts, key=lambda point: clockwiseangle_and_distance(point,origin))
+	#pts = sorted(pts, key=lambda point: clockwiseangle_and_distance(point,origin))
+	#print 'pts after = ', pts
 	plt.show()
 
 
