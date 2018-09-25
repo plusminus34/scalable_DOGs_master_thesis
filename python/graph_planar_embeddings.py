@@ -90,25 +90,7 @@ def clockwiseangle_and_distance(point, origin):
 	#return angle, lenvector
 	return angle
 
-"""
-In [1]: import networkx as nx
-
-In [2]: G=nx.Graph()
-
-In [3]: G.add_node(1,pos=(1,1))
-
-In [4]: G.add_node(2,pos=(2,2))
-
-In [5]: G.add_edge(1,2)
-
-In [6]: pos=nx.get_node_attributes(G,'pos')
-
-In [7]: pos
-Out[7]: {1: (1, 1), 2: (2, 2)}
-
-In [8]: nx.draw(G,pos)
-"""
-def test_functions():
+def comb_embedding_from_graph():
 	G = nx.Graph()
 	G.add_node(0,pos=(0,0))
 	G.add_node(1,pos=(1,0))
@@ -144,4 +126,4 @@ def test_functions():
 
 
 if __name__ == "__main__":
-	test_functions()
+	comb_embedding_from_graph()
