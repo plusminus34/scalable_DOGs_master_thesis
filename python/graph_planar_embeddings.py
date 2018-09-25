@@ -7,7 +7,7 @@ def comb_embedding_from_graph(G):
 	A=[(n, nbrdict) for n, nbrdict in G.adjacency()]
 	pos=nx.get_node_attributes(G,'pos')
 
-	comb_emb = []
+	comb_emb = {}
 	for node in G.nodes():
 		origin = pos[node]
 		v_A = list(A[node][1])
@@ -23,8 +23,11 @@ def comb_embedding_from_graph(G):
 		#v_A = [x for _,x in sorted(zip(nb_pos,v_A),key=lambda nb_pos: clockwiseangle_and_distance(nb_pos,origin))]
 		print 'v_A after = ', v_A
 		print '------\n'
+		comb_emb[node] = v_A
+	print 'comb_emb = ', comb_emb
+	return comb_emb
 
-def Faces(edges,embedding):
+def get_faces(edges,embedding):
 	"""
 	edges: is an undirected graph as a set of undirected edges
 	embedding: is a combinatorial embedding dictionary. Format: v1:[v2,v3], v2:[v1], v3:[v1] clockwise ordering of neighbors at each vertex.)
@@ -47,7 +50,7 @@ def Faces(edges,embedding):
 
 	# Trace faces
 	while (len(edgeset) > 0):
-		neighbors = self.embedding[path[-1][-1]]
+		neighbors = embedding[path[-1][-1]]
 		next_node = neighbors[(neighbors.index(path[-1][-2])+1)%(len(neighbors))]
 		tup = (path[-1][-1],next_node)
 		if tup == path[0]:
@@ -125,7 +128,12 @@ def test_functions():
 	pos=nx.get_node_attributes(G,'pos')
 	nx.draw(G,pos)
 
-	comb_embedding_from_graph(G)
+	comb_emb = comb_embedding_from_graph(G)
+	print 'G.edges() = ', G.edges()
+	faces = get_faces(G.edges(), comb_emb)
+	for f in faces:
+		print 'found face = ', f
+	#print 'faces = ', faces
 	#pts = [[1,4],[2,4],[3,4],[1,3],[2,3],[3,3],[1,2],[2,2],[3,2]]
 	#print 'pts before = ', pts
 	#origin = [2,3]
