@@ -131,6 +131,10 @@ def test_crease_pattern():
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
 	G = build_planar_graph(border_polygon, polylines)
+	faces = get_graph_faces(G)
+	#print 'faces = ', faces
+	for f in faces:
+		print 'face with ', f
 
 
 

@@ -94,7 +94,7 @@ def clockwiseangle_and_distance(point, origin):
 	#return angle, lenvector
 	return angle
 
-def comb_embedding_from_graph():
+def test_comb_embedding_from_graph():
 	G = nx.Graph()
 	G.add_node(0,pos=(0,0))
 	G.add_node(1,pos=(1,0))
@@ -130,4 +130,4 @@ def comb_embedding_from_graph():
 
 
 if __name__ == "__main__":
-	comb_embedding_from_graph()
+	test_comb_embedding_from_graph()
