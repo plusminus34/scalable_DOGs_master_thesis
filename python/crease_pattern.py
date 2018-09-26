@@ -22,18 +22,12 @@ def crease_pattern(border_polygon, lines):
 	faces_polygons = get_face_polygons(G,f)
 	"""
 
-def split_line_to_polygon(border_polygon, line):
-	res = split(line,border_polygon)
-	print 'res = ', res
-	res2 = cascaded_union(res)
-	print 'res2 = ', res2
-	new_line = linemerge(res2)
-	print 'new_line = ', new_line
-	line =  linemerge(cascaded_union(split(line, border_polygon)))
-	print 'line before = ', line
-	return line
+def split_line_to_polygon(prepared_polygon, line):
+	return linemerge(cascaded_union(split(line, prepared_polygon)))
 
-# now got a splitted line
+def filter_line_points_outside_polygon(prepared_polygon, line):
+	points_inside_polygon = filter(prepared_polygon.intersects, MultiPoint(line.coords[:]))
+	return LineString(points_inside_polygon)
 
 # also splits the lines if needed
 def remove_points_outside_border(border_polygon, lines):
@@ -41,14 +35,7 @@ def remove_points_outside_border(border_polygon, lines):
 	new_lines = []
 	for line in lines:
 		line = split_line_to_polygon(border_polygon, line)
-		#print 'line = ', line
-		#print 'here'
-		#bla = prepared_polygon.intersection(line)
-		#some_points = MultiPoint(line.coords[:])
-		#prepared_polygon.intersects(some_points)
-		#hits = filter(prepared_polygon.intersects, some_points)
-		#line = 
-		#print 'hits = ', hits
+		line = filter_line_points_outside_polygon(border_polygon, line)
 		new_lines.append(line)
 	return new_lines
 
