@@ -4,9 +4,11 @@ from svgpathtools import svg2paths, wsvg
 from svg_utils import *
 from shapely.geometry import *
 from shapely.geometry.polygon import *
+from shapely.prepared import prep
 
 from graph_planar_embeddings import *
 from descartes import PolygonPatch
+from shapely.ops import cascaded_union,linemerge,split
 
 from drawing import *
 
@@ -20,8 +22,35 @@ def crease_pattern(border_polygon, lines):
 	faces_polygons = get_face_polygons(G,f)
 	"""
 
+def split_line_to_polygon(border_polygon, line):
+	res = split(line,border_polygon)
+	print 'res = ', res
+	res2 = cascaded_union(res)
+	print 'res2 = ', res2
+	new_line = linemerge(res2)
+	print 'new_line = ', new_line
+	line =  linemerge(cascaded_union(split(line, border_polygon)))
+	print 'line before = ', line
+	return line
+
+# now got a splitted line
+
+# also splits the lines if needed
 def remove_points_outside_border(border_polygon, lines):
-	pass
+	prepared_polygon = prep(border_polygon)
+	new_lines = []
+	for line in lines:
+		line = split_line_to_polygon(border_polygon, line)
+		#print 'line = ', line
+		#print 'here'
+		#bla = prepared_polygon.intersection(line)
+		#some_points = MultiPoint(line.coords[:])
+		#prepared_polygon.intersects(some_points)
+		#hits = filter(prepared_polygon.intersects, some_points)
+		#line = 
+		#print 'hits = ', hits
+		new_lines.append(line)
+	return new_lines
 
 def snap_points_towards_another(border_polygon, lines):
 	pass
@@ -38,12 +67,8 @@ def snap_points_towards_another(border_polygon, lines):
 
 """
 
-def test_crease_pattern():
-	eps = 1e-2
-	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
-	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
-
-	fig = plt.figure(1, figsize=(5,5), dpi=90)
+def test_plot_polygon_and_lines(fig_num, border_polygon, lines):
+	fig = plt.figure(fig_num, figsize=(5,5), dpi=90)
 	ax = fig.add_subplot(111)
 
 	# plot border polygon
@@ -51,8 +76,29 @@ def test_crease_pattern():
 	ax.add_patch(pol_patch)
 
 	# plot lines
-	plot_line(ax, line1)
-	plot_coords(ax, line1)
+	for line in lines:
+		plot_line(ax, line)
+		plot_coords(ax, line)
+
+def test_crease_pattern():
+	eps = 1e-2
+	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
+	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
+	lines = [line1]
+
+	# figure before remove_points_outside_border
+	test_plot_polygon_and_lines(1,border_polygon,lines)	
+
+
+	line1.intersects(border_polygon)
+	border_polygon.intersects(line1)
+	print 'worked!'
+	# figure after
+	lines = remove_points_outside_border(border_polygon, [line1])
+	test_plot_polygon_and_lines(2,border_polygon,lines)	
+
+	# new figure
+
 
 	# show all
 	plt.show()
