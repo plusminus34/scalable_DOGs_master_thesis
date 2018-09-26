@@ -135,7 +135,7 @@ def test_crease_pattern():
 	#print 'faces = ', faces
 	for f in faces:
 		print 'face with ', f
-
+		poly = polygon_from_face(f,G.nodes) # implement me
 
 
 	# show all
