@@ -6,6 +6,9 @@ from shapely.geometry import *
 from shapely.geometry.polygon import *
 
 from graph_planar_embeddings import *
+from descartes import PolygonPatch
+
+from drawing import *
 
 
 def crease_pattern(border_polygon, lines):
@@ -34,4 +37,25 @@ def snap_points_towards_another(border_polygon, lines):
 7) Rasterize various parts and save the bookeeping information
 
 """
+
+def test_crease_pattern():
+	eps = 1e-2
+	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
+	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
+
+	fig = plt.figure(1, figsize=(5,5), dpi=90)
+	ax = fig.add_subplot(111)
+
+	# plot border polygon
+	pol_patch = PolygonPatch(border_polygon)
+	ax.add_patch(pol_patch)
+
+	# plot lines
+	plot_line(ax, line1)
+	plot_coords(ax, line1)
+
+	# show all
+	plt.show()
 	
+if __name__ == "__main__":
+	test_crease_pattern()
