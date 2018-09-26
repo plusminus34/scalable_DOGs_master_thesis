@@ -2,6 +2,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import math
 
+def get_graph_faces(G):
+	comb_emb = comb_embedding_from_graph(G)
+	return get_faces(G.edges(), comb_emb)
+
 def comb_embedding_from_graph(G):
 	# vertices should be zero based
 	A=[(n, nbrdict) for n, nbrdict in G.adjacency()]
