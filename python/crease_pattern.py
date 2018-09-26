@@ -22,6 +22,14 @@ def crease_pattern(border_polygon, lines):
 	faces_polygons = get_face_polygons(G,f)
 	"""
 
+def add_curve_edges_to_graph(G,vertices,coords):
+	for idx in range(coords.shape[0]-1):
+		pos1, pos2 = coords[idx], coords[idx+1]
+		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
+		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
+		print 'adding edge between ', idx1, ' and ', idx2
+		G.add_edge(idx1,idx2)
+
 def build_planar_graph(border_polygon, polylines):
 	G = nx.Graph()
 
@@ -37,28 +45,13 @@ def build_planar_graph(border_polygon, polylines):
 		G.add_node(v, pos = vertices[v,:])
 
 	# add edges from lines
-	for pol in polylines:
-		coords = np.array(pol.coords[:])
-		for idx in range(coords.shape[0]-1):
-			pos1, pos2 = coords[idx], pol.coords[idx+1]
-			idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
-			idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
-			print 'adding edge between ', idx1, ' and ', idx2
-			G.add_edge(idx1,idx2)
-	# add edges from polygon
-	
-	coords = np.array(border_polygon.exterior.coords[:])
-	print 'coords[2] = ', coords[2]
-	print 'coords[3] = ', coords[3]
-	for idx in range(coords.shape[0]-1):
-		print 'idx = ', idx
-		pos1, pos2 = coords[idx], coords[idx+1]
-		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
-		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
-		print 'adding edge between ', idx1, ' and ', idx2
-		G.add_edge(idx1,idx2)
-	
-	#idx = np.where((c == (1,0)).all(axis=1))[0][0]
+	#for pol in polylines:
+	pol_v = np.array(border_polygon.exterior.coords[:])
+	lines_v = [np.array(pol.coords[:]) for pol in polylines]
+	add_curve_edges_to_graph(G,vertices,pol_v)
+	for coords in lines_v:
+		add_curve_edges_to_graph(G,vertices,coords)
+	print 'G.edges() = ', G.edges()
 	return G
 
 def split_line_to_polygon(polygon, line):
