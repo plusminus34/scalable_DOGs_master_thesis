@@ -22,24 +22,33 @@ def crease_pattern(border_polygon, lines):
 	faces_polygons = get_face_polygons(G,f)
 	"""
 
-def split_line_to_polygon(prepared_polygon, line):
-	return linemerge(cascaded_union(split(line, prepared_polygon)))
+def build_planar_graph(border_polygon, polylines):
+	# build vertices
+	pass
 
-def filter_line_points_outside_polygon(prepared_polygon, line):
-	points_inside_polygon = filter(prepared_polygon.intersects, MultiPoint(line.coords[:]))
+def split_line_to_polygon(polygon, line):
+	return linemerge(cascaded_union(split(line, polygon)))
+
+def filter_line_points_outside_polygon(polygon, line):
+	points_inside_polygon = filter(polygon.intersects, MultiPoint(line.coords[:]))
 	return LineString(points_inside_polygon)
 
-# also splits the lines if needed
-def remove_points_outside_border(border_polygon, lines):
-	prepared_polygon = prep(border_polygon)
-	new_lines = []
-	for line in lines:
-		line = split_line_to_polygon(border_polygon, line)
-		line = filter_line_points_outside_polygon(border_polygon, line)
-		new_lines.append(line)
-	return new_lines
+def split_polygon_by_line(polygon, line):
+	return cascaded_union(split(polygon,line))
 
-def snap_points_towards_another(border_polygon, lines):
+# also splits the lines if needed, and also split the polygon itself
+def remove_points_outside_border(border_polygon, polylines):
+	#prepared_polygon = prep(border_polygon)
+	new_poly_lines = []
+	for pol_line in polylines:
+		pol_line = split_line_to_polygon(border_polygon, pol_line)
+		pol_line = filter_line_points_outside_polygon(border_polygon, pol_line)
+		new_poly_lines.append(pol_line)
+
+		border_polygon = split_polygon_by_line(border_polygon, pol_line)
+	return border_polygon, new_poly_lines
+
+def snap_points_towards_another(border_polygon, polylines):
 	pass
 
 """
@@ -54,7 +63,7 @@ def snap_points_towards_another(border_polygon, lines):
 
 """
 
-def test_plot_polygon_and_lines(fig_num, border_polygon, lines):
+def test_plot_polygon_and_lines(fig_num, border_polygon, polylines):
 	fig = plt.figure(fig_num, figsize=(5,5), dpi=90)
 	ax = fig.add_subplot(111)
 
@@ -63,28 +72,33 @@ def test_plot_polygon_and_lines(fig_num, border_polygon, lines):
 	ax.add_patch(pol_patch)
 
 	# plot lines
-	for line in lines:
+	for line in polylines:
 		plot_line(ax, line)
 		plot_coords(ax, line)
 
 def test_crease_pattern():
 	eps = 1e-2
+	#border_polygon = prep(Polygon([(0, 0), (0,1), (1, 1), (1, 0)]))
 	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
 	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
-	lines = [line1]
+	polylines = [line1]
 
 	# figure before remove_points_outside_border
-	test_plot_polygon_and_lines(1,border_polygon,lines)	
+	test_plot_polygon_and_lines(1,border_polygon,polylines)	
+
+	# snap_points_towards_another
+	snap_points_towards_another(border_polygon, polylines)
 
 
 	line1.intersects(border_polygon)
 	border_polygon.intersects(line1)
 	print 'worked!'
 	# figure after
-	lines = remove_points_outside_border(border_polygon, [line1])
-	test_plot_polygon_and_lines(2,border_polygon,lines)	
+	border_polygon,polylines = remove_points_outside_border(border_polygon, [line1])
+	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
-	# new figure
+	G = build_planar_graph(border_polygon, polylines)
+
 
 
 	# show all
