@@ -23,8 +23,38 @@ def crease_pattern(border_polygon, lines):
 	"""
 
 def build_planar_graph(border_polygon, polylines):
+	G = nx.Graph()
+
 	# build vertices
-	pass
+	vertices = np.array(border_polygon.exterior.coords[:])
+	for pol in polylines:
+		vertices = np.concatenate((vertices, pol.coords[:]))
+	# get unique vertices
+	vertices = unique_rows(vertices)
+	v_n = vertices.shape[0]
+	print 'v_n = ', v_n
+	for v in range(v_n):
+		G.add_node(v, pos = vertices[v,:])
+
+	# add edges from lines
+	for pol in polylines:
+		coords = np.array(pol.coords[:])
+		for idx in range(len(coords)-1):
+			pos1, pos2 = coords[idx], pol.coords[idx+1]
+			idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
+			idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
+			print 'adding edge between ', idx1, ' and ', idx2
+			G.add_edge(idx1,idx2)
+	# add edges from polygon
+	"""
+	for idx in range(len(coords)-1):
+		pos1, pos2 = coords[idx], pol.coords[idx+1]
+		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
+		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
+		print 'adding edge between ', idx1, ' and ', idx2
+		G.add_edge(idx1,idx2)
+	"""
+	#idx = np.where((c == (1,0)).all(axis=1))[0][0]
 
 def split_line_to_polygon(polygon, line):
 	return linemerge(cascaded_union(split(line, polygon)))
@@ -50,6 +80,11 @@ def remove_points_outside_border(border_polygon, polylines):
 
 def snap_points_towards_another(border_polygon, polylines):
 	pass
+
+def unique_rows(a):
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 """
 
