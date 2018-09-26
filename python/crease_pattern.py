@@ -39,22 +39,27 @@ def build_planar_graph(border_polygon, polylines):
 	# add edges from lines
 	for pol in polylines:
 		coords = np.array(pol.coords[:])
-		for idx in range(len(coords)-1):
+		for idx in range(coords.shape[0]-1):
 			pos1, pos2 = coords[idx], pol.coords[idx+1]
 			idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
 			idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
 			print 'adding edge between ', idx1, ' and ', idx2
 			G.add_edge(idx1,idx2)
 	# add edges from polygon
-	"""
-	for idx in range(len(coords)-1):
-		pos1, pos2 = coords[idx], pol.coords[idx+1]
+	
+	coords = np.array(border_polygon.exterior.coords[:])
+	print 'coords[2] = ', coords[2]
+	print 'coords[3] = ', coords[3]
+	for idx in range(coords.shape[0]-1):
+		print 'idx = ', idx
+		pos1, pos2 = coords[idx], coords[idx+1]
 		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
 		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
 		print 'adding edge between ', idx1, ' and ', idx2
 		G.add_edge(idx1,idx2)
-	"""
+	
 	#idx = np.where((c == (1,0)).all(axis=1))[0][0]
+	return G
 
 def split_line_to_polygon(polygon, line):
 	return linemerge(cascaded_union(split(line, polygon)))
