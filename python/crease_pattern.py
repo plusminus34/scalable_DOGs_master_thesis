@@ -13,14 +13,13 @@ from shapely.ops import cascaded_union,linemerge,split
 from drawing import *
 
 
-def crease_pattern(border_polygon, lines):
-	remove_points_outside_border(border_polygon, lines)
-	snap_points_towards_another(border_polygon, lines)
-	"""
-	G = build_planar_graph(border_polygon, lines)
-	f = get_graph_faces(G)
-	faces_polygons = get_face_polygons(G,f)
-	"""
+def crease_pattern(border_polygon, polylines):
+	# snap_points_towards_another
+	snap_points_towards_another(border_polygon, polylines)
+	# figure after
+	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
+	face_polygons = build_polygons(border_polygon, polylines)
+	return face_polygons
 
 def add_curve_edges_to_graph(G,vertices,coords):
 	for idx in range(coords.shape[0]-1):
@@ -132,7 +131,9 @@ def test_crease_pattern():
 	#border_polygon = prep(Polygon([(0, 0), (0,1), (1, 1), (1, 0)]))
 	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
 	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
-	polylines = [line1]
+	line2 = LineString([(0,0.5), (1.2,1.5)])
+	line3 = LineString([(0,0.4), (1 +eps,1+eps)])
+	polylines = [line1, line2, line3]
 
 	# figure before remove_points_outside_border
 	test_plot_polygon_and_lines(1,border_polygon,polylines)	
@@ -140,12 +141,8 @@ def test_crease_pattern():
 	# snap_points_towards_another
 	snap_points_towards_another(border_polygon, polylines)
 
-
-	line1.intersects(border_polygon)
-	border_polygon.intersects(line1)
-	print 'worked!'
 	# figure after
-	border_polygon,polylines = remove_points_outside_border(border_polygon, [line1])
+	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
 	face_polygons = build_polygons(border_polygon, polylines)

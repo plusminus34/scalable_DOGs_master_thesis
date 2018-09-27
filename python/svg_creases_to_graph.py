@@ -4,6 +4,7 @@ from svgpathtools import svg2paths, wsvg
 from svg_utils import *
 from shapely.geometry import *
 from shapely.geometry.polygon import *
+from crease_pattern import *
 
 def svg_creases_to_graph(svg_file):
 	G = nx.Graph()
@@ -29,7 +30,10 @@ def svg_creases_to_graph(svg_file):
 		except:
 			print 'error handling one path'
 
-	
+	border_poly = border_poly.simplify(0.01, preserve_topology=False)
+	face_polygons = crease_pattern(border_poly, path_lines)
+	#print 'border_poly = ', border_poly
+	#print 'path_lines = ', path_lines
 	#border_poly = Polygon(border_poly)
 
 	# find all the curves intersections (and unite them if they are close-by??)
