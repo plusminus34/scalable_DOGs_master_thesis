@@ -5,6 +5,8 @@ from svg_utils import *
 from shapely.geometry import *
 from shapely.geometry.polygon import *
 from crease_pattern import *
+import svgpathtools.path
+from sys import exit
 
 def svg_creases_to_polygonal_data(svg_file):
 	G = nx.Graph()
@@ -18,6 +20,7 @@ def svg_creases_to_polygonal_data(svg_file):
 	path_lines = []
 	for i in range(len(paths)):
 		path, attrib = paths[i], attributes[i]
+		#print 'path number ', i, ' is ', path, ' dir(path) = ', dir(path)
 		try:
 			vertices, is_border = handle_path(path,attrib,style_classes,viewbox,100)
 			print 'is_border = ', is_border
@@ -29,7 +32,6 @@ def svg_creases_to_polygonal_data(svg_file):
 				pass
 		except:
 			print 'error handling one path'
-
 	return border_poly,path_lines
 
 
@@ -43,7 +45,16 @@ def get_border_poly(border_poly):
 def handle_path(path,attrib,style_classes,viewbox,sampling = 500):
 	color = get_curve_color(style_classes,attrib)
 	print 'The color is ', color
-	points = get_path_points_as_matrix(path, sampling, float(viewbox[0]), float(viewbox[1]))
+	if isinstance(path[0],svgpathtools.path.Line):
+		print 'this is a line!'
+		points = sample_polylines(path)
+		print 'points = ', points
+		exit(1)
+	else:
+		print 'bezier curve!'
+		points = sample_bezier_path_sampling(path, sampling)
+		print 'points.shape = ', points.shape
+		#fdsfd
 	is_border = (color == (0,0,0))
 	return points,is_border
 

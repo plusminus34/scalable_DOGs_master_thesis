@@ -2,6 +2,17 @@ from svgpathtools import svg2paths, wsvg
 from xml.dom import minidom
 import struct
 import numpy as np
+from shapely.ops import polygonize
+"""
+>>> from shapely.ops import polygonize
+>>> lines = [
+...     ((0, 0), (1, 1)),
+...     ((0, 0), (0, 1)),
+...     ((0, 1), (1, 1)),
+...     ((1, 1), (1, 0)),
+...     ((1, 0), (0, 0))
+...     ]
+"""
 
 def get_style_classes(svg_file):
 	doc = minidom.parse(svg_file)
@@ -64,10 +75,22 @@ def getText(nodelist):
 			rc.append(node.data)
 	return ''.join(rc)
 
-
-def get_path_points_as_matrix(path, points_num, center_x, center_y):
+def sample_bezier_path_sampling(path, points_num):
 	points = np.array([path.point(t) for t in np.arange(0,1+1./points_num,1./points_num)])
 	points = points.view('(2,)float')
 	#points[:,1] = -1*(points[:,1]-center_y)
 	#points[:,1] = points[:,1] - center_y
+	return points
+
+def sample_polylines(path):
+	print 'len(path) = ', len(path)
+	points = np.empty((len(path)+1,2))
+	print 'path[0].start.real,path[0].start.imag = ', path[0].start.real,path[0].start.imag
+	points[0,:] = path[0].start.real,path[0].start.imag
+	idx = 1
+	for line in path:
+		points[idx,:] = line.end.real,line.end.imag
+		print 'points[idx,:] = ', points[idx,:]
+		idx += 1
+	
 	return points
