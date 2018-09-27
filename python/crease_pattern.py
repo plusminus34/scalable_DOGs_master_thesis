@@ -126,14 +126,15 @@ def test_plot_polygon_and_lines(fig_num, border_polygon, polylines):
 		plot_line(ax, line)
 		plot_coords(ax, line)
 
-def test_crease_pattern():
-	eps = 1e-2
-	#border_polygon = prep(Polygon([(0, 0), (0,1), (1, 1), (1, 0)]))
-	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
-	line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
-	line2 = LineString([(0,0.5), (1.2,1.5)])
-	line3 = LineString([(0,0.4), (1 +eps,1+eps)])
-	polylines = [line1, line2, line3]
+def test_crease_pattern(border_polygon = [], polylines = []):
+	if border_polygon == []:
+		eps = 1e-2
+		#border_polygon = prep(Polygon([(0, 0), (0,1), (1, 1), (1, 0)]))
+		border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
+		line1 = LineString([(-eps,-eps), (0.1,0), (0.5,0.5), (2,1)])
+		line2 = LineString([(0,0.5), (1.2,1.5)])
+		line3 = LineString([(0,0.4), (1 +eps,1+eps)])
+		polylines = [line1, line2, line3]
 
 	# figure before remove_points_outside_border
 	test_plot_polygon_and_lines(1,border_polygon,polylines)	
@@ -155,7 +156,9 @@ def test_crease_pattern():
 	for pol in face_polygons:
 		color = np.array(pol_colors[i])/255.
 		print 'color = ', color
+		print 'pol.area = ', pol.area
 		pol_patch = PolygonPatch(pol, facecolor=color)
+		print 'pol_patch = ', pol_patch
 		ax.add_patch(pol_patch)
 		i += 1
 

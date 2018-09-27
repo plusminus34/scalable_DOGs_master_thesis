@@ -66,8 +66,8 @@ def getText(nodelist):
 
 
 def get_path_points_as_matrix(path, points_num, center_x, center_y):
-	points = np.array([path.point(t) for t in np.arange(0,1,1./points_num)])
+	points = np.array([path.point(t) for t in np.arange(0,1+1./points_num,1./points_num)])
 	points = points.view('(2,)float')
-	points[:,1] = -1*(points[:,1]-center_y)
-	points[:,1] = points[:,1] - center_y
+	#points[:,1] = -1*(points[:,1]-center_y)
+	#points[:,1] = points[:,1] - center_y
 	return points

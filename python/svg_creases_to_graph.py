@@ -6,7 +6,7 @@ from shapely.geometry import *
 from shapely.geometry.polygon import *
 from crease_pattern import *
 
-def svg_creases_to_graph(svg_file):
+def svg_creases_to_polygonal_data(svg_file):
 	G = nx.Graph()
 	paths, attributes = svg2paths(svg_file)
 	print 'Number of paths = ', len(paths)
@@ -30,15 +30,7 @@ def svg_creases_to_graph(svg_file):
 		except:
 			print 'error handling one path'
 
-	border_poly = border_poly.simplify(0.01, preserve_topology=False)
-	face_polygons = crease_pattern(border_poly, path_lines)
-	#print 'border_poly = ', border_poly
-	#print 'path_lines = ', path_lines
-	#border_poly = Polygon(border_poly)
-
-	# find all the curves intersections (and unite them if they are close-by??)
-
-	# find intersections with the border
+	return border_poly,path_lines
 
 
 def get_border_poly(border_poly):
@@ -56,7 +48,14 @@ def handle_path(path,attrib,style_classes,viewbox,sampling = 500):
 	return points,is_border
 
 def test_svg_creases_to_graph():
-	svg_creases_to_graph('../crease_patterns/empty.svg')
+	
+	border_poly,polylines = svg_creases_to_polygonal_data('../crease_patterns/empty.svg')
+	#test_plot_polygon_and_lines(1,border_poly,[polylines])	
+	# hardcoded..
+	#viewBox =  [0.0, -1000.0, 1500.0, 1000.0]
+	border_poly = Polygon([(132,868),(1370,868),(1370,153),(132,153)])
+	test_crease_pattern(border_poly, polylines)
+
 
 if __name__ == "__main__":
 	test_svg_creases_to_graph()
