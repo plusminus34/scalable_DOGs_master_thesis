@@ -150,6 +150,18 @@ def test_crease_pattern():
 
 	face_polygons = build_polygons(border_polygon, polylines)
 	print 'face_polygons = ', face_polygons
+
+	fig = plt.figure(4, figsize=(5,5), dpi=90)
+	ax = fig.add_subplot(111)
+	pol_colors = get_spaced_colors(len(face_polygons))
+	i = 0
+	for pol in face_polygons:
+		color = np.array(pol_colors[i])/255.
+		print 'color = ', color
+		pol_patch = PolygonPatch(pol, facecolor=color)
+		ax.add_patch(pol_patch)
+		i += 1
+
 	# show all
 	plt.show()
 	
