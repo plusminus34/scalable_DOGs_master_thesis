@@ -151,6 +151,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 
 	fig = plt.figure(4, figsize=(5,5), dpi=90)
 	ax = fig.add_subplot(111)
+
 	pol_colors = get_spaced_colors(len(face_polygons))
 	i = 0
 	for pol in face_polygons:
@@ -161,6 +162,10 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 		print 'pol_patch = ', pol_patch
 		ax.add_patch(pol_patch)
 		i += 1
+	# plot lines
+	for line in polylines:
+		plot_line(ax, line)
+		plot_coords(ax, line)
 
 	# show all
 	plt.show()
