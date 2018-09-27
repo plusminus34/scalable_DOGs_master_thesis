@@ -30,6 +30,24 @@ def add_curve_edges_to_graph(G,vertices,coords):
 		print 'adding edge between ', idx1, ' and ', idx2
 		G.add_edge(idx1,idx2)
 
+def build_polygons(border_polygon, polylines):
+	G = build_planar_graph(border_polygon, polylines)
+
+	faces = get_graph_faces(G)
+	polygons = []
+	print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
+	positions = nx.get_node_attributes(G,'pos')
+	#print 'faces = ', faces
+	for f in faces:
+		print 'face with ', f
+		indices = [pt[0] for pt in f]
+		vals = [positions[idx] for idx in indices]
+		#print 'vals = ', vals
+		new_poly = Polygon(vals)
+		if new_poly.area != border_polygon.area:
+			polygons.append(new_poly)
+	return polygons
+
 def build_planar_graph(border_polygon, polylines):
 	G = nx.Graph()
 
@@ -130,14 +148,8 @@ def test_crease_pattern():
 	border_polygon,polylines = remove_points_outside_border(border_polygon, [line1])
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
-	G = build_planar_graph(border_polygon, polylines)
-	faces = get_graph_faces(G)
-	#print 'faces = ', faces
-	for f in faces:
-		print 'face with ', f
-		poly = polygon_from_face(f,G.nodes) # implement me
-
-
+	face_polygons = build_polygons(border_polygon, polylines)
+	print 'face_polygons = ', face_polygons
 	# show all
 	plt.show()
 	
