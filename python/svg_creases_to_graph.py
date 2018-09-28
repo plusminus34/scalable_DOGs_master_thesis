@@ -4,7 +4,7 @@ from svgpathtools import svg2paths, wsvg
 from svg_utils import *
 from shapely.geometry import *
 from shapely.geometry.polygon import *
-from shapely.ops import polygonize,polygonize_full,linemerge
+from shapely.ops import polygonize,polygonize_full,linemerge,transform
 from crease_pattern import *
 import svgpathtools.path
 import sys
@@ -29,6 +29,9 @@ def svg_creases_to_polygonal_data(svg_file):
 				path_lines.append(LineString(vertices))
 			except:
 				print 'Error handling a fold'
+
+	# Make sure that the border scale is around width = 1, flip the y coordinates (since its opposite in images) translate it such that the lowest coordinate is 0
+	border_poly, path_lines = translate_and_normalize_polygons(border_poly, path_lines)
 		
 	return border_poly,path_lines
 
@@ -60,7 +63,7 @@ def get_border_poly(border_poly):
 	#bla = LinearRing([(0, 0), (1, 1), (1, 0)])
 	convex_hull = MultiPoint(border_poly).convex_hull
 
-def handle_fold(path,sampling = 2):
+def handle_fold(path,sampling = 100):
 	if is_polyline(path):
 		print 'Polyline!'
 		points = sample_polylines(path)
@@ -71,6 +74,17 @@ def handle_fold(path,sampling = 2):
 		#print 'bezier points = ', points
 	return points
 
+def translate_and_normalize_polygons(border_poly, path_lines):
+	minx, miny, maxx, maxy = border_poly.bounds
+	scale = 1./(maxx-minx)
+	print 'scaling by ', scale
+	
+	border_poly = transform(lambda x,y: [x*scale,-y*scale], border_poly) # also invert y coordinates
+	new_lines = []
+	for p in path_lines:
+		new_lines.append(transform(lambda x,y: [x*scale,-y*scale], p))
+	return border_poly, new_lines
+
 def test_svg_creases_to_graph(svg_file):
 	print 'Testing with file ', svg_file
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
@@ -79,7 +93,6 @@ def test_svg_creases_to_graph(svg_file):
 	#viewBox =  [0.0, -1000.0, 1500.0, 1000.0]
 	#border_poly = Polygon([(132,868),(1370,868),(1370,153),(132,153)])
 	test_crease_pattern(border_poly, polylines)
-
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:

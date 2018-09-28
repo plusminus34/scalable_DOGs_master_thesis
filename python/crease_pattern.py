@@ -115,10 +115,6 @@ def split_polylines_to_each_other(polylines):
 	return polylines_new
 
 def snap_curves_towards_another(polylines):
-	#polylines_new = []
-	#print 'polylines before = '
-	#for p in polylines:
-		#print 'p = ', p
 	# snap the first to second, then both to third, etc
 	for idx1 in range(0, len(polylines)-1):
 		#print 'idx1 = ', idx1
@@ -128,7 +124,7 @@ def snap_curves_towards_another(polylines):
 				#print 'here with idx1 = ', idx1, ' and idx2 = ', idx2
 				#print 'before a polygon with ', polylines[idx2]
 				#print 'snapping it with the polygon ', polylines[idx1]
-				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 10)
+				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-4)
 				#print 'after a polygon with ', polylines[idx2]
 
 	#print
@@ -179,11 +175,12 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 
 	# figure before remove_points_outside_border
 	test_plot_polygon_and_lines(1,border_polygon,polylines)	
-
+	
 	# snap_points_towards_another
 	snap_curves_towards_another(polylines)
 	# figure before remove_points_outside_border
 	test_plot_polygon_and_lines(2,border_polygon,polylines)	
+	
 
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
@@ -213,6 +210,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 		plot_coords(ax, line)
 
 	print 'Number of faces = ', len(face_polygons)
+	
 	# show all
 	plt.show()
 	
