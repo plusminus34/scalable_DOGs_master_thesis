@@ -100,15 +100,27 @@ def remove_points_outside_border(border_polygon, polylines):
 		border_polygon = split_polygon_by_line(border_polygon, pol_line)
 	return border_polygon, new_poly_lines
 
+def extend_polyline_by_epsilon(polyline, eps):
+	b_point, bb_point = np.array(polyline[-1]), np.array(polyline[-2])
+	diff_vec = b_point-bb_point
+	direction_vec = diff_vec/np.linalg.norm(diff_vec)
+	new_last_coord = bb_point + diff_vec + eps*direction_vec # extend it by an epsilon
+
+	newLinestringCoords = polyline.coords[0:-1].append((new_last_coord[0],new_last_coord[1]))
+	return LineString(newLinestringCoords)
+
 def split_polylines_to_each_other(polylines):
 	polylines_new = []
 	for pol_line in polylines:
 		new_line = pol_line
 		#print 'pol_line before = ', new_line
 		for pol_line2 in polylines:
-			if pol_line != pol_line2 and pol_line.intersects(pol_line2):
+			#snapper = extend_polyline_by_epsilon(pol_line2, 1e-4)
+			snapper = pol_line2
+			# hack, due to precision errors in line splitting intersections, we need to create a "snapper" that is longer by some epsilon
+			if pol_line != pol_line2 and pol_line.intersects(snapper):
 				#print 'splitting ', new_line, ' with ', pol_line2
-				new_line = split_line_to_geometry(new_line, pol_line2)
+				new_line = split_line_to_geometry(new_line, snapper)
 		#print 'pol_line after = ', new_line
 		polylines_new.append(new_line)
 	#print 'polylines = ', polylines
@@ -124,7 +136,7 @@ def snap_curves_towards_another(polylines):
 				#print 'here with idx1 = ', idx1, ' and idx2 = ', idx2
 				#print 'before a polygon with ', polylines[idx2]
 				#print 'snapping it with the polygon ', polylines[idx1]
-				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-4)
+				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-5)
 				#print 'after a polygon with ', polylines[idx2]
 
 	#print
