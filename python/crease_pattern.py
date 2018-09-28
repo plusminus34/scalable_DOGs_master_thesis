@@ -101,13 +101,21 @@ def remove_points_outside_border(border_polygon, polylines):
 	return border_polygon, new_poly_lines
 
 def extend_polyline_by_epsilon(polyline, eps):
-	b_point, bb_point = np.array(polyline[-1]), np.array(polyline[-2])
+	b_point, bb_point = np.array(polyline.coords[-1]), np.array(polyline.coords[-2])
 	diff_vec = b_point-bb_point
+	#print 'diff_vec = ', diff_vec
 	direction_vec = diff_vec/np.linalg.norm(diff_vec)
+	#print 'b_point = ', b_point
+	#print 'diff_vec + eps*direction_vec = ', diff_vec + eps*direction_vec
 	new_last_coord = bb_point + diff_vec + eps*direction_vec # extend it by an epsilon
+	#print 'new_last_coord = ', new_last_coord
 
-	newLinestringCoords = polyline.coords[0:-1].append((new_last_coord[0],new_last_coord[1]))
-	return LineString(newLinestringCoords)
+	new_coords = polyline.coords[0:-1]
+	#print 'old_coords_minus_last = ', new_coords
+	#print '(new_last_coord[0],new_last_coord[1]) = ', (new_last_coord[0],new_last_coord[1])
+	new_coords.append((new_last_coord[0],new_last_coord[1]))
+	#print 'new coords = ', new_coords
+	return LineString(new_coords)
 
 def split_polylines_to_each_other(polylines):
 	polylines_new = []
@@ -115,15 +123,13 @@ def split_polylines_to_each_other(polylines):
 		new_line = pol_line
 		#print 'pol_line before = ', new_line
 		for pol_line2 in polylines:
-			#snapper = extend_polyline_by_epsilon(pol_line2, 1e-4)
-			snapper = pol_line2
-			# hack, due to precision errors in line splitting intersections, we need to create a "snapper" that is longer by some epsilon
+			# hack: due to precision errors in line splitting intersections, we need to create a "snapper" that is longer by some epsilon
+			snapper = extend_polyline_by_epsilon(pol_line2, 1e-4)
+			
 			if pol_line != pol_line2 and pol_line.intersects(snapper):
-				#print 'splitting ', new_line, ' with ', pol_line2
-				new_line = split_line_to_geometry(new_line, snapper)
-		#print 'pol_line after = ', new_line
+				new_line = split_line_to_geometry(snapper,new_line)
+				
 		polylines_new.append(new_line)
-	#print 'polylines = ', polylines
 	return polylines_new
 
 def snap_curves_towards_another(polylines):
@@ -193,13 +199,15 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	# figure before remove_points_outside_border
 	test_plot_polygon_and_lines(2,border_polygon,polylines)	
 	
-
+	
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
 	polylines = split_polylines_to_each_other(polylines)
+	# snap_points_towards_another
+	snap_curves_towards_another(polylines)
 
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
-
+	
 	face_polygons = build_polygons(border_polygon, polylines)
 	#print 'face_polygons = ', face_polygons
 
