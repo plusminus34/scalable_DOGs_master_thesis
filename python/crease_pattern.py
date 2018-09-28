@@ -72,7 +72,13 @@ def build_planar_graph(border_polygon, polylines):
 	return G
 
 def split_line_to_polygon(polygon, line):
-	return linemerge(cascaded_union(split(line, polygon)))
+	#union = cascaded_union(split(line, polygon))
+	split_res = split(line, polygon)
+	# If there was a split, unite the lines
+	if len(list(split_res)) > 1:
+		return linemerge(cascaded_union(split_res))
+	else: # otherwise return the original line
+		return line
 
 def filter_line_points_outside_polygon(polygon, line):
 	points_inside_polygon = filter(polygon.intersects, MultiPoint(line.coords[:]))
@@ -147,7 +153,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
 	face_polygons = build_polygons(border_polygon, polylines)
-	print 'face_polygons = ', face_polygons
+	#print 'face_polygons = ', face_polygons
 
 	fig = plt.figure(4, figsize=(5,5), dpi=90)
 	ax = fig.add_subplot(111)
@@ -167,6 +173,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 		plot_line(ax, line)
 		plot_coords(ax, line)
 
+	print 'Number of faces = ', len(face_polygons)
 	# show all
 	plt.show()
 	
