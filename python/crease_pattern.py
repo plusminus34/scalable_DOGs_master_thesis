@@ -104,14 +104,14 @@ def split_polylines_to_each_other(polylines):
 	polylines_new = []
 	for pol_line in polylines:
 		new_line = pol_line
-		print 'pol_line before = ', new_line
+		#print 'pol_line before = ', new_line
 		for pol_line2 in polylines:
-			if pol_line != pol_line2:
-				print 'splitting ', new_line, ' with ', pol_line2
+			if pol_line != pol_line2 and pol_line.intersects(pol_line2):
+				#print 'splitting ', new_line, ' with ', pol_line2
 				new_line = split_line_to_geometry(new_line, pol_line2)
-		print 'pol_line after = ', new_line
+		#print 'pol_line after = ', new_line
 		polylines_new.append(new_line)
-	print 'polylines = ', polylines
+	#print 'polylines = ', polylines
 	return polylines_new
 
 def snap_points_towards_another(border_polygon, polylines):
