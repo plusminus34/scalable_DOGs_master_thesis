@@ -18,6 +18,7 @@ def crease_pattern(border_polygon, polylines):
 	snap_points_towards_another(border_polygon, polylines)
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
+	#polylines = split_polylines_to_each_other(polylines)
 	face_polygons = build_polygons(border_polygon, polylines)
 	return face_polygons
 
@@ -71,7 +72,7 @@ def build_planar_graph(border_polygon, polylines):
 	#print 'G.edges() = ', G.edges()
 	return G
 
-def split_line_to_polygon(polygon, line):
+def split_line_to_geometry(polygon, line):
 	#union = cascaded_union(split(line, polygon))
 	split_res = split(line, polygon)
 	# If there was a split, unite the lines
@@ -92,12 +93,24 @@ def remove_points_outside_border(border_polygon, polylines):
 	#prepared_polygon = prep(border_polygon)
 	new_poly_lines = []
 	for pol_line in polylines:
-		pol_line = split_line_to_polygon(border_polygon, pol_line)
+		pol_line = split_line_to_geometry(border_polygon, pol_line)
 		pol_line = filter_line_points_outside_polygon(border_polygon, pol_line)
 		new_poly_lines.append(pol_line)
 
 		border_polygon = split_polygon_by_line(border_polygon, pol_line)
 	return border_polygon, new_poly_lines
+
+def split_polylines_to_each_other(polylines):
+	polylines_new = []
+	for pol_line in polylines:
+		print 'pol_line before = ', pol_line
+		for pol_line2 in polylines:
+			if pol_line != pol_line2:
+				pol_line = split_line_to_geometry(pol_line, pol_line2)
+		print 'pol_line after = ', pol_line
+		polylines_new.append(pol_line)
+	print 'polylines = ', polylines
+	return polylines_new
 
 def snap_points_towards_another(border_polygon, polylines):
 	pass
@@ -150,6 +163,8 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
+	polylines = split_polylines_to_each_other(polylines)
+
 	test_plot_polygon_and_lines(3,border_polygon,polylines)
 
 	face_polygons = build_polygons(border_polygon, polylines)
