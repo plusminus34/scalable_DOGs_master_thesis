@@ -151,11 +151,11 @@ def unique_rows(a):
     unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
     return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
-def test_plot_polygon_and_lines(ax, border_polygon, polylines):
+def plot_border_polygon_and_lines(ax, border_polygon, polylines, title = ''):
 	# plot border polygon
 	pol_patch = PolygonPatch(border_polygon)
 	ax.add_patch(pol_patch)
-
+	ax.set_title(title)
 	# plot lines
 	for line in polylines:
 		plot_line(ax, line)
@@ -170,7 +170,7 @@ def get_default_test_params():
 	polylines = [line1, line2, line3]
 	return border_polygon, polylines
 
-def plot_polygons(face_polygons, polylines, ax):
+def plot_face_polygons(face_polygons, polylines, ax, title = ''):
 	pol_colors = get_spaced_colors(len(face_polygons))
 	i = 0
 	for pol in face_polygons:
@@ -187,7 +187,7 @@ def plot_polygons(face_polygons, polylines, ax):
 		plot_line(ax, line)
 		#plot_coords(ax, line)
 
-	print 'Number of faces = ', len(face_polygons)
+	ax.set_title(title)
 
 def test_crease_pattern(border_polygon = [], polylines = []):
 	if border_polygon == []:
@@ -196,14 +196,15 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
 
 	# figure before remove_points_outside_border
-	test_plot_polygon_and_lines(ax1,border_polygon,polylines)	
+	plot_border_polygon_and_lines(ax1,border_polygon,polylines, 'SVG Input')	
 
 	border_polygon, polylines = snap_polygons_border_to_another(border_polygon, polylines)
 
-	test_plot_polygon_and_lines(ax2,border_polygon,polylines)
+	plot_border_polygon_and_lines(ax2,border_polygon,polylines, 'Snapped and splitted curves')
 	
 	face_polygons = build_polygons(border_polygon, polylines)
-	plot_polygons(face_polygons, polylines, ax3)
+	face_polygons_num = len(face_polygons)
+	plot_face_polygons(face_polygons, polylines, ax3, 'Faces decomposition (' + str(face_polygons_num) + ' faces)')
 	
 	# show all
 	plt.show()
