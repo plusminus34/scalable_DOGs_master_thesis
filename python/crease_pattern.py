@@ -43,7 +43,7 @@ def build_polygons(border_polygon, polylines):
 		vals = [positions[idx] for idx in indices]
 		#print 'vals = ', vals
 		new_poly = Polygon(vals)
-		if new_poly.area - border_polygon.area:
+		if abs(new_poly.area - border_polygon.area) > 1e-4:
 			polygons.append(new_poly)
 	return polygons
 
