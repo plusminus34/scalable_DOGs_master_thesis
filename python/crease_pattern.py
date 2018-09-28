@@ -8,14 +8,14 @@ from shapely.prepared import prep
 
 from graph_planar_embeddings import *
 from descartes import PolygonPatch
-from shapely.ops import cascaded_union,linemerge,split
+from shapely.ops import cascaded_union,linemerge,split,snap
 
 from drawing import *
 
 
 def crease_pattern(border_polygon, polylines):
 	# snap_points_towards_another
-	snap_points_towards_another(border_polygon, polylines)
+	snap_curves_towards_another(border_polygon, polylines)
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
 	#polylines = split_polylines_to_each_other(polylines)
@@ -114,8 +114,28 @@ def split_polylines_to_each_other(polylines):
 	#print 'polylines = ', polylines
 	return polylines_new
 
-def snap_points_towards_another(border_polygon, polylines):
-	pass
+def snap_curves_towards_another(polylines):
+	#polylines_new = []
+	#print 'polylines before = '
+	#for p in polylines:
+		#print 'p = ', p
+	# snap the first to second, then both to third, etc
+	for idx1 in range(0, len(polylines)-1):
+		#print 'idx1 = ', idx1
+		for idx2 in range(0, idx1+2):
+			#print 'idx2 = ', idx2
+			if idx1!=idx2:
+				#print 'here with idx1 = ', idx1, ' and idx2 = ', idx2
+				#print 'before a polygon with ', polylines[idx2]
+				#print 'snapping it with the polygon ', polylines[idx1]
+				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 10)
+				#print 'after a polygon with ', polylines[idx2]
+
+	#print
+	#print 'polylines after = ', polylines
+	#for p in polylines:
+		#print 'p = ', p
+	return polylines
 
 def unique_rows(a):
     a = np.ascontiguousarray(a)
@@ -161,7 +181,9 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	test_plot_polygon_and_lines(1,border_polygon,polylines)	
 
 	# snap_points_towards_another
-	snap_points_towards_another(border_polygon, polylines)
+	snap_curves_towards_another(polylines)
+	# figure before remove_points_outside_border
+	test_plot_polygon_and_lines(2,border_polygon,polylines)	
 
 	# figure after
 	border_polygon,polylines = remove_points_outside_border(border_polygon, polylines)
