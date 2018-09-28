@@ -7,7 +7,7 @@ from shapely.geometry.polygon import *
 from shapely.ops import polygonize,polygonize_full,linemerge
 from crease_pattern import *
 import svgpathtools.path
-from sys import exit
+import sys
 
 def svg_creases_to_polygonal_data(svg_file):
 	G = nx.Graph()
@@ -60,22 +60,20 @@ def get_border_poly(border_poly):
 	#bla = LinearRing([(0, 0), (1, 1), (1, 0)])
 	convex_hull = MultiPoint(border_poly).convex_hull
 
-def handle_fold(path,sampling = 500):
+def handle_fold(path,sampling = 2):
 	if is_polyline(path):
-		print 'this is a line!'
+		print 'Polyline!'
 		points = sample_polylines(path)
-		print 'points = ', points
-		exit(1)
+		#print 'line points = ', points
 	else:
 		print 'bezier curve!'
 		points = sample_bezier_path_sampling(path, sampling)
-		print 'points.shape = ', points.shape
-		#fdsfd
+		#print 'bezier points = ', points
 	return points
 
-def test_svg_creases_to_graph():
-	
-	border_poly,polylines = svg_creases_to_polygonal_data('../crease_patterns/empty.svg')
+def test_svg_creases_to_graph(svg_file):
+	print 'Testing with file ', svg_file
+	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	#test_plot_polygon_and_lines(1,border_poly,[polylines])	
 	# hardcoded..
 	#viewBox =  [0.0, -1000.0, 1500.0, 1000.0]
@@ -84,4 +82,7 @@ def test_svg_creases_to_graph():
 
 
 if __name__ == "__main__":
-	test_svg_creases_to_graph()
+	if len(sys.argv) > 1:
+		test_svg_creases_to_graph(sys.argv[1])
+	else:
+		test_svg_creases_to_graph("../crease_patterns/1_curve.svg")
