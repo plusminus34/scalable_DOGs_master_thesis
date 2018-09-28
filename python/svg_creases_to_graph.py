@@ -77,12 +77,15 @@ def handle_fold(path,sampling = 100):
 def translate_and_normalize_polygons(border_poly, path_lines):
 	minx, miny, maxx, maxy = border_poly.bounds
 	scale = 1./(maxx-minx)
+	t = [-scale*minx,scale*maxy]
 	print 'scaling by ', scale
 	
-	border_poly = transform(lambda x,y: [x*scale,-y*scale], border_poly) # also invert y coordinates
+	translate_and_scale = lambda x,y: [x*scale + t[0],-y*scale + t[1]]
+	border_poly = transform(translate_and_scale, border_poly) # also invert y coordinates
 	new_lines = []
 	for p in path_lines:
-		new_lines.append(transform(lambda x,y: [x*scale,-y*scale], p))
+		new_lines.append(transform(translate_and_scale, p))
+	print 'new border_poly.bounds = ', border_poly.bounds
 	return border_poly, new_lines
 
 def test_svg_creases_to_graph(svg_file):
