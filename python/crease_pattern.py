@@ -182,12 +182,33 @@ def plot_face_polygons(face_polygons, polylines, ax, title = ''):
 		ax.add_patch(pol_patch)
 		i += 1
 	
+	"""
 	# plot lines
 	for line in polylines:
 		plot_line(ax, line)
 		#plot_coords(ax, line)
-
+		pass
+	"""
 	ax.set_title(title)
+
+def grid_from_boundary(bounds, res_x = 20, res_y = 20):
+	minx, miny, maxx, maxy = bounds
+	step_x = (maxx-minx)/res_x
+	step_y = (maxy-miny)/res_y
+	grid_lines = []
+	for y_i in range(res_y+1):
+		points = [(minx + step_x*x_i,miny+y_i*step_y) for x_i in range(res_x+1)]
+		grid_lines.append(LineString(points))
+
+	for x_i in range(res_x+1):
+		points = [(minx + step_x*x_i,miny+y_i*step_y) for y_i in range(res_y+1)]
+		grid_lines.append(LineString(points))
+
+	return grid_lines
+
+def plot_grid(grid, ax):
+	for l in grid:
+		plot_line(ax, l)
 
 def test_crease_pattern(border_polygon = [], polylines = []):
 	if border_polygon == []:
@@ -206,8 +227,14 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	face_polygons_num = len(face_polygons)
 	plot_face_polygons(face_polygons, polylines, ax3, 'Faces decomposition (' + str(face_polygons_num) + ' faces)')
 	
+	grid = grid_from_boundary(border_polygon.bounds)
+	plot_face_polygons(face_polygons, polylines, ax4, 'Faces with grid')
+	plot_grid(grid, ax4)
+
 	# show all
 	plt.show()
+
+
 	
 if __name__ == "__main__":
 	test_crease_pattern()
