@@ -103,12 +103,14 @@ def remove_points_outside_border(border_polygon, polylines):
 def split_polylines_to_each_other(polylines):
 	polylines_new = []
 	for pol_line in polylines:
-		print 'pol_line before = ', pol_line
+		new_line = pol_line
+		print 'pol_line before = ', new_line
 		for pol_line2 in polylines:
 			if pol_line != pol_line2:
-				pol_line = split_line_to_geometry(pol_line, pol_line2)
-		print 'pol_line after = ', pol_line
-		polylines_new.append(pol_line)
+				print 'splitting ', new_line, ' with ', pol_line2
+				new_line = split_line_to_geometry(new_line, pol_line2)
+		print 'pol_line after = ', new_line
+		polylines_new.append(new_line)
 	print 'polylines = ', polylines
 	return polylines_new
 
