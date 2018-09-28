@@ -57,10 +57,6 @@ def is_polyline(path):
 	return isinstance(path[0],svgpathtools.path.Line)
 
 def get_border_poly(border_poly):
-	#print 'border_poly =', border_poly
-	#bla = shapely.convex_hull(border_poly)
-
-	#bla = LinearRing([(0, 0), (1, 1), (1, 0)])
 	convex_hull = MultiPoint(border_poly).convex_hull
 
 def handle_fold(path,sampling = 100):
