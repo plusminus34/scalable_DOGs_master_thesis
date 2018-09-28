@@ -142,7 +142,7 @@ def snap_curves_towards_another(polylines):
 				#print 'here with idx1 = ', idx1, ' and idx2 = ', idx2
 				#print 'before a polygon with ', polylines[idx2]
 				#print 'snapping it with the polygon ', polylines[idx1]
-				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-5)
+				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-3)
 				#print 'after a polygon with ', polylines[idx2]
 
 	#print
@@ -210,7 +210,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	
 	face_polygons = build_polygons(border_polygon, polylines)
 	#print 'face_polygons = ', face_polygons
-
+	
 	fig = plt.figure(4, figsize=(5,5), dpi=90)
 	ax = fig.add_subplot(111)
 
