@@ -40,8 +40,9 @@ def handle_border(path):
 		assert len(polys) == 1,  'There should be 1 border polygon'
 		return polys[0]
 	else:
-		# bezier curve
-		pass
+		# bezier curve (not supported for a boundary yet)
+		raise NotImplementedError()
+
 def is_border(attrib,style_classes):
 	color = get_curve_color(style_classes,attrib)
 	print 'The color is ', color

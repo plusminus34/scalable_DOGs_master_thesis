@@ -26,7 +26,7 @@ def add_curve_edges_to_graph(G,vertices,coords):
 		pos1, pos2 = coords[idx], coords[idx+1]
 		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
 		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
-		print 'adding edge between ', idx1, ' and ', idx2
+		#print 'adding edge between ', idx1, ' and ', idx2
 		G.add_edge(idx1,idx2)
 
 def build_polygons(border_polygon, polylines):
@@ -34,16 +34,16 @@ def build_polygons(border_polygon, polylines):
 
 	faces = get_graph_faces(G)
 	polygons = []
-	print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
+	#print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
 	positions = nx.get_node_attributes(G,'pos')
 	#print 'faces = ', faces
 	for f in faces:
-		print 'face with ', f
+		#print 'face with ', f
 		indices = [pt[0] for pt in f]
 		vals = [positions[idx] for idx in indices]
 		#print 'vals = ', vals
 		new_poly = Polygon(vals)
-		if new_poly.area != border_polygon.area:
+		if new_poly.area - border_polygon.area:
 			polygons.append(new_poly)
 	return polygons
 
@@ -57,7 +57,7 @@ def build_planar_graph(border_polygon, polylines):
 	# get unique vertices
 	vertices = unique_rows(vertices)
 	v_n = vertices.shape[0]
-	print 'v_n = ', v_n
+	#print 'v_n = ', v_n
 	for v in range(v_n):
 		G.add_node(v, pos = vertices[v,:])
 
@@ -68,7 +68,7 @@ def build_planar_graph(border_polygon, polylines):
 	add_curve_edges_to_graph(G,vertices,pol_v)
 	for coords in lines_v:
 		add_curve_edges_to_graph(G,vertices,coords)
-	print 'G.edges() = ', G.edges()
+	#print 'G.edges() = ', G.edges()
 	return G
 
 def split_line_to_polygon(polygon, line):
@@ -156,10 +156,10 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	i = 0
 	for pol in face_polygons:
 		color = np.array(pol_colors[i])/255.
-		print 'color = ', color
-		print 'pol.area = ', pol.area
+		#print 'color = ', color
+		#print 'pol.area = ', pol.area
 		pol_patch = PolygonPatch(pol, facecolor=color)
-		print 'pol_patch = ', pol_patch
+		#print 'pol_patch = ', pol_patch
 		ax.add_patch(pol_patch)
 		i += 1
 	# plot lines

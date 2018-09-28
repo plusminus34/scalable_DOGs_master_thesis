@@ -16,19 +16,17 @@ def comb_embedding_from_graph(G):
 		origin = pos[node]
 		v_A = list(A[node][1])
 		nb_pos = [[pos[nb][0],pos[nb][1]] for nb in v_A]
-		#print 'pos[nb] = ', list[pos[nb]]
-		print '--- node = ', node, ' at position = ', origin
-		print 'nb_pos before = ', nb_pos
-		print 'v_A before = ', v_A
-		#nb_pos = sorted(nb_pos, key=lambda nb_pos: clockwiseangle_and_distance(nb_pos,origin))
+		
+		#print '--- node = ', node, ' at position = ', origin
+		#print 'nb_pos before = ', nb_pos
+		#print 'v_A before = ', v_A
+		
 		v_A = sorted(v_A, key=lambda node: clockwiseangle_and_distance(pos[node],origin))
-		#print 'nb_pos after = ', nb_pos
-		#sorted(v_A, key=lambda v_A: clockwiseangle_and_distance(v_A,nb_pos,origin))
-		#v_A = [x for _,x in sorted(zip(nb_pos,v_A),key=lambda nb_pos: clockwiseangle_and_distance(nb_pos,origin))]
-		print 'v_A after = ', v_A
-		print '------\n'
+		
+		#print 'v_A after = ', v_A
+		#print '------\n'
 		comb_emb[node] = v_A
-	print 'comb_emb = ', comb_emb
+	#print 'comb_emb = ', comb_emb
 	return comb_emb
 
 def get_faces(edges,embedding):
