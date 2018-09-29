@@ -7,7 +7,6 @@ from shapely.geometry.polygon import *
 from shapely.prepared import prep
 
 from graph_planar_embeddings import *
-from descartes import PolygonPatch
 from shapely.ops import cascaded_union,linemerge,split,snap
 
 from drawing import *
@@ -152,16 +151,6 @@ def unique_rows(a):
     unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
     return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
-def plot_border_polygon_and_lines(ax, border_polygon, polylines, title = ''):
-	# plot border polygon
-	pol_patch = PolygonPatch(border_polygon)
-	ax.add_patch(pol_patch)
-	ax.set_title(title)
-	# plot lines
-	for line in polylines:
-		plot_line(ax, line)
-		plot_coords(ax, line)
-
 def get_default_test_params():
 	eps = 1e-2
 	border_polygon = Polygon([(0, 0), (0,1), (1, 1), (1, 0)])
@@ -170,31 +159,6 @@ def get_default_test_params():
 	line3 = LineString([(0,0.4), (1 +eps,1+eps)])
 	polylines = [line1, line2, line3]
 	return border_polygon, polylines
-
-def plot_face_polygons(face_polygons, polylines, ax, title = ''):
-	pol_colors = get_spaced_colors(len(face_polygons))
-	i = 0
-	for pol in face_polygons:
-		color = np.array(pol_colors[i])/255.
-		#print 'color = ', color
-		#print 'pol.area = ', pol.area
-		pol_patch = PolygonPatch(pol, facecolor=color)
-		#print 'pol_patch = ', pol_patch
-		ax.add_patch(pol_patch)
-		i += 1
-	
-	"""
-	# plot lines
-	for line in polylines:
-		plot_line(ax, line)
-		#plot_coords(ax, line)
-		pass
-	"""
-	ax.set_title(title)
-
-def plot_grid(grid, ax):
-	for l in grid:
-		plot_line(ax, l)
 
 def test_crease_pattern(border_polygon = [], polylines = []):
 	if border_polygon == []:
@@ -214,7 +178,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	plot_face_polygons(face_polygons, polylines, ax3, 'Faces decomposition (' + str(face_polygons_num) + ' faces)')
 	
 	res_x,res_y = 25,25
-	grid = grid_from_boundary(border_polygon.bounds, res_x,res_y)
+	grid = grid_from_boundary(border_polygon, res_x,res_y)
 	plot_face_polygons(face_polygons, polylines, ax4, 'Faces with grid')
 	plot_grid(grid, ax4)
 

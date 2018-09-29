@@ -11,7 +11,7 @@ import sys
 def dog_from_border_and_polylines(border_poly, polylines):
 	pass
 
-def compute_border_polygon(border_poly, grid):
+def compute_grid_border_polygon(border_poly, grid):
 	pass
 
 def test_dog_from_face_polygons(svg_file):
@@ -22,7 +22,7 @@ def test_dog_from_face_polygons(svg_file):
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
 	res_x,res_y = 25,25
-	grid = grid_from_boundary(border_poly.bounds, res_x,res_y)
+	grid = grid_from_boundary(border_poly, res_x,res_y)
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
 	plot_grid(grid, ax1)
 

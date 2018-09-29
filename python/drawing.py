@@ -1,5 +1,7 @@
 from matplotlib import pyplot
 from shapely.geometry import LineString
+from descartes import PolygonPatch
+import numpy as np
 
 COLOR = {
     True:  '#6699cc',
@@ -20,6 +22,41 @@ def plot_bounds(ax, ob):
 def plot_line(ax, ob):
     x, y = ob.xy
     ax.plot(x, y, color=v_color(ob), alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+
+def plot_border_polygon_and_lines(ax, border_polygon, polylines, title = ''):
+    # plot border polygon
+    pol_patch = PolygonPatch(border_polygon)
+    ax.add_patch(pol_patch)
+    ax.set_title(title)
+    # plot lines
+    for line in polylines:
+        plot_line(ax, line)
+        plot_coords(ax, line)
+
+def plot_face_polygons(face_polygons, polylines, ax, title = ''):
+    pol_colors = get_spaced_colors(len(face_polygons))
+    i = 0
+    for pol in face_polygons:
+        color = np.array(pol_colors[i])/255.
+        #print 'color = ', color
+        #print 'pol.area = ', pol.area
+        pol_patch = PolygonPatch(pol, facecolor=color)
+        #print 'pol_patch = ', pol_patch
+        ax.add_patch(pol_patch)
+        i += 1
+    
+    """
+    # plot lines
+    for line in polylines:
+        plot_line(ax, line)
+        #plot_coords(ax, line)
+        pass
+    """
+    ax.set_title(title)
+
+def plot_grid(grid, ax):
+    for l in grid:
+        plot_line(ax, l)
 
 def get_spaced_colors(n):
     max_value = 16581375 #255**3

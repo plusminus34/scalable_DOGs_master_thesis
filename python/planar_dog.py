@@ -1,8 +1,9 @@
 from shapely.geometry import *
 from shapely.geometry.polygon import *
 
-def grid_from_boundary(bounds, res_x = 20, res_y = 20):
-	minx, miny, maxx, maxy = bounds
+def grid_from_boundary(border_polygon, res_x = 20, res_y = 20):
+	# For now assume a rectangular border polygon
+	minx, miny, maxx, maxy = border_polygon.bounds
 	step_x = (maxx-minx)/res_x
 	step_y = (maxy-miny)/res_y
 	grid_lines = []
