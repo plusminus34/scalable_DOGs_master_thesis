@@ -56,21 +56,24 @@ def test_dog_from_face_polygons(svg_file):
 	res_x,res_y = 25,25
 	grid = grid_from_boundary(border_poly, res_x,res_y)
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
-	plot_grid(grid, ax1)
+	plot_grid(grid, ax1,1.5, '#ffffff')
 
 	#dog = dog_from_border_and_polylines(border_poly, polylines)
 	grid,grid_polylines = intersected_grid_and_polylines(grid, polylines)
 	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections')
-	plot_grid(grid, ax2)
+	plot_grid(grid, ax2, 1.5, '#ffffff')
 	for line in grid_polylines:
-		plot_coords(ax2, line)
-		plot_line(ax2, line, 1, '#ffffff') # line width = 1
+		plot_coords(ax2, line, '#bbbbff')
+		plot_line(ax2, line, 1, '#dddddd') # line width = 1
 
 
 	border_poly,grid_polylines = remove_points_outside_border(border_poly, grid_polylines)
 	face_polygons = build_polygons(border_poly, grid_polylines)
 	face_polygons_num = len(list(face_polygons))
 	plot_face_polygons(face_polygons, grid_polylines, ax3, 'Faces polyline decomposition (' + str(face_polygons_num) + ' faces)')
+	#pol_patch = PolygonPatch(border_poly)
+	#ax3.add_patch(pol_patch)
+	plot_line(ax3,LineString(border_poly.exterior.coords),1,'#000000')
 
 	# show all
 	plt.show()

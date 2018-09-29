@@ -11,9 +11,9 @@ COLOR = {
 def v_color(ob):
     return COLOR[ob.is_simple]
 
-def plot_coords(ax, ob):
+def plot_coords(ax, ob, col = '#999999'):
     x, y = ob.xy
-    ax.plot(x, y, 'o', color='#999999', zorder=1)
+    ax.plot(x, y, 'o', color=col, zorder=1)
 
 def plot_bounds(ax, ob):
     x, y = zip(*list((p.x, p.y) for p in ob.boundary))
@@ -60,9 +60,9 @@ def plot_face_polygons(face_polygons, polylines, ax, title = ''):
     """
     ax.set_title(title)
 
-def plot_grid(grid, ax):
+def plot_grid(grid, ax, l_width = 3, color = ''):
     for l in grid:
-        plot_line(ax, l)
+        plot_line(ax, l, l_width, color)
 
 def get_spaced_colors(n):
     max_value = 16581375 #255**3
