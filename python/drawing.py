@@ -19,9 +19,15 @@ def plot_bounds(ax, ob):
     x, y = zip(*list((p.x, p.y) for p in ob.boundary))
     ax.plot(x, y, 'o', color='#000000', zorder=1)
 
-def plot_line(ax, ob):
+def plot_line(ax, ob, l_width = 3, col=''):
     x, y = ob.xy
-    ax.plot(x, y, color=v_color(ob), alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    if col == '':
+        col = v_color(ob)
+    ax.plot(x, y, color=col, alpha=0.7, linewidth=l_width, solid_capstyle='round', zorder=2)
+
+def plot_lines(ax, lines):
+    for l in lines:
+        plot_line(ax,l)
 
 def plot_border_polygon_and_lines(ax, border_polygon, polylines, title = ''):
     # plot border polygon

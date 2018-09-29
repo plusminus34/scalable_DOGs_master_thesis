@@ -8,7 +8,20 @@ from planar_dog import *
 import sys
 
 # need also polyline since part of the polygons is actually the face border, making it all a bit more complicated, I think
-def dog_from_border_and_polylines(border_poly, polylines):
+def intersected_polylines(grid, polylines):
+	intersected_polylines = []
+	for p in polylines:
+		print 'p.intersects(grid) = ', p.intersects(GeometryCollection(grid))
+		grid_int = p.intersection(GeometryCollection(grid))
+		intersected_polylines.append(LineString(grid_int))
+		print 'grid int len = ', len(list(grid_int))
+		#print 'grid_int = ', grid_int
+	return intersected_polylines
+
+def build_mesh_from_grid_and_polylines(grid, polylines):
+	pass
+
+def compute_grid_intersected_polygons(grid, border_poly, polylines):
 	pass
 
 def compute_grid_border_polygon(border_poly, grid):
@@ -26,7 +39,13 @@ def test_dog_from_face_polygons(svg_file):
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
 	plot_grid(grid, ax1)
 
-	dog = dog_from_border_and_polylines(border_poly, polylines)
+	#dog = dog_from_border_and_polylines(border_poly, polylines)
+	grid_polylines = intersected_polylines(grid, polylines)
+	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections')
+	plot_grid(grid, ax2)
+	for line in grid_polylines:
+		plot_coords(ax2, line)
+		plot_line(ax2, line, 1, '#ffffff') # line width = 1
 
 	# show all
 	plt.show()
