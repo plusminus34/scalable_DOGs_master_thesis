@@ -15,7 +15,7 @@ from drawing import *
 def crease_pattern(border_polygon, polylines):
 	border_polygon, polylines = snap_polygons_border_to_another(border_polygon, polylines)
 	face_polygons = build_polygons(border_polygon, polylines)
-	return face_polygons
+	return face_polygons, polylines
 
 def snap_polygons_border_to_another(border_polygon, polylines):
 	# snap_points_towards_another

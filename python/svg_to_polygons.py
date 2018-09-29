@@ -22,9 +22,11 @@ def svg_creases_to_polygonal_data(svg_file):
 	for i in range(len(paths)):
 		path, attrib = paths[i], attributes[i]
 		if is_border(attrib, style_classes):
+			print 'Reading border polygon'
 			border_poly = handle_border(path)
 		else:
 			try:
+				print 'Reading fold'
 				vertices = handle_fold(path,100)
 				path_lines.append(LineString(vertices))
 			except:
@@ -48,7 +50,7 @@ def handle_border(path):
 
 def is_border(attrib,style_classes):
 	color = get_curve_color(style_classes,attrib)
-	print 'The color is ', color
+	#print 'The color is ', color
 	is_border = (color == (0,0,0))
 	return is_border
 
@@ -74,7 +76,7 @@ def translate_and_normalize_polygons(border_poly, path_lines):
 	minx, miny, maxx, maxy = border_poly.bounds
 	scale = 1./(maxx-minx)
 	t = [-scale*minx,scale*maxy]
-	print 'scaling by ', scale
+	#print 'scaling by ', scale
 	
 	translate_and_scale = lambda x,y: [x*scale + t[0],-y*scale + t[1]]
 	border_poly = transform(translate_and_scale, border_poly) # also invert y coordinates
@@ -87,10 +89,6 @@ def translate_and_normalize_polygons(border_poly, path_lines):
 def test_svg_creases_to_graph(svg_file):
 	print 'Testing with file ', svg_file
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
-	#test_plot_polygon_and_lines(1,border_poly,[polylines])	
-	# hardcoded..
-	#viewBox =  [0.0, -1000.0, 1500.0, 1000.0]
-	#border_poly = Polygon([(132,868),(1370,868),(1370,153),(132,153)])
 	test_crease_pattern(border_poly, polylines)
 
 if __name__ == "__main__":

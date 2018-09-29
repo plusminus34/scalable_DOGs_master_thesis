@@ -83,14 +83,14 @@ def sample_bezier_path_sampling(path, points_num):
 	return points
 
 def sample_polylines(path):
-	print 'len(path) = ', len(path)
+	#print 'len(path) = ', len(path)
 	points = np.empty((len(path)+1,2))
-	print 'path[0].start.real,path[0].start.imag = ', path[0].start.real,path[0].start.imag
+	#print 'path[0].start.real,path[0].start.imag = ', path[0].start.real,path[0].start.imag
 	points[0,:] = path[0].start.real,path[0].start.imag
 	idx = 1
 	for line in path:
 		points[idx,:] = line.end.real,line.end.imag
-		print 'points[idx,:] = ', points[idx,:]
+		#print 'points[idx,:] = ', points[idx,:]
 		idx += 1
 	
 	return points
