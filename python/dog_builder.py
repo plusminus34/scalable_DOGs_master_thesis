@@ -47,6 +47,12 @@ def test_dog_from_face_polygons(svg_file):
 		plot_coords(ax2, line)
 		plot_line(ax2, line, 1, '#ffffff') # line width = 1
 
+
+	border_poly,grid_polylines = remove_points_outside_border(border_poly, grid_polylines)
+	face_polygons = build_polygons(border_poly, grid_polylines)
+	face_polygons_num = len(list(face_polygons))
+	plot_face_polygons(face_polygons, grid_polylines, ax3, 'Faces polyline decomposition (' + str(face_polygons_num) + ' faces)')
+
 	# show all
 	plt.show()
 
