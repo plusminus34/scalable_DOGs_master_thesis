@@ -22,6 +22,11 @@ def grid_from_boundary(border_polygon, res_x = 20, res_y = 20):
 
 	return grid_lines
 
+def split_grid_by_intersections(grid, intersections):
+	for pt in intersections:
+		pass
+	return grid
+
 def is_planar_polygon_rectangle(poly):
 	minx, miny, maxx, maxy = poly.bounds
 	rectangle = Polygon([(minx,miny),(maxx, miny),(maxx,maxy),(minx,maxy)])

@@ -8,15 +8,34 @@ from planar_dog import *
 import sys
 
 # need also polyline since part of the polygons is actually the face border, making it all a bit more complicated, I think
-def intersected_polylines(grid, polylines):
-	intersected_polylines = []
+def intersected_grid_and_polylines(grid, polylines):
+	grid_intersected_polylines = []
+	poly_intersections = find_polylines_intersections(polylines)
+	grid = split_grid_by_intersections(grid, poly_intersections)
 	for p in polylines:
-		print 'p.intersects(grid) = ', p.intersects(GeometryCollection(grid))
+		#print 'p.intersects(grid) = ', p.intersects(GeometryCollection(grid))
 		grid_int = p.intersection(GeometryCollection(grid))
-		intersected_polylines.append(LineString(grid_int))
-		print 'grid int len = ', len(list(grid_int))
-		#print 'grid_int = ', grid_int
-	return intersected_polylines
+		grid_intersected_polylines.append(LineString(grid_int))
+		#print 'grid int len = ', len(list(grid_int))
+	return grid, grid_intersected_polylines
+
+def find_polylines_intersections(polylines):
+	int_points = []
+	for pol_line in polylines:
+		new_line = pol_line
+		for pol_line2 in polylines:
+			if pol_line != pol_line2:
+				lines_int = pol_line.intersection(pol_line2)
+				if isinstance(lines_int,GeometryCollection):
+					for p in lines_int:
+						int_points = int_points + p.coords[:]
+				else:
+					int_points = int_points + lines_int.coords[:]
+	# get unique vertices
+	int_points = unique_rows(int_points)
+	#print 'int_points = ', int_points
+	return int_points
+
 
 def build_mesh_from_grid_and_polylines(grid, polylines):
 	pass
@@ -40,7 +59,7 @@ def test_dog_from_face_polygons(svg_file):
 	plot_grid(grid, ax1)
 
 	#dog = dog_from_border_and_polylines(border_poly, polylines)
-	grid_polylines = intersected_polylines(grid, polylines)
+	grid,grid_polylines = intersected_grid_and_polylines(grid, polylines)
 	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections')
 	plot_grid(grid, ax2)
 	for line in grid_polylines:
