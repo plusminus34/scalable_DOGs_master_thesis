@@ -46,6 +46,7 @@ def subdivide_planar_grid_at_x(grid,sub_y):
 			if y[0] > sub_y:
 				new_y = line
 				new_y = transform(lambda x,y: [x,sub_y], new_y)
+				print 'new_y = ', new_y
 				grid = grid[:idx]+[new_y]+grid[idx:]
 				#print 'grid len after = ', len(grid)
 				return grid

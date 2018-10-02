@@ -63,6 +63,7 @@ def plot_face_polygons(face_polygons, polylines, ax, title = ''):
 def plot_grid(grid, ax, l_width = 3, color = ''):
     for l in grid:
         plot_line(ax, l, l_width, color)
+        #plot_coords(ax, l)
 
 def get_spaced_colors(n):
     max_value = 16581375 #255**3

@@ -11,13 +11,20 @@ import sys
 def intersected_grid_and_polylines(grid, polylines):
 	grid_intersected_polylines = []
 	poly_intersections = find_polylines_intersections(polylines)
+	
 	grid = split_grid_by_intersections(grid, poly_intersections)
+	
 	for p in polylines:
 		int_coords = p.intersection(GeometryCollection(grid))
-		grid_int = np.array([pt.coords[0] for pt in int_coords])
+		
+		grid_int = []
+		for pt in int_coords:
+			grid_int = grid_int + list(pt.coords[:])
+		grid_int = np.array(grid_int)
+		grid_int = unique_rows(grid_int)
 		grid_int = sort_grid_int_by_polyline_points(p, grid_int)
 		grid_intersected_polylines.append(LineString(grid_int))
-		#print 'grid int len = ', len(list(grid_int))
+		
 	return grid, grid_intersected_polylines
 
 def closest_node(node, nodes):
@@ -92,8 +99,9 @@ def test_dog_from_face_polygons(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x,res_y = 25,25
+	res_x,res_y = 20,20
 	grid = grid_from_boundary(border_poly, res_x,res_y)
+
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
 	plot_grid(grid, ax1,1.5, '#ffffff')
 
