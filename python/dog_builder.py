@@ -13,11 +13,50 @@ def intersected_grid_and_polylines(grid, polylines):
 	poly_intersections = find_polylines_intersections(polylines)
 	grid = split_grid_by_intersections(grid, poly_intersections)
 	for p in polylines:
-		#print 'p.intersects(grid) = ', p.intersects(GeometryCollection(grid))
-		grid_int = p.intersection(GeometryCollection(grid))
+		int_coords = p.intersection(GeometryCollection(grid))
+		grid_int = np.array([pt.coords[0] for pt in int_coords])
+		grid_int = sort_grid_int_by_polyline_points(p, grid_int)
 		grid_intersected_polylines.append(LineString(grid_int))
 		#print 'grid int len = ', len(list(grid_int))
 	return grid, grid_intersected_polylines
+
+def closest_node(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.argmin(dist_2)
+
+def sort_grid_int_by_polyline_points(polyline, grid_int):
+	grid_int_sorted_coords = []
+	pt_sample = 5*grid_int.shape[0]
+	poly_coords = [polyline.interpolate(t,True).coords[:] for t in np.linspace(0,1,pt_sample
+		)]
+	#polyline.coords[:]
+
+	
+	distances_idx = np.empty(len(poly_coords))
+	i = 0
+	for pt in poly_coords:
+		#print 'pt = ', pt
+		distances_idx[i] = closest_node(pt, grid_int)
+		i += 1
+	#print 'distances_idx = ', distances_idx
+	cur_idx = distances_idx[0]
+	
+	pt = grid_int[int(cur_idx)]
+	cnt = 1
+	#grid_int.remove(pt)
+	grid_int_sorted_coords.append(pt)
+	for idx in distances_idx:
+		if idx != cur_idx:
+			cur_idx = int(idx)
+			pt = grid_int[int(cur_idx)]
+			#indices = np.where()
+			#grid_int.remove(pt)
+			grid_int_sorted_coords.append(pt)
+			cnt+=1
+
+	assert len(grid_int_sorted_coords) == grid_int.shape[0], 'Error: lengths do not match'
+	return grid_int_sorted_coords
 
 def find_polylines_intersections(polylines):
 	int_points = []
