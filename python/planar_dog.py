@@ -31,12 +31,12 @@ def split_grid_by_intersections(grid, intersections):
 
 	for pt in intersections:
 		y = pt[1]
-		print 'sub y = ', y
+		#print 'sub y = ', y
 		grid = subdivide_planar_grid_at_x(grid,y)
 	return grid
 
 def subdivide_planar_grid_at_x(grid,sub_y):
-	print 'grid len before = ', len(grid)
+	#print 'grid len before = ', len(grid)
 	idx = 0
 	for line in grid:
 		x,y = np.array(line.xy[0]),np.array(line.xy[1])
@@ -46,7 +46,7 @@ def subdivide_planar_grid_at_x(grid,sub_y):
 			if y[0] > sub_y:
 				new_y = line
 				new_y = transform(lambda x,y: [x,sub_y], new_y)
-				print 'new_y = ', new_y
+				#print 'new_y = ', new_y
 				grid = grid[:idx]+[new_y]+grid[idx:]
 				#print 'grid len after = ', len(grid)
 				return grid

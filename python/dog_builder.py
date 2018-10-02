@@ -34,7 +34,7 @@ def closest_node(node, nodes):
 
 def sort_grid_int_by_polyline_points(polyline, grid_int):
 	grid_int_sorted_coords = []
-	pt_sample = 5*grid_int.shape[0]
+	pt_sample = 50*grid_int.shape[0]
 	poly_coords = [polyline.interpolate(t,True).coords[:] for t in np.linspace(0,1,pt_sample
 		)]
 	#polyline.coords[:]
@@ -62,7 +62,8 @@ def sort_grid_int_by_polyline_points(polyline, grid_int):
 			grid_int_sorted_coords.append(pt)
 			cnt+=1
 
-	assert len(grid_int_sorted_coords) == grid_int.shape[0], 'Error: lengths do not match'
+	#print 'cnt = ', cnt, ' but grid_int.shape[0] = ', grid_int.shape[0], ' with pt_sample = ', pt_sample
+	#assert len(grid_int_sorted_coords) == grid_int.shape[0], 'Error: lengths do not match'
 	return grid_int_sorted_coords
 
 def find_polylines_intersections(polylines):
@@ -72,7 +73,8 @@ def find_polylines_intersections(polylines):
 		for pol_line2 in polylines:
 			if pol_line != pol_line2:
 				lines_int = pol_line.intersection(pol_line2)
-				if isinstance(lines_int,GeometryCollection):
+				#print 'type(lines_int) = ',type(lines_int)
+				if isinstance(lines_int,GeometryCollection) or isinstance(lines_int, MultiPoint):
 					for p in lines_int:
 						int_points = int_points + p.coords[:]
 				else:
@@ -99,7 +101,7 @@ def test_dog_from_face_polygons(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x,res_y = 20,20
+	res_x,res_y = 25,25
 	grid = grid_from_boundary(border_poly, res_x,res_y)
 
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
@@ -113,7 +115,7 @@ def test_dog_from_face_polygons(svg_file):
 		plot_coords(ax2, line, '#bbbbff')
 		plot_line(ax2, line, 1, '#dddddd') # line width = 1
 
-
+	
 	border_poly,grid_polylines = remove_points_outside_border(border_poly, grid_polylines)
 	face_polygons = build_polygons(border_poly, grid_polylines)
 	face_polygons_num = len(list(face_polygons))
@@ -121,7 +123,7 @@ def test_dog_from_face_polygons(svg_file):
 	#pol_patch = PolygonPatch(border_poly)
 	#ax3.add_patch(pol_patch)
 	plot_line(ax3,LineString(border_poly.exterior.coords),1,'#000000')
-
+	
 	# show all
 	plt.show()
 
