@@ -1,6 +1,30 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+from shapely.geometry import *
+from shapely.geometry.polygon import *
+
+def graph_to_polygons(G):
+	faces = get_graph_faces(G)
+	tmp_polygons = []
+	#print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
+	positions = nx.get_node_attributes(G,'pos')
+
+	#print 'faces = ', faces
+	for f in faces:
+		#print 'face with ', f
+		indices = [pt[0] for pt in f]
+		vals = [positions[idx] for idx in indices]
+		tmp_polygons.append(Polygon(vals))
+			
+	# remove external face by filtering the larges area (probably will be nicer to do it by orientation)
+	max_area = max([poly.area for poly in tmp_polygons])
+	polygons = []
+	for poly in tmp_polygons:
+		if poly.area < max_area:
+			polygons.append(poly)
+	return polygons
 
 def get_graph_faces(G):
 	comb_emb = comb_embedding_from_graph(G)
@@ -28,6 +52,25 @@ def comb_embedding_from_graph(G):
 		comb_emb[node] = v_A
 	#print 'comb_emb = ', comb_emb
 	return comb_emb
+
+def add_curve_vertices_to_graph(G, polylines, vertices):
+	for pol in polylines:
+		vertices = np.concatenate((vertices, pol.coords[:]))
+	# get unique vertices
+	vertices = unique_rows(vertices)
+	v_n = vertices.shape[0]
+	#print 'v_n = ', v_n
+	for v in range(v_n):
+		G.add_node(v, pos = vertices[v,:])
+	return vertices
+
+def add_curve_edges_to_graph(G,vertices,coords):
+	for idx in range(coords.shape[0]-1):
+		pos1, pos2 = coords[idx], coords[idx+1]
+		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
+		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
+		#print 'adding edge between ', idx1, ' and ', idx2
+		G.add_edge(idx1,idx2)
 
 def get_faces(edges,embedding):
 	"""
@@ -91,6 +134,11 @@ def clockwiseangle_and_distance(point, origin):
 	# but if two vectors have the same angle then the shorter distance should come first.
 	#return angle, lenvector
 	return angle
+
+def unique_rows(a):
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 def test_comb_embedding_from_graph():
 	G = nx.Graph()

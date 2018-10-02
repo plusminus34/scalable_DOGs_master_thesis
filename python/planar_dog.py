@@ -1,7 +1,9 @@
 from shapely.geometry import *
 from shapely.geometry.polygon import *
 from shapely.ops import transform
+from graph_planar_embeddings import *
 import numpy as np
+import networkx as nx
 
 def grid_from_boundary(border_polygon, res_x = 20, res_y = 20):
 	#MultiPoint(border_polygon).convex_hull
@@ -34,6 +36,25 @@ def split_grid_by_intersections(grid, intersections):
 		#print 'sub y = ', y
 		grid = subdivide_planar_grid_at_x(grid,y)
 	return grid
+
+# faces to graph, then sort edges and "unite" them (0,1 and 1,2 to 0,2..)
+def polygons_to_grid(polygons):
+	grid = []
+	return grid
+
+# build a graph and find faces
+def grid_to_polygons(grid):
+	G = nx.Graph()
+	vertices = np.empty((0,2))
+	vertices = add_curve_vertices_to_graph(G, grid, vertices)
+
+	print 'vertices = ', vertices
+	# add edges
+	lines_v = [np.array(pol.coords[:]) for pol in grid]
+	print 'len(lines_v) = ', len(lines_v)
+	for coords in lines_v:
+		add_curve_edges_to_graph(G,vertices,coords)
+	return graph_to_polygons(G)
 
 def subdivide_planar_grid_at_x(grid,sub_y):
 	#print 'grid len before = ', len(grid)

@@ -102,9 +102,9 @@ def test_dog_from_face_polygons(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x,res_y = 2,2
+	res_x,res_y = 3,3
 	grid = grid_from_boundary(border_poly, res_x,res_y)
-	#grid_poly = grid_to_polygons(grid)
+	grid_poly = grid_to_polygons(grid)
 	#print 'len(grid_poly) = ', len(grid_poly)
 	#for p in grid_poly:
 	#	print 'p = ', p

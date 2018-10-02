@@ -28,17 +28,11 @@ def snap_polygons_border_to_another(border_polygon, polylines):
 	snap_curves_towards_another(polylines)
 	return border_polygon, polylines
 
-def add_curve_edges_to_graph(G,vertices,coords):
-	for idx in range(coords.shape[0]-1):
-		pos1, pos2 = coords[idx], coords[idx+1]
-		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
-		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
-		#print 'adding edge between ', idx1, ' and ', idx2
-		G.add_edge(idx1,idx2)
-
 def build_polygons(border_polygon, polylines):
 	G = build_planar_graph(border_polygon, polylines)
 
+	return graph_to_polygons(G)
+	"""
 	faces = get_graph_faces(G)
 	polygons = []
 	#print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
@@ -53,21 +47,15 @@ def build_polygons(border_polygon, polylines):
 		if abs(new_poly.area - border_polygon.area) > 1e-4:
 			polygons.append(new_poly)
 	return polygons
+	"""
 
 def build_planar_graph(border_polygon, polylines):
 	G = nx.Graph()
 
 	# build vertices
 	vertices = np.array(border_polygon.exterior.coords[:])
-	for pol in polylines:
-		vertices = np.concatenate((vertices, pol.coords[:]))
-	# get unique vertices
-	vertices = unique_rows(vertices)
-	v_n = vertices.shape[0]
-	#print 'v_n = ', v_n
-	for v in range(v_n):
-		G.add_node(v, pos = vertices[v,:])
-
+	vertices = add_curve_vertices_to_graph(G, polylines, vertices)
+	
 	# add edges from lines
 	#for pol in polylines:
 	pol_v = np.array(border_polygon.exterior.coords[:])
@@ -145,11 +133,6 @@ def snap_curves_towards_another(polylines):
 			if idx1!=idx2:
 				polylines[idx2] = snap(polylines[idx2], polylines[idx1], 1e-3)
 	return polylines
-
-def unique_rows(a):
-    a = np.ascontiguousarray(a)
-    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
-    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 def get_default_test_params():
 	eps = 1e-2
