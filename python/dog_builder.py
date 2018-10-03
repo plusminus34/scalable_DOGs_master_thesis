@@ -85,6 +85,19 @@ def find_polylines_intersections(polylines):
 	#print 'int_points = ', int_points
 	return int_points
 
+def grid_squares_and_face_to_mesh(grid_polygons, face_polygon):
+	filtered_grid_squares = filter(lambda grid_sqr: grid_sqr.intersects(face_polygon), [grid_sqr for grid_sqr in grid_polygons])
+	print 'len(filtered_grid_squares) = ', len(filtered_grid_squares)
+	return grid_squares_to_mesh_numpy(filtered_grid_squares)
+
+def grid_and_face_polygons_to_meshes(grid, face_polygons):
+	V_list, F_list = [],[]
+	grid_polygons = grid_to_polygons(grid)
+	for face in face_polygons:
+		V,F = grid_squares_and_face_to_mesh(grid_polygons, face)
+		V_list.append(V)
+		F_list.append(F)
+	return V_list, F_list
 
 def build_mesh_from_grid_and_polylines(grid, polylines):
 	pass
@@ -104,11 +117,7 @@ def test_dog_from_face_polygons(svg_file):
 
 	res_x,res_y = 3,3
 	grid = grid_from_boundary(border_poly, res_x,res_y)
-	grid_poly = grid_to_polygons(grid)
-	#print 'len(grid_poly) = ', len(grid_poly)
-	#for p in grid_poly:
-	#	print 'p = ', p
-	#exit(1)
+	#grid_poly = grid_to_polygons(grid)
 
 	plot_face_polygons(face_polygons, polylines, ax1, 'Faces with grid')
 	plot_grid(grid, ax1,1.5, '#ffffff')
@@ -129,7 +138,12 @@ def test_dog_from_face_polygons(svg_file):
 	#pol_patch = PolygonPatch(border_poly)
 	#ax3.add_patch(pol_patch)
 	plot_line(ax3,LineString(border_poly.exterior.coords),1,'#000000')
-	
+
+	"""
+	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
+	for f in F_list:
+		print 'f = ', f
+	"""
 	# show all
 	plt.show()
 

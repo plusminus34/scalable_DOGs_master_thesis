@@ -64,11 +64,14 @@ def add_curve_vertices_to_graph(G, polylines, vertices):
 		G.add_node(v, pos = vertices[v,:])
 	return vertices
 
+def vertices_pos_to_index(vertices,pos):
+	return np.where((vertices == pos).all(axis=1))[0][0]
+
 def add_curve_edges_to_graph(G,vertices,coords):
 	for idx in range(coords.shape[0]-1):
 		pos1, pos2 = coords[idx], coords[idx+1]
-		idx1 = np.where((vertices == pos1).all(axis=1))[0][0]
-		idx2 = np.where((vertices == pos2).all(axis=1))[0][0]
+		idx1 = vertices_pos_to_index(vertices,pos1)
+		idx2 = vertices_pos_to_index(vertices,pos2)
 		#print 'adding edge between ', idx1, ' and ', idx2
 		G.add_edge(idx1,idx2)
 

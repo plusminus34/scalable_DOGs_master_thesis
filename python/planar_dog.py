@@ -42,16 +42,30 @@ def polygons_to_grid(polygons):
 	grid = []
 	return grid
 
+def grid_squares_to_mesh_numpy(grid_squares):
+	V = np.empty((0,2))
+	for p in grid_squares:
+		V = np.concatenate((V, p.exterior.coords[:]))
+	V = unique_rows(V)
+	F = np.empty((len(grid_squares),4))
+	f_i = 0
+	for sqr in grid_squares:
+		pos1, pos2, pos3, pos4, dummy = sqr.exterior.coords[:]
+		idx1, idx2 = vertices_pos_to_index(V,pos1),vertices_pos_to_index(V,pos2)
+		idx3, idx4 = vertices_pos_to_index(V,pos3),vertices_pos_to_index(V,pos4)
+		F[f_i,:] = idx1,idx2,idx3,idx4
+		f_i += 1
+	return V,F
+
 # build a graph and find faces
 def grid_to_polygons(grid):
 	G = nx.Graph()
 	vertices = np.empty((0,2))
 	vertices = add_curve_vertices_to_graph(G, grid, vertices)
 
-	print 'vertices = ', vertices
 	# add edges
 	lines_v = [np.array(pol.coords[:]) for pol in grid]
-	print 'len(lines_v) = ', len(lines_v)
+
 	for coords in lines_v:
 		add_curve_edges_to_graph(G,vertices,coords)
 	return graph_to_polygons(G)
