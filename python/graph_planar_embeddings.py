@@ -21,11 +21,11 @@ def graph_to_polygons(G):
 	# remove external face by filtering the larges area (probably will be nicer to do it by orientation)
 	max_area = max([poly.area for poly in tmp_polygons])
 	polygons = []
-	print '\n\n\t\tnew polygons'
+	#print '\n\n\t\tnew polygons'
 	for poly in tmp_polygons:
 		if poly.area < max_area:
 			polygons.append(poly)
-			print 'len(poly) = ', len(poly.exterior.coords[:])
+			#print 'len(poly) = ', len(poly.exterior.coords[:])
 	return polygons
 
 def get_graph_faces(G):

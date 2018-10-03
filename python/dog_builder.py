@@ -78,7 +78,6 @@ def find_polylines_intersections(polylines):
 					for p in lines_int:
 						int_points = int_points + p.coords[:]
 				else:
-					#print 'type(lines_int) = ', type(lines_int)
 					int_points = int_points + lines_int.coords[:]
 	# get unique vertices
 	if int_points:
@@ -104,6 +103,7 @@ def grid_and_face_polygons_to_meshes(grid, face_polygons):
 	grid_polygons = grid_to_polygons(grid)
 	for face in face_polygons:
 		V,F = grid_squares_and_face_to_mesh(grid_polygons, face)
+		print 'f number = ', F.shape[0]
 		V_list.append(V)
 		F_list.append(F)
 	return V_list, F_list
@@ -148,7 +148,7 @@ def test_dog_from_face_polygons(svg_file):
 	#ax3.add_patch(pol_patch)
 	plot_line(ax3,LineString(border_poly.exterior.coords),1,'#000000')
 
-	#[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
+	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
 	#for f in F_list:
 	#	print 'f = ', f
 	
