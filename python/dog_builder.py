@@ -124,7 +124,7 @@ def test_dog_from_face_polygons(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x,res_y = 3,3
+	res_x,res_y = 10,10
 	grid = grid_from_boundary(border_poly, res_x,res_y)
 	#grid_poly = grid_to_polygons(grid)
 
@@ -133,7 +133,7 @@ def test_dog_from_face_polygons(svg_file):
 
 	#dog = dog_from_border_and_polylines(border_poly, polylines)
 	grid,grid_polylines = intersected_grid_and_polylines(grid, polylines)
-	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections')
+	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections and subdivision by curves intersections')
 	plot_grid(grid, ax2, 1.5, '#ffffff')
 	for line in grid_polylines:
 		plot_coords(ax2, line, '#bbbbff')
@@ -151,6 +151,7 @@ def test_dog_from_face_polygons(svg_file):
 	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
 	#for f in F_list:
 	#	print 'f = ', f
+	ax4.set_title('DOG Mesh components creation')
 	
 	# show all
 	plt.show()

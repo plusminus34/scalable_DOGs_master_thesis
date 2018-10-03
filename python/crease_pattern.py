@@ -135,7 +135,7 @@ def test_crease_pattern(border_polygon = [], polylines = []):
 	face_polygons_num = len(face_polygons)
 	plot_face_polygons(face_polygons, polylines, ax3, 'Faces decomposition (' + str(face_polygons_num) + ' faces)')
 	
-	res_x,res_y = 25,25
+	res_x,res_y = 10,10
 	grid = grid_from_boundary(border_polygon, res_x,res_y)
 	plot_face_polygons(face_polygons, polylines, ax4, 'Faces with grid')
 	plot_grid(grid, ax4)
