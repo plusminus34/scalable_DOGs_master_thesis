@@ -4,12 +4,9 @@ from shapely.ops import transform
 from graph_planar_embeddings import *
 import numpy as np
 import networkx as nx
+from geometry_utils import *
 
 def grid_from_boundary(border_polygon, res_x = 20, res_y = 20):
-	#MultiPoint(border_polygon).convex_hull
-	#print 'convex_hull = MultiPoint(border_poly).convex_hull.area = ', MultiPoint(border_polygon.coords).convex_hull.area
-	#print 'border_polygon.area = ', border_polygon.convex_hull.area
-	#assert abs(border_polygon.convex_hull.area-border_polygon.area
 	assert is_planar_polygon_rectangle(border_polygon), "Unsupported: Currently only supporting rectangular polygons"
 	# For now assume a rectangular border polygon
 	minx, miny, maxx, maxy = border_polygon.bounds
@@ -50,7 +47,8 @@ def grid_squares_to_mesh_numpy(grid_squares):
 	F = np.empty((len(grid_squares),4))
 	f_i = 0
 	for sqr in grid_squares:
-		pos1, pos2, pos3, pos4, dummy = sqr.exterior.coords[:]
+		#print 'sqr.exterior.coords[:] = ', sqr.exterior.coords[:]
+		pos1, pos2, pos3, pos4= sqr.exterior.coords[0:4]
 		idx1, idx2 = vertices_pos_to_index(V,pos1),vertices_pos_to_index(V,pos2)
 		idx3, idx4 = vertices_pos_to_index(V,pos3),vertices_pos_to_index(V,pos4)
 		F[f_i,:] = idx1,idx2,idx3,idx4
@@ -78,12 +76,14 @@ def subdivide_planar_grid_at_x(grid,sub_y):
 		if np.all(y==y[0]):
 			# This is a curve with constant 'y'
 			#print 'cur_y = ', y[0]
+			if y[0] == sub_y:
+				return grid # do nothing
 			if y[0] > sub_y:
 				new_y = line
 				new_y = transform(lambda x,y: [x,sub_y], new_y)
-				#print 'new_y = ', new_y
+				for i in range(len(grid)):
+					grid[i] = split_line_to_geometry(extend_polyline_by_epsilon(new_y,1e-4),grid[i])
 				grid = grid[:idx]+[new_y]+grid[idx:]
-				#print 'grid len after = ', len(grid)
 				return grid
 		idx +=1
 

@@ -78,6 +78,7 @@ def find_polylines_intersections(polylines):
 					for p in lines_int:
 						int_points = int_points + p.coords[:]
 				else:
+					#print 'type(lines_int) = ', type(lines_int)
 					int_points = int_points + lines_int.coords[:]
 	# get unique vertices
 	if int_points:
@@ -85,9 +86,17 @@ def find_polylines_intersections(polylines):
 	#print 'int_points = ', int_points
 	return int_points
 
+def inner_square_intersects_polygon(sqr,face_polygon):
+	sqr_int = sqr.intersection(face_polygon)
+	ext_int = sqr.exterior.intersection(face_polygon)
+	return not sqr_int.difference(ext_int).is_empty	
+
 def grid_squares_and_face_to_mesh(grid_polygons, face_polygon):
-	filtered_grid_squares = filter(lambda grid_sqr: grid_sqr.intersects(face_polygon), [grid_sqr for grid_sqr in grid_polygons])
-	print 'len(filtered_grid_squares) = ', len(filtered_grid_squares)
+	#filtered_grid_squares = filter(lambda grid_sqr: grid_sqr.intersects(face_polygon), [grid_sqr for grid_sqr in grid_polygons])
+	filtered_grid_squares = filter(lambda grid_sqr: inner_square_intersects_polygon(grid_sqr, face_polygon), [grid_sqr for grid_sqr in grid_polygons])
+	
+	#filtered_grid_squares = filter(lambda grid_sqr: grid_sqr.contains_properly(face_polygon), [grid_sqr for grid_sqr in grid_polygons])
+	#print 'len(filtered_grid_squares) = ', len(filtered_grid_squares)
 	return grid_squares_to_mesh_numpy(filtered_grid_squares)
 
 def grid_and_face_polygons_to_meshes(grid, face_polygons):
@@ -139,11 +148,10 @@ def test_dog_from_face_polygons(svg_file):
 	#ax3.add_patch(pol_patch)
 	plot_line(ax3,LineString(border_poly.exterior.coords),1,'#000000')
 
-	"""
-	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
-	for f in F_list:
-		print 'f = ', f
-	"""
+	#[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
+	#for f in F_list:
+	#	print 'f = ', f
+	
 	# show all
 	plt.show()
 

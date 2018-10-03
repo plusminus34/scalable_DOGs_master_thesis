@@ -11,6 +11,7 @@ from shapely.ops import cascaded_union,linemerge,split,snap
 
 from drawing import *
 from planar_dog import *
+from geometry_utils import *
 
 def crease_pattern(border_polygon, polylines):
 	border_polygon, polylines = snap_polygons_border_to_another(border_polygon, polylines)
@@ -66,15 +67,6 @@ def build_planar_graph(border_polygon, polylines):
 	#print 'G.edges() = ', G.edges()
 	return G
 
-def split_line_to_geometry(polygon, line):
-	#union = cascaded_union(split(line, polygon))
-	split_res = split(line, polygon)
-	# If there was a split, unite the lines
-	if len(list(split_res)) > 1:
-		return linemerge(cascaded_union(split_res))
-	else: # otherwise return the original line
-		return line
-
 def filter_line_points_outside_polygon(polygon, line):
 	points_inside_polygon = filter(polygon.intersects, MultiPoint(line.coords[:]))
 	return LineString(points_inside_polygon)
@@ -94,23 +86,6 @@ def remove_points_outside_border(border_polygon, polylines):
 		border_polygon = split_polygon_by_line(border_polygon, pol_line)
 	return border_polygon, new_poly_lines
 
-def extend_polyline_by_epsilon(polyline, eps):
-	b_point, bb_point = np.array(polyline.coords[-1]), np.array(polyline.coords[-2])
-	diff_vec = b_point-bb_point
-	#print 'diff_vec = ', diff_vec
-	direction_vec = diff_vec/np.linalg.norm(diff_vec)
-	#print 'b_point = ', b_point
-	#print 'diff_vec + eps*direction_vec = ', diff_vec + eps*direction_vec
-	new_last_coord = bb_point + diff_vec + eps*direction_vec # extend it by an epsilon
-	#print 'new_last_coord = ', new_last_coord
-
-	new_coords = polyline.coords[0:-1]
-	#print 'old_coords_minus_last = ', new_coords
-	#print '(new_last_coord[0],new_last_coord[1]) = ', (new_last_coord[0],new_last_coord[1])
-	new_coords.append((new_last_coord[0],new_last_coord[1]))
-	#print 'new coords = ', new_coords
-	return LineString(new_coords)
-
 def split_polylines_to_each_other(polylines):
 	polylines_new = []
 	for pol_line in polylines:
@@ -118,7 +93,7 @@ def split_polylines_to_each_other(polylines):
 		#print 'pol_line before = ', new_line
 		for pol_line2 in polylines:
 			# hack: due to precision errors in line splitting intersections, we need to create a "snapper" that is longer by some epsilon
-			snapper = extend_polyline_by_epsilon(pol_line2, 1e-4)
+			snapper = extend_polyline_by_epsilon_backwards(pol_line2, 1e-4)
 			
 			if pol_line != pol_line2 and pol_line.intersects(snapper):
 				new_line = split_line_to_geometry(snapper,new_line)
