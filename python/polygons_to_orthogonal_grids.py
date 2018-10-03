@@ -6,6 +6,7 @@ from crease_pattern import *
 from svg_to_polygons import *
 from planar_dog import *
 import sys
+import time
 
 # need also polyline since part of the polygons is actually the face border, making it all a bit more complicated, I think
 def intersected_grid_and_polylines(grid, polylines):
@@ -122,7 +123,9 @@ def test_dog_from_face_polygons(svg_file):
 	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
 
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
+	t = time.time()
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
+	print 'crease_pattern time = ', time.time()-t
 
 	res_x,res_y = 10,10
 	grid = grid_from_boundary(border_poly, res_x,res_y)
@@ -132,7 +135,9 @@ def test_dog_from_face_polygons(svg_file):
 	plot_grid(grid, ax1,1.5, '#ffffff')
 
 	#dog = dog_from_border_and_polylines(border_poly, polylines)
+	t = time.time()
 	grid,grid_polylines = intersected_grid_and_polylines(grid, polylines)
+	print 'intersected_grid_and_polylines time = ', time.time()-t
 	plot_face_polygons(face_polygons, polylines, ax2, 'Grid intersections and subdivision by curves intersections')
 	plot_grid(grid, ax2, 1.5, '#ffffff')
 	for line in grid_polylines:
