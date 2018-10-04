@@ -15,7 +15,7 @@ def polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, r
 	face_polygons = build_polygons(border_poly, grid_polylines)
 	
 	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
-	return V_list, F_list, polylines
+	return V_list, F_list, grid, grid_polylines
 
 # need also polyline since part of the polygons is actually the face border, making it all a bit more complicated, I think
 def intersected_grid_and_polylines(grid, polylines):

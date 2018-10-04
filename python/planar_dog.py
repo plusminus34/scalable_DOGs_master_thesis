@@ -44,7 +44,7 @@ def grid_squares_to_mesh_numpy(grid_squares):
 	for p in grid_squares:
 		V = np.concatenate((V, p.exterior.coords[:]))
 	V = unique_rows(V)
-	F = np.empty((len(grid_squares),4))
+	F = np.empty((len(grid_squares),4),dtype = int)
 	f_i = 0
 	for sqr in grid_squares:
 		#print 'sqr.exterior.coords[:] = ', sqr.exterior.coords[:]

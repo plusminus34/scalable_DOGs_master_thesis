@@ -19,9 +19,9 @@ class FoldConst:
 def dog_builder(V_list,F_list, polylines):
 	# return global V,F, then V and F for rendering, and constraints 
 	# The global F just concatenates the vertices and faces list (after adding indices to faces)
-	V,F = get_global_VF(V_list, F_list)
+	V,F,V_list_pos_dict = get_global_VF(V_list, F_list)
 
-	fold_const = get_fold_consts(V_list, F_list, polylines)
+	fold_const = get_fold_consts(V_list, F_list, V_list_pos_dict, polylines)
 	#
 	# The constraints data is defined per vertex on the polylines.
 	# A polyline vertex is defined uniquely by its 2D coordinates (so there won't be doubles). 
@@ -49,27 +49,115 @@ def dog_builder(V_list,F_list, polylines):
 	# In case the triangulation looks bad, do a manual one
 	pass
 
-def get_fold_consts(V_list, F_list, polylines):
-	# Get all polylines unique vertices
+def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines):
+	fold_consts = []
+	# Get polylines vertices positions (filter for uniqueness)
+	vertices = np.empty((0,2))
+	for p in polylines:
+		vertices = np.concatenate((vertices, np.array(p.coords[:])))
+	vertices = unique_rows(vertices)
+	#print 'num vertices = ', vertices.shape[0]
+	for v in vertices:
+		v_edges = []
+		edge_weights = []
+		for mesh_i in range(len(V_list)):
+			V,F = V_list[mesh_i], F_list[mesh_i]
+			lines = get_mesh_non_unique_edges_positions(V,F)
+			# Check if the point is in the polygon (this could be faster I guess)
+			v1_pos,v2_pos,t = find_v_on_lines(v,lines)
+			#print 'v = ', v
+			if v1_pos:
+				#print 'v1_pos = ', v1_pos, ' v2_pos = ', v2_pos
+				v1,v2 = V_list_pos_dict[mesh_i][v1_pos], V_list_pos_dict[mesh_i][v2_pos]
+				#print 'v1 = ',v1, ' v2 = ', v2
+				v_edges.append(Edge(v1,v2))
+				edge_weights.append(t)
+		# now go through
+		const_num = len(v_edges) - 1
+		print 'constraint numbers = ', const_num, ' with v = ', v
+		#if const_num > 1:
+			#print 'constraint numbers = ', const_num, ' with v = ', v
+		assert const_num >= 1, 'There should be at least one constraint per fold vertex'
+		for c_i in range(const_num):
+			fold_consts.append(FoldConst(v_edges[c_i],edge_weights[c_i],v_edges[c_i+1],edge_weights[c_i+1]))
+
 	# Find their intersections with the meshes (build polylines from them)
 	# Locate the intersections vertices edges and weights
 	pass
 
+def get_mesh_non_unique_edges_positions(V,F):
+	lines = []
+	for f in F:
+		#print 'f = ', f		
+		lines.append(LineString([V[f[0]],V[f[1]]]))
+		lines.append(LineString([V[f[1]],V[f[2]]]))
+		lines.append(LineString([V[f[2]],V[f[3]]]))
+		lines.append(LineString([V[f[3]],V[f[0]]]))
+	return lines
+
+def find_v_on_lines(v, lines):
+	for l in lines:
+		if Point(v).intersects(l):
+			# solve t*v1 + (1-t)*v2 = v so t*v1-t*v2=v-v2, so t*(v1-v2) = v-v2, so t = (v-v2)/(v1-v2)
+			v1,v2 = np.array(l.coords[0]), np.array(l.coords[1])
+			#print '(v[0]-v2[0]) = ', (v[0]-v2[0])
+			#print '(v1[0]-v2[0]) = ', (v1[0]-v2[0])
+			if (v1[0]!=v2[0]):
+				t = (v[0]-v2[0])/(v1[0]-v2[0])
+			else:
+				t = (v[1]-v2[1])/(v1[1]-v2[1])
+			#print 't = ', t
+			return tuple(v1),tuple(v2),t # return vertices as tuples as we need them as hashable dictionary keys
+	return None,None,None
+
 def get_global_VF(V_list, F_list):
+	V_list_pos_dict = []
 	V,F = V_list[0], F_list[0]
 	max_f = F.max()
 	for mesh_i in range(1, len(V_list)):
 		V = np.concatenate((V, V_list[mesh_i]))
 		F = np.concatenate((F, F_list[mesh_i] + F.max() + 1))
-	return V,F
+
+	# For every submesh creates a dictionary between vertex positions to the index of the
+	# 	 vertex in the global mesh
+	base_v_offset = 0
+	for submesh_i in range(len(V_list)):
+		V_sub_dict = {}
+		for row_i in range(V_list[submesh_i].shape[0]):
+			pos = V_list[submesh_i][row_i]
+			V_sub_dict[tuple(pos)] = row_i + base_v_offset
+		base_v_offset += V_list[submesh_i].shape[0]
+		V_list_pos_dict.append(V_sub_dict)
+	#print 'V_list_pos_dict = ', V_list_pos_dict
+	return V,F, V_list_pos_dict
 
 def test_dog_builder(svg_file):
+	f, ((ax1, ax2),(ax3,ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x, res_y = 10,10
-	V_list, F_list, polylines = polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y)
-	dog_builder(V_list, F_list, polylines)
+	res_x, res_y = 3,3
+	V_list, F_list, grid, grid_polylines = polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y)
+	face_polygons_num = len(V_list)
+	plot_face_polygons(face_polygons, grid_polylines, ax1, 'Faces and grid (' + str(face_polygons_num) + ' faces)')
+	#pol_patch = PolygonPatch(border_poly)
+	#ax3.add_patch(pol_patch)
+	plot_grid(grid, ax1, 1.5, '#ffffff')
+	for line in grid_polylines:
+		plot_coords(ax1, line, '#444444')
+		plot_line(ax1, line, 0.5, '#dddddd') # line width = 1
+	plot_line(ax1,LineString(border_poly.exterior.coords),1,'#000000')
+	for f in F_list:
+		print 'f.rows() = ', f.shape[0]
+
+	dog_builder(V_list, F_list, grid_polylines)
+
+	#lines = get_mesh_non_unique_edges_positions(V_list[2],F_list[2])
+	#plot_border_polygon_and_lines(ax2,border_poly, lines)
+
+	#lines = get_mesh_non_unique_edges_positions(V_list[3],F_list[3])
+	#plot_border_polygon_and_lines(ax3,border_poly, lines)
+	plt.show()
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
