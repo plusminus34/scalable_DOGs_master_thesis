@@ -4,6 +4,7 @@ sys.path.insert(0, os.getcwd() + "/../../libigl/python")
 sys.path.insert(0, os.getcwd() + "/../../libigl/external/nanogui/build/python")
 import math
 import pyigl as igl
+from scipy.spatial import Delaunay
 
 from polygons_to_orthogonal_grids import *
 
@@ -21,7 +22,6 @@ def dog_builder(V_list,F_list, polylines):
 	# The global F just concatenates the vertices and faces list (after adding indices to faces)
 	V,F,V_list_pos_dict = get_global_VF(V_list, F_list)
 
-	fold_const = get_fold_consts(V_list, F_list, V_list_pos_dict, polylines)
 	#
 	# The constraints data is defined per vertex on the polylines.
 	# A polyline vertex is defined uniquely by its 2D coordinates (so there won't be doubles). 
@@ -37,27 +37,42 @@ def dog_builder(V_list,F_list, polylines):
 	# 	then find these as points on (some) edges for each one (n such edges), and save those
 	#										 (the optimization code could use them as n-1 constraints)
 	#
+	polylines_v = get_polylines_v(polylines)
+	fold_consts = get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v)
+	print 'len(fold_consts) = ', len(fold_consts)
+	
 	#
 	# Rendering requires culling the faces. 
 	# The triangulation can be an arbitrary one (triangulate) if you take the unique vertices locations together with the polylines.
 	# If we have a unique order for the polylines vertices (given by another list of edges such that no vertex is there twice)
 	#   then we just need the list of edges.
-	# So basically: Save a list of vertices indices in the global mesh (for the inner vertices positions)
-	# 				A list of edges for polylines (for the polylines)
+	# So basically: Save a list of vertices indices in the global mesh (for the inner vertices positions, meaning avoiding duplications)
+	# 				A list of edge and weights (vertices on edges) for polylines
 	#				And an F for triangulation that assumes this order of vertices (so for initialization build it and triangulate)
 	#
 	# In case the triangulation looks bad, do a manual one
-	pass
+	V_render = np.concatenate((np.copy(V),polylines_v))
+	F = Delaunay(V_render).simplices
+	# use the constraints to get a list of edge and weights vertices
+	print 'type(F) = ', type(F)
+	print 'F = ', F.shape
+	plt.triplot(V_render[:,0], V_render[:,1], F.copy())
 
-def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines):
-	fold_consts = []
+
+def get_polylines_v(polylines):
 	# Get polylines vertices positions (filter for uniqueness)
 	vertices = np.empty((0,2))
 	for p in polylines:
 		vertices = np.concatenate((vertices, np.array(p.coords[:])))
 	vertices = unique_rows(vertices)
-	#print 'num vertices = ', vertices.shape[0]
-	for v in vertices:
+	return vertices
+
+def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v):
+	fold_consts = []
+
+	# Find their intersections with the meshes (build polylines from them)
+	# Locate the intersections vertices edges and weights
+	for v in polylines_v:
 		v_edges = []
 		edge_weights = []
 		for mesh_i in range(len(V_list)):
@@ -81,9 +96,7 @@ def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines):
 		for c_i in range(const_num):
 			fold_consts.append(FoldConst(v_edges[c_i],edge_weights[c_i],v_edges[c_i+1],edge_weights[c_i+1]))
 
-	# Find their intersections with the meshes (build polylines from them)
-	# Locate the intersections vertices edges and weights
-	pass
+	return fold_consts
 
 def get_mesh_non_unique_edges_positions(V,F):
 	lines = []
@@ -136,7 +149,7 @@ def test_dog_builder(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x, res_y = 3,3
+	res_x, res_y = 25,25
 	V_list, F_list, grid, grid_polylines = polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y)
 	face_polygons_num = len(V_list)
 	plot_face_polygons(face_polygons, grid_polylines, ax1, 'Faces and grid (' + str(face_polygons_num) + ' faces)')
