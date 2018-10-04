@@ -1,3 +1,12 @@
+import numpy as np
+import os, sys
+sys.path.insert(0, os.getcwd() + "/../../libigl/python")
+sys.path.insert(0, os.getcwd() + "/../../libigl/external/nanogui/build/python")
+import math
+import pyigl as igl
+
+from polygons_to_orthogonal_grids import *
+
 def dog_builder(V_list,F_list, polylines):
 	# return global V,F, then V and F for rendering, and constraints 
 
@@ -27,4 +36,27 @@ def dog_builder(V_list,F_list, polylines):
 	#				And an F for triangulation that assumes this order of vertices (so for initialization build it and triangulate)
 	#
 	# In case the triangulation looks bad, do a manual one
+	V,F = get_global_VF(V_list, F_list)
 	pass
+
+def get_global_VF(V_list, F_list):
+	V,F = V_list[0], F_list[0]
+	max_f = F.max()
+	for mesh_i in range(1, len(V_list)):
+		V = np.concatenate((V, V_list[mesh_i]))
+		F = np.concatenate((F, F_list[mesh_i] + F.max() + 1))
+	return V,F
+
+def test_dog_builder(svg_file):
+	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
+	face_polygons, polylines = crease_pattern(border_poly, polylines)
+
+	res_x, res_y = 10,10
+	V_list, F_list, polylines = polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y)
+	dog_builder(V_list, F_list, polylines)
+
+if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		test_dog_builder(sys.argv[1])
+	else:
+		test_dog_builder("../crease_patterns/1_curve.svg")

@@ -8,6 +8,15 @@ from planar_dog import *
 import sys
 import time
 
+def polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y):
+	grid = grid_from_boundary(border_poly, res_x,res_y)
+	grid,grid_polylines = intersected_grid_and_polylines(grid, polylines)
+	border_poly,grid_polylines = remove_points_outside_border(border_poly, grid_polylines)
+	face_polygons = build_polygons(border_poly, grid_polylines)
+	
+	[V_list, F_list] = grid_and_face_polygons_to_meshes(grid, face_polygons)
+	return V_list, F_list, polylines
+
 # need also polyline since part of the polygons is actually the face border, making it all a bit more complicated, I think
 def intersected_grid_and_polylines(grid, polylines):
 	grid_intersected_polylines = []
@@ -104,7 +113,7 @@ def grid_and_face_polygons_to_meshes(grid, face_polygons):
 	grid_polygons = grid_to_polygons(grid)
 	for face in face_polygons:
 		V,F = grid_squares_and_face_to_mesh(grid_polygons, face)
-		print 'f number = ', F.shape[0]
+		#print 'f number = ', F.shape[0]
 		V_list.append(V)
 		F_list.append(F)
 	return V_list, F_list
