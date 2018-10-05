@@ -5,6 +5,7 @@ sys.path.insert(0, os.getcwd() + "/../../libigl/external/nanogui/build/python")
 import math
 import pyigl as igl
 from scipy.spatial import Delaunay
+from iglhelpers import *
 
 from polygons_to_orthogonal_grids import *
 
@@ -38,9 +39,9 @@ def dog_builder(V_list,F_list, polylines):
 	#										 (the optimization code could use them as n-1 constraints)
 	#
 	polylines_v = get_polylines_v(polylines)
-	fold_consts, unique_vertex_on_edges = get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v)
+	fold_consts, unique_vertices_on_edges = get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v)
 	print 'len(fold_consts) = ', len(fold_consts)
-	assert len(unique_vertex_on_edges) == polylines_v.shape[0], 'Lengths should match'
+	assert len(unique_vertices_on_edges) == polylines_v.shape[0], 'Lengths should match'
 	
 	#
 	# Rendering requires culling the faces. 
@@ -54,17 +55,45 @@ def dog_builder(V_list,F_list, polylines):
 	# In case the triangulation looks bad, do a manual one
 
 	# TODO1: First find unique indices of V and save them, then delaunay that
+	# Or don't actually, this should still work
 	V_render = np.concatenate((np.copy(V),polylines_v))
-	F = Delaunay(V_render).simplices
+	F_render = Delaunay(V_render).simplices
 	# use the constraints to get a list of edge and weights vertices
 	print 'type(F) = ', type(F)
 	print 'F = ', F.shape
 	# TODO2: Get the parameters of the edges (edge vertices for each constraint)
 	# This could be returned also from get_fold_consts..
 
-	plt.triplot(V_render[:,0], V_render[:,1], F.copy())
+	plt.triplot(V_render[:,0], V_render[:,1], F_render.copy())
 	# TODO3: Return the data and save it in a file
+
+	# The data is V,F,fold_consts, polylines_v, unique_vertices_on_edges, F
+	return V,F,fold_consts, unique_vertices_on_edges, F_render
 	# TODO4: Change your code to read that data, constraints, and rendering
+
+def add_numpy_zero_z_coord_column(V):
+	return np.ascontiguousarray(np.vstack((V[:,0],V[:,1],np.zeros(V.shape[0]))).T)
+
+def write_curved_mesh_data(folder_name, V,F,fold_consts, unique_vertices_on_edges, F_render):
+	fold_consts_m = np.empty((len(fold_consts),6))
+	for fi in range(len(fold_consts)):
+		edge1, w1, edge2, w2 = fold_consts[fi].edge1,fold_consts[fi].w1,fold_consts[fi].edge2,fold_consts[fi].w2
+		fold_consts_m[fi] = edge1.v1,edge1.v2,w1,edge2.v1,edge2.v2,w2
+
+	unique_vertices_m = np.empty((len(unique_vertices_on_edges),3))
+	for fi in range(len(unique_vertices_on_edges)):
+		unique_vertices_m[fi] = unique_vertices_on_edges[fi] #(v1,v2,t)
+	
+	V = p2e(add_numpy_zero_z_coord_column(V))
+	F = p2e(F.astype(np.int32))
+	fold_consts_m = p2e(fold_consts_m)
+	unique_vertices_m = p2e(unique_vertices_m)
+	F_render = p2e(F_render)
+
+	igl.writeOBJ(folder_name+'mesh.obj',V,F)
+	igl.writeOBJ(folder_name+'fold_consts.obj',fold_consts_m,igl.eigen.MatrixXi())
+	igl.writeOBJ(folder_name+'unique_vertices.obj',unique_vertices_m,igl.eigen.MatrixXi())
+	igl.writeOBJ(folder_name+'F_render.obj',igl.eigen.MatrixXd(),F_render)
 
 def get_polylines_v(polylines):
 	# Get polylines vertices positions (filter for uniqueness)
@@ -76,7 +105,7 @@ def get_polylines_v(polylines):
 
 def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v):
 	fold_consts = []
-	unique_vertex_on_edges = []
+	unique_vertices_on_edges = []
 
 	# Find their intersections with the meshes (build polylines from them)
 	# Locate the intersections vertices edges and weights
@@ -97,7 +126,7 @@ def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v):
 				v_edges.append(Edge(v1,v2))
 				edge_weights.append(t)
 				if first_submesh:
-					unique_vertex_on_edges.append((v1,v2,t))
+					unique_vertices_on_edges.append((v1,v2,t))
 					first_submesh = False
 		# now go through
 		const_num = len(v_edges) - 1
@@ -108,7 +137,7 @@ def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v):
 		for c_i in range(const_num):
 			fold_consts.append(FoldConst(v_edges[c_i],edge_weights[c_i],v_edges[c_i+1],edge_weights[c_i+1]))
 
-	return fold_consts, unique_vertex_on_edges
+	return fold_consts, unique_vertices_on_edges
 
 def get_mesh_non_unique_edges_positions(V,F):
 	lines = []
@@ -175,7 +204,9 @@ def test_dog_builder(svg_file):
 	for f in F_list:
 		print 'f.rows() = ', f.shape[0]
 
-	dog_builder(V_list, F_list, grid_polylines)
+	V,F,fold_consts, unique_vertices_on_edges, F_render = dog_builder(V_list, F_list, grid_polylines)
+	folder_name = os.getcwd() + '//results//'
+	write_curved_mesh_data(folder_name, V,F,fold_consts, unique_vertices_on_edges, F_render)
 
 	#lines = get_mesh_non_unique_edges_positions(V_list[2],F_list[2])
 	#plot_border_polygon_and_lines(ax2,border_poly, lines)
