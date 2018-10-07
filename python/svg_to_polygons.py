@@ -40,8 +40,19 @@ def svg_creases_to_polygonal_data(svg_file):
 def handle_border(path):
 	if is_polyline(path):
 		lines = [((p.start.real, p.start.imag), (p.end.real, p.end.imag)) for p in path]
+		"""
+		lines = []
+		for l in tmp_lines:
+			if np.linalg.norm(np.array(l[0]-np.array(l[1]))) > 1e-7:
+				print 'adding line = ', l
+				lines.append(l)
+			else:
+				print 'ignoring l = ', l
+		"""
 		#print 'lines = ', lines
 		polys = list(polygonize(lines))
+		for p in polys:
+			print 'p = ', p
 		assert len(polys) == 1,  'There should be 1 border polygon'
 		return polys[0]
 	else:

@@ -122,6 +122,10 @@ def get_fold_consts(V_list, F_list, V_list_pos_dict, polylines_v):
 			if v1_pos:
 				#print 'v1_pos = ', v1_pos, ' v2_pos = ', v2_pos
 				v1,v2 = V_list_pos_dict[mesh_i][v1_pos], V_list_pos_dict[mesh_i][v2_pos]
+				if abs(t-1) < 1e-3:
+					t,v2 = 1,0 # in case t is almost 1 round it to 1 meaning make it a vertex constraint
+								# and ignore v2 (set it to arbitrariry vertex that does exists)
+								# Otherwise v2 might be none..
 				#print 'v1 = ',v1, ' v2 = ', v2
 				v_edges.append(Edge(v1,v2))
 				edge_weights.append(t)
@@ -160,6 +164,8 @@ def find_v_on_lines(v, lines):
 				t = (v[0]-v2[0])/(v1[0]-v2[0])
 			else:
 				t = (v[1]-v2[1])/(v1[1]-v2[1])
+			if t < 0.5:
+				v1,v2 = v2,v1 # swap such that the left vertex will have bigger weight
 			#print 't = ', t
 			return tuple(v1),tuple(v2),t # return vertices as tuples as we need them as hashable dictionary keys
 	return None,None,None
@@ -190,7 +196,7 @@ def test_dog_builder(svg_file):
 	border_poly,polylines = svg_creases_to_polygonal_data(svg_file)
 	face_polygons, polylines = crease_pattern(border_poly, polylines)
 
-	res_x, res_y = 5,5
+	res_x, res_y = 20,20
 	V_list, F_list, grid, grid_polylines = polygons_to_orthogonal_grids(face_polygons, border_poly, polylines, res_x, res_y)
 	face_polygons_num = len(V_list)
 	plot_face_polygons(face_polygons, grid_polylines, ax1, 'Faces and grid (' + str(face_polygons_num) + ' faces)')
@@ -206,7 +212,9 @@ def test_dog_builder(svg_file):
 
 	V,F,fold_consts, unique_vertices_on_edges, F_render = dog_builder(V_list, F_list, grid_polylines)
 	folder_name = os.getcwd() + '//results//'
+	print 'F_render.rows() = ', F_render.shape[0]
 	write_curved_mesh_data(folder_name, V,F,fold_consts, unique_vertices_on_edges, F_render)
+
 
 	#lines = get_mesh_non_unique_edges_positions(V_list[2],F_list[2])
 	#plot_border_polygon_and_lines(ax2,border_poly, lines)
