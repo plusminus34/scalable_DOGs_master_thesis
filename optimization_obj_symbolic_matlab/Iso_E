@@ -1,0 +1,5 @@
+  t2 = p0_x-pxf_x;
+  t3 = p0_y-pxf_y;
+  t4 = p0_z-pxf_z;
+  t5 = -l0+t2*t2+t3*t3+t4*t4;
+  t0 = t5*t5;
