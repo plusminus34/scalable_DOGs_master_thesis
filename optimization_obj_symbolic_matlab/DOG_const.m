@@ -54,8 +54,10 @@ J_3_inner = [diff(E_all,p0_x),diff(E_all,p0_y),diff(E_all,p0_z)...
     diff(E_all,pyb_x),diff(E_all,pyb_y),diff(E_all,pyb_z)...
     diff(E_all,pyf_x),diff(E_all,pyf_y),diff(E_all,pyf_z)];
 ccode(J_3_inner ,'file','DOG_Jacobian');
-H = [hessian(E_12);hessian(E_23);hessian(E_34)];
+H = hessian(E_12,symvar(E_all))+hessian(E_23,symvar(E_all))+hessian(E_34,symvar(E_all));
 ccode(H,'file','DOG_Const_Hessian');
+H_bnd = hessian(E_12);
+ccode(H,'file','DOG_Const_Hessian_bnd');
 
 Jacobian(E_all)
 
