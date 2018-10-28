@@ -3,9 +3,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-#include "Quad.h"
-#include "Energy.h"
-
 class Constraints {
 public:
 	Constraints(const QuadTopology& quadTop) : Energy(quadTop) {}

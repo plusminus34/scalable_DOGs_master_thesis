@@ -1,12 +1,7 @@
 #pragma once
 
-#include <array>
-#include <iostream>
-
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-
-#include "Quad.h"
 
 class Objective {
   
