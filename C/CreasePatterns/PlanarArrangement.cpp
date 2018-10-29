@@ -15,13 +15,13 @@ void PlanarArrangement::add_polyline(Polyline_2& polyline) {
 }
 
 void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::VectorXd& colors) {
-	int fn = get_face_n();
-
 	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list;
 
 	// Build faces polygons
 	Arrangement_2::Face_const_iterator fit;
 	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+		if (fit->is_unbounded()) continue; // skip the unbounded face
+
 		Eigen::MatrixXd Vk; Eigen::MatrixXi Fk;
     	get_face_vertices(fit, Vk);
     	auto range = boost::copy_range<std::vector<int>>(boost::irange(0, int(Vk.rows())));
@@ -45,7 +45,7 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
 	igl::jet(components,true,colors);
 }
 
-int PlanarArrangement::get_face_n() {
+int PlanarArrangement::get_faces_n() {
 	return arr.number_of_faces();
 }
 
@@ -62,9 +62,9 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	do {++curr; v_num++;} while (curr != circ);
 	p.resize(v_num,3);
 
-	curr = circ;
+	curr = circ; int ri = 0;
  	do {
-		p.row(0) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
-		++curr;
+		p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
+		++curr; ri++;
 	} while (curr != circ);
 }
