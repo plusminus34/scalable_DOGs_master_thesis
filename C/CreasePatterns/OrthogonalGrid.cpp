@@ -6,7 +6,11 @@
 
 
 void OrthogonalGrid::polylines_to_segments_on_grid(std::vector<Polyline_2>& polylines) {
-	CGAL::compute_intersection_points(polylines.begin(), polylines.end(),
-                                    std::back_inserter(pts));
+	// Compute the non-intersecting sub-segments induced by the input segments.
+	//std::vector<Polyline_2> sub_polylines;
+	//CGAL::compute_subcurves(polylines.begin(), polylines.end(), std::back_inserter(sub_polylines));
+	std::vector<Segment_2> in, out;
+	CGAL::compute_subcurves(polylines.begin(), polylines.end(), std::back_inserter(out));
+	
 
 }

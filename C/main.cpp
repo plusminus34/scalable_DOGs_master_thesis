@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
   Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
   arrangement.get_visualization_mesh(V, F, face_colors);
 
+  OrthogonalGrid orthGrid; orthGrid.polylines_to_segments_on_grid(polylines);
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);
