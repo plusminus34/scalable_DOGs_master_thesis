@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
-
+/*
 class DogCreasePattern {
   
 public:
@@ -20,3 +20,4 @@ private:
 	void snap_rounding();
 	void is_on_boundary();
 };
+*/

@@ -69,8 +69,8 @@ ex_b = p_xb-p_0;
 ey_b = p_yb-p_0;
 
 % Difference of squared norm
-E_x = simplify((norm(ex_f.^2)-norm(ex_b).^2)^2);
+E_x = simplify((norm(ex_f).^2-norm(ex_b).^2)^2);
 
 ccode(E_x,'file','Reg_E');
-ccode(gradient(E_all),'file','Reg_G');
-ccode(hessian(E_all),'file','Reg_H');
+ccode(gradient(E_x),'file','Reg_G');
+ccode(hessian(E_x),'file','Reg_H');

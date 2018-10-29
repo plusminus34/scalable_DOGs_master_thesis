@@ -1,5 +1,7 @@
 #include <igl/opengl/glfw/Viewer.h>
 
+#include "CreasePatterns/PlanarArrangement.h"
+
 int main(int argc, char *argv[])
 {
   // Inline mesh of a cube

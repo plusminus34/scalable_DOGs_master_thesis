@@ -33,6 +33,11 @@ ey_f = p_yf-p_0;
 ex_b = p_xb-p_0;
 ey_b = p_yb-p_0;
 
+
+lambda1 = sym('lambda1', 'real');
+lambda2 = sym('lambda2', 'real');
+lambda3 = sym('lambda3', 'real');
+
 %doesn't assume constant length!
 %E_12 = simplify(dot(ex_f,ey_f)*norm(ex_b)-dot(ey_f,ex_b)*norm(ex_f));
 %E_23 = simplify(dot(ey_f,ex_b)*norm(ey_b)-dot(ey_b,ex_b)*norm(ey_f));
@@ -54,10 +59,10 @@ J_3_inner = [diff(E_all,p0_x),diff(E_all,p0_y),diff(E_all,p0_z)...
     diff(E_all,pyb_x),diff(E_all,pyb_y),diff(E_all,pyb_z)...
     diff(E_all,pyf_x),diff(E_all,pyf_y),diff(E_all,pyf_z)];
 ccode(J_3_inner ,'file','DOG_Jacobian');
-H = hessian(E_12,symvar(E_all))+hessian(E_23,symvar(E_all))+hessian(E_34,symvar(E_all));
+H = lambda1*hessian(E_12,symvar(E_all))+lambda2*hessian(E_23,symvar(E_all))+lambda3*hessian(E_34,symvar(E_all));
 ccode(H,'file','DOG_Const_Hessian');
-H_bnd = hessian(E_12);
-ccode(H,'file','DOG_Const_Hessian_bnd');
+H_bnd = lambda1*hessian(E_12);
+ccode(H_bnd,'file','DOG_Const_Hessian_bnd');
 
 Jacobian(E_all)
 
