@@ -14,7 +14,7 @@ void PlanarArrangement::add_polyline(Polyline_2& polyline) {
 	insert(arr, polyline);
 }
 
-void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::VectorXd& colors) {
+void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
 	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list;
 
 	// Build faces polygons
@@ -58,13 +58,15 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
 
 	// count number of vertices
-	int v_num = 1;
-	do {++curr; v_num++;} while (curr != circ);
+	int v_num = 0;
+	do {
+		v_num++; curr++;
+	} while (curr != circ);
+	// Fill up p with the vertices
 	p.resize(v_num,3);
-
-	curr = circ; int ri = 0;
- 	do {
+	int ri = 0; curr = circ;
+	do {
 		p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
-		++curr; ri++;
+		curr++; ri++;
 	} while (curr != circ);
 }
