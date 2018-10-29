@@ -1,8 +1,9 @@
 #include "PlanarArrangement.h"
-#include "arr_print.h"
 
 #include <igl/combine.h>
 #include <igl/polygon_mesh_to_triangle_mesh.h>
+#include <igl/jet.h>
+
 #include <boost/range/irange.hpp>
 
 void PlanarArrangement::add_polylines(std::vector<Polyline_2>& polylines) {
