@@ -15,4 +15,8 @@ typedef Geom_traits_2::Segment_2                          Segment_2;
 typedef Geom_traits_2::Curve_2                            Polyline_2;
 typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
 
-//Ccb_halfedge_const_circulator
+/*
+typedef CGAL::Arr_polyline_traits_2<Segment_traits>     Polyline_traits;
+typedef Polyline_traits::Point_2                        Point_2;
+typedef Polyline_traits::Curve_2                        Polyline_2;
+*/
