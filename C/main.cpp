@@ -4,6 +4,10 @@
 #include "CreasePatterns/DogCreasePattern.h"
 #include "CreasePatterns/PlanarArrangement.h"
 
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Arr_segment_traits_2.h>
+#include <CGAL/Surface_sweep_2_algorithms.h>
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -39,9 +43,35 @@ int main(int argc, char *argv[])
   points4.push_back(Point_2(0.75, 1));
   Polyline_2 pi4 = polyline_construct(points4.begin(), points4.end());
 
-  PlanarArrangement arrangement;
   std::vector<Polyline_2> polylines = {pi1,pi2,pi3,pi4};
-  arrangement.add_polylines(polylines);
+  //OrthogonalGrid orthGrid; orthGrid.polylines_to_segments_on_grid(polylines);
+
+  std::list<Point_2> points5; points5.push_back(Point_2(0.5,0)); points5.push_back(Point_2(0.5,1));
+  std::list<Point_2> points6; points6.push_back(Point_2(0,0.5)); points6.push_back(Point_2(1,0.5));
+  Polyline_2 pi5 = polyline_construct(points5.begin(), points5.end());
+  Polyline_2 pi6 = polyline_construct(points6.begin(), points6.end());
+
+  std::list<Point_2> points7;
+  points7.push_back(Point_2(0.2, 0));
+  points7.push_back(Point_2(0.25, 0.25));
+  points7.push_back(Point_2(0.3, 0.35));
+  points7.push_back(Point_2(1, 0.4));
+  Polyline_2 pi7 = polyline_construct(points7.begin(), points7.end());
+
+  std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
+
+  Geom_traits_2 geom_traits_2;
+  std::vector<Polyline_2_Monotone> sub_polylines;
+  CGAL::compute_subcurves(grid_and_poly.begin(), grid_and_poly.end(), std::back_inserter(sub_polylines), false, geom_traits_2);
+
+  for (auto mono_poly : sub_polylines) {
+    for (auto it = mono_poly.subcurves_begin(); it != mono_poly.subcurves_end(); it++) {
+        cout << "curve with " << *it << endl;
+    }
+  }
+
+  PlanarArrangement arrangement;
+  arrangement.add_polylines(grid_and_poly);
 
   cout << "Number of vertices = " << arrangement.get_vertices_n() << endl;
   cout << "Number of faces = " << arrangement.get_faces_n() << endl;
@@ -49,7 +79,8 @@ int main(int argc, char *argv[])
   Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
   arrangement.get_visualization_mesh(V, F, face_colors);
 
-  OrthogonalGrid orthGrid; orthGrid.polylines_to_segments_on_grid(polylines);
+
+
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);

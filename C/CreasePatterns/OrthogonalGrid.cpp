@@ -9,7 +9,7 @@ void OrthogonalGrid::polylines_to_segments_on_grid(std::vector<Polyline_2>& poly
 	// Compute the non-intersecting sub-segments induced by the input segments.
 	Geom_traits_2 geom_traits_2;
 	std::vector<Polyline_2_Monotone> sub_polylines;
-	CGAL::compute_subcurves(polylines.begin(), polylines.end(), std::back_inserter(out), false, geom_traits_2);
+	CGAL::compute_subcurves(polylines.begin(), polylines.end(), std::back_inserter(sub_polylines), false, geom_traits_2);
 
 	// We expect here to have the sub_polylines start and end segment touching the grid. In case they don't, this is a problem
 }
