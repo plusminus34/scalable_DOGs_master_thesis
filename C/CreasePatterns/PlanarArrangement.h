@@ -14,7 +14,12 @@ public:
 
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::VectorXd& colors);
 
+  int get_face_n();
+  int get_vertices_n();
+
 private:
+	void get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p);
+
 	Geom_traits_2 traits;
 	Arrangement_2 arr;
 };
