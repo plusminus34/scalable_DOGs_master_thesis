@@ -1,6 +1,10 @@
 #pragma once
 
 #include <Eigen/Dense>
+
+#include "PatternBoundary.h"
+#include "OrthogonalGrid.h"
+
 /*
 class DogCreasePattern {
   

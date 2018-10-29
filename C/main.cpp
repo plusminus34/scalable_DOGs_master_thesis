@@ -1,5 +1,7 @@
 #include <igl/opengl/glfw/Viewer.h>
 
+//#include "CreasePatterns/PatternBoundary.h"
+#include "CreasePatterns/DogCreasePattern.h"
 #include "CreasePatterns/PlanarArrangement.h"
 
 using namespace std;

@@ -12,6 +12,7 @@ public:
   void add_polylines(std::vector<Polyline_2>& polylines);
   void add_polyline(Polyline_2& polylines);
 
+  // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 
   int get_faces_n();
