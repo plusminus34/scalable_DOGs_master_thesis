@@ -3,9 +3,8 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 
-OrthogonalGrid::OrthogonalGrid(CGAL::Bbox_2 bbox2, int x_res, int y_res, const std::vector<Point_2>& additional_grid_points) :
-										bbox2(bbox2) {
-	set_up_initial_grid(x_res, y_res);
+OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox2, int x_res, int y_res, const std::vector<Point_2>& additional_grid_points) {
+	set_up_initial_grid(bbox2, x_res, y_res);
 	for (auto pt : additional_grid_points) {
 		subdivide_grid_at_pt(pt);
 	}
@@ -49,7 +48,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	return pi;
 }
 
-void OrthogonalGrid::set_up_initial_grid(int x_res, int y_res) {
+void OrthogonalGrid::set_up_initial_grid(CGAL::Bbox_2& bbox2, int x_res, int y_res) {
 	create_spaced_range(bbox2.xmin(), bbox2.xmax(), x_res, x_coords);
 	create_spaced_range(bbox2.ymin(), bbox2.ymax(), y_res, y_coords);
 }
