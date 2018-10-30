@@ -21,7 +21,7 @@ private:
 	void subdivide_grid_at_pt(const Point_2& pt);
 	void create_spaced_range(const Number_type min, const Number_type max, const int num_points, std::vector<Number_type>& range);
 
-	void set_up_initial_grid(CGAL::Bbox_2& bbox2, int x_res, int y_res);
+	void set_up_initial_grid(const CGAL::Bbox_2& bbox2, int x_res, int y_res);
 	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline);
 
 	void polyline_to_segments(const Polyline_2& polyline, std::vector<Segment_2>& segments);

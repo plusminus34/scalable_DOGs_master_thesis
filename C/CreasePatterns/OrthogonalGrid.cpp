@@ -48,7 +48,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	return pi;
 }
 
-void OrthogonalGrid::set_up_initial_grid(CGAL::Bbox_2& bbox2, int x_res, int y_res) {
+void OrthogonalGrid::set_up_initial_grid(const CGAL::Bbox_2& bbox2, int x_res, int y_res) {
 	create_spaced_range(bbox2.xmin(), bbox2.xmax(), x_res, x_coords);
 	create_spaced_range(bbox2.ymin(), bbox2.ymax(), y_res, y_coords);
 }
