@@ -52,22 +52,37 @@ int main(int argc, char *argv[])
   Polyline_2 pi6 = polyline_construct(points6.begin(), points6.end());
 
   std::list<Point_2> points7;
-  points7.push_back(Point_2(0.2, 0));
-  points7.push_back(Point_2(0.25, 0.25));
-  points7.push_back(Point_2(0.3, 0.35));
-  points7.push_back(Point_2(1, 0.4));
+  points7.push_back(Point_2(0.5, 0));
+  points7.push_back(Point_2(0.5, 0.25));
+  points7.push_back(Point_2(0.52, 0.7));
+  //points7.push_back(Point_2(0.25, 0.25));
+  points7.push_back(Point_2(1, 1));
   Polyline_2 pi7 = polyline_construct(points7.begin(), points7.end());
 
-  std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
+  std::list<Point_2> points8;
+  points8.push_back(Point_2(0, 0.5));
+  points8.push_back(Point_2(1, 0.5));
+  //points7.push_back(Point_2(0.25, 0.25));
+  //points8.push_back(Point_2(1, 0.4));
+  Polyline_2 pi8 = polyline_construct(points8.begin(), points8.end());
+
+  //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
+  //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi7};
+  std::vector<Polyline_2> grid_and_poly = {pi7,pi8};
 
   Geom_traits_2 geom_traits_2;
   std::vector<Polyline_2_Monotone> sub_polylines;
   CGAL::compute_subcurves(grid_and_poly.begin(), grid_and_poly.end(), std::back_inserter(sub_polylines), false, geom_traits_2);
-
-  for (auto mono_poly : sub_polylines) {
-    for (auto it = mono_poly.subcurves_begin(); it != mono_poly.subcurves_end(); it++) {
-        cout << "curve with " << *it << endl;
+  cout << "sub_polylines.size() = " << sub_polylines.size() << endl;
+  int cnt = 1;
+  //for (auto mono_poly : sub_polylines) {
+  for (std::vector<Polyline_2_Monotone>::iterator scv_iter = sub_polylines.begin(); scv_iter != sub_polylines.end(); scv_iter++) {
+    cout << "poly line number " << cnt;
+    for (auto it = scv_iter->subcurves_begin(); it != scv_iter->subcurves_end(); it++) {
+        cout << " segment " << *it << ",";
     }
+    cout << endl;
+    cnt++;
   }
 
   PlanarArrangement arrangement;

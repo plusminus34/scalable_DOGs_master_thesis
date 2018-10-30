@@ -6,6 +6,7 @@
 #include <list>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+typedef Kernel::FT                                        Number_type;
 typedef CGAL::Arr_segment_traits_2<Kernel>                Segment_traits_2;
 typedef CGAL::Arr_polyline_traits_2<Segment_traits_2>     Geom_traits_2;
 // Identical instantiation can be achieved using the default Kernel:
