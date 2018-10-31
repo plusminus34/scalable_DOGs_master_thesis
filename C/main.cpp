@@ -2,6 +2,7 @@
 
 //#include "CreasePatterns/PatternBoundary.h"
 #include "CreasePatterns/DogCreasePattern.h"
+#include "CreasePatterns/OrthogonalGrid.h"
 #include "CreasePatterns/PlanarArrangement.h"
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
@@ -60,6 +61,9 @@ int main(int argc, char *argv[])
   Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
   arrangement.get_visualization_mesh(V, F, face_colors);
 
+  CGAL::Bbox_2 bbox(0, 0, 2, 2);
+  OrthogonalGrid orthGrid(bbox,3,3);
+  auto new_poly = orthGrid.single_polyline_to_segments_on_grid(polyline);
 
   // query a point on the polyline
   //Point_location   pl(arr);

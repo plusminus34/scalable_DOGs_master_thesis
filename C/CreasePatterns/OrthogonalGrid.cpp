@@ -36,11 +36,21 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	// Insert the initial vertex (assume it is on the grid!)
 	Point_2 p1(poly_initial_segments[0].source());
 	new_poly_points.push_back(p1);
-
 	// Find the initial vertex on the polyline
-	const Vertex_const_handle* v;
-	bool is_on_v = grid_arr.locate_point_on_edge(p1,v);
+	Vertex_const_handle v;
+	bool is_on_v = grid_arr.locate_point_on_vertex(p1,v);
 	if (!is_on_v) std::cout << "Error! Point not on grid!" << std::endl;
+
+	// Go through all edges emenating from v
+	Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
+  	first = curr = v->incident_halfedges();
+  	std::cout << "The neighbors of the vertex (" << v->point() << ") are:";
+  	do {
+    	// Note that the current halfedge is directed from u to v:
+    	Arrangement_2::Vertex_const_handle u = curr->source();
+    	std::cout << " (" << u->point() << ")";
+  	} while (++curr != first);
+
 	//Point_location pl(grid_arr);
 	//point_location_query(pl, p1);
 	

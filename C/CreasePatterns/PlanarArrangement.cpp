@@ -22,11 +22,13 @@ void PlanarArrangement::add_polyline(const Polyline_2& polyline) {
 	insert(arr, polyline);
 }
 
-bool PlanarArrangement::locate_point_on_edge(const Point_2& pt, const Vertex_const_handle* v) {
+bool PlanarArrangement::locate_point_on_vertex(const Point_2& pt, Vertex_const_handle& v) {
 	Point_location pl(arr);
+	Vertex_const_handle* v_ptr;
 	typename CGAL::Arr_point_location_result<Arrangement_2>::Type obj = pl.locate(pt);
 	// Check if it is on a vertex
-	if ( (v = boost::get<Vertex_const_handle>(&obj) ) ) {
+	if ( (v_ptr = boost::get<Vertex_const_handle>(&obj) ) ) {
+        v = *v_ptr;
 		return true;
 	} else {
 		return false;

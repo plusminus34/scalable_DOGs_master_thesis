@@ -19,7 +19,7 @@ public:
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 
   // true if it exists, false otherwise
-  bool locate_point_on_edge(const Point_2& pt, const Vertex_const_handle* v);
+  bool locate_point_on_vertex(const Point_2& pt, Vertex_const_handle& v);
 
   int get_faces_n();
   int get_vertices_n();
