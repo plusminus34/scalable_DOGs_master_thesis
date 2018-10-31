@@ -7,7 +7,7 @@
 
 #include "PlanarArrangement.h"
 
-class OrthogonalGrid {
+class OrthogonalGrid : public PlanarArrangement {
   
 public:
 	// x_res are number of x vertices, y_res number of y vertices (so number_of_edges-1)
@@ -18,18 +18,16 @@ public:
 	// multiple polylines
 	void polylines_to_segments_on_grid(std::vector<Polyline_2>& polylines);
 	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline);
+
 private:
 	bool is_point_on_grid(const Point_2& pt);
 	void subdivide_grid_at_pt(const Point_2& pt);
 	void create_spaced_range(const Number_type min, const Number_type max, const int num_points, std::vector<Number_type>& range);
 
 	void polyline_to_segments(const Polyline_2& polyline, std::vector<Segment_2>& segments);
-
-	
-
 	//Number_type lower_bound(const Point_2& pt, int axis);
 	// Holds only the grid, as there's no need to have multiple intersected polylines calculation all the time
-	PlanarArrangement arrangement;
+	
 	std::vector<Number_type> x_coords;
 	std::vector<Number_type> y_coords;
 };

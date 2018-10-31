@@ -1,5 +1,7 @@
 #include <igl/opengl/glfw/Viewer.h>
 
+#include <igl/combine.h>
+
 //#include "CreasePatterns/PatternBoundary.h"
 #include "CreasePatterns/DogCreasePattern.h"
 #include "CreasePatterns/OrthogonalGrid.h"
@@ -29,6 +31,7 @@ int main(int argc, char *argv[])
   points1.push_back(Point_2(0, 0));
   Polyline_2 pi1 = polyline_construct(points1.begin(), points1.end());
   */
+    /*
 
   // Create a 2x2 grid
   std::vector<Segment_2> segments;
@@ -41,71 +44,63 @@ int main(int argc, char *argv[])
   segments.push_back(Segment_2(Point_2(0, 0), Point_2(0, 2)));
   segments.push_back(Segment_2(Point_2(1, 0), Point_2(1, 2)));
   segments.push_back(Segment_2(Point_2(2, 0), Point_2(2, 2)));
+  */
 
-  PlanarArrangement arrangement; 
-  arrangement.add_segments(segments);
+  //PlanarArrangement arrangement; 
+  //arrangement.add_segments(segments);
 
   std::list<Point_2> polyline_pts; //square
   polyline_pts.push_back(Point_2(0.5,0));
   polyline_pts.push_back(Point_2(1./3,0.5));
-  polyline_pts.push_back(Point_2(0.5,1));
+  polyline_pts.push_back(Point_2(0.5,1.1));
   polyline_pts.push_back(Point_2(0.5,1.5));
   polyline_pts.push_back(Point_2(1,1.5));
   polyline_pts.push_back(Point_2(1,1));
   polyline_pts.push_back(Point_2(1.5,0.5));
   polyline_pts.push_back(Point_2(2,0.5));
   Polyline_2 polyline = polyline_construct(polyline_pts.begin(), polyline_pts.end());
-  arrangement.add_polyline(polyline);
 
-
-  Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
-  arrangement.get_visualization_mesh(V, F, face_colors);
+  cout << "old poly = " << polyline << endl;
 
   CGAL::Bbox_2 bbox(0, 0, 2, 2);
-  OrthogonalGrid orthGrid(bbox,3,3);
+  std::vector<Point_2> sing_points; sing_points.push_back(Point_2(0.75,1.5));
+  //OrthogonalGrid orthGrid(bbox,3,3); // without singularity 
+  OrthogonalGrid orthGrid(bbox,3,3, sing_points);
   auto new_poly = orthGrid.single_polyline_to_segments_on_grid(polyline);
+  cout << "new_poly = " << new_poly << endl;
 
-  // query a point on the polyline
-  //Point_location   pl(arr);
-  //Point_2 first_point = Point_2(0.5,0);
-  //Point_2          p1(4, 6);
-  //point_location_query(pl, p1);
+  PlanarArrangement arrangement_with_polyline(orthGrid); 
+  arrangement_with_polyline.add_polyline(polyline);
 
-  /*
-  //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
-  //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi7};
-  std::vector<Polyline_2> grid_and_poly = {pi7,pi8};
+  PlanarArrangement arrangement_with_snapped_polyline(orthGrid);
+  arrangement_with_snapped_polyline.add_polyline(new_poly);
 
-  Geom_traits_2 geom_traits_2;
-  std::vector<Polyline_2_Monotone> sub_polylines;
-  CGAL::compute_subcurves(grid_and_poly.begin(), grid_and_poly.end(), std::back_inserter(sub_polylines), false, geom_traits_2);
-  cout << "sub_polylines.size() = " << sub_polylines.size() << endl;
-  int cnt = 1;
-  //for (auto mono_poly : sub_polylines) {
-  for (std::vector<Polyline_2_Monotone>::iterator scv_iter = sub_polylines.begin(); scv_iter != sub_polylines.end(); scv_iter++) {
-    cout << "poly line number " << cnt;
-    for (auto it = scv_iter->subcurves_begin(); it != scv_iter->subcurves_end(); it++) {
-        cout << " segment " << *it << ",";
-    }
-    cout << endl;
-    cnt++;
-  }
 
-  PlanarArrangement arrangement;
-  arrangement.add_polylines(grid_and_poly);
+  // Visualize all
+  std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
+  Eigen::MatrixXd V,V_grid,V_grid_with_poly,V_snapped; Eigen::MatrixXi F,F_grid,F_grid_with_poly,F_snapped; Eigen::MatrixXd grid_colors,grid_with_poly_colors,snapped_colors;
 
-  cout << "Number of vertices = " << arrangement.get_vertices_n() << endl;
-  cout << "Number of faces = " << arrangement.get_faces_n() << endl;
+  orthGrid.get_visualization_mesh(V_grid, F_grid, grid_colors);
+  arrangement_with_polyline.get_visualization_mesh(V_grid_with_poly, F_grid_with_poly, grid_with_poly_colors);
+  arrangement_with_snapped_polyline.get_visualization_mesh(V_snapped, F_snapped, snapped_colors);
 
-  arrangement.get_visualization_mesh(V, F, face_colors);
-  */
+  double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
+  V_grid_with_poly.rowwise() += Eigen::RowVector3d(1*spacing,0,0);
+  V_snapped.rowwise() += Eigen::RowVector3d(2*spacing,0,0);
 
+  V_list.push_back(V_grid); V_list.push_back(V_grid_with_poly); V_list.push_back(V_snapped);
+  F_list.push_back(F_grid); F_list.push_back(F_grid_with_poly); F_list.push_back(F_snapped);
+  F_colors_list.push_back(grid_colors); F_colors_list.push_back(grid_with_poly_colors);
+
+  igl::combine(V_list,F_list, V, F);
+  Eigen::MatrixXd F_colors(grid_colors.rows()+grid_with_poly_colors.rows()+snapped_colors.rows(), grid_colors.cols()); // <-- D(A.rows() + B.rows(), ...)
+  F_colors << grid_colors, grid_with_poly_colors, snapped_colors;
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);
   viewer.data().set_face_based(true);
-  viewer.data().set_colors(face_colors);
+  viewer.data().set_colors(F_colors);
   viewer.data().show_lines = false;
   viewer.launch();
 }

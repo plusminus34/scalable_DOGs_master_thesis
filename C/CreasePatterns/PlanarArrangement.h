@@ -21,6 +21,8 @@ public:
   // true if it exists, false otherwise
   bool locate_point_on_vertex(const Point_2& pt, Vertex_const_handle& v);
 
+  Arrangement_2* get_arrangement_internal() {return &arr;};
+
   int get_faces_n();
   int get_vertices_n();
 
