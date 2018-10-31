@@ -9,13 +9,28 @@
 void PlanarArrangement::add_segments(const std::vector<Segment_2>& segments) {
 	insert(arr, segments.begin(), segments.end());
 }
-
+/*
+void PlanarArrangement::add_segment(const Segment_2& segment) {
+	insert<Segment_2>(arr, segment);
+}
+*/
 void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
 	insert(arr, polylines.begin(), polylines.end());
 }
 
 void PlanarArrangement::add_polyline(const Polyline_2& polyline) {
 	insert(arr, polyline);
+}
+
+bool PlanarArrangement::locate_point_on_edge(const Point_2& pt, const Vertex_const_handle* v) {
+	Point_location pl(arr);
+	typename CGAL::Arr_point_location_result<Arrangement_2>::Type obj = pl.locate(pt);
+	// Check if it is on a vertex
+	if ( (v = boost::get<Vertex_const_handle>(&obj) ) ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {

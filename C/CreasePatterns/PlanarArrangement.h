@@ -7,14 +7,19 @@ class PlanarArrangement {
   
 public:
   PlanarArrangement() : arr(&traits){};
+  PlanarArrangement(PlanarArrangement& arrangement) : arr(arrangement.arr) {}
 
   // multiple polylines
   void add_segments(const std::vector<Segment_2>& segments);
+  //void add_segment(const Segment_2& segment);
   void add_polylines(const std::vector<Polyline_2>& polylines);
   void add_polyline(const Polyline_2& polylines);
 
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
+
+  // true if it exists, false otherwise
+  bool locate_point_on_edge(const Point_2& pt, const Vertex_const_handle* v);
 
   int get_faces_n();
   int get_vertices_n();

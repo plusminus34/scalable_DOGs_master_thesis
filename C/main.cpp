@@ -60,6 +60,13 @@ int main(int argc, char *argv[])
   Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
   arrangement.get_visualization_mesh(V, F, face_colors);
 
+
+  // query a point on the polyline
+  //Point_location   pl(arr);
+  //Point_2 first_point = Point_2(0.5,0);
+  //Point_2          p1(4, 6);
+  //point_location_query(pl, p1);
+
   /*
   //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
   //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi7};

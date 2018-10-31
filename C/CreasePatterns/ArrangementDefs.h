@@ -4,8 +4,7 @@
 #include <CGAL/Arrangement_2.h>
 #include <CGAL/Arrangement_on_surface_with_history_2.h>
 #include <CGAL/Arrangement_with_history_2.h>
-#include <vector>
-#include <list>
+#include <CGAL/Arr_simple_point_location.h>
 
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef Kernel::FT                                        Number_type;
@@ -20,3 +19,5 @@ typedef Geom_traits_2::X_monotone_curve_2         		  Polyline_2_Monotone;
 
 //typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
 typedef CGAL::Arrangement_with_history_2<Geom_traits_2> 	Arrangement_2; // Use arrangement with history to keep track of old polylines
+typedef CGAL::Arr_simple_point_location<Arrangement_2>  Point_location;
+typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
