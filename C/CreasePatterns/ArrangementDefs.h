@@ -2,6 +2,8 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 #include <CGAL/Arrangement_2.h>
+#include <CGAL/Arrangement_on_surface_with_history_2.h>
+#include <CGAL/Arrangement_with_history_2.h>
 #include <vector>
 #include <list>
 
@@ -16,4 +18,5 @@ typedef Geom_traits_2::Segment_2                          Segment_2;
 typedef Geom_traits_2::Curve_2                            Polyline_2;
 typedef Geom_traits_2::X_monotone_curve_2         		  Polyline_2_Monotone;
 
-typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
+//typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
+typedef CGAL::Arrangement_with_history_2<Geom_traits_2> 	Arrangement_2; // Use arrangement with history to keep track of old polylines

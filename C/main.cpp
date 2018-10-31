@@ -13,9 +13,12 @@ using namespace std;
 int main(int argc, char *argv[])
 {
   Geom_traits_2 traits;
-  Arrangement_2 arr(&traits);
   Geom_traits_2::Construct_curve_2 polyline_construct =
     traits.construct_curve_2_object();
+  /*
+  Geom_traits_2 traits;
+  Arrangement_2 arr(&traits);
+  
 
   std::list<Point_2> points1; //square
   points1.push_back(Point_2(0, 0));
@@ -24,48 +27,40 @@ int main(int argc, char *argv[])
   points1.push_back(Point_2(0, 1));
   points1.push_back(Point_2(0, 0));
   Polyline_2 pi1 = polyline_construct(points1.begin(), points1.end());
+  */
 
-  std::list<Point_2> points2;
-  points2.push_back(Point_2(0,0));
-  //points2.push_back(Point_2(0.5,0.5));
-  points2.push_back(Point_2(1,1));
-  Polyline_2 pi2 = polyline_construct(points2.begin(), points2.end());
+  // Create a 2x2 grid
+  std::vector<Segment_2> segments;
+  // x axis
+  segments.push_back(Segment_2(Point_2(0, 0), Point_2(2, 0)));
+  segments.push_back(Segment_2(Point_2(0, 1), Point_2(2, 1)));
+  segments.push_back(Segment_2(Point_2(0, 2), Point_2(2, 2)));
+
+  // y axis
+  segments.push_back(Segment_2(Point_2(0, 0), Point_2(0, 2)));
+  segments.push_back(Segment_2(Point_2(1, 0), Point_2(1, 2)));
+  segments.push_back(Segment_2(Point_2(2, 0), Point_2(2, 2)));
+
+  PlanarArrangement arrangement; 
+  arrangement.add_segments(segments);
+
+  std::list<Point_2> polyline_pts; //square
+  polyline_pts.push_back(Point_2(0.5,0));
+  polyline_pts.push_back(Point_2(1./3,0.5));
+  polyline_pts.push_back(Point_2(0.5,1));
+  polyline_pts.push_back(Point_2(0.5,1.5));
+  polyline_pts.push_back(Point_2(1,1.5));
+  polyline_pts.push_back(Point_2(1,1));
+  polyline_pts.push_back(Point_2(1.5,0.5));
+  polyline_pts.push_back(Point_2(2,0.5));
+  Polyline_2 polyline = polyline_construct(polyline_pts.begin(), polyline_pts.end());
+  arrangement.add_polyline(polyline);
 
 
-  std::list<Point_2> points3;
-  points3.push_back(Point_2(1, 0));
-  points3.push_back(Point_2(0, 1));
-  Polyline_2 pi3 = polyline_construct(points3.begin(), points3.end());
+  Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
+  arrangement.get_visualization_mesh(V, F, face_colors);
 
-  std::list<Point_2> points4;
-  points4.push_back(Point_2(0.5, 0));
-  points4.push_back(Point_2(0.5, 0.5));
-  points4.push_back(Point_2(0.75, 1));
-  Polyline_2 pi4 = polyline_construct(points4.begin(), points4.end());
-
-  std::vector<Polyline_2> polylines = {pi1,pi2,pi3,pi4};
-  //OrthogonalGrid orthGrid; orthGrid.polylines_to_segments_on_grid(polylines);
-
-  std::list<Point_2> points5; points5.push_back(Point_2(0.5,0)); points5.push_back(Point_2(0.5,1));
-  std::list<Point_2> points6; points6.push_back(Point_2(0,0.5)); points6.push_back(Point_2(1,0.5));
-  Polyline_2 pi5 = polyline_construct(points5.begin(), points5.end());
-  Polyline_2 pi6 = polyline_construct(points6.begin(), points6.end());
-
-  std::list<Point_2> points7;
-  points7.push_back(Point_2(0.5, 0));
-  points7.push_back(Point_2(0.5, 0.25));
-  points7.push_back(Point_2(0.52, 0.7));
-  //points7.push_back(Point_2(0.25, 0.25));
-  points7.push_back(Point_2(1, 1));
-  Polyline_2 pi7 = polyline_construct(points7.begin(), points7.end());
-
-  std::list<Point_2> points8;
-  points8.push_back(Point_2(0, 0.5));
-  points8.push_back(Point_2(1, 0.5));
-  //points7.push_back(Point_2(0.25, 0.25));
-  //points8.push_back(Point_2(1, 0.4));
-  Polyline_2 pi8 = polyline_construct(points8.begin(), points8.end());
-
+  /*
   //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi6,pi7};
   //std::vector<Polyline_2> grid_and_poly = {pi1,pi5,pi7};
   std::vector<Polyline_2> grid_and_poly = {pi7,pi8};
@@ -91,9 +86,8 @@ int main(int argc, char *argv[])
   cout << "Number of vertices = " << arrangement.get_vertices_n() << endl;
   cout << "Number of faces = " << arrangement.get_faces_n() << endl;
 
-  Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXd face_colors;
   arrangement.get_visualization_mesh(V, F, face_colors);
-
+  */
 
 
   // Plot the mesh
@@ -101,5 +95,6 @@ int main(int argc, char *argv[])
   viewer.data().set_mesh(V, F);
   viewer.data().set_face_based(true);
   viewer.data().set_colors(face_colors);
+  viewer.data().show_lines = false;
   viewer.launch();
 }

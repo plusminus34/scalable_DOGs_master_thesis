@@ -6,11 +6,15 @@
 
 #include <boost/range/irange.hpp>
 
-void PlanarArrangement::add_polylines(std::vector<Polyline_2>& polylines) {
+void PlanarArrangement::add_segments(const std::vector<Segment_2>& segments) {
+	insert(arr, segments.begin(), segments.end());
+}
+
+void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
 	insert(arr, polylines.begin(), polylines.end());
 }
 
-void PlanarArrangement::add_polyline(Polyline_2& polyline) {
+void PlanarArrangement::add_polyline(const Polyline_2& polyline) {
 	insert(arr, polyline);
 }
 

@@ -9,8 +9,9 @@ public:
   PlanarArrangement() : arr(&traits){};
 
   // multiple polylines
-  void add_polylines(std::vector<Polyline_2>& polylines);
-  void add_polyline(Polyline_2& polylines);
+  void add_segments(const std::vector<Segment_2>& segments);
+  void add_polylines(const std::vector<Polyline_2>& polylines);
+  void add_polyline(const Polyline_2& polylines);
 
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
