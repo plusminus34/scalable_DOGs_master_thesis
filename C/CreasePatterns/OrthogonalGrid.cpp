@@ -22,19 +22,20 @@ void OrthogonalGrid::initialize_grid() {
   for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
   add_segments(grid_segments);
 }
-
-void OrthogonalGrid::polylines_to_segments_on_grid(std::vector<Polyline_2>& polylines) {
+/*
+std::vector<Polyline_2> OrthogonalGrid::polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines) {
+  std::vector<Polyline_2> grid_polys;
 	for (auto poly: polylines) {
-		poly = single_polyline_to_segments_on_grid(poly);
+		grid_polys.push_back(single_polyline_to_segments_on_grid(poly));
 	}
 }
-
+*/
 
 // Todo add polylines
 // Todo snap polyline to original one
 //		Find the initial vertex on the polyline and from there traverse the original polyline (find the curve by next vertex that should be first segment..)
 //		then check the degree of every vertex
-Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline) {
+std::vector<Point_2> OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline) {
 	// Create a copy of the grid arrangement and add the polyline to it
 	PlanarArrangement grid_arr(*this);
 	grid_arr.add_polyline(polyline);
@@ -43,6 +44,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 
 	// Insert the initial vertex (assume it is on the grid!)
 	Point_2 p1(poly_initial_segments[0].source()), p2(poly_initial_segments[0].target());
+
 	// Find the initial vertex on the polyline
 	Vertex_const_handle v;
 	bool is_on_v = grid_arr.locate_point_on_vertex(p1,v);
@@ -50,21 +52,22 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 
 	// Go through all edges emenating from v
 	Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
-  	first = curr = v->incident_halfedges();
-  	std::cout << "Finding the edge of the polyline starting at (" << v->point() << "):";
-  	Arrangement_2::Halfedge_const_handle poly_edge;
-  	do {
-    	// Note that the current halfedge is directed from u to v:
-    	Arrangement_2::Vertex_const_handle u = curr->source();
-    	Arrangement_2::Halfedge_const_handle edge_handle = curr->twin();//->handle();
-    	// Todo: In case the original edge is and edge of the grid, this could fail, and we will need further checks (origin of the edge)
-    	//	This is possible with the history data but not needed atm
-    	if (CGAL::collinear(p1, p2, edge_handle->target()->point())) {
-    		poly_edge = edge_handle;
-    		std::cout << "Found the original polyline edge with source = " << edge_handle->source()->point() << " target = " << edge_handle->target()->point() << std::endl;
-    	}
-  	} while (++curr != first);
-  	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
+	first = curr = v->incident_halfedges();
+	//std::cout << "Finding the edge of the polyline starting at (" << v->point() << "):";
+	Arrangement_2::Halfedge_const_handle poly_edge;
+	do {
+  	// Note that the current halfedge is directed from u to v:
+  	Arrangement_2::Vertex_const_handle u = curr->source();
+  	Arrangement_2::Halfedge_const_handle edge_handle = curr->twin();//->handle();
+  	// Todo: In case the original edge is and edge of the grid, this could fail, and we will need further checks (origin of the edge)
+  	//	This is possible with the history data but not needed atm
+  	if (CGAL::collinear(p1, p2, edge_handle->target()->point())) {
+  		poly_edge = edge_handle;
+  		//std::cout << "Found the original polyline edge with source = " << edge_handle->source()->point() << " target = " << edge_handle->target()->point() << std::endl;
+  	}
+	} while (++curr != first);
+	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
+
   	// For now assume that this edge as only one originating curve (todo this can be false)
   	// TODO in the other case (degenerate polyline on grid), iterate with
   	/*
@@ -72,29 +75,21 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   				ocit != grid_arr.get_arrangement_internal()->.originating_curves_end(eit); ++ocit) {
   	*/
   	// 
-  	std::cout << "originating curve is " << *ocit << std::endl;
-  	//Arrangement_2::Halfedge_handle input_edge;
-  	//input_edge = grid_arr.get_arrangement_internal()->induced_edges_begin(ocit);
+  	//std::cout << "originating curve is " << *ocit << std::endl;
   	
-  	/*
-  	for ( auto input_edge = grid_arr.get_arrangement_internal()->induced_edges_begin(ocit); input_edge != grid_arr.get_arrangement_internal()->induced_edges_end(ocit); input_edge++) {
-  		//std::cout << (*input_edge)->source()->point() << std::endl;
-  		std::cout << "Found induced edge with source = " << (*input_edge)->source()->point() << " and target = " << (*input_edge)->target()->point() << std::endl;
-  		std::cout << "The target degree is " << (*input_edge)->target()->degree() << std::endl;
-  		if ((*input_edge)->target()->degree() > 2) {
-  			new_poly_points.push_back((*input_edge)->target()->point());
-  		}
-  	}
-  	*/
   	std::vector<std::pair<int,int>> seg_deg;
   	std::vector<Segment_2> unsorted_segments; //std::vector<Arrangement_2::Halfedge_handle> edge_handle_vec;
   	for ( auto input_edge = grid_arr.get_arrangement_internal()->induced_edges_begin(ocit); 
   			input_edge != grid_arr.get_arrangement_internal()->induced_edges_end(ocit); input_edge++) {
-		unsorted_segments.push_back(Segment_2((*input_edge)->source()->point(),(*input_edge)->target()->point()));
-		//std::cout << "degree = " << (*input_edge)->target()->degree() << std::endl;
-		seg_deg.push_back(std::pair<int,int>((*input_edge)->source()->degree(),(*input_edge)->target()->degree()));
+
+      auto src = (*input_edge)->source(); auto target = (*input_edge)->target();
+      unsorted_segments.push_back(Segment_2(src->point(),target->point()));
+      std::pair<int,int> degs(src->degree(),target->degree());
+      seg_deg.push_back(degs);
+		
 		//edge_handle_vec.push_back(*input_edge);
   	}
+
   	// TODO: The following is kinda disgusting. There gotta be a better way to do that but this is due the edges of induced_edges_begin() 
   	//			not being sorted by the curve. Otherwise I'll write a better faster manual algorithm (single_polyline_to_segments_on_grid_fast) 
   	//			because this makes no sense.
@@ -116,30 +111,44 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   			if ((last_seg.target() == seg.source()) || (last_seg.target() == seg.target()) ) {
   				// Not the same segment
   				if ((seg.source()!= last_seg.source()) || (seg.target()!= last_seg.target()))  {
-  					// If the next segment is a continuation but a flip, just flip it
-  					if (next_point == seg.target()) {
-  						seg = Segment_2(seg.target(),seg.source());
-  						add_point = (seg_deg[j].first > 2);
-  					} else {
-  						add_point = (seg_deg[j].second > 2);
-  					}
-  					last_seg = seg;
-  					//add_point = true;
-  					if (add_point) {
-  						new_poly_points.push_back(seg.target());
-  						last_point_idx++;
-  					}
-  					continue;
+            //if ((seg.source()!= last_seg.target()) || (seg.target()!= last_seg.source()))  {
+    					// If the next segment is a continuation but a flip, just flip it
+              
+    					if (next_point == seg.target()) {
+    						//seg = Segment_2(seg.target(),seg.source());
+    						add_point = (seg_deg[j].first > 2);
+                last_seg = Segment_2(seg.target(),seg.source());
+                unsorted_segments[j] = last_seg;
+                //last_seg = seg;
+                //std::cout << "add_point = " << add_point << std::endl;
+    					} else {
+    						add_point = (seg_deg[j].second > 2);
+                //std::cout << "add_point = " << add_point << std::endl;
+                last_seg = seg;
+    					}
+              
+              //add_point = true;
+    					
+    					//add_point = true;
+    					if (add_point) {
+    						new_poly_points.push_back(seg.target());
+    						last_point_idx++;
+    					}
+    					continue;
   				}
   			}
   		}
   	}
 
+    //new_poly_points.push_back(p1);new_poly_points.push_back(p2);return new_poly_points;
+  /*
 	// Construct the polyline from the points
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 	Polyline_2 pi = polyline_construct(new_poly_points.begin(), new_poly_points.end());
 	return pi;
+  */
+  return new_poly_points;
 }
 
 void OrthogonalGrid::subdivide_grid_at_pt(const Point_2& pt) {

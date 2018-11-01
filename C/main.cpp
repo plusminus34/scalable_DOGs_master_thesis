@@ -76,36 +76,14 @@ int main(int argc, char *argv[])
 
   PlanarArrangement arrangement_with_snapped_polyline(orthGrid);
   arrangement_with_snapped_polyline.add_polyline(new_poly);
-
-
-  // Visualize all
-  std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
-  Eigen::MatrixXd V,V_grid,V_grid_with_poly,V_snapped; Eigen::MatrixXi F,F_grid,F_grid_with_poly,F_snapped; Eigen::MatrixXd grid_colors,grid_with_poly_colors,snapped_colors;
-
-  orthGrid.get_visualization_mesh(V_grid, F_grid, grid_colors);
-  arrangement_with_polyline.get_visualization_mesh(V_grid_with_poly, F_grid_with_poly, grid_with_poly_colors);
-  arrangement_with_snapped_polyline.get_visualization_mesh(V_snapped, F_snapped, snapped_colors);
-
-  double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
-  V_grid_with_poly.rowwise() += Eigen::RowVector3d(1*spacing,0,0);
-  V_snapped.rowwise() += Eigen::RowVector3d(2*spacing,0,0);
-
-  V_list.push_back(V_grid); V_list.push_back(V_grid_with_poly); V_list.push_back(V_snapped);
-  F_list.push_back(F_grid); F_list.push_back(F_grid_with_poly); F_list.push_back(F_snapped);
-  F_colors_list.push_back(grid_colors); F_colors_list.push_back(grid_with_poly_colors);
-
-  igl::combine(V_list,F_list, V, F);
-  Eigen::MatrixXd F_colors(grid_colors.rows()+grid_with_poly_colors.rows()+snapped_colors.rows(), grid_colors.cols()); // <-- D(A.rows() + B.rows(), ...)
-  F_colors << grid_colors, grid_with_poly_colors, snapped_colors;
   */
-
   Eigen::MatrixXd V,faceColors; Eigen::MatrixXi F;
   CGAL::Bbox_2 bbox(0, 0, 2, 2);
   int x_res = 3, y_res = 3;
 
   std::list<Point_2> polyline_pts1; //square
   polyline_pts1.push_back(Point_2(0.5,0));
-  polyline_pts1.push_back(Point_2(1./3,0.5));
+  polyline_pts1.push_back(Point_2(5./6,0.5));
   polyline_pts1.push_back(Point_2(0.5,1.1));
   polyline_pts1.push_back(Point_2(0.5,1.5));
   polyline_pts1.push_back(Point_2(1,1.5));
@@ -114,7 +92,12 @@ int main(int argc, char *argv[])
   polyline_pts1.push_back(Point_2(2,0.5));
   Polyline_2 polyline1 = polyline_construct(polyline_pts1.begin(), polyline_pts1.end());
 
-  std::vector<Polyline_2> polylines = {polyline1};
+  std::list<Point_2> polyline_pts2; //square
+  polyline_pts2.push_back(Point_2(0,0));
+  polyline_pts2.push_back(Point_2(2,2));
+  Polyline_2 polyline2 = polyline_construct(polyline_pts2.begin(), polyline_pts2.end());
+
+  std::vector<Polyline_2> polylines = {polyline1,polyline2};
   DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
   dogCreasePattern.get_visualization_mesh(V, F, faceColors);
 

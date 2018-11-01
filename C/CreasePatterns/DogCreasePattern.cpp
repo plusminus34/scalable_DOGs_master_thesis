@@ -21,10 +21,31 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
   	orthogonalGrid.initialize_grid();
   	
 	// get new polylines
-	for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
-	orthogonalGrid.polylines_to_segments_on_grid(clipped_polylines);
-	orthogonalGrid.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
-	clipped_grid_arrangement.add_polylines(clipped_polylines);
+	//for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
+	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
+	for (auto poly = initial_polylines.begin()+1; poly != initial_polylines.end(); poly++) {
+		auto other(orthogonalGrid);
+		auto pts = other.single_polyline_to_segments_on_grid(*poly);
+
+		Geom_traits_2 traits;
+		Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+		Polyline_2 clipped_poly = polyline_construct(pts.begin(), pts.end());
+		clipped_polylines.push_back(clipped_poly);
+		//clipped_grid_arrangement.add_polyline(clipped_poly);
+	}
+	
+	
+	std::cout << "before = " << std::endl;
+	//clipped_grid_arrangement.add_polylines(clipped_polylines);
+	std::cout << "alive" << std::endl;
+	///Arrangement_2 arr; 
+	//insert(arr, clipped_polylines[0]);
+	//insert(arr, clipped_polylines[1]);
+	//insert(arr, clipped_polylines[2]);
+	//insert(arr, initial_polylines[2]);
+	//insert(arr, clipped_polylines.begin(), clipped_polylines.end());
+	std::cout << "alive2 wtf" << std::endl;
+	//exit(1);
 }
 
 void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
@@ -48,11 +69,14 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 }
 
 void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
+	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
-	
-	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement,&grid_with_poly};
+
+	grid_with_snapped.add_polylines(clipped_polylines);
+	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement,&grid_with_poly, &grid_with_snapped, &clipped_grid_arrangement};
 	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
+
 /*
 
 	// Visualize all

@@ -103,6 +103,7 @@ void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*
 							Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
 	// Visualize all
 	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
+	std::cout << "here" << std::endl;
 	int cnt = 0;
 	for (auto arr: arrangements) {
 		Eigen::MatrixXd Vk,Ck; Eigen::MatrixXi Fk;
@@ -113,7 +114,9 @@ void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*
 		F_colors_list.push_back(Ck);
 		cnt++;
 	}
+	std::cout << "there" << std::endl;
 	igl::combine(V_list,F_list, V, F);
+	std::cout << "ok" << std::endl;
 	colors.resize(F.rows(),3); int kv = 0;
 	for (auto Ck : F_colors_list) {
 		int ni = Ck.rows();

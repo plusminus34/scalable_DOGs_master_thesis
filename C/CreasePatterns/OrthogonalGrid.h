@@ -18,8 +18,8 @@ public:
 	void initialize_grid();
 
 	// multiple polylines
-	void polylines_to_segments_on_grid(std::vector<Polyline_2>& polylines);
-	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline);
+	//std::vector<Polyline_2> polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines);
+	std::vector<Point_2> single_polyline_to_segments_on_grid(const Polyline_2& polyline);
 
 private:
 	bool is_point_on_grid(const Point_2& pt);
