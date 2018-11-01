@@ -1,3 +1,4 @@
+/*
 #include "PatternBoundary.h"
 
 
@@ -15,3 +16,4 @@ Polyline_2 PatternBoundary::cut_and_snap_single_polyline_to_boundary(Polyline_2&
 	// Get polyline points
 	return polyline; // todo implement
 }
+*/

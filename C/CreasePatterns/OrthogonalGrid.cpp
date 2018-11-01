@@ -5,16 +5,22 @@
 
 //#include <map.h>
 
-OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res, const std::vector<Point_2>& additional_grid_points) {
+OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res) : bbox(bbox) {
 	// Create x line and y coodrinates
 	create_spaced_range(bbox.xmin(), bbox.xmax(), x_res, x_coords);
 	create_spaced_range(bbox.ymin(), bbox.ymax(), y_res, y_coords);
-	for (auto pt : additional_grid_points) {subdivide_grid_at_pt(pt);}
-	// Add x and y lines to arrangements
-	std::vector<Segment_2> grid_segments;
-	for (auto x : x_coords) {grid_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
-	for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
-	add_segments(grid_segments);
+}
+
+void OrthogonalGrid::add_additional_grid_points(const std::vector<Point_2>& additional_grid_points) {
+  for (auto pt : additional_grid_points) {subdivide_grid_at_pt(pt);}
+}
+
+void OrthogonalGrid::initialize_grid() {
+  // Add x and y lines to arrangements
+  std::vector<Segment_2> grid_segments;
+  for (auto x : x_coords) {grid_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
+  for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
+  add_segments(grid_segments);
 }
 
 void OrthogonalGrid::polylines_to_segments_on_grid(std::vector<Polyline_2>& polylines) {

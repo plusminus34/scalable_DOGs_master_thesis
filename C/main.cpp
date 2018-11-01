@@ -63,9 +63,11 @@ int main(int argc, char *argv[])
   cout << "old poly = " << polyline << endl;
 
   CGAL::Bbox_2 bbox(0, 0, 2, 2);
+  OrthogonalGrid orthGrid(bbox,3,3);
   std::vector<Point_2> sing_points; sing_points.push_back(Point_2(0.75,1.5));
-  //OrthogonalGrid orthGrid(bbox,3,3); // without singularity 
-  OrthogonalGrid orthGrid(bbox,3,3, sing_points);
+  orthGrid.add_additional_grid_points(sing_points);
+  orthGrid.initialize_grid();
+
   auto new_poly = orthGrid.single_polyline_to_segments_on_grid(polyline);
   cout << "new_poly = " << new_poly << endl;
 
