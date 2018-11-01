@@ -3,6 +3,7 @@
 #include <igl/combine.h>
 #include <igl/polygon_mesh_to_triangle_mesh.h>
 #include <igl/jet.h>
+#include <igl/triangle/triangulate.h>
 
 #include <boost/range/irange.hpp>
 
@@ -47,9 +48,13 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
     	get_face_vertices(fit, Vk);
     	auto range = boost::copy_range<std::vector<int>>(boost::irange(0, int(Vk.rows())));
     	std::vector<std::vector<int> > vlist_for_tri; vlist_for_tri.push_back(range);
-    	igl::polygon_mesh_to_triangle_mesh(vlist_for_tri,Fk);
-
-    	V_list.push_back(Vk);
+    	//igl::polygon_mesh_to_triangle_mesh(vlist_for_tri,Fk);
+    	Eigen::MatrixXi Ek(Vk.rows(),2); for (int i = 0; i < Vk.rows(); i++) {Ek.row(i) << i,(i+1) % Vk.rows();}
+    	Eigen::MatrixXi H;
+    	Eigen::MatrixXd newVk;
+    	igl::triangle::triangulate(Vk,Ek, H, "p",newVk,Fk);
+    	Eigen::MatrixXd V3d(newVk.rows(),3); V3d.setZero(); V3d.col(0) = Vk.col(0); V3d.col(1) = Vk.col(1);
+    	V_list.push_back(V3d);
     	F_list.push_back(Fk);
 	}
 	igl::combine(V_list,F_list, V, F);
@@ -84,10 +89,12 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 		v_num++; curr++;
 	} while (curr != circ);
 	// Fill up p with the vertices
-	p.resize(v_num,3);
+	//p.resize(v_num,3);
+	p.resize(v_num,2);
 	int ri = 0; curr = circ;
 	do {
-		p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
+		//p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
+		p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y());
 		curr++; ri++;
 	} while (curr != circ);
 }
