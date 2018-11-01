@@ -98,3 +98,26 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 		curr++; ri++;
 	} while (curr != circ);
 }
+
+void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing,
+							Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
+	// Visualize all
+	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
+	int cnt = 0;
+	for (auto arr: arrangements) {
+		Eigen::MatrixXd Vk,Ck; Eigen::MatrixXi Fk;
+		arr->get_visualization_mesh(Vk,Fk,Ck);
+		Vk.rowwise() += Eigen::RowVector3d(cnt*spacing,0,0);
+		V_list.push_back(Vk);
+		F_list.push_back(Fk);
+		F_colors_list.push_back(Ck);
+		cnt++;
+	}
+	igl::combine(V_list,F_list, V, F);
+	colors.resize(F.rows(),3); int kv = 0;
+	for (auto Ck : F_colors_list) {
+		int ni = Ck.rows();
+		colors.block(kv,0,ni,3) = Ck;
+		kv+=ni;
+	}
+}

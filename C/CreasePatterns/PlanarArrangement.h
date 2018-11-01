@@ -18,6 +18,7 @@ public:
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 
+
   // true if it exists, false otherwise
   bool locate_point_on_vertex(const Point_2& pt, Vertex_const_handle& v);
 
@@ -32,3 +33,6 @@ private:
 	Geom_traits_2 traits;
 	Arrangement_2 arr;
 };
+
+void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing, Eigen::MatrixXd& V, Eigen::MatrixXi& F,
+             Eigen::MatrixXd& colors);

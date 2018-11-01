@@ -48,19 +48,25 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 }
 
 void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
+	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
+	
+	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement,&grid_with_poly};
+	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
+	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
+/*
+
 	// Visualize all
 	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
 	Eigen::MatrixXd V_init,V_grid,V_grid_with_poly,V_snapped; Eigen::MatrixXi F_init,F_grid,F_grid_with_poly,F_snapped; 
 	Eigen::MatrixXd init_colors, grid_colors,grid_with_poly_colors,snapped_colors;
 
 	initial_arrangement.get_visualization_mesh(V_init, F_init, init_colors);
-	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
-	grid_with_poly.get_visualization_mesh(V_grid, F_grid, grid_colors);
+	
 /*
 	arrangement_with_polyline.get_visualization_mesh(V_grid_with_poly, F_grid_with_poly, grid_with_poly_colors);
 	arrangement_with_snapped_polyline.get_visualization_mesh(V_snapped, F_snapped, snapped_colors);
 */
-	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
+	/*
 	V_grid.rowwise() += Eigen::RowVector3d(1*spacing,0,0);
 	//V_snapped.rowwise() += Eigen::RowVector3d(2*spacing,0,0);
 
@@ -70,7 +76,7 @@ void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixX
 
 	igl::combine(V_list,F_list, V, F);
 	face_colors.resize(init_colors.rows() + grid_colors.rows(), init_colors.cols()); // <-- D(A.rows() + B.rows(), ...)
-	face_colors << init_colors,grid_colors;//, snapped_colors;
+	face_colors << init_colors,grid_colors;//, snapped_colors;*/
 }
 
 void DogCreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
