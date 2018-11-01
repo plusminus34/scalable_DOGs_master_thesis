@@ -34,5 +34,6 @@ private:
 	std::vector<Polyline_2> initial_polylines; // The boundary is the first one
 	PlanarArrangement initial_arrangement;
 	OrthogonalGrid orthogonalGrid;
-	//PlanarArrangement clipped_grid_arrangement;
+	std::vector<Polyline_2> clipped_polylines;
+	PlanarArrangement clipped_grid_arrangement;
 };

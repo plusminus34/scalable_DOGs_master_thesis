@@ -13,13 +13,16 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(initial_polylines.begin(), initial_polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
+
+  	// Create an orthogonal grid with singularities
   	orthogonalGrid.add_additional_grid_points(polylines_intersections);
   	orthogonalGrid.initialize_grid();
   	
-	// create an orthogonal grid with singularities
 	// get new polylines
-	// Get new arrangement with only the polylines
-
+	for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
+	orthogonalGrid.polylines_to_segments_on_grid(clipped_polylines);
+	orthogonalGrid.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
+	clipped_grid_arrangement.add_polylines(clipped_polylines);
 }
 
 void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
