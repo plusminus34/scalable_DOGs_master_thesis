@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   //PlanarArrangement arrangement; 
   //arrangement.add_segments(segments);
-
+/*
   std::list<Point_2> polyline_pts; //square
   polyline_pts.push_back(Point_2(0.5,0));
   polyline_pts.push_back(Point_2(1./3,0.5));
@@ -97,12 +97,32 @@ int main(int argc, char *argv[])
   igl::combine(V_list,F_list, V, F);
   Eigen::MatrixXd F_colors(grid_colors.rows()+grid_with_poly_colors.rows()+snapped_colors.rows(), grid_colors.cols()); // <-- D(A.rows() + B.rows(), ...)
   F_colors << grid_colors, grid_with_poly_colors, snapped_colors;
+  */
+
+  Eigen::MatrixXd V,faceColors; Eigen::MatrixXi F;
+  CGAL::Bbox_2 bbox(0, 0, 2, 2);
+  int x_res = 3, y_res = 3;
+
+  std::list<Point_2> polyline_pts1; //square
+  polyline_pts1.push_back(Point_2(0.5,0));
+  polyline_pts1.push_back(Point_2(1./3,0.5));
+  polyline_pts1.push_back(Point_2(0.5,1.1));
+  polyline_pts1.push_back(Point_2(0.5,1.5));
+  polyline_pts1.push_back(Point_2(1,1.5));
+  polyline_pts1.push_back(Point_2(1,1));
+  polyline_pts1.push_back(Point_2(1.5,0.5));
+  polyline_pts1.push_back(Point_2(2,0.5));
+  Polyline_2 polyline1 = polyline_construct(polyline_pts1.begin(), polyline_pts1.end());
+
+  std::vector<Polyline_2> polylines = {polyline1};
+  DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
+  dogCreasePattern.get_visualization_mesh(V, F, faceColors);
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);
   viewer.data().set_face_based(true);
-  viewer.data().set_colors(F_colors);
+  viewer.data().set_colors(faceColors);
   viewer.data().show_lines = false;
   viewer.launch();
 }

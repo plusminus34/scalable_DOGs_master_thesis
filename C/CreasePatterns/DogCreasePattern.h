@@ -26,6 +26,7 @@ private:
 	void is_on_boundary();
 */
 
+	void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding);
@@ -36,4 +37,5 @@ private:
 	OrthogonalGrid orthogonalGrid;
 	std::vector<Polyline_2> clipped_polylines;
 	PlanarArrangement clipped_grid_arrangement;
+	const CGAL::Bbox_2& bbox;
 };

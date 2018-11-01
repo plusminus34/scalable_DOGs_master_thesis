@@ -5,8 +5,10 @@
 #include <CGAL/Snap_rounding_traits_2.h>
 #include <CGAL/Snap_rounding_2.h>
 
+#include <igl/combine.h>
+
 DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, int x_res, int y_res, bool snap_rounding) :
-											orthogonalGrid(bbox, x_res, y_res) {
+											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 	init_initial_arrangement_and_polylines(bbox, polylines, snap_rounding);
 	// get poly lines intersections
 	std::vector<Point_2> polylines_intersections;
@@ -43,6 +45,32 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 	
 	// Set up the initial arrangement
 	initial_arrangement.add_polylines(initial_polylines);
+}
+
+void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
+	// Visualize all
+	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
+	Eigen::MatrixXd V_init,V_grid,V_grid_with_poly,V_snapped; Eigen::MatrixXi F_init,F_grid,F_grid_with_poly,F_snapped; 
+	Eigen::MatrixXd init_colors, grid_colors,grid_with_poly_colors,snapped_colors;
+
+	initial_arrangement.get_visualization_mesh(V_init, F_init, init_colors);
+	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
+	grid_with_poly.get_visualization_mesh(V_grid, F_grid, grid_colors);
+/*
+	arrangement_with_polyline.get_visualization_mesh(V_grid_with_poly, F_grid_with_poly, grid_with_poly_colors);
+	arrangement_with_snapped_polyline.get_visualization_mesh(V_snapped, F_snapped, snapped_colors);
+*/
+	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
+	V_grid.rowwise() += Eigen::RowVector3d(1*spacing,0,0);
+	//V_snapped.rowwise() += Eigen::RowVector3d(2*spacing,0,0);
+
+	V_list.push_back(V_init); V_list.push_back(V_grid); //V_list.push_back(V_snapped);
+	F_list.push_back(F_init); F_list.push_back(F_grid); //F_list.push_back(F_snapped);
+	F_colors_list.push_back(init_colors); F_colors_list.push_back(grid_colors);
+
+	igl::combine(V_list,F_list, V, F);
+	face_colors.resize(init_colors.rows() + grid_colors.rows(), init_colors.cols()); // <-- D(A.rows() + B.rows(), ...)
+	face_colors << init_colors,grid_colors;//, snapped_colors;
 }
 
 void DogCreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
