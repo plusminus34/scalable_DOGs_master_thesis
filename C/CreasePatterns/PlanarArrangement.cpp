@@ -10,11 +10,11 @@
 void PlanarArrangement::add_segments(const std::vector<Segment_2>& segments) {
 	insert(arr, segments.begin(), segments.end());
 }
-/*
+
 void PlanarArrangement::add_segment(const Segment_2& segment) {
-	insert<Segment_2>(arr, segment);
+	add_segments({segment});
 }
-*/
+
 void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
 	insert(arr, polylines.begin(), polylines.end());
 }
@@ -80,12 +80,16 @@ int PlanarArrangement::get_vertices_n() {
 }
 
 void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) {
+	std::cout << "f->is_fictitious() = " << f->is_fictitious() << std::endl;
+	std::cout << "here" << std::endl;
 	typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+	std::cout << "there" << std::endl;
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-
+	std::cout << "here2" << std::endl;
 	// count number of vertices
 	int v_num = 0;
 	do {
+		std::cout << "here" << std::endl;
 		v_num++; curr++;
 	} while (curr != circ);
 	// Fill up p with the vertices
@@ -99,11 +103,26 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	} while (curr != circ);
 }
 
+void PlanarArrangement::get_boundary_polyline_pts(std::vector<Point_2>& pts) {
+	pts.clear();
+	// Build faces polygons
+	Arrangement_2::Face_const_iterator fit;
+	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+		if (fit->is_unbounded()) {
+			Eigen::MatrixXd p;
+			std::cout << "found unbounded face!" << std::endl;
+			get_face_vertices(fit,p);
+			std::cout << "p = " << p << std::endl;
+			pts.resize(p.rows());
+			for (int i = 0; i < p.rows(); i++) pts[i] = Point_2(p(i,0),p(i,1));
+		}
+	}
+}
+
 void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing,
 							Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
 	// Visualize all
 	std::vector<Eigen::MatrixXd> V_list; std::vector<Eigen::MatrixXi> F_list; std::vector<Eigen::MatrixXd> F_colors_list;
-	std::cout << "here" << std::endl;
 	int cnt = 0;
 	for (auto arr: arrangements) {
 		Eigen::MatrixXd Vk,Ck; Eigen::MatrixXi Fk;
@@ -114,9 +133,7 @@ void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*
 		F_colors_list.push_back(Ck);
 		cnt++;
 	}
-	std::cout << "there" << std::endl;
 	igl::combine(V_list,F_list, V, F);
-	std::cout << "ok" << std::endl;
 	colors.resize(F.rows(),3); int kv = 0;
 	for (auto Ck : F_colors_list) {
 		int ni = Ck.rows();

@@ -11,12 +11,14 @@ public:
 
   // multiple polylines
   void add_segments(const std::vector<Segment_2>& segments);
-  //void add_segment(const Segment_2& segment);
+  void add_segment(const Segment_2& segment);
   void add_polylines(const std::vector<Polyline_2>& polylines);
   void add_polyline(const Polyline_2& polylines);
 
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
+
+  void get_boundary_polyline_pts(std::vector<Point_2>& pts);
 
 
   // true if it exists, false otherwise

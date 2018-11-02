@@ -24,8 +24,11 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	//for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
 	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
 	for (auto poly = initial_polylines.begin()+1; poly != initial_polylines.end(); poly++) {
-		auto other(orthogonalGrid);
-		auto pts = other.single_polyline_to_segments_on_grid(*poly);
+		//auto other(orthogonalGrid);
+		OrthogonalGrid newOrthGrid(bbox,x_res,y_res);
+		newOrthGrid.add_additional_grid_points(polylines_intersections);
+  		newOrthGrid.initialize_grid();
+		auto pts = newOrthGrid.single_polyline_to_segments_on_grid(*poly);
 
 		Geom_traits_2 traits;
 		Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
@@ -36,7 +39,7 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	
 	
 	std::cout << "before = " << std::endl;
-	//clipped_grid_arrangement.add_polylines(clipped_polylines);
+	clipped_grid_arrangement.add_polylines(clipped_polylines);
 	std::cout << "alive" << std::endl;
 	///Arrangement_2 arr; 
 	//insert(arr, clipped_polylines[0]);
