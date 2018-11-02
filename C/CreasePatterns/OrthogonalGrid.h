@@ -19,7 +19,7 @@ public:
 
 	// multiple polylines
 	//std::vector<Polyline_2> polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines);
-	std::vector<Point_2> single_polyline_to_segments_on_grid(const Polyline_2& polyline);
+	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline);
 
 private:
 	bool is_point_on_grid(const Point_2& pt);
