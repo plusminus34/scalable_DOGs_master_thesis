@@ -15,6 +15,12 @@ def save_polyline(poly, out_file):
 	#print 'poly = ', V
 	igl.writeOBJ(out_file,V,igl.eigen.MatrixXi())
 
+def save_bounding_box(bbox, out_file):
+	bbox_mat = np.zeros([4,3])
+	bbox_mat[:,0] = bbox
+	V = p2e(bbox_mat)
+	igl.writeOBJ(out_file,V,igl.eigen.MatrixXi())
+
 def svg_creases_to_bounding_box_and_polylines(svg_file):
 	paths, attributes = svg2paths(svg_file)
 	print 'Number of paths = ', len(paths)
@@ -42,10 +48,13 @@ def svg_creases_to_bounding_box_and_polylines(svg_file):
 			except:
 				print 'Error handling a fold'
 
-	return border_poly,path_lines,viewbox
+	return border_poly,path_lines,bounds
 
 def add_numpy_zero_z_coord_column(V):
 	return np.ascontiguousarray(np.vstack((V[:,0],V[:,1],np.zeros(V.shape[0]))).T)
+
+def add_numpy_zero_y_coord_column(V):
+	return np.ascontiguousarray(np.vstack((V[:,0],np.zeros(V.shape[0]))).T)
 
 if __name__ == "__main__":
 	if len(sys.argv) == 3:
@@ -53,9 +62,10 @@ if __name__ == "__main__":
 		border_poly,polylines,boundingBox = svg_creases_to_bounding_box_and_polylines(svg_file)
 
 		print 'boundingBox = ', boundingBox
+		save_bounding_box(boundingBox, out_folder+"/bbox.obj")
 		#save_polyline(out_folder+"//"+"border_poly.obj")
 		cnt = 0
 		for poly in polylines:
-			save_polyline(poly,out_folder+"//"+"poly-"+str(cnt)+".obj")
+			save_polyline(poly,out_folder+"/"+"poly-"+str(cnt)+".obj")
 	else:
 		print 'Usage: svg_to_polylines.py out_folder'
