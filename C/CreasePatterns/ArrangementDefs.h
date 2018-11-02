@@ -27,3 +27,5 @@ typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
 
 typedef CGAL::Snap_rounding_traits_2<Kernel>     Snap_Traits;
 typedef std::list<Polyline_2>                    Polyline_list_2;
+
+typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2_without_history;

@@ -100,17 +100,18 @@ def sample_polylines(path,bounds):
 	eps = 1e-2*abs(bounds[2]-bounds[0])
 	points[0,0] = round_if_close(points[0,0], bounds[0],eps)
 	points[0,0] = round_if_close(points[0,0], bounds[2],eps)
-	points[0,1] = round_if_close(points[0,1], bounds[1],eps)
-	points[0,1] = round_if_close(points[0,1], bounds[3],eps)
+	points[0,1] = round_if_close(points[0,1], -bounds[1],eps)
+	points[0,1] = round_if_close(points[0,1], -bounds[3],eps)
 
 	points[-1,0] = round_if_close(points[-1,0], bounds[0],eps)
 	points[-1,0] = round_if_close(points[-1,0], bounds[2],eps)
-	points[-1,1] = round_if_close(points[-1,1], bounds[1],eps)
-	points[-1,1] = round_if_close(points[-1,1], bounds[3],eps)
+	points[-1,1] = round_if_close(points[-1,1],-bounds[1],eps)
+	points[-1,1] = round_if_close(points[-1,1],-bounds[3],eps)
 
 	return points
 
 def round_if_close(pt,close_pt,eps):
+	print 'pt = ', pt, ' close_pt = ', close_pt
 	if (abs(pt-close_pt) < eps):
 		return close_pt
 	return pt

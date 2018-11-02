@@ -59,14 +59,16 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 	}
 	
 	// Set up the initial arrangement
+	std::cout << "adding " << initial_polylines.size() << " polylines" << std::endl;
 	initial_arrangement.add_polylines(initial_polylines);
+	std::cout << "initial_arrangement number of vertices = " << initial_arrangement.get_vertices_n() << std::endl;
 }
 
 void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
-	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
+	//PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 
-	grid_with_snapped.add_polylines(clipped_polylines);
+	//grid_with_snapped.add_polylines(clipped_polylines);
 	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement};
 	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
