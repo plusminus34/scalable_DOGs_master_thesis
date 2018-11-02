@@ -1,5 +1,7 @@
 from svg_utils import *
 import sys,os
+sys.path.insert(0, os.getcwd() + "/../../../libigl/python")
+sys.path.insert(0, os.getcwd() + "/../../../libigl/external/nanogui/build/python")
 sys.path.insert(0, os.getcwd() + "/../../libigl/python")
 sys.path.insert(0, os.getcwd() + "/../../libigl/external/nanogui/build/python")
 import pyigl as igl
@@ -63,8 +65,9 @@ if __name__ == "__main__":
 
 		print 'boundingBox = ', boundingBox
 		save_bounding_box(boundingBox, out_folder+"/bbox.obj")
+		open(out_folder+"/"+str(len(polylines)),'w') # write a file with number of polylines
 		#save_polyline(out_folder+"//"+"border_poly.obj")
-		cnt = 0
+		cnt = 1
 		for poly in polylines:
 			save_polyline(poly,out_folder+"/"+"poly-"+str(cnt)+".obj")
 	else:
