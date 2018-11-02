@@ -14,8 +14,16 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Surface_sweep_2_algorithms.h>
 */
+
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Arr_segment_traits_2.h>
+#include <CGAL/Arr_polyline_traits_2.h>
+#include <CGAL/Arrangement_2.h>
+#include <vector>
+#include <list>
 #include "CreasePatterns/arr_print.h"
 
+#include <CGAL/config.h>
 // Instantiate the traits class using a user-defined kernel
 // and Segment_traits_2.
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
@@ -44,6 +52,11 @@ int main(int argc, char* argv[]) {
   insert(arr, pi1);
   print_arrangement(arr);
   cout << "arr.number_of_vertices() = " << arr.number_of_vertices() << endl;
+
+  std::cout << "My CGAL library is " <<  CGAL_VERSION_NR << " (1MMmmb1000)" << std::endl; 
+  std::cout << std::endl;
+  std::cout << "where MM is the major number release, mm is the minor number release, and "
+            << "b is the bug fixing number release." << std::endl;
 
   return 0;
 
