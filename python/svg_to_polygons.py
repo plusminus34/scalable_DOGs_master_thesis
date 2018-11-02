@@ -35,7 +35,7 @@ def svg_creases_to_polygonal_data(svg_file):
 	# Make sure that the border scale is around width = 1, flip the y coordinates (since its opposite in images) translate it such that the lowest coordinate is 0
 	border_poly, path_lines = translate_and_normalize_polygons(border_poly, path_lines)
 		
-	return border_poly,path_lines
+	return border_poly,path_lines,viewbox
 
 def handle_border(path):
 	if is_polyline(path):
@@ -59,11 +59,6 @@ def handle_border(path):
 		# bezier curve (not supported for a boundary yet)
 		raise NotImplementedError()
 
-def is_border(attrib,style_classes):
-	color = get_curve_color(style_classes,attrib)
-	#print 'The color is ', color
-	is_border = (color == (0,0,0))
-	return is_border
 
 # For now assume its a polyline if the first part of the path is (not supporting a path that is a mix of polylines and bezier curves atm)
 def is_polyline(path):

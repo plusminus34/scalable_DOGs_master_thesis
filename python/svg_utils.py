@@ -92,5 +92,11 @@ def sample_polylines(path):
 		points[idx,:] = line.end.real,line.end.imag
 		#print 'points[idx,:] = ', points[idx,:]
 		idx += 1
+
+def is_border(attrib,style_classes):
+	color = get_curve_color(style_classes,attrib)
+	#print 'The color is ', color
+	is_border = (color == (0,0,0))
+	return is_border
 	
 	return points

@@ -22,19 +22,7 @@ void OrthogonalGrid::initialize_grid() {
   for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
   add_segments(grid_segments);
 }
-/*
-std::vector<Polyline_2> OrthogonalGrid::polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines) {
-  std::vector<Polyline_2> grid_polys;
-	for (auto poly: polylines) {
-		grid_polys.push_back(single_polyline_to_segments_on_grid(poly));
-	}
-}
-*/
 
-// Todo add polylines
-// Todo snap polyline to original one
-//		Find the initial vertex on the polyline and from there traverse the original polyline (find the curve by next vertex that should be first segment..)
-//		then check the degree of every vertex
 Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline) {
 	// Create a copy of the grid arrangement and add the polyline to it
 	PlanarArrangement grid_arr(*this);
@@ -67,13 +55,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   	} while (++curr != first);
   	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
   	// For now assume that this edge has only one originating curve (todo this can be false)
-  	// TODO in the other case (degenerate polyline on grid), iterate with
-  	/*
-  	for (ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(eit); 
-  				ocit != grid_arr.get_arrangement_internal()->.originating_curves_end(eit); ++ocit) {
-  	*/
-  	// 
-  	//std::cout << "originating curve is " << *ocit << std::endl;
   	
     // We now have all the edges induced by the original input, the problem is that they are not ordered.
     // CGAL guy said they might add this functionality, but for now we need to arrange tit
