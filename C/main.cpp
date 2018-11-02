@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     string svg_path(argv[1]);
     cout << "Reading svg file " << svg_path << endl;
     read_svg_crease_pattern(svg_path, bbox, polylines);
+    //cout << "polylines[0] = " << polylines[0] << endl;
   } else {
     
     Geom_traits_2 traits;

@@ -12,6 +12,7 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 
 	std::cout << "here" << std::endl;
 	init_initial_arrangement_and_polylines(bbox, polylines, snap_rounding);
+	/*
 	std::cout << "there" << std::endl;
 	// get poly lines intersections
 	std::vector<Point_2> polylines_intersections;
@@ -25,18 +26,25 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
   	orthogonalGrid.initialize_grid();
   	std::cout << "ok2" << std::endl;
   	
+  	
 	// get new polylines
 	//for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
 	for (auto poly = initial_polylines.begin()+1; poly != initial_polylines.end(); poly++) {
+		std::cout << "*poly = " << *poly << std::endl;
 		clipped_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
 	}
+	std::cout << "hmm" << std::endl;
 	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
+	std::cout << "hmm2" << std::endl;
 	clipped_grid_arrangement.add_polylines(clipped_polylines);
+	std::cout << "hmm3" << std::endl;
+	*/
 }
 
 void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
 	// Create an arrangement with a boundary box polygon and the polylings
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
+	std::cout << "boundary_poly = " << boundary_poly << std::endl;
 	// init tmp polylines with the boundary poly and tmp polylines
 	std::vector<Polyline_2> tmp_polylines; tmp_polylines.push_back(boundary_poly); for (auto p: polylines) tmp_polylines.push_back(p);
 	if (!snap_rounding) {
@@ -59,7 +67,7 @@ void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixX
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 
 	grid_with_snapped.add_polylines(clipped_polylines);
-	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement,&grid_with_poly, &grid_with_snapped, &clipped_grid_arrangement};
+	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement};
 	double spacing = CGAL::to_double(bbox.xmax()-bbox.xmin())+1;
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
 }

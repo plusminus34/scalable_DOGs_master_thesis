@@ -30,7 +30,7 @@ void read_svg_crease_pattern(const std::string& path, CGAL::Bbox_2& bbox, std::v
 	// Read polylines
 	for (int i = 1; i < num_poly+1; i++) {
 		igl::readOBJ(tmp_folder+string("poly-")+to_string(i)+string(".obj"),P,Fdummy);
-		cout << "P = " << P << endl;
+		//cout << "P = " << P << endl;
 		auto poly = points_to_polylines_snapped_at_start_end(P,bbox);
 		//cout << "poly = "<< poly << endl;
 		polylines.push_back(poly);
@@ -56,7 +56,7 @@ Polyline_2 points_to_polylines_snapped_at_start_end(const Eigen::MatrixXd& p, co
 
 Point_2 snap_pt_to_bbox(const Point_2& pt, const CGAL::Bbox_2& bbox) {
 	Number_type x = pt.x(),y = pt.y();
-	cout << endl << endl << "------pt = " << pt << "-------"<< endl <<endl;
+	//cout << endl << endl << "------pt = " << pt << "-------"<< endl <<endl;
 	round_if_close(x,bbox.xmin());
 	round_if_close(x,bbox.xmax());
 	round_if_close(y,bbox.ymin());
@@ -68,7 +68,7 @@ Point_2 snap_pt_to_bbox(const Point_2& pt, const CGAL::Bbox_2& bbox) {
 void round_if_close(Number_type& pt, const Number_type& floor_pt) {
 	Number_type eps(1e-10);
 	bool is_close = (CGAL::abs(pt-floor_pt) < eps);
-	if (is_close) {
+	if ((is_close) && (pt!=floor_pt)) {
 		std::cout << "snapping " << pt << " to " << floor_pt << endl;
 		pt = floor_pt;
 	}

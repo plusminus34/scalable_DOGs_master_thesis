@@ -17,6 +17,7 @@ void PlanarArrangement::add_segment(const Segment_2& segment) {
 
 void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
 	insert(arr, polylines.begin(), polylines.end());
+	for (auto p: polylines) { std::cout << "p = " << p << std::endl << "ok?" << std::endl;}
 }
 
 void PlanarArrangement::add_polyline(const Polyline_2& polyline) {
@@ -80,16 +81,11 @@ int PlanarArrangement::get_vertices_n() {
 }
 
 void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) {
-	std::cout << "f->is_fictitious() = " << f->is_fictitious() << std::endl;
-	std::cout << "here" << std::endl;
 	typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
-	std::cout << "there" << std::endl;
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-	std::cout << "here2" << std::endl;
 	// count number of vertices
 	int v_num = 0;
 	do {
-		std::cout << "here" << std::endl;
 		v_num++; curr++;
 	} while (curr != circ);
 	// Fill up p with the vertices

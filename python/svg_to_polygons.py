@@ -67,10 +67,10 @@ def is_polyline(path):
 def get_border_poly(border_poly):
 	convex_hull = MultiPoint(border_poly).convex_hull
 
-def handle_fold(path,sampling = 100):
+def handle_fold(path,sampling,bounds):
 	if is_polyline(path):
 		print 'Polyline!'
-		points = sample_polylines(path)
+		points = sample_polylines(path,bounds)
 		#print 'line points = ', points
 	else:
 		print 'bezier curve!'

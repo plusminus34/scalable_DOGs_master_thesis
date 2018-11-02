@@ -80,10 +80,12 @@ def sample_bezier_path_sampling(path, points_num):
 	points = points.view('(2,)float')
 	#points[:,1] = -1*(points[:,1]-center_y)
 	#points[:,1] = points[:,1] - center_y
+	#print 'points.shape = ', points.shape
 	return points
 
-def sample_polylines(path):
+def sample_polylines(path,bounds):
 	#print 'len(path) = ', len(path)
+	print 'sampling a polyline!'
 	points = np.empty((len(path)+1,2))
 	#print 'path[0].start.real,path[0].start.imag = ', path[0].start.real,path[0].start.imag
 	points[0,:] = path[0].start.real,path[0].start.imag
@@ -92,6 +94,26 @@ def sample_polylines(path):
 		points[idx,:] = line.end.real,line.end.imag
 		#print 'points[idx,:] = ', points[idx,:]
 		idx += 1
+	#print 'points.shape = ', points.shape
+	#print 'points = ', points
+	
+	eps = 1e-2*abs(bounds[2]-bounds[0])
+	points[0,0] = round_if_close(points[0,0], bounds[0],eps)
+	points[0,0] = round_if_close(points[0,0], bounds[2],eps)
+	points[0,1] = round_if_close(points[0,1], bounds[1],eps)
+	points[0,1] = round_if_close(points[0,1], bounds[3],eps)
+
+	points[-1,0] = round_if_close(points[-1,0], bounds[0],eps)
+	points[-1,0] = round_if_close(points[-1,0], bounds[2],eps)
+	points[-1,1] = round_if_close(points[-1,1], bounds[1],eps)
+	points[-1,1] = round_if_close(points[-1,1], bounds[3],eps)
+
+	return points
+
+def round_if_close(pt,close_pt,eps):
+	if (abs(pt-close_pt) < eps):
+		return close_pt
+	return pt
 
 def is_border(attrib,style_classes):
 	color = get_curve_color(style_classes,attrib)
