@@ -61,7 +61,6 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 	// Set up the initial arrangement
 	std::cout << "adding " << initial_polylines.size() << " polylines" << std::endl;
 	initial_arrangement.add_polylines(initial_polylines);
-	std::cout << "initial_arrangement number of vertices = " << initial_arrangement.get_vertices_n() << std::endl;
 }
 
 void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {

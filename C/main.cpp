@@ -12,29 +12,10 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Surface_sweep_2_algorithms.h>
 
-#include "CreasePatterns/arr_print.h"
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
-  Geom_traits_2 traits;
-  Arrangement_2 arr(&traits);
-  Geom_traits_2::Construct_curve_2 polyline_construct =
-    traits.construct_curve_2_object();
-  Point_2 points1[5];
-  points1[0] = Point_2(261.5,300);
-  points1[1] = Point_2(247.5,113.5);
-  points1[2] = Point_2(0,67.5);
-  
-  Polyline_2 pi1 = polyline_construct(&points1[0], &points1[3]);
-  insert(arr, pi1);
-  print_arrangement(arr);
-  cout << "arr.number_of_vertices() = " << arr.number_of_vertices() << endl;
-
-  return 0;
-
-}
-int main2(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   Geom_traits_2 traits;
   Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
@@ -48,49 +29,6 @@ int main2(int argc, char *argv[])
     string svg_path(argv[1]);
     cout << "Reading svg file " << svg_path << endl;
     read_svg_crease_pattern(svg_path, bbox, polylines);
-
-    /*
-v 261.5 -300 0
-v 265.5 -113.5 0
-v 0 -67.5 0
-
-v 261.5 -300 0
-v 247.5 -113.5 0
-v 0 -67.5 0
-
-*/
-    
-    polylines.clear();
-    std::list<Point_2> polyline_pts1;
-    polyline_pts1.push_back(Point_2(261.5,300));
-    //polyline_pts1.push_back(Point_2(261.5,-113.5));
-    polyline_pts1.push_back(Point_2(247.5,113.5));
-    polyline_pts1.push_back(Point_2(0,67.5));
-    Polyline_2 poly = polyline_construct(polyline_pts1.begin(), polyline_pts1.end());
-    polylines.push_back(poly);
-
-    PlanarArrangement planArr;
-    planArr.add_polylines(polylines);
-
-    cout << "planArr.get_vertices_n() = " << planArr.get_vertices_n() << endl;
-    Arrangement_2 arr_poly;
-    //CGAL::insert<Polyline_2>(arr_poly,poly);
-    CGAL::insert(arr_poly,poly);
-
-
-    Arrangement_2 arr;
-    //insert(arr, polylines.begin(), polylines.end());
-    //insert(arr, poly);
-    Segment_2 seg1(Point_2(261.5,300),Point_2(247.5,113.5));
-    Segment_2 seg2(Point_2(247.5,113.5),Point_2(0,67.5));
-    
-
-    Segment_2 cv[2];
-    cv[0] = seg1; cv[1] = seg2;
-    insert(arr, &cv[0], &cv[2]);
-    cout << "arr.number_of_vertices() = " << arr.number_of_vertices() << endl;
-    cout << "arr_poly.number_of_vertices() = " << arr_poly.number_of_vertices() << endl;
-    return 0;
 
     //cout << "polylines[0] = " << polylines[0] << endl;
   } else {

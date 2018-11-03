@@ -16,8 +16,18 @@ void PlanarArrangement::add_segment(const Segment_2& segment) {
 }
 
 void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
+	// we need to insert the whole polyline together since we are using an arrangement with history
 	insert(arr, polylines.begin(), polylines.end());
-	for (auto p: polylines) { std::cout << "p = " << p << std::endl << "ok?" << std::endl;}
+	/*
+	//for (auto p: polylines) { std::cout << "p = " << p << std::endl << "ok?" << std::endl;}
+	std::vector<Segment_2> segments;
+	for (auto polyline : polylines) {
+		for (auto it = polyline.subcurves_begin(); it != polyline.subcurves_end(); it++) {
+			segments.push_back(*it);
+		}	
+	}
+	add_segments(segments);
+	*/
 }
 
 void PlanarArrangement::add_polyline(const Polyline_2& polyline) {
@@ -83,20 +93,42 @@ int PlanarArrangement::get_vertices_n() {
 void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) {
 	typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+	// switch edge direction if not ordered as the segments
+	//if (curr->curve().subcurves_begin()->source()!= curr->source()->point()) {curr = curr->twin();}
+
 	// count number of vertices
 	int v_num = 0;
 	do {
-		v_num++; curr++;
+		// count also polyline edges (that are not necessarily ones in the graph)
+		//v_num += curr->curve().subcurves_end()-curr->curve().subcurves_begin();
+		for (auto it = curr->curve().subcurves_begin(); it != curr->curve().subcurves_end(); it++) {
+			v_num++;
+		}
+		curr++;
 	} while (curr != circ);
+	//std::cout << "vnum = "  << v_num << std::endl;
 	// Fill up p with the vertices
 	//p.resize(v_num,3);
 	p.resize(v_num,2);
+
+
 	int ri = 0; curr = circ;
 	do {
 		//p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
-		p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y());
-		curr++; ri++;
+		// Go through segments in the polyline (not every vertex in the polyline is an actual vertex in the graph)
+		//std::cout << "vertex starting at " << curr->source()->point() << std::endl;
+		bool flipped_order = false;
+		if (curr->curve().subcurves_begin()->source()!= curr->source()->point()) {flipped_order = true;}
+		for (auto it = curr->curve().subcurves_begin(); it != curr->curve().subcurves_end(); it++) {
+			Point_2 next_pt = flipped_order ? it->target() : it->source();
+			//std::cout << "Segment: " << *it << std::endl << " and adding " << next_pt << std::endl;
+			p.row(ri) << CGAL::to_double(next_pt.x()),CGAL::to_double(next_pt.y());
+			ri++;
+		}
+		curr++;
 	} while (curr != circ);
+	//std::cout << "p = " << p << std::endl;
+	//exit(1);
 }
 
 void PlanarArrangement::get_boundary_polyline_pts(std::vector<Point_2>& pts) {
