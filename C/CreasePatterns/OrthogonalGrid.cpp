@@ -37,6 +37,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	bool is_on_v = grid_arr.locate_point_on_vertex(p1,v);
 	if (!is_on_v) std::cout << "Error! Point not on grid!" << std::endl;
 
+  std::cout << "yo" << std::endl;
 	// Find the edge of the curve by going through all edges emenating from that vertex and checking for collinearity with the input
 	Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
   	first = curr = v->incident_halfedges();
@@ -46,14 +47,26 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     	// Note that the current halfedge is directed from u to v:
     	Arrangement_2::Vertex_const_handle u = curr->source();
     	Arrangement_2::Halfedge_const_handle edge_handle = curr->twin();//->handle();
+
+
+      Point_2 next_curve_point = edge_handle->curve().subcurves_begin()->target();
+      if (edge_handle->curve().subcurves_begin()->source() != curr->source()->point()) {
+        int last_seg_i = edge_handle->curve().subcurves_end()-edge_handle->curve().subcurves_begin();
+        next_curve_point = edge_handle->curve().subcurves_begin()->source();
+      }
+      
+
     	// Todo: In case the original edge is and edge of the grid, this could fail, and we will need further checks (origin of the edge)
     	//	This is possible with the history data but not needed atm
-    	if (CGAL::collinear(p1, p2, edge_handle->target()->point())) {
+    	//if (CGAL::collinear(p1, p2, edge_handle->target()->point())) {
+      if (CGAL::collinear(p1, p2, next_curve_point)) {
     		poly_edge = edge_handle;
     		//std::cout << "Found the original polyline edge with source = " << edge_handle->source()->point() << " target = " << edge_handle->target()->point() << std::endl;
     	}
   	} while (++curr != first);
+    std::cout << "da" << std::endl;
   	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
+    std::cout << "bla" << std::endl;
   	// For now assume that this edge has only one originating curve (todo this can be false)
   	
     // We now have all the edges induced by the original input, the problem is that they are not ordered.
@@ -66,6 +79,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   			input_edge != grid_arr.get_arrangement_internal()->induced_edges_end(ocit); input_edge++) {
       auto src = (*input_edge)->source(), target = (*input_edge)->target();
       auto seg = Segment_2(src->point(),target->point());
+
+      std::cout << "Edge from " << seg << " to " << seg << std::endl;
 
       point_to_deg[src->point()] = src->degree();
       point_to_deg[target->point()] = target->degree();

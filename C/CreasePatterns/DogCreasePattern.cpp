@@ -27,16 +27,14 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	}
 	
 	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
-	
 	clipped_grid_arrangement.add_polylines(clipped_polylines);
-	
 	
 }
 
 void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
 	// Create an arrangement with a boundary box polygon and the polylings
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
-	std::cout << "boundary_poly = " << boundary_poly << std::endl;
+	//std::cout << "boundary_poly = " << boundary_poly << std::endl;
 	// init tmp polylines with the boundary poly and tmp polylines
 	std::vector<Polyline_2> tmp_polylines; tmp_polylines.push_back(boundary_poly); for (auto p: polylines) tmp_polylines.push_back(p);
 	if (!snap_rounding) {
@@ -56,11 +54,12 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 }
 
 void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
+	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_polylines);
-	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 
 	
+	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly};
 	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);

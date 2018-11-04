@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     cout << "Reading svg file " << svg_path << endl;
     read_svg_crease_pattern(svg_path, bbox, polylines);
 
-    //cout << "polylines[0] = " << polylines[0] << endl;
+    if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
   } else {
 
     bbox = CGAL::Bbox_2(0, 0, 2, 2);
