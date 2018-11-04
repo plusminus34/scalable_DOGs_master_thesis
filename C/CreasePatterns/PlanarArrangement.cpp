@@ -108,41 +108,39 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	} while (curr != circ);
 	//std::cout << "vnum = "  << v_num << std::endl;
 	// Fill up p with the vertices
-	//p.resize(v_num,3);
 	p.resize(v_num,2);
-
-
 	int ri = 0; curr = circ;
 	do {
-		//p.row(ri) << CGAL::to_double(curr->source()->point().x()),CGAL::to_double(curr->source()->point().y()),0;
-		// Go through segments in the polyline (not every vertex in the polyline is an actual vertex in the graph)
-		//std::cout << "vertex starting at " << curr->source()->point() << std::endl;
+		//std::cout << "Edge from " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+		std::vector<Segment_2> polyline_segments(curr->curve().subcurves_begin(),curr->curve().subcurves_end());
 		bool flipped_order = false;
 		if (curr->curve().subcurves_begin()->source()!= curr->source()->point()) {flipped_order = true;}
-		for (auto it = curr->curve().subcurves_begin(); it != curr->curve().subcurves_end(); it++) {
-			Point_2 next_pt = flipped_order ? it->target() : it->source();
-			//std::cout << "Segment: " << *it << std::endl << " and adding " << next_pt << std::endl;
-			p.row(ri) << CGAL::to_double(next_pt.x()),CGAL::to_double(next_pt.y());
+		if (flipped_order) {
+			std::reverse(std::begin(polyline_segments), std::end(polyline_segments));
+		}
+		for (auto seg: polyline_segments) {
+			if (!flipped_order) {
+				p.row(ri) << CGAL::to_double(seg.source().x()),CGAL::to_double(seg.source().y());
+			} else {
+				p.row(ri) << CGAL::to_double(seg.target().x()),CGAL::to_double(seg.target().y());
+			}
+			
 			ri++;
 		}
 		curr++;
 	} while (curr != circ);
-	//std::cout << "p = " << p << std::endl;
-	//exit(1);
 }
 
-void PlanarArrangement::get_boundary_polyline_pts(std::vector<Point_2>& pts) {
+void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) {
 	pts.clear();
 	// Build faces polygons
 	Arrangement_2::Face_const_iterator fit;
 	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
-		if (fit->is_unbounded()) {
-			Eigen::MatrixXd p;
-			std::cout << "found unbounded face!" << std::endl;
-			get_face_vertices(fit,p);
-			std::cout << "p = " << p << std::endl;
-			pts.resize(p.rows());
-			for (int i = 0; i < p.rows(); i++) pts[i] = Point_2(p(i,0),p(i,1));
+		if (!fit->is_unbounded()) {
+			Eigen::MatrixXd p; get_face_vertices(fit,p);
+			std::vector<Point_2> face_pts(p.rows());
+			for (int i = 0; i < p.rows(); i++) face_pts[i] = Point_2(p(i,0),p(i,1));
+			pts.push_back(face_pts);
 		}
 	}
 }
@@ -168,4 +166,45 @@ void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*
 		colors.block(kv,0,ni,3) = Ck;
 		kv+=ni;
 	}
+}
+
+void sort_segments(const std::vector<Segment_2>& unsorted_seg, const Point_2& firstPoint,
+						std::vector<Segment_2>& sorted_seg) {
+	sorted_seg.resize(unsorted_seg.size());
+	std::vector<Segment_2> available_segs = unsorted_seg;
+	
+	bool found_next = false;
+	Point_2 next_pt = firstPoint;
+
+	if (unsorted_seg.size()>10) {
+		std::cout << "init! next point = " << next_pt << std::endl;	
+	}
+	
+	for (auto seg: available_segs) {std::cout << "seg = " << seg << std::endl;}
+	int seg_n = available_segs.size();
+	for (int seg_i = 0; seg_i < seg_n; seg_i++) {
+		for (int i = 0; i < available_segs.size(); i++) {
+			if (available_segs[i].source() == next_pt) {
+				sorted_seg[seg_i] = available_segs[i];
+				found_next = true;
+			}
+			if (available_segs[i].target() == next_pt) {
+				sorted_seg[seg_i] = Segment_2(available_segs[i].target(),available_segs[i].source());
+				found_next = true;
+			}
+			if (found_next) {
+				available_segs.erase(available_segs.begin() + i);
+				next_pt = sorted_seg[seg_i].target();
+				if (seg_i < 10) {
+					std::cout << "found segment " << sorted_seg[seg_i] << std::endl;
+					std::cout << "next pt = " << next_pt << std::endl;	
+				}
+				break;
+			}
+		}
+	}
+	
+
+
+
 }

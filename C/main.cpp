@@ -54,12 +54,28 @@ int main(int argc, char *argv[])
   }
   DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
   dogCreasePattern.get_visualization_mesh(V, F, faceColors);
-
+  /*
+  std::vector<std::vector<Point_2>> all_faces_pts;
+  dogCreasePattern.initial_arrangement.get_faces_pts(all_faces_pts);
+  std::vector<Point_2> bnd_pts = all_faces_pts[1];
+  Eigen::MatrixXd bnd_pts1(bnd_pts.size(),3),bnd_pts2(bnd_pts.size(),3);
+  
+  for (int i = 0; i < bnd_pts.size();i++) {
+  
+    double x = CGAL::to_double(bnd_pts[i].x()), y = CGAL::to_double(bnd_pts[i].y());
+    int next_i = (i+1)%bnd_pts.size();
+    double next_x = CGAL::to_double(bnd_pts[next_i].x()), next_y = CGAL::to_double(bnd_pts[next_i].y());
+    bnd_pts1.row(i) << x,y,0;
+    bnd_pts2.row(i) << next_x,next_y,0;
+  }
+  */
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);
+  viewer.core.align_camera_center(V,F);
   viewer.data().set_face_based(true);
   viewer.data().set_colors(faceColors);
+  //viewer.data().add_edges(bnd_pts1,bnd_pts2,Eigen::RowVector3d(1,0,0));
   viewer.data().show_lines = false;
   viewer.launch();
 }
