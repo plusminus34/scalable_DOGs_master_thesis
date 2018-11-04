@@ -6,6 +6,7 @@
 #include <igl/triangle/triangulate.h>
 
 #include <boost/range/irange.hpp>
+#include <random>
 
 void PlanarArrangement::add_segments(const std::vector<Segment_2>& segments) {
 	insert(arr, segments.begin(), segments.end());
@@ -71,11 +72,16 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
 	igl::combine(V_list,F_list, V, F);
 
 	// Color every polygonal face (now represented as many triangles for rendering) in another color
+	// shuffle colors
+
+	std::random_device rd; std::mt19937 g(rd()); 
+	auto color_permute = boost::copy_range<std::vector<int>>(boost::irange(0, int(F_list.size())));
+	std::shuffle(color_permute.begin(), color_permute.end(), g);
 	Eigen::VectorXd components(F.rows());
 	int c = 0;
 	for (int i = 0; i < F_list.size();i++) {
 		for (int j = 0; j < F_list[i].rows(); j++) {
-			components[c] = i;
+			components[c] = color_permute[i];
 			c++;
 		}
 	}
