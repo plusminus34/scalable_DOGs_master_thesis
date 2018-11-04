@@ -13,8 +13,6 @@ public:
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 
 	void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
-
-	PlanarArrangement initial_arrangement;
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding);
@@ -22,7 +20,7 @@ private:
 
 
 	std::vector<Polyline_2> initial_polylines; // The boundary is the first one
-	
+	PlanarArrangement initial_arrangement;
 	OrthogonalGrid orthogonalGrid;
 	std::vector<Polyline_2> clipped_polylines;
 	PlanarArrangement clipped_grid_arrangement;
