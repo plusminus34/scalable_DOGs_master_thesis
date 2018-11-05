@@ -3,13 +3,13 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 1216.4 774.1" style="enable-background:new 0 0 1216.4 774.1;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;stroke:#EF4545;stroke-miterlimit:10;}
-	.st1{fill:none;stroke:#FF0000;stroke-miterlimit:10;}
-	.st2{fill:none;stroke:#F90000;stroke-miterlimit:10;}
+	.st0{fill:none;stroke:#FF0000;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#F90000;stroke-miterlimit:10;}
+	.st2{fill:none;stroke:#EF4545;stroke-miterlimit:10;}
 </style>
-<path class="st0" d="M1156,774.1c-42.8-60.3-343.7-479.7-815-484.5c-136.2-1.4-252.2,31-340,67"/>
-<line class="st1" x1="517.9" y1="1.6" x2="1213.4" y2="193.4"/>
-<path class="st1" d="M0,155.8C180.4,55.3,274.4,75.5,353.5,96.1c221.9,57.8,299.7,302.7,453,275c93.9-17,119.7-118.8,229-120
+<line class="st0" x1="517.9" y1="1.6" x2="1213.4" y2="193.4"/>
+<path class="st0" d="M0,155.8C180.4,55.3,274.4,75.5,353.5,96.1c221.9,57.8,299.7,302.7,453,275c93.9-17,119.7-118.8,229-120
 	c68.2-0.8,145,63.1,180.9,95"/>
-<line class="st2" x1="993.5" y1="1.6" x2="918.3" y2="112"/>
+<line class="st1" x1="993.5" y1="1.6" x2="918.3" y2="112"/>
+<path class="st2" d="M0,358.1c62.4-33.6,236.5-116.4,452.5-77c390.9,71.3,540.2,473.7,547,493"/>
 </svg>
