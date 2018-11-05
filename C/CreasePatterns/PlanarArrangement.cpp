@@ -19,16 +19,6 @@ void PlanarArrangement::add_segment(const Segment_2& segment) {
 void PlanarArrangement::add_polylines(const std::vector<Polyline_2>& polylines) {
 	// we need to insert the whole polyline together since we are using an arrangement with history
 	insert(arr, polylines.begin(), polylines.end());
-	/*
-	//for (auto p: polylines) { std::cout << "p = " << p << std::endl << "ok?" << std::endl;}
-	std::vector<Segment_2> segments;
-	for (auto polyline : polylines) {
-		for (auto it = polyline.subcurves_begin(); it != polyline.subcurves_end(); it++) {
-			segments.push_back(*it);
-		}	
-	}
-	add_segments(segments);
-	*/
 }
 
 void PlanarArrangement::add_polyline(const Polyline_2& polyline) {

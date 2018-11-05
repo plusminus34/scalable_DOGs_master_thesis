@@ -77,7 +77,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       auto src = (*input_edge)->source(), target = (*input_edge)->target();
       auto seg = Segment_2(src->point(),target->point());
 
-      std::cout << "Edge from " << seg << " to " << seg << std::endl;
+      //std::cout << "Edge = " << seg << std::endl;
 
       point_to_deg[src->point()] = src->degree();
       point_to_deg[target->point()] = target->degree();
