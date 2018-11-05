@@ -14,6 +14,7 @@ void read_svg_crease_pattern(const std::string& path, CGAL::Bbox_2& bbox, std::v
 	const string cmd = string("python ../../python/svg_to_polylines.py ") + path + " " + tmp_folder;
 	int res = system(cmd.c_str());
 	cout << "cmd returned " << res << endl;
+	//int wait; std::cin >> wait;
 
 	// Used to read the bounding box and polylines
 	Eigen::MatrixXd P; Eigen::MatrixXi Fdummy; 
@@ -36,7 +37,7 @@ void read_svg_crease_pattern(const std::string& path, CGAL::Bbox_2& bbox, std::v
 		polylines.push_back(poly);
 	}
 
-	//system(std::string(std::string("rm -r ")+tmp_folder).c_str());
+	system(std::string(std::string("rm -r ")+tmp_folder).c_str());
 }
 
 Polyline_2 points_to_polylines_snapped_at_start_end(const Eigen::MatrixXd& p, const CGAL::Bbox_2& bbox) {

@@ -37,7 +37,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	bool is_on_v = grid_arr.locate_point_on_vertex(p1,v);
 	if (!is_on_v) std::cout << "Error! Point not on grid!" << std::endl;
 
-  std::cout << "yo" << std::endl;
 	// Find the edge of the curve by going through all edges emenating from that vertex and checking for collinearity with the input
 	Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
   	first = curr = v->incident_halfedges();
@@ -64,9 +63,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     		//std::cout << "Found the original polyline edge with source = " << edge_handle->source()->point() << " target = " << edge_handle->target()->point() << std::endl;
     	}
   	} while (++curr != first);
-    std::cout << "da" << std::endl;
   	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
-    std::cout << "bla" << std::endl;
   	// For now assume that this edge has only one originating curve (todo this can be false)
   	
     // We now have all the edges induced by the original input, the problem is that they are not ordered.

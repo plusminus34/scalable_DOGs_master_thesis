@@ -70,5 +70,6 @@ if __name__ == "__main__":
 		cnt = 1
 		for poly in polylines:
 			save_polyline(poly,out_folder+"/"+"poly-"+str(cnt)+".obj")
+			cnt +=1
 	else:
 		print 'Usage: svg_to_polylines.py out_folder'
