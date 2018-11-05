@@ -44,6 +44,16 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 		// Call snap rounding with a small pixel size
 		auto pixel_size = 1e-8*CGAL::min(bbox.xmax()-bbox.xmin(),bbox.ymax()-bbox.ymax());
 		/*
+		// TODO: 
+		// 		1) Convert initial polylines to segment lists, where you save the number of segments each one has.
+		// 		2) Concatenate the segments list into a big one.
+		//		3) Call snap rounding to get the same amount of output polylines.
+		//		4) Create new polylines from each one of the previous ones.
+		//
+		//
+		// First check it on easy input. Maybe 1_poly.svg. What happens to the border? 
+		//	(I guess whatever snapping happens it's ok since a rectangle will remain a rectangle, but this might require updating the bbox itself.
+		//	Actually not because the boundary polygon is already here and its all we need)
 		CGAL::snap_rounding_2<Snap_Traits,Polyline_list_2,Polyline_list_2>(tmp_polylines.begin(), tmp_polylines.end(), initial_polylines, 
 																			pixel_size, false, false, 5);	
 																			*/
