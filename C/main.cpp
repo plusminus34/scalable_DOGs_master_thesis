@@ -1,6 +1,7 @@
 #include <igl/opengl/glfw/Viewer.h>
 
 #include <igl/combine.h>
+#include <igl/Timer.h>
 
 //#include "CreasePatterns/PatternBoundary.h"
 #include "CreasePatterns/DogCreasePattern.h"
@@ -52,7 +53,9 @@ int main(int argc, char *argv[])
     Polyline_2 polyline2 = polyline_construct(polyline_pts2.begin(), polyline_pts2.end());
     polylines = {polyline1,polyline2};
   }
+  //igl::Timer timer; double t = timer.getElapsedTime();
   DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
+  //t = timer.getElapsedTime()-t; std::cout << "pattern creation took " << t << " seconds" << endl; int wait; cin >> wait;
   dogCreasePattern.get_visualization_mesh(V, F, faceColors);
   /*
   std::vector<std::vector<Point_2>> all_faces_pts;

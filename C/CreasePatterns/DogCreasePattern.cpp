@@ -15,6 +15,7 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(initial_polylines.begin(), initial_polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
+  	//for (auto pt: polylines_intersections) {std::cout << "singular pt at " << pt << std::endl;} int wait; std::cin >> wait;
   	// Create an orthogonal grid with singularities
   	orthogonalGrid.add_additional_grid_points(polylines_intersections);
   	orthogonalGrid.initialize_grid();
