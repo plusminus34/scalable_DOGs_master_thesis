@@ -18,9 +18,8 @@ public:
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 
-  void get_faces_pts(std::vector<std::vector<Point_2>>& pts);
-
-  void get_faces_polygons(std::vector<Polygon_2>& polygons);
+  void get_faces_pts(std::vector<std::vector<Point_2>>& pts) const;
+  void get_faces_polygons(std::vector<Polygon_2>& polygons) const;
 
 
   // true if it exists, false otherwise
@@ -32,7 +31,7 @@ public:
   int get_vertices_n();
 
 private:
-	void get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p);
+	void get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) const;
 
 	Geom_traits_2 traits;
 	Arrangement_2 arr;

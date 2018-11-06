@@ -14,10 +14,21 @@ DogBuilder::DogBuilder(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polyli
 
 
 void DogBuilder::get_submeshes(std::vector<Eigen::MatrixXd>& V, std::vector<Eigen::MatrixXi>& F) {
-	// Create faces polygons and find their intersections with the faces
+	// Get the faces' polygons and find their intersections with the faces
+	std::vector<Polygon_2> facePolygons; 
+	creasePattern.get_clipped_arrangement().get_faces_polygons(facePolygons);
 
-	// Call get_faces_polygons on the clipped arrangement
+	std::vector<std::vector<bool>> sqr_in_polygon(facePolygons.size());
 	// Iterate over the polygons and add faces that intersect
+	int face_i = 0;
+	for (auto poly: facePolygons) {
+		sqr_in_polygon[face_i].resize(gridPolygons.size());
+		//for (auto gridSqr: gridPolygons) {
+		for (int f_i = 0; f_i < gridPolygons.size(); f_i++) {
+			sqr_in_polygon[face_i][f_i] = CGAL::do_intersect(poly, gridPolygons[f_i]);
+		}
+		face_i++;
+	}
 	// Implement a function that creates a mesh given a grid and a boolean flag for each face (whether it's in or out)
 	// Count the occurence of each faces, those with one occurences are inner faces and are usefull later for rendering
 	// Return the meshes

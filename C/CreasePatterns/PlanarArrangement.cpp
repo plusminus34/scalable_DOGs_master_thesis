@@ -86,7 +86,7 @@ int PlanarArrangement::get_vertices_n() {
 	return arr.number_of_vertices();
 }
 
-void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) {
+void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) const {
 	typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
 	// switch edge direction if not ordered as the segments
@@ -127,7 +127,7 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	} while (curr != circ);
 }
 
-void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) {
+void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) const {
 	pts.clear();
 	// Build faces polygons
 	Arrangement_2::Face_const_iterator fit;
@@ -141,8 +141,10 @@ void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) {
 	}
 }
 
-void get_faces_polygons(std::vector<Polygon_2>& polygons) {
-	// TODO
+void PlanarArrangement::get_faces_polygons(std::vector<Polygon_2>& polygons) const {
+	std::vector<std::vector<Point_2>> facePts; get_faces_pts(facePts);
+	polygons.resize(facePts.size());
+	for (int i = 0; i < facePts.size();i++) {polygons[i] = Polygon_2(facePts[i].begin(), facePts[i].end());}
 }
 
 void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing,
