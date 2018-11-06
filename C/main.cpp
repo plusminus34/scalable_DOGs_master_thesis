@@ -8,6 +8,7 @@
 #include "CreasePatterns/OrthogonalGrid.h"
 #include "CreasePatterns/PlanarArrangement.h"
 #include "CreasePatterns/SVGReader.h"
+#include "CreasePatterns/DogBuilder.h"
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arr_segment_traits_2.h>
@@ -55,8 +56,10 @@ int main(int argc, char *argv[])
   }
   //igl::Timer timer; double t = timer.getElapsedTime();
   DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
-  //t = timer.getElapsedTime()-t; std::cout << "pattern creation took " << t << " seconds" << endl; int wait; cin >> wait;
   dogCreasePattern.get_visualization_mesh(V, F, faceColors);
+  //DogCreasePattern anotherCreasePattern(dogCreasePattern);
+  DogBuilder dogBuilder(dogCreasePattern);
+
   /*
   std::vector<std::vector<Point_2>> all_faces_pts;
   dogCreasePattern.initial_arrangement.get_faces_pts(all_faces_pts);

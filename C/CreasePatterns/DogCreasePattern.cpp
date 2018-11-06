@@ -32,6 +32,12 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	
 }
 
+DogCreasePattern::DogCreasePattern(const DogCreasePattern& cP) : initial_polylines(cP.initial_polylines), initial_arrangement(cP.initial_arrangement),
+					orthogonalGrid(cP.orthogonalGrid), clipped_polylines(cP.clipped_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
+					bbox(cP.bbox) {
+	// empty
+}
+
 void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
 	// Create an arrangement with a boundary box polygon and the polylings
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);

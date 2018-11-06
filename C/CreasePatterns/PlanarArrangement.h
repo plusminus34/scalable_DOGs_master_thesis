@@ -7,7 +7,7 @@ class PlanarArrangement {
   
 public:
   PlanarArrangement() : arr(&traits){};
-  PlanarArrangement(PlanarArrangement& arrangement) : arr(arrangement.arr) {}
+  PlanarArrangement(const PlanarArrangement& arrangement) : arr(arrangement.arr) {}
 
   // multiple polylines
   void add_segments(const std::vector<Segment_2>& segments);
