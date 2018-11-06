@@ -2,6 +2,9 @@
 
 #include "SVGReader.h"
 
+#include <igl/combine.h>
+#include <igl/remove_unreferenced.h>
+
 DogBuilder::DogBuilder(const DogCreasePattern& i_dogCreasePattern) : creasePattern(i_dogCreasePattern) {
 	initialize();
 }
@@ -44,20 +47,27 @@ void DogBuilder::set_sqr_in_polygon() {
 
 void DogBuilder::generate_mesh() {
 	submesh_n = gridPolygons.size();
-	submeshV.resize(submesh_n); submeshF.resize(submesh_n);
-
+	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n);
+	
 	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
 	init_mesh_vertices_and_faces_from_grid(gridV, gridF);
-	
+	int poly_idx = 0;
 	for (auto submesh_flags: sqr_in_polygon ) {
 		Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
 		int f_cnt = std::count(submesh_flags.begin(), submesh_flags.end(), true);
-		std::cout << "f_cnt = " << f_cnt << std::endl;
 		submeshF.resize(f_cnt,4); int cnt = 0;
 		for (int fi = 0; fi < submesh_flags.size(); fi++) {
-			if (submesh_flags[fi]) submeshF.row(cnt++) << gridF.row(fi);
+			if (submesh_flags[fi]) {
+				submeshF.row(cnt++) << gridF.row(fi);	
+			} 
 		}
+		Eigen::MatrixXi IV;
+		igl::remove_unreferenced(gridV,submeshF,submeshV,submeshF,IV);
+		submeshVList[poly_idx] = submeshV;
+		submeshFList[poly_idx] = submeshF;
+		poly_idx++;
 	}
+	igl::combine(submeshVList,submeshFList, V, F);
 }
 
 void DogBuilder::init_mesh_vertices_and_faces_from_grid(Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF) {
@@ -68,8 +78,7 @@ void DogBuilder::init_mesh_vertices_and_faces_from_grid(Eigen::MatrixXd& gridV, 
 	for (int y_i = 0; y_i < gy_coords.size(); y_i++) {
 		for (int x_i = 0; x_i < gx_coords.size(); x_i++) {
 			gridV.row(y_i*(gx_coords.size())+x_i) << CGAL::to_double(gx_coords[x_i]),CGAL::to_double(gy_coords[y_i]),0;
-
-			if ((x_i < gx_coords.size()) && (y_i < gy_coords.size())) {
+			if ((x_i < gx_coords.size()-1) && (y_i < gy_coords.size()-1)) {
 				// In DDG index notation add the face [F,F_1,F_12,F_2]
 				gridF.row(fcnt) << y_i*gx_coords.size()+x_i, y_i*gx_coords.size()+x_i+1,(y_i+1)*gx_coords.size()+x_i+1,(y_i+1)*gx_coords.size()+x_i;
 				fcnt++;

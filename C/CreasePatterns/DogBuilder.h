@@ -24,6 +24,6 @@ private:
 
 	// Generated mesh
 	int submesh_n;
-	std::vector<Eigen::MatrixXd> submeshV; std::vector<Eigen::MatrixXi> submeshF;
-	Eigen::MatrixXd V; Eigen::MatrixXi Fsqr;
+	std::vector<Eigen::MatrixXd> submeshVList; std::vector<Eigen::MatrixXi> submeshFList;
+	Eigen::MatrixXd V; Eigen::MatrixXi F;
 };
