@@ -141,6 +141,10 @@ void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) {
 	}
 }
 
+void get_faces_polygons(std::vector<Polygon_2>& polygons) {
+	// TODO
+}
+
 void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing,
 							Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
 	// Visualize all

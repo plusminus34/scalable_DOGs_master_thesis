@@ -20,6 +20,8 @@ public:
 
   void get_faces_pts(std::vector<std::vector<Point_2>>& pts);
 
+  void get_faces_polygons(std::vector<Polygon_2>& polygons);
+
 
   // true if it exists, false otherwise
   bool locate_point_on_vertex(const Point_2& pt, Vertex_const_handle& v);

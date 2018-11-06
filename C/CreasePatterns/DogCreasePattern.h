@@ -12,8 +12,9 @@ public:
 	DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding = false);
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 
-	PlanarArrangement get_clipped_arrangement() {return clipped_grid_arrangement;}
-	std::vector<Polyline_2> get_clipped_polylines() {return clipped_polylines;}
+	const PlanarArrangement& get_clipped_arrangement() {return clipped_grid_arrangement;}
+	const OrthogonalGrid& get_orthogonal_grid() {return orthogonalGrid;}
+	const std::vector<Polyline_2>& get_clipped_polylines() {return clipped_polylines;}
 
 	void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
 private:
