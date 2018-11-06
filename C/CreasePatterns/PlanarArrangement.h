@@ -17,6 +17,7 @@ public:
 
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
+  void get_visualization_edges(Eigen::MatrixXd& bnd_pts1, Eigen::MatrixXd& bnd_pts2);
 
   void get_faces_pts(std::vector<std::vector<Point_2>>& pts) const;
   void get_faces_polygons(std::vector<Polygon_2>& polygons) const;
@@ -39,6 +40,9 @@ private:
 
 void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing, Eigen::MatrixXd& V, Eigen::MatrixXi& F,
              Eigen::MatrixXd& colors);
+
+void get_multiple_arrangements_visualization_edges(std::vector<PlanarArrangement*> arrangements, double spacing, 
+  Eigen::MatrixXd& bnd_pts1, Eigen::MatrixXd& bnd_pts2);
 
 void sort_segments(const std::vector<Segment_2>& unsorted_seg, const Point_2& firstPoint,
                 std::vector<Segment_2>& sorted_seg);

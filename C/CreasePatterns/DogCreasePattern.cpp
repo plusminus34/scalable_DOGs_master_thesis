@@ -70,7 +70,8 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 	initial_arrangement.add_polylines(initial_polylines);
 }
 
-void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors) {
+void DogCreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
+				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_polylines);
@@ -80,6 +81,7 @@ void DogCreasePattern::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixX
 	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
+	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
 }
 
 void DogCreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {

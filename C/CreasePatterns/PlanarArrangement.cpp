@@ -141,6 +141,22 @@ void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) co
 	}
 }
 
+void PlanarArrangement::get_visualization_edges(Eigen::MatrixXd& bnd_pts1, Eigen::MatrixXd& bnd_pts2) {
+	/*
+  std::vector<std::vector<Point_2>> all_faces_pts; 
+  get_faces_pts(all_faces_pts);
+  std::vector<Point_2> bnd_pts = all_faces_pts[1];
+  bnd_pts1.resize(bnd_pts.size(),3); bnd_pts2.resize(bnd_pts.size(),3);
+  
+  for (int i = 0; i < bnd_pts.size();i++) {
+    double x = CGAL::to_double(bnd_pts[i].x()), y = CGAL::to_double(bnd_pts[i].y());
+    int next_i = (i+1)%bnd_pts.size();
+    double next_x = CGAL::to_double(bnd_pts[next_i].x()), next_y = CGAL::to_double(bnd_pts[next_i].y());
+    bnd_pts1.row(i) << x,y,0;
+    bnd_pts2.row(i) << next_x,next_y,0;
+  }
+  */
+}
 void PlanarArrangement::get_faces_polygons(std::vector<Polygon_2>& polygons) const {
 	std::vector<std::vector<Point_2>> facePts; get_faces_pts(facePts);
 	polygons.resize(facePts.size());
@@ -170,6 +186,26 @@ void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*
 	}
 }
 
+void get_multiple_arrangements_visualization_edges(std::vector<PlanarArrangement*> arrangements, double spacing, 
+  Eigen::MatrixXd& bnd_pts1, Eigen::MatrixXd& bnd_pts2) {
+
+  std::vector<Point_2> pts1,pts2;
+  for (int i = 0; i < arrangements.size(); i++) {
+  	std::vector<std::vector<Point_2>> faces_pts; arrangements[i]->get_faces_pts(faces_pts);
+  	for (auto f_pts: faces_pts) {
+  		// add spacing
+  		for(auto& pt : f_pts) pt = Point_2(pt.x()+spacing*i,pt.y());
+  		// add to list of edges
+  		pts1.insert(pts1.end(),f_pts.begin(),f_pts.end()-1);
+  		pts2.insert(pts2.end(),f_pts.begin()+1,f_pts.end());
+  	}
+  }
+  bnd_pts1.resize(pts1.size(),3); bnd_pts2.resize(pts2.size(),3);
+  for (int i = 0; i < pts1.size();i++) {
+    bnd_pts1.row(i) << CGAL::to_double(pts1[i].x()),CGAL::to_double(pts1[i].y()),0;
+    bnd_pts2.row(i) << CGAL::to_double(pts2[i].x()),CGAL::to_double(pts2[i].y()),0;
+  }
+}
 void sort_segments(const std::vector<Segment_2>& unsorted_seg, const Point_2& firstPoint,
 						std::vector<Segment_2>& sorted_seg) {
 	sorted_seg.resize(unsorted_seg.size());

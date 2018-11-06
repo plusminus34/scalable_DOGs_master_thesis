@@ -17,7 +17,8 @@ public:
 	const OrthogonalGrid& get_orthogonal_grid() {return orthogonalGrid;}
 	const std::vector<Polyline_2>& get_clipped_polylines() {return clipped_polylines;}
 
-	void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
+	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
+			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding);
