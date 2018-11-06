@@ -9,7 +9,7 @@
 class DogCreasePattern {
   
 public:
-	DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, int x_res, int y_res, bool snap_rounding = false);
+	DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding = false);
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 
 	PlanarArrangement get_clipped_arrangement() {return clipped_grid_arrangement;}
@@ -27,5 +27,5 @@ private:
 	OrthogonalGrid orthogonalGrid;
 	std::vector<Polyline_2> clipped_polylines;
 	PlanarArrangement clipped_grid_arrangement;
-	const CGAL::Bbox_2& bbox;
+	const CGAL::Bbox_2 bbox;
 };

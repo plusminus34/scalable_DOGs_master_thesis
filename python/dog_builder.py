@@ -56,6 +56,15 @@ def dog_builder(V_list,F_list, polylines):
 
 	# TODO1: First find unique indices of V and save them, then delaunay that
 	# Or don't actually, this should still work
+
+
+
+	#####
+	"""
+	THIS WONT WORK. For instance if some vertices have more than 2 versions due to multiple curves.
+	"""
+	#####
+	DOESNT_WORK
 	V_render = np.concatenate((np.copy(V),polylines_v))
 	F_render = Delaunay(V_render).simplices
 	# use the constraints to get a list of edge and weights vertices

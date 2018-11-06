@@ -9,6 +9,8 @@
 #include <CGAL/Snap_rounding_traits_2.h>
 #include <CGAL/Snap_rounding_2.h>
 
+#include <CGAL/Boolean_set_operations_2.h>
+
 typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
 typedef Kernel::FT                                        Number_type;
 typedef CGAL::Arr_segment_traits_2<Kernel>                Segment_traits_2;
@@ -29,3 +31,5 @@ typedef CGAL::Snap_rounding_traits_2<Kernel>     Snap_Traits;
 typedef std::list<Polyline_2>                    Polyline_list_2;
 
 typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2_without_history;
+
+typedef CGAL::Polygon_2<Kernel>                           Polygon_2;

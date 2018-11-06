@@ -7,7 +7,7 @@
 
 #include <igl/combine.h>
 
-DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, int x_res, int y_res, bool snap_rounding) :
+DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 	init_initial_arrangement_and_polylines(bbox, polylines, snap_rounding);
 	// get poly lines intersections
