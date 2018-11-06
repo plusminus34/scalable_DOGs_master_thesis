@@ -33,3 +33,5 @@ typedef std::list<Polyline_2>                    Polyline_list_2;
 typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2_without_history;
 
 typedef CGAL::Polygon_2<Kernel>                           Polygon_2;
+typedef CGAL::Polygon_with_holes_2<Kernel>                Polygon_with_holes_2;
+typedef std::list<Polygon_with_holes_2>                 Polygon_set;

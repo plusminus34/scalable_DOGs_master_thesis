@@ -13,9 +13,17 @@ private:
 	void initialize();
 	void init_grid_polygons();
 	void set_sqr_in_polygon();
-	//const CGAL::Bbox_2 init_bbox; std::vector<Polyline_2> init_polylines;
+	void generate_mesh();
+
+	void init_mesh_vertices_and_faces_from_grid(Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF);
+
 	DogCreasePattern creasePattern;
 	std::vector<Polygon_2> gridPolygons;
 	// Per polygon contains a flag (whether face 'i' intersects that polygon)
 	std::vector<std::vector<bool>> sqr_in_polygon;
+
+	// Generated mesh
+	int submesh_n;
+	std::vector<Eigen::MatrixXd> submeshV; std::vector<Eigen::MatrixXi> submeshF;
+	Eigen::MatrixXd V; Eigen::MatrixXi Fsqr;
 };
