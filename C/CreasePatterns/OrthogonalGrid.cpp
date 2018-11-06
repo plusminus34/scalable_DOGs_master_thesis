@@ -44,24 +44,23 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   	Arrangement_2::Halfedge_const_handle poly_edge;
   	do {
     	// Note that the current halfedge is directed from u to v:
-    	Arrangement_2::Vertex_const_handle u = curr->source();
+    	//Arrangement_2::Vertex_const_handle u = curr->source();
     	Arrangement_2::Halfedge_const_handle edge_handle = curr->twin();//->handle();
 
-
-      Point_2 next_curve_point = edge_handle->curve().subcurves_begin()->target();
-      if (edge_handle->curve().subcurves_begin()->source() != curr->source()->point()) {
-        int last_seg_i = edge_handle->curve().subcurves_end()-edge_handle->curve().subcurves_begin();
-        next_curve_point = edge_handle->curve().subcurves_begin()->source();
+      auto curve_first_pt = edge_handle->curve().subcurves_begin()->source();
+      int last_seg_i = edge_handle->curve().subcurves_end()-edge_handle->curve().subcurves_begin();
+      auto first_seg = *(edge_handle->curve().subcurves_begin());
+      Point_2 next_curve_point = first_seg.target();
+      if (p1!= first_seg.source()) {
+        next_curve_point = first_seg.source();
       }
-      
-
-    	// Todo: In case the original edge is and edge of the grid, this could fail, and we will need further checks (origin of the edge)
-    	//	This is possible with the history data but not needed atm
-    	//if (CGAL::collinear(p1, p2, edge_handle->target()->point())) {
       if (CGAL::collinear(p1, p2, next_curve_point)) {
-    		poly_edge = edge_handle;
+        poly_edge = edge_handle;
+        //std::cout << "found poly edge to = " << (*poly_edge)->source() << std::endl;
     		//std::cout << "Found the original polyline edge with source = " << edge_handle->source()->point() << " target = " << edge_handle->target()->point() << std::endl;
+        break;
     	}
+      
   	} while (++curr != first);
   	Arrangement_2::Originating_curve_iterator ocit = grid_arr.get_arrangement_internal()->originating_curves_begin(poly_edge);
   	// For now assume that this edge has only one originating curve (todo this can be false)
@@ -77,7 +76,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       auto src = (*input_edge)->source(), target = (*input_edge)->target();
       auto seg = Segment_2(src->point(),target->point());
 
-      //std::cout << "Edge = " << seg << std::endl;
+      std::cout << "Edge = " << seg << std::endl;
 
       point_to_deg[src->point()] = src->degree();
       point_to_deg[target->point()] = target->degree();

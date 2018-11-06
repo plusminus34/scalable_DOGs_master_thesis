@@ -113,6 +113,7 @@ def sample_polylines(path,bounds):
 def round_if_close(pt,close_pt,eps):
 	print 'pt = ', pt, ' close_pt = ', close_pt
 	if (abs(pt-close_pt) < eps):
+		print 'rounding to ', close_pt
 		return close_pt
 	return pt
 
