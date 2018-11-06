@@ -64,18 +64,24 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
 	// Color every polygonal face (now represented as many triangles for rendering) in another color
 	// shuffle colors
 
-	std::random_device rd; std::mt19937 g(rd()); 
-	auto color_permute = boost::copy_range<std::vector<int>>(boost::irange(0, int(F_list.size())));
-	std::shuffle(color_permute.begin(), color_permute.end(), g);
+	//std::random_device rd; std::mt19937 g(rd()); 
+	//auto color_permute = boost::copy_range<std::vector<int>>(boost::irange(0, int(F_list.size())));
+	//std::shuffle(color_permute.begin(), color_permute.end(), g);
 	Eigen::VectorXd components(F.rows());
 	int c = 0;
 	for (int i = 0; i < F_list.size();i++) {
 		for (int j = 0; j < F_list[i].rows(); j++) {
-			components[c] = color_permute[i];
+			components[c] = i;//color_permute[i];
 			c++;
 		}
 	}
-	igl::jet(components,true,colors);
+	if (components.maxCoeff() < 15) {
+		igl::jet(components,true,colors);
+	} else {
+		colors.resize(F.rows(),3);
+		// too many colors, better to set everything to white
+		for (int i = 0; i < F.rows(); i++) colors.row(i) << 1,1,1;
+	}
 }
 
 int PlanarArrangement::get_faces_n() {

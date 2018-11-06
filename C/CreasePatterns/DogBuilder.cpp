@@ -39,7 +39,7 @@ void DogBuilder::set_sqr_in_polygon() {
   				face_intersection = !all_areas_are_zero;
 			}
 			sqr_in_polygon[face_i][f_i] = face_intersection;
-			std::cout << "face " << f_i << " in polygon = " << sqr_in_polygon[face_i][f_i] << std::endl;
+			//std::cout << "face " << f_i << " in polygon = " << sqr_in_polygon[face_i][f_i] << std::endl;
 		}
 		face_i++;
 	}
