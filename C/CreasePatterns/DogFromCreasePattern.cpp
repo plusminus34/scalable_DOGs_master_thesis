@@ -14,7 +14,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, V, F);
 
-	generate_constraints(foldingConstraints);
+	generate_constraints(creasePattern, foldingConstraints);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces();
 
 	return Dog(V,F,foldingConstraints,F_ren);
@@ -84,8 +84,22 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 }
 
 
-void generate_constraints(DogFoldingConstraints& foldingConstraints) {
-	// TODO
+void generate_constraints(const CreasePattern& creasePattern, DogFoldingConstraints& foldingConstraints) {
+	// Get all the polylines unique points.
+	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
+	std::set<Point_2> constrained_pts;
+	for (auto poly : polyline_pts) {
+		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+			constrained_pts.insert(seg_i->source()); constrained_pts.insert(seg_i->target());
+		} 
+	}
+	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
+	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
+	for (auto pt: constrained_pts) {
+		std::pair<Point_2,Point_2> edge_pts; double t;
+		orthGrid.get_pt_edge_coordinates(pt, edge_pts,t);
+	}
+	// 
 }
 
 Eigen::MatrixXi generate_rendered_mesh_faces() {

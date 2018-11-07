@@ -12,5 +12,5 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 					 const std::vector<std::vector<bool>>& sqr_in_polygon, Eigen::MatrixXd& V, Eigen::MatrixXi& F);
 void init_mesh_vertices_and_faces_from_grid(const CreasePattern& creasePattern, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF);
 
-void generate_constraints(DogFoldingConstraints& foldingConstraints);
+void generate_constraints(const CreasePattern& creasePattern, DogFoldingConstraints& foldingConstraints);
 Eigen::MatrixXi generate_rendered_mesh_faces();

@@ -61,8 +61,6 @@ int main(int argc, char *argv[])
 
   Dog dog(dog_from_crease_pattern(creasePattern));
 
-
-
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   viewer.data().set_mesh(V, F);

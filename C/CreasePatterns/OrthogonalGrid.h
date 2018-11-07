@@ -24,8 +24,14 @@ public:
 	const std::vector<Number_type>& get_x_coords() const {return x_coords;}
 	const std::vector<Number_type>& get_y_coords() const {return y_coords;}
 
+	// Return true if the point pt is on an edge, false otherwise
+	// In case it is on an edge, return the two vertices next to it v1,v2, and a weight t s.t pt = t*v1 + (1-t)*v2
+	// In case it is on a vertex, t will be 1 (and v1=v2 but in that case one should ignore v2)
+	bool get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, double& t) const;
+
 private:
-	bool is_point_on_grid(const Point_2& pt);
+	// True if it is on the grid lines (edges or vertices)
+	bool is_point_on_grid(const Point_2& pt) const;
 	void subdivide_grid_at_pt(const Point_2& pt);
 	void create_spaced_range(const Number_type min, const Number_type max, const int num_points, std::vector<Number_type>& range);
 
