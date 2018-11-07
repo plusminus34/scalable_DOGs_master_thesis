@@ -12,6 +12,8 @@ class Dog {
 public:
 	Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogFoldingConstraints foldingConstraints, Eigen::MatrixXi F_ren);
 	Dog(const Dog& dog);
+
+	static void get_V_ren(const Eigen::MatrixXd& V, const DogFoldingConstraints& foldingConstraints, Eigen::MatrixXd& V_ren);
 	
 private:
 	// The quad mesh

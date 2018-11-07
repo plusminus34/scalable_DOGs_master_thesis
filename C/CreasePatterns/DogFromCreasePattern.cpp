@@ -16,7 +16,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, V, F);
 
 	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints);
-	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces();
+	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, V, foldingConstraints);
 
 	return Dog(V,F,foldingConstraints,F_ren);
 }
@@ -134,6 +134,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
 			exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
 		}
+		
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
 		for (int const_i = 0; const_i < global_edge_indices.size()-1; const_i++) {
 			foldingConstraints.edge_const_1.push_back(global_edge_indices[const_i]);
@@ -144,15 +145,23 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	// 
 }
 
-Eigen::MatrixXi generate_rendered_mesh_faces() {
+Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, const Eigen::MatrixXd& V, const DogFoldingConstraints& fC) {
 	Eigen::MatrixXi F_ren;
 	// The rendered mesh should have the vertices of V as well as polyline vertices.
 	// So V_ren = [V,V_p], where V_p is a (not necessarily unique) list of the polyline vertices, who'se values we can take from a constraints list.
-	// The faces can be obtained from the clipped arrangement, which contains only these vertices. 
+	// The faces can be obtained from the clipped arrangement with the grid, which contains only these vertices. 
 	// They will be written in coordinates, so we will first need to create a mapping between coordinates and indices in V_ren.
 	// We can first save the polygonal faces, and call igl::triangulate which will work perfectly as everything is convex.
 	// The only thing that will then be needed for rendering is to update V_p, which could be done with the constraints list.
-
+	
+	Eigen::MatrixXd V_ren; Dog::get_V_ren(V, fC, V_ren);
+	std::vector<Polygon_2> faces_polygons; 
+	// Get orth grid and add it the polylines
+	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
+	PlanarArrangement grid_with_snapped(orthGrid);
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_polylines());
+	grid_with_snapped.get_faces_polygons(faces_polygons);
+	
 	return F_ren;
 }
 

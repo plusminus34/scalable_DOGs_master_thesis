@@ -15,4 +15,5 @@ void init_mesh_vertices_and_faces_from_grid(const CreasePattern& creasePattern, 
 
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogFoldingConstraints& foldingConstraints);
-Eigen::MatrixXi generate_rendered_mesh_faces();
+Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, const Eigen::MatrixXd& V,
+			 const DogFoldingConstraints& foldingConstraints);

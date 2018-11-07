@@ -29,6 +29,10 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	
 	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
 	clipped_grid_arrangement.add_polylines(clipped_polylines);
+
+
+	//grid_with_snapped = orthogonalGrid;
+	//grid_with_snapped.add_polylines(clipped_polylines);
 	
 }
 
@@ -75,7 +79,6 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_polylines);
-
 	
 	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly};
 	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
