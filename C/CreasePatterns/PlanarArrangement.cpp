@@ -75,7 +75,7 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
 			c++;
 		}
 	}
-	if (components.maxCoeff() < 15) {
+	if (components.maxCoeff() < 2) {
 		igl::jet(components,true,colors);
 	} else {
 		colors.resize(F.rows(),3);
@@ -198,12 +198,15 @@ void get_multiple_arrangements_visualization_edges(std::vector<PlanarArrangement
   std::vector<Point_2> pts1,pts2;
   for (int i = 0; i < arrangements.size(); i++) {
   	std::vector<std::vector<Point_2>> faces_pts; arrangements[i]->get_faces_pts(faces_pts);
+  	for (auto f: faces_pts) {
+  		for (auto p : f) std::cout << p << std::endl;
+  	}
   	for (auto f_pts: faces_pts) {
   		// add spacing
   		for(auto& pt : f_pts) pt = Point_2(pt.x()+spacing*i,pt.y());
   		// add to list of edges
-  		pts1.insert(pts1.end(),f_pts.begin(),f_pts.end()-1);
-  		pts2.insert(pts2.end(),f_pts.begin()+1,f_pts.end());
+  		pts1.insert(pts1.end(),f_pts.begin(),f_pts.end());
+  		pts2.insert(pts2.end(),f_pts.begin()+1,f_pts.end());pts2.push_back(f_pts[0]);
   	}
   }
   bnd_pts1.resize(pts1.size(),3); bnd_pts2.resize(pts2.size(),3);
