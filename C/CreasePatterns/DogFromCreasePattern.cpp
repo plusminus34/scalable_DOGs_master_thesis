@@ -107,10 +107,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 		// Now find the indices of both points and add them as constraints
 		// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
-		// For now just brute force over it and worry about optimizing it later, if we want to interactively shift the curve in 2d rather than
-		//	deform a "constant curve" like we do now (which means this is called once on a pattern)
-		// for every submesh check if these points are both on it, and get their indices, add the submesh index and the other stuff to a list
-		//std::vector<int> submesh_containing_edge; std::
+		
 		Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
 		Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
 		std::vector<std::pair<int,int>> global_edge_indices;
@@ -131,11 +128,17 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			}
 			global_idx_base += submeshVList[sub_i].rows();
 		}
-		std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
+		//std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
 		// We then need to map it to the global V which just have the submeshes concatenated
 		if (!global_edge_indices.size()){
 			std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
 			exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
+		}
+		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
+		for (int const_i = 0; const_i < global_edge_indices.size()-1; const_i++) {
+			foldingConstraints.edge_const_1.push_back(global_edge_indices[const_i]);
+			foldingConstraints.edge_const_2.push_back(global_edge_indices[const_i+1]);
+			foldingConstraints.edge_coordinates.push_back(t);
 		}
 	}
 	// 
