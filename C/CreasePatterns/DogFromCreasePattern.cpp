@@ -162,22 +162,6 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 	grid_with_snapped.add_polylines(creasePattern.get_clipped_polylines());
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
-	// Replace the polygonal data with vertices indices. 
-	// First create a mapping between V_ren points and their indices
-	std::map<Eigen::RowVector3d,int> coord_to_idx;
-	// Doesn't matter if some are not unique
-	// TODO: Ah fuck this is bad. Some multiplied points are now the same, but are later not.
-	// 			How do we deal with that? There's really no choice but to first find the internal submesh faces and only polygonize
-	//			those at the corners (can distinguish those with the boolean flag)
-	for (int i = 0; i < V.rows(); i++) coord_to_idx[V.row(i)] = i;
-	// Go through the polygon and replace the vertices points by the mesh points
-
-
-	// This should be ok, just create the faces for V_list separately and then concatenate them with igl::combine
-	// For each one go through every face in the snapped whatever, and check if it's inside the polygon boundary
-	// If it is inside/on the boundary then add the face (after polygonoizing it).
-	// The faces are given in coordinates, but we need them in indices. 
-
 	// For every polygonal face, save a flag for every vertex in the arrangement specifying whether it's inside/on the boundary or not.
 	// This doesn't require intersection calculation. It just requires mapping coordinates of points to a vector of connected components indices.
 	// This will work for vertices points.
@@ -188,6 +172,8 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 	// After finding this connected component, translate the points to the indices in this component.
 	// This could be done by searching the vertices for the inner points in the mesh. If we don't find them we know these are polygonal points
 	//		which we can found on the later part in V_ren (doesn't matter which point we use as these are duplicated and equal anyhow).
+
+	// Afterwards we will have polygonal indices, all of them convex, and we could call igl::triangulate()
 	return F_ren;
 }
 
