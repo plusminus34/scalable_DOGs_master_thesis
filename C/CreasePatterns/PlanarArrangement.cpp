@@ -198,9 +198,6 @@ void get_multiple_arrangements_visualization_edges(std::vector<PlanarArrangement
   std::vector<Point_2> pts1,pts2;
   for (int i = 0; i < arrangements.size(); i++) {
   	std::vector<std::vector<Point_2>> faces_pts; arrangements[i]->get_faces_pts(faces_pts);
-  	for (auto f: faces_pts) {
-  		for (auto p : f) std::cout << p << std::endl;
-  	}
   	for (auto f_pts: faces_pts) {
   		// add spacing
   		for(auto& pt : f_pts) pt = Point_2(pt.x()+spacing*i,pt.y());

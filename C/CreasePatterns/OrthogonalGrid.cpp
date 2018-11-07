@@ -153,8 +153,8 @@ bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_
 
   auto x_lower_bound = std::lower_bound(x_coords.begin(),x_coords.end(),pt.x());
   auto x_upper_bound = std::upper_bound(x_coords.begin(),x_coords.end(),pt.x());
-  auto y_lower_bound = std::lower_bound(y_coords.begin(),y_coords.end(),pt.x());
-  auto y_upper_bound = std::upper_bound(y_coords.begin(),y_coords.end(),pt.x());
+  auto y_lower_bound = std::lower_bound(y_coords.begin(),y_coords.end(),pt.y());
+  auto y_upper_bound = std::upper_bound(y_coords.begin(),y_coords.end(),pt.y());
 
   Point_2 v1,v2;
   // The point is on the grid, so either *x_lower_bound == pt.x() or *y_lower_bound == pt.y() or both (in case it's a vertex)

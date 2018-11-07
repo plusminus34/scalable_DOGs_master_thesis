@@ -11,10 +11,11 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	set_sqr_in_polygon(creasePattern, gridPolygons, sqr_in_polygon);
 
 	// Generated mesh
+	std::vector<Eigen::MatrixXd> submeshVList; std::vector<Eigen::MatrixXi> submeshFList;
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
-	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, V, F);
+	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, V, F);
 
-	generate_constraints(creasePattern, foldingConstraints);
+	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces();
 
 	return Dog(V,F,foldingConstraints,F_ren);
@@ -31,7 +32,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 	int face_i = 0;
 	for (auto poly: facePolygons) {
 		sqr_in_polygon[face_i] = std::vector<bool>(gridPolygons.size(), false);
-		std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
+		//std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
 
 		for (int f_i = 0; f_i < gridPolygons.size(); f_i++) {
 			bool face_intersection = CGAL::do_intersect(poly, gridPolygons[f_i]);
@@ -58,9 +59,10 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 }
 
 void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon_2>& gridPolygons, const std::vector<std::vector<bool>>& sqr_in_polygon,
+					std::vector<Eigen::MatrixXd>& submeshVList, std::vector<Eigen::MatrixXi>& submeshFList,
 					Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
 	int submesh_n = gridPolygons.size();
-	std::vector<Eigen::MatrixXd> submeshVList(submesh_n); std::vector<Eigen::MatrixXi> submeshFList(submesh_n);
+	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n);
 	
 	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
 	init_mesh_vertices_and_faces_from_grid(creasePattern, gridV, gridF);
@@ -84,7 +86,8 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 }
 
 
-void generate_constraints(const CreasePattern& creasePattern, DogFoldingConstraints& foldingConstraints) {
+void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+						const std::vector<Eigen::MatrixXi>& submeshFList, DogFoldingConstraints& foldingConstraints) {
 	// Get all the polylines unique points.
 	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
 	std::set<Point_2> constrained_pts;
@@ -97,7 +100,43 @@ void generate_constraints(const CreasePattern& creasePattern, DogFoldingConstrai
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	for (auto pt: constrained_pts) {
 		std::pair<Point_2,Point_2> edge_pts; double t;
-		orthGrid.get_pt_edge_coordinates(pt, edge_pts,t);
+		if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,t)) {
+			std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
+			exit(1); // Should never get here, and if so all is lost
+		}
+		//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
+		// Now find the indices of both points and add them as constraints
+		// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
+		// For now just brute force over it and worry about optimizing it later, if we want to interactively shift the curve in 2d rather than
+		//	deform a "constant curve" like we do now (which means this is called once on a pattern)
+		// for every submesh check if these points are both on it, and get their indices, add the submesh index and the other stuff to a list
+		//std::vector<int> submesh_containing_edge; std::
+		Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
+		Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
+		std::vector<std::pair<int,int>> global_edge_indices;
+		// Go through every submesh
+		int global_idx_base = 0;
+		for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
+			// Find the indices of the pts in the submesh (if they exist)
+			int pt1_idx = -1, pt2_idx = -1;
+			for (int v_i = 0; v_i < submeshVList[sub_i].rows(); v_i++) {
+				if (submeshVList[sub_i].row(v_i) == pt1) {pt1_idx = v_i;}
+				if (submeshVList[sub_i].row(v_i) == pt2) {pt2_idx = v_i;}
+				if ((pt1_idx!=-1)&& (pt2_idx != -1)) break;
+			}
+			// Found the edge (both points) on the submesh
+			if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
+				// Insert the (global V) indices
+				global_edge_indices.push_back(std::pair<int,int>(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
+			}
+			global_idx_base += submeshVList[sub_i].rows();
+		}
+		std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
+		// We then need to map it to the global V which just have the submeshes concatenated
+		if (!global_edge_indices.size()){
+			std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
+			exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
+		}
 	}
 	// 
 }
@@ -137,7 +176,7 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	const std::vector<Number_type>& gx_coords(orthGrid.get_x_coords()), gy_coords(orthGrid.get_y_coords());
 	int squares_num = (gx_coords.size()-1)*(gy_coords.size()-1);
-	std::cout << "squares_num = " << squares_num << std::endl;
+	//std::cout << "squares_num = " << squares_num << std::endl;
 	gridPolygons.resize(squares_num);
 	
 	for (int y_i = 0; y_i < gy_coords.size()-1; y_i++) {
