@@ -11,11 +11,12 @@ struct DogFoldingConstraints {
 class Dog {
 public:
 	Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogFoldingConstraints foldingConstraints, Eigen::MatrixXi F_ren);
+	Dog(const Dog& dog);
 	
 private:
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
-	// The initial rendered mesh
+	// The initial rendered (triangular) mesh
 	Eigen::MatrixXi F_ren;
 
 	// Folding constraints

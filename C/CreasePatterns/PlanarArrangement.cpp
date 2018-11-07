@@ -75,7 +75,7 @@ void PlanarArrangement::get_visualization_mesh(Eigen::MatrixXd& V, Eigen::Matrix
 			c++;
 		}
 	}
-	if (components.maxCoeff() < 2) {
+	if (components.maxCoeff() < 15) {
 		igl::jet(components,true,colors);
 	} else {
 		colors.resize(F.rows(),3);

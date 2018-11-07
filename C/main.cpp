@@ -7,6 +7,7 @@
 #include "CreasePatterns/OrthogonalGrid.h"
 #include "CreasePatterns/PlanarArrangement.h"
 #include "CreasePatterns/SVGReader.h"
+#include "CreasePatterns/DogFromCreasePattern.h"
 
 #include "Dog/Dog.h"
 
@@ -54,11 +55,11 @@ int main(int argc, char *argv[])
     polylines = {polyline1,polyline2};
   }
   //igl::Timer timer; double t = timer.getElapsedTime();
-  CreasePattern CreasePattern(bbox, polylines, x_res, y_res);
+  CreasePattern creasePattern(bbox, polylines, x_res, y_res);
   Eigen::MatrixXd edge_pts1,edge_pts2;
-  CreasePattern.get_visualization_mesh_and_edges(V, F, faceColors,edge_pts1,edge_pts2);
+  creasePattern.get_visualization_mesh_and_edges(V, F, faceColors,edge_pts1,edge_pts2);
 
-  //Dog dog(CreasePattern);
+  Dog dog(dog_from_crease_pattern(creasePattern));
 
 
 
