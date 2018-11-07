@@ -1,4 +1,4 @@
-#include "DogCreasePattern.h"
+#include "CreasePattern.h"
 
 #include "OrthogonalGrid.h"
 
@@ -7,7 +7,7 @@
 
 #include <igl/combine.h>
 
-DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding) :
+CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 	init_initial_arrangement_and_polylines(bbox, polylines, snap_rounding);
 	// get poly lines intersections
@@ -32,13 +32,13 @@ DogCreasePattern::DogCreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polylin
 	
 }
 
-DogCreasePattern::DogCreasePattern(const DogCreasePattern& cP) : initial_polylines(cP.initial_polylines), initial_arrangement(cP.initial_arrangement),
+CreasePattern::CreasePattern(const CreasePattern& cP) : initial_polylines(cP.initial_polylines), initial_arrangement(cP.initial_arrangement),
 					orthogonalGrid(cP.orthogonalGrid), clipped_polylines(cP.clipped_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
 					bbox(cP.bbox) {
 	// empty
 }
 
-void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
+void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
 	// Create an arrangement with a boundary box polygon and the polylings
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
 	//std::cout << "boundary_poly = " << boundary_poly << std::endl;
@@ -70,7 +70,7 @@ void DogCreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2
 	initial_arrangement.add_polylines(initial_polylines);
 }
 
-void DogCreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
+void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
@@ -84,7 +84,7 @@ void DogCreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eige
 	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
 }
 
-void DogCreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
+void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
 	Point_2 pt1(bbox.xmin(),bbox.ymin()),pt2(bbox.xmin(),bbox.ymax()),pt3(bbox.xmax(),bbox.ymax()),pt4(bbox.xmax(),bbox.ymin());
 	std::list<Point_2> pts = {pt1,pt2,pt3,pt4,pt1}; // circular list
 	Geom_traits_2 traits;

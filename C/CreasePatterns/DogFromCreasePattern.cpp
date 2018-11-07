@@ -1,15 +1,27 @@
-#include "DogBuilder.h"
-
-#include "SVGReader.h"
+#include "DogFromCreasePattern.h"
 
 #include <igl/combine.h>
 #include <igl/remove_unreferenced.h>
 
-DogBuilder::DogBuilder(const DogCreasePattern& i_dogCreasePattern) : creasePattern(i_dogCreasePattern) {
-	initialize();
+Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
+	std::vector<Polygon_2> gridPolygons;
+	init_grid_polygons(creasePattern, gridPolygons);
+	// Per polygon contains a flag (whether face 'i' intersects that polygon)
+	std::vector<std::vector<bool>> sqr_in_polygon;
+	set_sqr_in_polygon(creasePattern, gridPolygons, sqr_in_polygon);
+
+	// Generated mesh
+	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
+	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, V, F);
+
+	generate_constraints(foldingConstraints);
+	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces();
+
+	return Dog(V,F,foldingConstraints,F_ren);
 }
 
-void DogBuilder::set_sqr_in_polygon() {
+void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
+						std::vector<std::vector<bool>>& sqr_in_polygon) {
 	// Get the faces' polygons and find their intersections with the faces
 	std::vector<Polygon_2> facePolygons; 
 	creasePattern.get_clipped_arrangement().get_faces_polygons(facePolygons);
@@ -45,12 +57,13 @@ void DogBuilder::set_sqr_in_polygon() {
 	}
 }
 
-void DogBuilder::generate_mesh() {
-	submesh_n = gridPolygons.size();
-	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n);
+void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon_2>& gridPolygons, const std::vector<std::vector<bool>>& sqr_in_polygon,
+					Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
+	int submesh_n = gridPolygons.size();
+	std::vector<Eigen::MatrixXd> submeshVList(submesh_n); std::vector<Eigen::MatrixXi> submeshFList(submesh_n);
 	
 	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
-	init_mesh_vertices_and_faces_from_grid(gridV, gridF);
+	init_mesh_vertices_and_faces_from_grid(creasePattern, gridV, gridF);
 	int poly_idx = 0;
 	for (auto submesh_flags: sqr_in_polygon ) {
 		Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
@@ -70,7 +83,25 @@ void DogBuilder::generate_mesh() {
 	igl::combine(submeshVList,submeshFList, V, F);
 }
 
-void DogBuilder::init_mesh_vertices_and_faces_from_grid(Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF) {
+
+void generate_constraints(DogFoldingConstraints& foldingConstraints) {
+	// TODO
+}
+
+Eigen::MatrixXi generate_rendered_mesh_faces() {
+	Eigen::MatrixXi F_ren;
+	// The rendered mesh should have the vertices of V as well as polyline vertices.
+	// So V_ren = [V,V_p], where V_p is a (not necessarily unique) list of the polyline vertices, who'se values we can take from a constraints list.
+	// The faces can be obtained from the clipped arrangement, which contains only these vertices. 
+	// They will be written in coordinates, so we will first need to create a mapping between coordinates and indices in V_ren.
+	// We can first save the polygonal faces, and call igl::triangulate which will work perfectly as everything is convex.
+	// The only thing that will then be needed for rendering is to update V_p, which could be done with the constraints list.
+
+	return F_ren;
+}
+
+
+void init_mesh_vertices_and_faces_from_grid(const CreasePattern& creasePattern, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF) {
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	const std::vector<Number_type>& gx_coords(orthGrid.get_x_coords()), gy_coords(orthGrid.get_y_coords());
 	gridV.resize(gx_coords.size()*gy_coords.size(),3); gridF.resize((gx_coords.size()-1)*(gy_coords.size()-1),4);
@@ -87,19 +118,7 @@ void DogBuilder::init_mesh_vertices_and_faces_from_grid(Eigen::MatrixXd& gridV, 
 	}
 }
 
-void DogBuilder::initialize() {
-	init_grid_polygons();
-	set_sqr_in_polygon();
-	generate_mesh();
-	//generate_rendered_mesh();
-	//generate_constraints();
-
-	//Go through the polyline vertices, create a unique list of them, locate them in the global mesh.
-	//Each occurence has to be in a different submesh, and we need to constrain couples of these occurnces (so k occurence means k-1 "circular" constraints)
-	//generate_constraints();
-}
-
-void DogBuilder::init_grid_polygons() {
+void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2>& gridPolygons) {
 	// Squares num are the faces num -1 for the exterior face
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	const std::vector<Number_type>& gx_coords(orthGrid.get_x_coords()), gy_coords(orthGrid.get_y_coords());

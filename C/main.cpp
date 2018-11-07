@@ -3,17 +3,16 @@
 #include <igl/combine.h>
 #include <igl/Timer.h>
 
-//#include "CreasePatterns/PatternBoundary.h"
-#include "CreasePatterns/DogCreasePattern.h"
+#include "CreasePatterns/CreasePattern.h"
 #include "CreasePatterns/OrthogonalGrid.h"
 #include "CreasePatterns/PlanarArrangement.h"
 #include "CreasePatterns/SVGReader.h"
-#include "CreasePatterns/DogBuilder.h"
+
+#include "Dog/Dog.h"
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Surface_sweep_2_algorithms.h>
-
 
 using namespace std;
 
@@ -55,11 +54,11 @@ int main(int argc, char *argv[])
     polylines = {polyline1,polyline2};
   }
   //igl::Timer timer; double t = timer.getElapsedTime();
-  DogCreasePattern dogCreasePattern(bbox, polylines, x_res, y_res);
+  CreasePattern CreasePattern(bbox, polylines, x_res, y_res);
   Eigen::MatrixXd edge_pts1,edge_pts2;
-  dogCreasePattern.get_visualization_mesh_and_edges(V, F, faceColors,edge_pts1,edge_pts2);
+  CreasePattern.get_visualization_mesh_and_edges(V, F, faceColors,edge_pts1,edge_pts2);
 
-  DogBuilder dogBuilder(dogCreasePattern);
+  //Dog dog(CreasePattern);
 
 
 
