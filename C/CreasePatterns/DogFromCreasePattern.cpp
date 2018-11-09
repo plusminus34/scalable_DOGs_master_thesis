@@ -212,20 +212,37 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 	
 	// set [min_sub_i, max_sub_i) as the (half-closed) range of indices of the submesh in subPoly inside V_ren 
 	int sub_i = 0; int min_sub_i = 0; int max_sub_i = min_sub_i + submeshVList[sub_i].rows();
-	std::map<PointDouble, int> pt_to_V_ren;
-	for (auto subPoly: submesh_polygons) {
+
+	std::map<PointDouble, int> poly_fold_pt_to_V_ren; int v_ren_start_idx = 0;
+	for (auto subV: submeshVList) v_ren_start_idx+=subV.rows();
+	for (int ri = v_ren_start_idx; ri < V_ren.rows(); ri++) {poly_fold_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
+
+	std::map<PointDouble, int> submesh_pt_to_V_ren;
+	// create a map from point coordinates to index in V_ren (which should be a vertex in the correct submesh)
+	for (int ri = min_sub_i; ri < max_sub_i; ri++) {submesh_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
+	std::cout <<"sub_i = " << sub_i << std::endl;
+
+	for (int poly_i = 0; poly_i < submesh_polygons.size(); poly_i++) {
+		auto submesh_i = submesh_polygons[poly_i].first; auto submesh_poly = submesh_polygons[poly_i].second;
 		// Update the interval [min_sub_i, max_sub_i) to the new submesh vertices indices in V_ren
-		if (subPoly.first != sub_i) {
+		if (submesh_i != sub_i) {
 			sub_i++;
 			min_sub_i = max_sub_i;
 			max_sub_i = min_sub_i + submeshVList[sub_i].rows();
-			// create a map from point coordinates to index in V_ren (which should be a vertex in the correct submesh)
-			pt_to_V_ren.clear();
-			for (int ri = min_sub_i; ri < max_sub_i; ri++) {pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
+			
+			submesh_pt_to_V_ren.clear();
+			// update the mapping from points to coordinates in v_ren for the new submesh
+			for (int ri = min_sub_i; ri < max_sub_i; ri++) {submesh_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
+			std::cout <<"sub_i = " << sub_i << std::endl;
 		}
 		// every pt should have some cashed indices to V_ren
-		std::cout << "subPoly = " << subPoly.second << std::endl;
-		
+		//std::cout << "subPoly = " << subPoly.second << std::endl;
+		polygons_v_ren_indices[poly_i].resize(submesh_poly.size());
+		for (auto vptr = submesh_poly.vertices_begin(); vptr != submesh_poly.vertices_end(); vptr++) {
+			PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
+			//std::cout << "pt = " << pt << std::endl;
+			std::cout << "pt has key = " << submesh_pt_to_V_ren.count(pt) << std::endl;
+		}
 		//for (int pt_i = 0; pt_i < submesh_polygons[sub_i])
 	}
 
