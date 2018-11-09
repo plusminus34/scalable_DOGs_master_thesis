@@ -49,7 +49,8 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 			bool face_intersection = CGAL::do_intersect(poly, gridPolygons[f_i]);
 
 			// NOTE: Minor inaccuracies (in CGAL??) cause vertex intersections to sometime return a polygon with a very small area (1e-28)
-			// If we do intersect, we filter those
+			// This could be do the inaccuracies converting CGAL to double? (I think there's no conversion here so this is weird)
+			// If we do intersect, we filter those numerical errors
 			if (face_intersection) {
 				Polygon_set R;
 				CGAL::intersection(poly, gridPolygons[f_i], std::back_inserter(R));

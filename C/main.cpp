@@ -1,6 +1,8 @@
 #include <igl/opengl/glfw/Viewer.h>
 
 #include <igl/combine.h>
+#include <igl/edges.h>
+#include <igl/slice.h>
 #include <igl/Timer.h>
 
 #include "CreasePatterns/CreasePattern.h"
@@ -62,18 +64,33 @@ int main(int argc, char *argv[])
   Dog dog(dog_from_crease_pattern(creasePattern));
   Eigen::MatrixXd dogV; Eigen::MatrixXi dogF;
   dog.get_rendering_mesh(dogV,dogF); // render the mesh
+  // move it to the right
+  double spacing = 4*1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
+  dogV.rowwise() += Eigen::RowVector3d(spacing,0,0);
 
-  //std::vector<Eigen::MatrixXd> Vlist = {dogV,V}; std::vector<Eigen::MatrixXi> Flist = {dog;
+
   Eigen::MatrixXd V; Eigen::MatrixXi F;
   igl::combine<Eigen::MatrixXd,Eigen::MatrixXi>({dogV,V_arr}, {dogF,F_arr}, V,F);
+  Eigen::MatrixXi meshE_i; igl::edges(F,meshE_i);
+  
+  Eigen::MatrixXd meshE1; igl::slice(dogV,meshE_i.col(0),1, meshE1);
+  Eigen::MatrixXd edge1(meshE1.rows()+edge_pts1.rows(),meshE1.cols()); edge1 << edge_pts1,meshE1;
+  Eigen::MatrixXd meshE2; igl::slice(dogV,meshE_i.col(1),1, meshE2);
+  Eigen::MatrixXd edge2(meshE2.rows()+edge_pts2.rows(),meshE2.cols()); edge2 << edge_pts2,meshE2;
 
+  Eigen::MatrixXd meshColors = Eigen::MatrixXd::Constant(dogF.rows(),3,1);
+  Eigen::MatrixXd colors(meshColors.rows()+faceColors.rows(),3); colors << meshColors,faceColors;
+    
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   //viewer.data().set_mesh(V, F);
   viewer.data().set_mesh(V, F);
   viewer.core.align_camera_center(V,F);
   viewer.data().set_face_based(true);
-  viewer.data().set_colors(faceColors);
+  //viewer.data().set_colors(colors);
+
+
+  //viewer.data().add_edges(edge1,edge2,Eigen::RowVector3d(0,0,0));
   viewer.data().add_edges(edge_pts1,edge_pts2,Eigen::RowVector3d(0,0,0));
   viewer.data().show_lines = false;
   viewer.launch();
