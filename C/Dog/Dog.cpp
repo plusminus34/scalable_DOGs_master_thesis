@@ -1,12 +1,12 @@
 #include "Dog.h"
 
-Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogFoldingConstraints foldingConstraints, Eigen::MatrixXi F_ren) : 
-				V(V),F(F),foldingConstraints(foldingConstraints),F_ren(F_ren) {
+Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogFoldingConstraints foldingConstraints, Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren) : 
+				V(V),F(F),foldingConstraints(foldingConstraints),V_ren(V_ren), F_ren(F_ren) {
 	// empty
 	// TODO: create/update V_ren?
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),foldingConstraints(d.foldingConstraints),F_ren(d.F_ren){
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),foldingConstraints(d.foldingConstraints),V_ren(d.V_ren), F_ren(d.F_ren){
 	// empty
 	// TODO: create/update V_ren?
 }

@@ -3,6 +3,10 @@
 #include <igl/combine.h>
 #include <igl/remove_unreferenced.h>
 
+#include <CGAL/Polygon_2_algorithms.h>
+
+#include "../QuadMesh/Quad.h"
+
 Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<Polygon_2> gridPolygons;
 	init_grid_polygons(creasePattern, gridPolygons);
@@ -12,13 +16,18 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	// Generated mesh
 	std::vector<Eigen::MatrixXd> submeshVList; std::vector<Eigen::MatrixXi> submeshFList;
+	std::vector<std::vector<bool>> submeshV_is_inner;
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
-	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, V, F);
+	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
 
 	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints);
-	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, V, foldingConstraints);
 
-	return Dog(V,F,foldingConstraints,F_ren);
+	std::vector<SubmeshPoly> submesh_polygons;
+	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
+	Eigen::MatrixXd V_ren; Dog::get_V_ren(V, foldingConstraints, V_ren);
+	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, foldingConstraints);
+
+	return Dog(V,F,foldingConstraints,V_ren,F_ren);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
@@ -59,13 +68,15 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 }
 
 void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon_2>& gridPolygons, const std::vector<std::vector<bool>>& sqr_in_polygon,
-					std::vector<Eigen::MatrixXd>& submeshVList, std::vector<Eigen::MatrixXi>& submeshFList,
+					std::vector<Eigen::MatrixXd>& submeshVList, std::vector<Eigen::MatrixXi>& submeshFList, std::vector<std::vector<bool>>& submeshV_is_inner,
 					Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
 	int submesh_n = gridPolygons.size();
-	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n);
+	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n); submeshV_is_inner.resize(submesh_n);
+
 	
 	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
 	init_mesh_vertices_and_faces_from_grid(creasePattern, gridV, gridF);
+
 	int poly_idx = 0;
 	for (auto submesh_flags: sqr_in_polygon ) {
 		Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
@@ -76,10 +87,14 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 				submeshF.row(cnt++) << gridF.row(fi);	
 			} 
 		}
-		Eigen::MatrixXi IV;
-		igl::remove_unreferenced(gridV,submeshF,submeshV,submeshF,IV);
+		Eigen::MatrixXi I,J; // J is s.t slice(V,J,1,NV);
+		igl::remove_unreferenced(gridV,submeshF,submeshV,submeshF,I,J);
 		submeshVList[poly_idx] = submeshV;
 		submeshFList[poly_idx] = submeshF;
+
+		std::cout << "poly_idx = " << poly_idx << std::endl;
+		submeshV_is_inner[poly_idx].resize(submeshV.rows());
+		
 		poly_idx++;
 	}
 	igl::combine(submeshVList,submeshFList, V, F);
@@ -145,8 +160,78 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	// 
 }
 
-Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, const Eigen::MatrixXd& V, const DogFoldingConstraints& fC) {
+void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons) {
+	std::vector<Polygon_2> faces_polygons; std::vector<int> faces_to_submesh;
+
+	// Get orth grid and add it the polylines
+	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
+	PlanarArrangement grid_with_snapped(orthGrid);
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_polylines());
+	grid_with_snapped.get_faces_polygons(faces_polygons);
+
+
+	std::vector<Polygon_2> submeshBnd; 
+	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
+
+	// The rendered mesh faces will be the polygons in grid_with_snapped (meaning faces_polygons) after triangulation.
+	// Here we'll find which submesh has them, and then translate the point indices to the correct point in something
+	std::vector<int> face_to_submesh(faces_polygons.size());
+	for (int f_i = 0; f_i < faces_polygons.size(); f_i++){
+		auto face_polygon = faces_polygons[f_i];
+		// Now go through each submeshPolygon and check if its there
+		face_to_submesh[f_i] = -1;
+		//std::cout << "----- Checking face " << face_polygon << " ---------" << std::endl;
+		int submesh_i = 0;
+		while ( (submesh_i < submeshBnd.size()) && (face_to_submesh[f_i] == -1) ) {
+			bool is_in_submesh = true;
+			//std::cout << "checking if its in polygon = " << submeshBnd[submesh_i] << std::endl;
+			for (auto vptr = face_polygon.vertices_begin(); vptr != face_polygon.vertices_end(); vptr++) {
+				auto pt_in_face = ! (submeshBnd[submesh_i].bounded_side(*vptr) == CGAL::ON_UNBOUNDED_SIDE);
+				//std::cout << "pt " << *vptr << " in face = " << pt_in_face << std::endl;
+				is_in_submesh = is_in_submesh & (pt_in_face);
+			}
+			if (is_in_submesh) face_to_submesh[f_i] = submesh_i;
+			submesh_i++;
+		}
+
+		if (face_to_submesh[f_i] == -1) {std::cout << "Error, couldn't find a submesh for face = " << face_polygon << std::endl; exit(1); /*nothing to do but debug*/}
+		//std::cout << "face in submesh = " << face_to_submesh[f_i] << std::endl;
+
+	}
+	submesh_polygons.resize(faces_polygons.size());
+	for (int i = 0; i < submesh_polygons.size(); i++) {submesh_polygons[i] = SubmeshPoly(face_to_submesh[i], faces_polygons[i]);}
+	// sort it by the submeshes indices
+	std::sort(submesh_polygons.begin(), submesh_polygons.end(), [](const SubmeshPoly& p1, const SubmeshPoly& p2){return p1.first < p2.first;});
+	//for (auto sp: submesh_polygons) {std::cout << "submesh = " << sp.first << " polygon = " << sp.second << std::endl;}
+}
+
+Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons,
+			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const DogFoldingConstraints& foldingConstraints) {
+	typedef std::pair<double,double> PointDouble;
+	std::vector<std::vector<int> > polygons_v_ren_indices(submesh_polygons.size());
+	
+	// set [min_sub_i, max_sub_i) as the (half-closed) range of indices of the submesh in subPoly inside V_ren 
+	int sub_i = 0; int min_sub_i = 0; int max_sub_i = min_sub_i + submeshVList[sub_i].rows();
+	std::map<PointDouble, int> pt_to_V_ren;
+	for (auto subPoly: submesh_polygons) {
+		// Update the interval [min_sub_i, max_sub_i) to the new submesh vertices indices in V_ren
+		if (subPoly.first != sub_i) {
+			sub_i++;
+			min_sub_i = max_sub_i;
+			max_sub_i = min_sub_i + submeshVList[sub_i].rows();
+			// create a map from point coordinates to index in V_ren (which should be a vertex in the correct submesh)
+			pt_to_V_ren.clear();
+			for (int ri = min_sub_i; ri < max_sub_i; ri++) {pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
+		}
+		// every pt should have some cashed indices to V_ren
+		std::cout << "subPoly = " << subPoly.second << std::endl;
+		
+		//for (int pt_i = 0; pt_i < submesh_polygons[sub_i])
+	}
+
 	Eigen::MatrixXi F_ren;
+
+	
 	// The rendered mesh should have the vertices of V as well as polyline vertices.
 	// So V_ren = [V,V_p], where V_p is a (not necessarily unique) list of the polyline vertices, who'se values we can take from a constraints list.
 	// The faces can be obtained from the clipped arrangement with the grid, which contains only these vertices. 
@@ -154,26 +239,8 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 	// We can first save the polygonal faces, and call igl::triangulate which will work perfectly as everything is convex.
 	// The only thing that will then be needed for rendering is to update V_p, which could be done with the constraints list.
 	
-	Eigen::MatrixXd V_ren; Dog::get_V_ren(V, fC, V_ren);
-	std::vector<Polygon_2> faces_polygons; 
-	// Get orth grid and add it the polylines
-	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
-	PlanarArrangement grid_with_snapped(orthGrid);
-	grid_with_snapped.add_polylines(creasePattern.get_clipped_polylines());
-	grid_with_snapped.get_faces_polygons(faces_polygons);
 
-	// For every polygonal face, save a flag for every vertex in the arrangement specifying whether it's inside/on the boundary or not.
-	// This doesn't require intersection calculation. It just requires mapping coordinates of points to a vector of connected components indices.
-	// This will work for vertices points.
-	// For points on edges, we need to go through the DogFolding constraints and deduce it from that. The coordinate is there, and the indices used
-	//	give us the correct components (maybe we can save this information before..)
 
-	// Polygonize every polygonal face by going through every face, and finding a polygon where they are all inside/outside
-	// After finding this connected component, translate the points to the indices in this component.
-	// This could be done by searching the vertices for the inner points in the mesh. If we don't find them we know these are polygonal points
-	//		which we can found on the later part in V_ren (doesn't matter which point we use as these are duplicated and equal anyhow).
-
-	// Afterwards we will have polygonal indices, all of them convex, and we could call igl::triangulate()
 	return F_ren;
 }
 
