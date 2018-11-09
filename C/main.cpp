@@ -65,24 +65,12 @@ int main(int argc, char *argv[])
   Eigen::MatrixXd dogV; Eigen::MatrixXi dogF;
   dog.get_rendering_mesh(dogV,dogF); // render the mesh
   // move it to the right
-  double spacing = 4*1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
-  //dogV.rowwise() += Eigen::RowVector3d(spacing,0,0);
+  double spacing = 3*1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
+  dogV.rowwise() += Eigen::RowVector3d(spacing,0,0);
 
   Eigen::MatrixXi meshE_i; igl::edges(dogF,meshE_i);
   Eigen::MatrixXd meshE1; igl::slice(dogV,meshE_i.col(0),1, meshE1);
   Eigen::MatrixXd meshE2; igl::slice(dogV,meshE_i.col(1),1, meshE2);
-  /*
-  igl::combine<Eigen::MatrixXd,Eigen::MatrixXi>({dogV,V_arr}, {dogF,F_arr}, V,F);
-  
-  
-  
-  Eigen::MatrixXd edge1(meshE1.rows()+edge_pts1.rows(),meshE1.cols()); edge1 << edge_pts1,meshE1;
-  
-  Eigen::MatrixXd edge2(meshE2.rows()+edge_pts2.rows(),meshE2.cols()); edge2 << edge_pts2,meshE2;
-
-  Eigen::MatrixXd meshColors = Eigen::MatrixXd::Constant(dogF.rows(),3,1);
-  Eigen::MatrixXd colors(meshColors.rows()+faceColors.rows(),3); colors << meshColors,faceColors;
-  */
     
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
