@@ -11,7 +11,11 @@ Dog::Dog(const Dog& d) : V(d.V),F(d.F),foldingConstraints(d.foldingConstraints),
 	// TODO: create/update V_ren?
 }
 
-void Dog::get_V_ren(const Eigen::MatrixXd& V, const DogFoldingConstraints& fC, Eigen::MatrixXd& V_ren) {
+void Dog::update_rendering_v() {
+	V_ren_from_V_and_const(V,foldingConstraints,V_ren);
+}
+
+void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogFoldingConstraints& fC, Eigen::MatrixXd& V_ren) {
 	int consts_num = fC.edge_coordinates.size();
 	Eigen::MatrixXd V_folds_polygons(consts_num,3);
 	for (int const_i = 0; const_i < consts_num; const_i++) {

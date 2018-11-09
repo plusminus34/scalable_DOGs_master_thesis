@@ -148,7 +148,7 @@ bool OrthogonalGrid::is_point_on_grid(const Point_2& pt) const {
     return is_on_x || is_on_y;
 }
 
-bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, double& t) const {
+bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, Number_type& t) const {
   if (!is_point_on_grid(pt)) return false;
 
   auto x_lower_bound = std::lower_bound(x_coords.begin(),x_coords.end(),pt.x());
@@ -163,12 +163,12 @@ bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_
   } else if (*x_lower_bound == pt.x()) {
     y_lower_bound--; // get one element before (so it will be smaller)
     v1 = Point_2(pt.x(),*y_lower_bound); v2 = Point_2(pt.x(),*y_upper_bound);
-    t = CGAL::to_double((pt.y()-v2.y())/(v1.y()-v2.y()));
+    t = (pt.y()-v2.y())/(v1.y()-v2.y());
     // compute t
   } else {
     x_lower_bound--; // get one element before (so it will be smaller)
     v1 = Point_2(*x_lower_bound, pt.y()); v2 = Point_2(*x_upper_bound, pt.y());
-    t = CGAL::to_double((pt.x()-v2.x())/(v1.x()-v2.x()));
+    t = (pt.x()-v2.x())/(v1.x()-v2.x());
   }
 
   edge_pts = std::pair<Point_2,Point_2>(v1,v2);

@@ -1,6 +1,7 @@
 #include "DogFromCreasePattern.h"
 
 #include <igl/combine.h>
+#include <igl/polygon_mesh_to_triangle_mesh.h>
 #include <igl/remove_unreferenced.h>
 
 #include <CGAL/Polygon_2_algorithms.h>
@@ -20,12 +21,13 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
 
-	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints);
+	std::vector<Point_2> constrained_pts_non_unique;
+	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints, constrained_pts_non_unique);
 
 	std::vector<SubmeshPoly> submesh_polygons;
 	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
-	Eigen::MatrixXd V_ren; Dog::get_V_ren(V, foldingConstraints, V_ren);
-	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, foldingConstraints);
+	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, foldingConstraints, V_ren);
+	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, constrained_pts_non_unique);
 
 	return Dog(V,F,foldingConstraints,V_ren,F_ren);
 }
@@ -102,7 +104,8 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
-						const std::vector<Eigen::MatrixXi>& submeshFList, DogFoldingConstraints& foldingConstraints) {
+						const std::vector<Eigen::MatrixXi>& submeshFList, DogFoldingConstraints& foldingConstraints,
+						std::vector<Point_2>& constrained_pts_non_unique) {
 	// Get all the polylines unique points.
 	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
 	std::set<Point_2> constrained_pts;
@@ -114,11 +117,12 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	for (auto pt: constrained_pts) {
-		std::pair<Point_2,Point_2> edge_pts; double t;
-		if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,t)) {
+		std::pair<Point_2,Point_2> edge_pts; Number_type t_precise;
+		if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,t_precise)) {
 			std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
 			exit(1); // Should never get here, and if so all is lost
 		}
+		double t = CGAL::to_double(t);
 		//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 		// Now find the indices of both points and add them as constraints
 		// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
@@ -154,7 +158,9 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		for (int const_i = 0; const_i < global_edge_indices.size()-1; const_i++) {
 			foldingConstraints.edge_const_1.push_back(global_edge_indices[const_i]);
 			foldingConstraints.edge_const_2.push_back(global_edge_indices[const_i+1]);
-			foldingConstraints.edge_coordinates.push_back(t);
+			foldingConstraints.edge_coordinates.push_back(CGAL::to_double(t_precise));
+			foldingConstraints.edge_coordinates_precise.push_back(t_precise);
+			constrained_pts_non_unique.push_back(pt);
 		}
 	}
 	// 
@@ -206,17 +212,31 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 }
 
 Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons,
-			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const DogFoldingConstraints& foldingConstraints) {
+			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const std::vector<Point_2>& constrained_pts_non_unique) {
 	typedef std::pair<double,double> PointDouble;
 	std::vector<std::vector<int> > polygons_v_ren_indices(submesh_polygons.size());
+
+
+	// IMPORTANT:
+	// To make things a (bit) faster, this method uses a mapping from Points (in double) to a given submesh
+	// The function then iterates on CGAL exact kernel Point_2, convert them to double with CGAL::to_double() and then use this map
+	//	This should always work for points on the grid (since the mesh points in double with the same CGAL::to_double routing)
+	//	The only problem might be edge points which are in the exact form t*v1+(1-t)*v2.
+	//	V_ren has the points in the from to_double(t)*to_double(v1) + to_double(1-t)*to_double(v2) which is different than converting it all together, i.e:
+	//			to_double( t*v1 + (1-t)*v2  )
+	//  Therefore the solution is to use the original polygon points which we saved at constrained_pts_non_unique
 	
 	// set [min_sub_i, max_sub_i) as the (half-closed) range of indices of the submesh in subPoly inside V_ren 
 	int sub_i = 0; int min_sub_i = 0; int max_sub_i = min_sub_i + submeshVList[sub_i].rows();
 
+	// Save a mapping between constrained fold points to V_ren indices
 	std::map<PointDouble, int> poly_fold_pt_to_V_ren; int v_ren_start_idx = 0;
 	for (auto subV: submeshVList) v_ren_start_idx+=subV.rows();
-	for (int ri = v_ren_start_idx; ri < V_ren.rows(); ri++) {poly_fold_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
-
+	for (int const_i = 0; const_i < constrained_pts_non_unique.size(); const_i++) {
+		auto const_pt = constrained_pts_non_unique[const_i];
+		PointDouble pt(CGAL::to_double(const_pt.x()),CGAL::to_double(const_pt.y()));
+		poly_fold_pt_to_V_ren[pt] = v_ren_start_idx+const_i;
+	}
 	std::map<PointDouble, int> submesh_pt_to_V_ren;
 	// create a map from point coordinates to index in V_ren (which should be a vertex in the correct submesh)
 	for (int ri = min_sub_i; ri < max_sub_i; ri++) {submesh_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
@@ -236,28 +256,28 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 			std::cout <<"sub_i = " << sub_i << std::endl;
 		}
 		// every pt should have some cashed indices to V_ren
-		//std::cout << "subPoly = " << subPoly.second << std::endl;
-		polygons_v_ren_indices[poly_i].resize(submesh_poly.size());
+		polygons_v_ren_indices[poly_i].resize(submesh_poly.size()); int poly_vi = 0;
 		for (auto vptr = submesh_poly.vertices_begin(); vptr != submesh_poly.vertices_end(); vptr++) {
 			PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
-			//std::cout << "pt = " << pt << std::endl;
-			std::cout << "pt has key = " << submesh_pt_to_V_ren.count(pt) << std::endl;
+			
+			if (submesh_pt_to_V_ren.count(pt)) {
+				std::cout << "pt has key in submesh "  << std::endl;
+				polygons_v_ren_indices[poly_i][poly_vi] = submesh_pt_to_V_ren[pt];
+			} else if (poly_fold_pt_to_V_ren.count(pt)) {
+				std::cout << "pt has key in fold map" << std::endl;
+				polygons_v_ren_indices[poly_i][poly_vi] = poly_fold_pt_to_V_ren[pt];
+			} else {
+				std::cout << "Error! Could not map point to polygon " << std::endl;
+
+				exit(1); // No solution to this other than debugging
+			}
+			poly_vi++;
 		}
-		//for (int pt_i = 0; pt_i < submesh_polygons[sub_i])
 	}
 
+	// Generate a triangular mesh from the polygonal faces (which are all convex, otherwise this routine is problematic)
 	Eigen::MatrixXi F_ren;
-
-	
-	// The rendered mesh should have the vertices of V as well as polyline vertices.
-	// So V_ren = [V,V_p], where V_p is a (not necessarily unique) list of the polyline vertices, who'se values we can take from a constraints list.
-	// The faces can be obtained from the clipped arrangement with the grid, which contains only these vertices. 
-	// They will be written in coordinates, so we will first need to create a mapping between coordinates and indices in V_ren.
-	// We can first save the polygonal faces, and call igl::triangulate which will work perfectly as everything is convex.
-	// The only thing that will then be needed for rendering is to update V_p, which could be done with the constraints list.
-	
-
-
+	igl::polygon_mesh_to_triangle_mesh(polygons_v_ren_indices,F_ren);
 	return F_ren;
 }
 

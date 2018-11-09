@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
   Geom_traits_2 traits;
   Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 
-  Eigen::MatrixXd V,faceColors; Eigen::MatrixXi F;
   CGAL::Bbox_2 bbox;
   std::vector<Polyline_2> polylines;
   int x_res = 3, y_res = 3;
@@ -57,12 +56,20 @@ int main(int argc, char *argv[])
   //igl::Timer timer; double t = timer.getElapsedTime();
   CreasePattern creasePattern(bbox, polylines, x_res, y_res);
   Eigen::MatrixXd edge_pts1,edge_pts2;
-  creasePattern.get_visualization_mesh_and_edges(V, F, faceColors,edge_pts1,edge_pts2);
+  Eigen::MatrixXd V_arr,faceColors; Eigen::MatrixXi F_arr;
+  creasePattern.get_visualization_mesh_and_edges(V_arr, F_arr, faceColors,edge_pts1,edge_pts2);
 
   Dog dog(dog_from_crease_pattern(creasePattern));
+  Eigen::MatrixXd dogV; Eigen::MatrixXi dogF;
+  dog.get_rendering_mesh(dogV,dogF); // render the mesh
+
+  //std::vector<Eigen::MatrixXd> Vlist = {dogV,V}; std::vector<Eigen::MatrixXi> Flist = {dog;
+  Eigen::MatrixXd V; Eigen::MatrixXi F;
+  igl::combine<Eigen::MatrixXd,Eigen::MatrixXi>({dogV,V_arr}, {dogF,F_arr}, V,F);
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
+  //viewer.data().set_mesh(V, F);
   viewer.data().set_mesh(V, F);
   viewer.core.align_camera_center(V,F);
   viewer.data().set_face_based(true);
