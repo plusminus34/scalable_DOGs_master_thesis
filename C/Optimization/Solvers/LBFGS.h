@@ -2,7 +2,7 @@
 
 #include "../Solver.h"
 
-class LBFGS {
+class LBFGS : public Solver{
   
 public:
 	LBFGS(int max_iter): max_iter(max_iter) {}
