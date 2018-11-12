@@ -1,5 +1,6 @@
 #include "DogConstraints.h"
 
+using namespace std;
 
 std::vector<Eigen::Triplet<double> > DogConstraints::JacobianIJV(const Eigen::VectorXd& x) const {
 	std::vector<Eigen::Triplet<double> > IJV;
@@ -388,14 +389,14 @@ Eigen::VectorXd DogConstraints::Vals(const Eigen::VectorXd& x) const {
 		constVals(const_cnt) = -t15*(t2*t5+t3*t6+t4*t7)*1.0/sqrt(t2*t2+t3*t3+t4*t4)+t15*(t5*t8+t6*t9+t7*t10)*1.0/sqrt(t8*t8+t9*t9+t10*t10);
 		const_cnt++;
 	}
-	if (const_cnt != num_consts) {
-		cout << "error, const_cnt = " << const_cnt << " but num_consts = " << const_n << endl;
+	if (const_cnt != const_n) {
+		cout << "error, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
 	}
 	return constVals;
 }
 
-Eigen::SparseMatrix<double> DogJacobian::LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
+Eigen::SparseMatrix<double> DogConstraints::LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
 	std::vector<Eigen::Triplet<double> > IJV;
 	// Almost every vertex has 3 constraints involving its 3 coords and 12 surrounding ones with a local hessian of around 15*15
 	IJV.reserve(15*15*x.rows());
@@ -1533,6 +1534,7 @@ Eigen::SparseMatrix<double> DogJacobian::LambdaHessian(const Eigen::VectorXd& x,
 		const_cnt++;
 	 }
 
+	Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
 	hessian.setFromTriplets(IJV.begin(),IJV.end());
 	return hessian;
 }

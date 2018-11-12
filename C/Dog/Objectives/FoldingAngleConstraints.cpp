@@ -1,6 +1,10 @@
-#include "FoldingConstraints.h"
+#include "FoldingAngleConstraints.h"
 
-FoldingAngleConstraints::FoldingConstraints(const QuadTopology& quadTop, Eigen::MatrixXd& V, Edge i_edge1, Edge i_edge2, 
+#include <Eigen/Geometry> 
+
+using namespace std;
+
+FoldingAngleConstraints::FoldingAngleConstraints(const QuadTopology& quadTop, Eigen::MatrixXd& V, Edge i_edge1, Edge i_edge2, 
 										std::pair<double,double> edge_coordinates) : quadTop(quadTop), edge_coordinates(edge_coordinates) {
 	alpha = 0;
 	const_n = 9; // Constrain 4 vertices = 12 vars
@@ -52,4 +56,10 @@ std::vector<Eigen::Triplet<double> > FoldingAngleConstraints::JacobianIJV(const 
 		IJV.push_back(Eigen::Triplet<double>(i,b(i),1));
 	}
 	return IJV;
+}
+
+Eigen::RowVector3d FoldingAngleConstraints::rotate_vec(const Eigen::RowVector3d& pt, const Eigen::RowVector3d& center, const Eigen::Vector3d& axis,
+														 double angle) {
+	Eigen::Matrix3d rot; rot =  Eigen::AngleAxis<double>(angle, axis);
+    return (rot*((pt-center).transpose())).transpose()+center;
 }

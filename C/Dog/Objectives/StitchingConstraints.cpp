@@ -1,6 +1,6 @@
 #include "StitchingConstraints.h"
 
-
+using namespace std;
 /*
 struct DogFoldingConstraints {
 	std::vector<std::pair<int,int>> edge_const_1, edge_const_2;

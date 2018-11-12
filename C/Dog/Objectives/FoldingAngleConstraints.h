@@ -4,11 +4,13 @@
 class FoldingAngleConstraints: public Constraints {
 public:
 	FoldingAngleConstraints(const QuadTopology& quadTop, Eigen::MatrixXd& V, Edge edge1, Edge edge2, std::pair<double,double> edge_coordinates);
-	Eigen::VectorXd Vals(const Eigen::VectorXd& x);
-	Eigen::SparseMatrix<double> Jacobian(const Eigen::VectorXd& x);
+	Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
+	std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const;
 
 	void set_angle(double angle) {alpha = angle;}
 private:
+	static Eigen::RowVector3d rotate_vec(const Eigen::RowVector3d& pt, const Eigen::RowVector3d& center, const Eigen::Vector3d& axis, double angle);
+	
 	const QuadTopology& quadTop;
 
 	double alpha; // starts at zero and goes up

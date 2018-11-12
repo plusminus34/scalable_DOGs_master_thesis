@@ -1,7 +1,7 @@
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/Constraints.h"
 
-#include "../../Dog.h"
+#include "../Dog.h"
 
 class StitchingConstraints: public Constraints {
 public:
