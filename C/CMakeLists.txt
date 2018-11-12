@@ -37,9 +37,10 @@ set(LIBIGL_EXTERNAL "${LIBIGL_ROOT}/external")
 
 # Add your project files
 file(GLOB SRCFILES *.cpp)
+file(GLOB SRC_OPTIMIZATION Optimization/*.cpp)
 file(GLOB SRC_QUAD QuadMesh/*.cpp)
 file(GLOB SRC_DOG Dog/*.cpp)
 file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
 
-add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS})
+add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS})
 target_link_libraries(${PROJECT_NAME}_bin igl::core igl::opengl_glfw igl::cgal igl::triangle)

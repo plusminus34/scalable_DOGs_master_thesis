@@ -17,6 +17,10 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Surface_sweep_2_algorithms.h>
 
+
+#include "Optimization/CompositeObjective.h"
+#include "Optimization/QuadraticConstraintsSum.h"
+
 using namespace std;
 
 int main(int argc, char *argv[])
