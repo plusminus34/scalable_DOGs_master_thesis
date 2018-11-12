@@ -7,7 +7,7 @@ class LBFGS : public Solver{
 public:
 	LBFGS(int max_iter): max_iter(max_iter) {}
 	// x0 is the initial guess, x is the result, the return value is the objective value
-	virtual double solve(const Eigen::VectorXd& x0, const Objective& obj, Eigen::VectorXd& x);
+	virtual double solve(const Eigen::VectorXd& x0, Objective& obj, Eigen::VectorXd& x);
 
 	void set_max_iter(int max_iter) {max_iter = max_iter;}
 private:

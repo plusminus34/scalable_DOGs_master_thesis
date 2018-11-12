@@ -1,7 +1,7 @@
 #include "LBFGS.h"
 #include "lbfgs/LBFGSSolver.h"
 
-double LBFGS::solve(const Eigen::VectorXd& x0, const Objective& obj, Eigen::VectorXd& x) {
+double LBFGS::solve(const Eigen::VectorXd& x0, Objective& obj, Eigen::VectorXd& x) {
 	LBFGSpp::LBFGSParam<double> param;
 	param.epsilon = 1e-10;
 	param.delta = 1e-10;
