@@ -20,6 +20,7 @@
 
 #include "Optimization/CompositeObjective.h"
 #include "Optimization/QuadraticConstraintsSum.h"
+#include "Optimization/CompositeConstraints.h"
 #include "Dog/Objectives/DogConstraints.h"
 
 using namespace std;

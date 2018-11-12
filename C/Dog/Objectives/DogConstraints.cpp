@@ -4,7 +4,7 @@ using namespace std;
 
 std::vector<Eigen::Triplet<double> > DogConstraints::JacobianIJV(const Eigen::VectorXd& x) const {
 	std::vector<Eigen::Triplet<double> > IJV;
-	IJV.reserve(15*const_n); // 5 vertices for inner constraints, meaning 15 vars. Less for others.
+	IJV.reserve(approx_nnz); // 5 vertices for inner constraints, meaning 15 vars. Less for others.
 
 	// Add inner vertices constraints
 	int vnum = x.rows()/3;

@@ -8,6 +8,7 @@ FoldingAngleConstraints::FoldingAngleConstraints(const QuadTopology& quadTop, Ei
 										std::pair<double,double> edge_coordinates) : quadTop(quadTop), edge_coordinates(edge_coordinates) {
 	alpha = 0;
 	const_n = 9; // Constrain 4 vertices = 12 vars
+	approx_nnz = const_n; // all consts are on a single coordinate
 	edge1 = i_edge1; edge2 = i_edge2;
 	edge1_p1 = V.row(edge1.v1);
 	edge1_p2 = V.row(edge1.v2);
@@ -51,7 +52,7 @@ std::vector<Eigen::Triplet<double> > FoldingAngleConstraints::JacobianIJV(const 
 	Eigen::SparseMatrix<double> Jacobian(const_n, x.rows());
 	int vnum = x.rows()/3;
 
-	std::vector<Eigen::Triplet<double> > IJV(const_n); // All consts are on single coordinates..
+	std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz); // All consts are on single coordinates..
 	for (int i = 0; i < const_n; i++) {
 		IJV.push_back(Eigen::Triplet<double>(i,b(i),1));
 	}

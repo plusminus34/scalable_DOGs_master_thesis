@@ -6,6 +6,7 @@
 class Constraints {
 public:
 	int getConstNum(){return const_n;}
+	int getApproxNonZeros() {return approx_nnz;}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const = 0;
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const = 0;
@@ -24,4 +25,5 @@ public:
 
 protected:
 	int const_n;
+	int approx_nnz;
 };

@@ -36,7 +36,7 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 
 std::vector<Eigen::Triplet<double> > StitchingConstraints::JacobianIJV(const Eigen::VectorXd& x) const {
 	std::vector<Eigen::Triplet<double> > IJV;
-	IJV.reserve(4*const_n); // 2 vertices for equality constraints
+	IJV.reserve(approx_nnz); // 2 vertices for equality constraints
 
 	// Add curve fold constraints
 	int vnum = x.rows()/3;

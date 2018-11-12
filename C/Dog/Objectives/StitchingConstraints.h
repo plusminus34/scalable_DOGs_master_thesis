@@ -7,7 +7,8 @@ class StitchingConstraints: public Constraints {
 public:
 	StitchingConstraints(const QuadTopology& quadTop,const DogEdgeStitching& edgeStitching) : quadTop(quadTop), 
 																					eS(edgeStitching)
-								{const_n= 3*edgeStitching.edge_coordinates.size();}
+								{const_n= 3*edgeStitching.edge_coordinates.size();
+								approx_nnz = 3*4*const_n; /*2 vertices for equality const*/}
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const;
 private:
