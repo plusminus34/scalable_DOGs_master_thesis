@@ -28,6 +28,7 @@ public:
 			auto cnst_IJV = cnst->JacobianIJV(x);
 			for (auto val : cnst_IJV) IJV.push_back(Eigen::Triplet<double>(const_cnt++, val.col(), val.value()));
 		}
+		return IJV;
 	}
 	
 	virtual Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {

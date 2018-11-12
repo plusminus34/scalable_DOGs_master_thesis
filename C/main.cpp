@@ -19,8 +19,9 @@
 
 
 #include "Optimization/CompositeObjective.h"
-#include "Optimization/QuadraticConstraintsSum.h"
+#include "Optimization/QuadraticConstraintsSumObjective.h"
 #include "Optimization/CompositeConstraints.h"
+#include "Optimization/PositionalConstraints.h"
 #include "Dog/Objectives/DogConstraints.h"
 
 using namespace std;

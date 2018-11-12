@@ -9,10 +9,11 @@
 #include "Constraints.h"
 #include "Objective.h"
 
-class QuadraticConstraintsSum : public Objective {
+// No hessian at the moment (see https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm for a matrix notation of the hessian)
+class QuadraticConstraintsSumObjective : public Objective {
   
 public:
-	QuadraticConstraintsSum(const Constraints& constraints): cnst(constraints) {};
+	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints) {};
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst.Vals(x).squaredNorm();
 	}
