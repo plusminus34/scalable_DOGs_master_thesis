@@ -46,7 +46,8 @@ file(GLOB SRC_OPTIMIZATION
 file(GLOB SRC_QUAD QuadMesh/*.cpp)
 file(GLOB SRC_DOG 
     Dog/*.cpp
-    Dog/Objectives/*.cpp)
+    Dog/Objectives/*.cpp
+    Dog/Solvers/*.cpp)
 file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
 
 add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS})
