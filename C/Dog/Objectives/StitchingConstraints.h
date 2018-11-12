@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/Constraints.h"
 

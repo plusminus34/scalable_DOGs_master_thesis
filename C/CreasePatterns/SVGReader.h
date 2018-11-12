@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ArrangementDefs.h"
 #include <string>
 

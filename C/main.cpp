@@ -24,6 +24,8 @@
 #include "Optimization/PositionalConstraints.h"
 #include "Dog/Objectives/DogConstraints.h"
 
+#include "Optimization/Solvers/LBFGS.h"
+
 using namespace std;
 
 int main(int argc, char *argv[])
