@@ -16,9 +16,9 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 	int const_cnt = 0;
   	#pragma clang loop vectorize(enable)
 	//for (auto pair : v_equality_matchings) {
-	for (int i = 0; i < edge_const_1.size(); i++) {
+	for (int i = 0; i < eS.edge_const_1.size(); i++) {
 		Edge e1 = eS.edge_const_1[i]; Edge e2 = eS.edge_const_2[i];
-		double e1_c = eS.edge_coordinates[i]; double e2_c = 1-eS.edge_coordinates[i];
+		double e1_c = eS.edge_coordinates[i]; double e2_c = 1-e1_c;
 
 		constVals(const_cnt) = 0.5*(e1_c*x(e1.v1+0)+e2_c*x(e1.v2+0)-e1_c*x(e2.v1+0)-e2_c*x(e2.v2+0));
 		constVals(const_cnt+1) = 0.5*(e1_c*x(e1.v1+1*vnum)+e2_c*x(e1.v2+1*vnum)-e1_c*x(e2.v1+1*vnum)-e2_c*x(e2.v2+1*vnum));
@@ -43,9 +43,9 @@ std::vector<Eigen::Triplet<double> > StitchingConstraints::JacobianIJV(const Eig
 	int const_cnt = 0;
   	#pragma clang loop vectorize(enable)
 	//for (auto pair : v_equality_matchings) {
-	for (int i = 0; i < edge_const_1.size(); i++) {
-		Edge e1 = edge_const_1[i]; Edge e2 = edge_const_2[i];
-		double e1_c = edge_coordinates[i].first; double e2_c = edge_coordinates[i].second;
+	for (int i = 0; i < eS.edge_const_1.size(); i++) {
+		Edge e1 = eS.edge_const_1[i]; Edge e2 = eS.edge_const_2[i];
+		double e1_c = eS.edge_coordinates[i]; double e2_c = 1.-e1_c;
 
 		IJV.push_back(Eigen::Triplet<double>(const_cnt,e1.v1,e1_c));
 		IJV.push_back(Eigen::Triplet<double>(const_cnt,e1.v2,e2_c));
