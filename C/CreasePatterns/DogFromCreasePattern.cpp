@@ -18,18 +18,18 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	// Generated mesh
 	std::vector<Eigen::MatrixXd> submeshVList; std::vector<Eigen::MatrixXi> submeshFList;
 	std::vector<std::vector<bool>> submeshV_is_inner;
-	Eigen::MatrixXd V; Eigen::MatrixXi F; DogFoldingConstraints foldingConstraints;
+	Eigen::MatrixXd V; Eigen::MatrixXi F; DogEdgeStitching edgeStitching;
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
 
 	std::vector<Point_2> constrained_pts_non_unique;
-	generate_constraints(creasePattern, submeshVList, submeshFList, foldingConstraints, constrained_pts_non_unique);
+	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique);
 
 	std::vector<SubmeshPoly> submesh_polygons;
 	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
-	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, foldingConstraints, V_ren);
+	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, edgeStitching, V_ren);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, constrained_pts_non_unique);
 
-	return Dog(V,F,foldingConstraints,V_ren,F_ren);
+	return Dog(V,F,edgeStitching,V_ren,F_ren);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
@@ -105,7 +105,7 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
-						const std::vector<Eigen::MatrixXi>& submeshFList, DogFoldingConstraints& foldingConstraints,
+						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique) {
 	// Get all the polylines unique points.
 	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
@@ -130,7 +130,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		
 		Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
 		Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
-		std::vector<std::pair<int,int>> global_edge_indices;
+		std::vector<Edge> global_edge_indices;
 		// Go through every submesh
 		int global_idx_base = 0;
 		for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
@@ -144,7 +144,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			// Found the edge (both points) on the submesh
 			if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
 				// Insert the (global V) indices
-				global_edge_indices.push_back(std::pair<int,int>(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
+				global_edge_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
 			}
 			global_idx_base += submeshVList[sub_i].rows();
 		}
@@ -157,10 +157,10 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
 		for (int const_i = 0; const_i < global_edge_indices.size()-1; const_i++) {
-			foldingConstraints.edge_const_1.push_back(global_edge_indices[const_i]);
-			foldingConstraints.edge_const_2.push_back(global_edge_indices[const_i+1]);
-			foldingConstraints.edge_coordinates.push_back(CGAL::to_double(t_precise));
-			foldingConstraints.edge_coordinates_precise.push_back(t_precise);
+			edgeStitching.edge_const_1.push_back(global_edge_indices[const_i]);
+			edgeStitching.edge_const_2.push_back(global_edge_indices[const_i+1]);
+			edgeStitching.edge_coordinates.push_back(CGAL::to_double(t_precise));
+			edgeStitching.edge_coordinates_precise.push_back(t_precise);
 			constrained_pts_non_unique.push_back(pt);
 		}
 	}
