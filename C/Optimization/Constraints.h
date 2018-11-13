@@ -15,6 +15,8 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
+	double deviation(const Eigen::VectorXd& x) const {return Vals(x).squaredNorm();}
+
 	// The user just needs to implement JacobianIJV, so other methods could efficiently concatenate multiple constraints jacobian
 	virtual Eigen::SparseMatrix<double> Jacobian(const Eigen::VectorXd& x) const {
 		Eigen::SparseMatrix<double> Jacobian(const_n, x.rows());

@@ -71,7 +71,7 @@ void single_optimization() {
   // Objectives
   SimplifiedBendingObjective bending(quadTop);
   IsometryObjective isoObj(quadTop,x0);
-  CompositeObjective compObj({&bending, &isoObj}, {1,0.2});
+  CompositeObjective compObj({&bending, &isoObj}, {1,5});
 
   // Constraints
   DogConstraints dogConst(quadTop);
@@ -94,16 +94,16 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'F':
     single_optimization();
+    viewer.data().set_mesh(V_ren, F_ren);
     break;
   }
-
-
   return false;
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   run_optimization();
   render_wireframe(viewer, V);
+  viewer.data().set_mesh(V_ren, F_ren);
   return false;
 }
 
@@ -116,21 +116,28 @@ int main(int argc, char *argv[]) {
   igl::readOBJ(mesh_path, V, F_ren);
   cout <<"F_ren.cols() = " << F_ren.cols() << endl;
   F = F_to_Fsqr(F_ren);
-  V_ren = V; // true now..
   quad_topology(V,F,quadTop);
+  const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
+  V *= 1. / edge_l;
 
-  DogEdgeStitching dogEdgeStitching; // Empty for now
+  V_ren = V; // no folds
+
+  DogEdgeStitching dogEdgeStitching; // no folds
   dogP = new Dog(V,F,dogEdgeStitching,V_ren,F_ren);
   solver = new DOGFlowAndProject(*dogP, 1., 1);
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   //viewer.data().set_mesh(V, F);
-  viewer.data().set_mesh(V, F_ren);
+  viewer.data().set_mesh(V_ren, F_ren);
   viewer.core.align_camera_center(V,F_ren);
 
   viewer.callback_key_down = callback_key_down;
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
+
+  viewer.core.is_animating = true;
+  viewer.core.animation_max_fps = 30.;
+
   viewer.data().show_lines = false;
   viewer.launch();
 }
