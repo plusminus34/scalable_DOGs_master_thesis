@@ -2,7 +2,6 @@
 
 #include "../DogLaplacian.h"
 #include "../Objectives/LaplacianSimilarity.h"
-#include "../../Optimization/Solvers/LBFGSWithPenalty.h"
 
 #include "igl/cat.h"
 
@@ -10,7 +9,7 @@ using namespace std;
 
 DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter): dog_init(dog),
 									 flow_t(flow_t), max_flow_project_iter(max_flow_project_iter), max_lbfgs_proj_iter(max_lbfgs_proj_iter), 
-									 m_solver(ai,aj,K) {
+									 m_solver(ai,aj,K), lbfgsWithPenalty(max_lbfgs_proj_iter) {
 	first_solve = true;
 	m_solver.set_type(-2);
 }
@@ -27,14 +26,17 @@ double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective
 
 double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
 	cout << "obj before flow = " << f.obj(x0) << endl;
+	cout << "const deviation before flow = " << constraints.deviation(x0) << endl;
 	auto e_after_flow = flow(x0, f, constraints, x);
 	cout << "obj after flow = " << f.obj(x) << endl;
-	return e_after_flow;
-	/*
+	//return e_after_flow;
+	cout << "const deviation after flow = " << constraints.deviation(x) << endl;
 	project(x, f, constraints, x);
 	auto e_after_proj = f.obj(x);
+	cout << "obj after project = " << f.obj(x) << endl;
+	cout << "const deviation after project = " << constraints.deviation(x) << endl;
 	return e_after_proj;
-	*/
+	
 }
 double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
@@ -96,12 +98,12 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	return new_e;
 }
 void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, const Constraints& constraints, Eigen::VectorXd& x) {
-	LBFGSWithPenalty lbfgsWithPenalty(max_lbfgs_proj_iter);
 	// We don't optimize for the same objective, but just project the given mesh to the closest DOG
 	//	and we define "closest" in terms of the laplacian normals
 	// Use a smoothness objective on DOG, together with the same constraints
 	LaplacianSimilarity laplacianNormalsObj(dog_init, x0);
-	lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
+	//lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
+	lbfgsWithPenalty.solve_single_iter_with_fixed_p(x0, laplacianNormalsObj, constraints, x);
 }
 
 double DOGFlowAndProject::line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy) {

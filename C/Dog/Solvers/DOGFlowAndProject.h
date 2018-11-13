@@ -3,6 +3,7 @@
 #include "../Dog.h"
 #include "../../Optimization/Solver.h"
 #include "../../Optimization/Solvers/PardisoSolver.h"
+#include "../../Optimization/Solvers/LBFGSWithPenalty.h"
 
 class DOGFlowAndProject : public ConstrainedSolver{
   
@@ -14,6 +15,8 @@ public:
 	double solve_single_iter(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
 	void set_max_iter(int max_iter) {max_iter = max_iter;}
+
+	void resetSmoother() {lbfgsWithPenalty.resetSmoother();}
 private:
 	double flow(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 	void project(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
@@ -26,6 +29,8 @@ private:
 	// initial dog
 	const Dog& dog_init;
 	bool first_solve;
+
+	LBFGSWithPenalty lbfgsWithPenalty;
 
 	// Linear system solving related
 	PardisoSolver m_solver;

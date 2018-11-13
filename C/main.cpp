@@ -77,6 +77,7 @@ void single_optimization() {
   DogConstraints dogConst(quadTop);
 
   solver->solve_single_iter(x0, compObj, dogConst, x);
+  solver->resetSmoother();
   vec_to_mat2(x,V); V_ren = V;
 }
 
