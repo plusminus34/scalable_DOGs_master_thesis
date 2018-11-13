@@ -9,6 +9,7 @@ struct CreasesVisualization : public igl::Serializable {
 	Eigen::MatrixXi F_arr;
 	Eigen::MatrixXd faceColors;
 	Eigen::MatrixXd edge_pts1,edge_pts2;
+	Eigen::MatrixXd meshE1,meshE2;
 
 	void InitSerialization() {
       Add(V_arr,std::string("_V_arr"));
@@ -16,6 +17,8 @@ struct CreasesVisualization : public igl::Serializable {
       Add(faceColors,std::string("_faceColors"));
       Add(edge_pts1,std::string("_edge_pts1"));
       Add(edge_pts2,std::string("_edge_pts2"));
+      Add(meshE1,std::string("_meshE1"));
+      Add(meshE2,std::string("_meshE2"));
     }
 };
 

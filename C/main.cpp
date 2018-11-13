@@ -1,9 +1,11 @@
 #include <igl/opengl/glfw/Viewer.h>
+#include <igl/opengl/glfw/imgui/ImGuiMenu.h>
+#include <igl/opengl/glfw/imgui/ImGuiHelpers.h>
+#include <imgui/imgui.h>
 
 #include <boost/algorithm/string.hpp>
 
 #include <igl/combine.h>
-#include <igl/edges.h>
 #include <igl/slice.h>
 #include <igl/Timer.h>
 #include <igl/pathinfo.h>
@@ -33,39 +35,15 @@
 #include "Dog/Solvers/DOGFlowAndProject.h"
 
 #include "ModelState.h"
+#include "ModelViewer.h"
 
 using namespace std;
 
 bool is_optimizing = false;
 ModelState state;
+ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
 const int DEFAULT_GRID_RES = 21;
-
-void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
-{
-  int e_num = quadTop.E.rows();
-  int e_disp_n;
-  e_disp_n = e_num;
-
-  E1.resize(e_disp_n, 3);
-  E2.resize(e_disp_n, 3);
-  int c = 0;
-  for (int i = 0; i < e_num; i++)
-  {
-    int v1 = quadTop.E(i, 0), v2 = quadTop.E(i, 1);
-    E1.row(c) = V.row(v1);
-    E2.row(c) = V.row(v2);
-    c++;
-  }
-}
-
-void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const QuadTopology& quadTop)
-{
-  Eigen::MatrixXd E1, E2;
-  get_wireframe_edges(V, quadTop, E1, E2);
-  viewer.data().set_edges(Eigen::MatrixXd::Zero(0, 3), Eigen::MatrixXi::Zero(0, 3), Eigen::MatrixXd::Zero(0, 3));
-  viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
-}
 
 void single_optimization() {
   cout << "running a single optimization routine" << endl;
@@ -106,8 +84,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   run_optimization();
-  render_wireframe(viewer, state.dog.getV(), state.quadTop);
-  viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+  modelViewer.render(viewer);
   return false;
 }
 
@@ -127,7 +104,7 @@ int main(int argc, char *argv[]) {
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
     state.load_from_workspace(input_path);
-    
+
   } else {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
@@ -137,6 +114,30 @@ int main(int argc, char *argv[]) {
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
+  // Attach a menu plugin
+  igl::opengl::glfw::imgui::ImGuiMenu menu;
+  viewer.plugins.push_back(&menu);
+
+    // Draw additional windows
+  menu.callback_draw_custom_window = [&]()
+  {
+    // Define next window position + size
+    ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200, 160), ImGuiSetCond_FirstUseEver);
+    ImGui::Begin(
+        "DOG", nullptr,
+        ImGuiWindowFlags_NoSavedSettings
+    );
+
+
+    // Expose an enumeration type
+      enum Orientation { Up=0, Down, Left, Right };
+      static Orientation dir = Up;
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "ViewModeMesh\0ViewModeCreases\0\0");
+
+    ImGui::End();
+  };
+
   //viewer.data().set_mesh(V, F);
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());

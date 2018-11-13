@@ -8,6 +8,7 @@ option(LIBIGL_WITH_OPENGL            "Use OpenGL"         ON)
 option(LIBIGL_WITH_OPENGL_GLFW       "Use GLFW"           ON)
 option(LIBIGL_WITH_CGAL            "Use CGAL"  ON)
 option(LIBIGL_WITH_TRIANGLE            "Use Triangle"  ON)
+option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"          ON)
 
 set(CMAKE_BUILD_TYPE "Release")
 
@@ -35,6 +36,22 @@ set(LIBIGL_EXTERNAL "${LIBIGL_ROOT}/external")
   target_include_directories(igl_triangle ${IGL_SCOPE} ${TRIANGLE_DIR})
 #endif()
 
+### Compile the ImGui part ###
+#if(LIBIGL_WITH_OPENGL_GLFW_IMGUI)
+#  if(TARGET igl::opengl_glfw)
+    # ImGui module
+    compile_igl_module("opengl/glfw/imgui")
+    if(NOT TARGET imgui)
+      igl_download_imgui()
+      add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
+    endif()
+    target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
+ # endif()
+#endif()
+
+#add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
+#target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
+
 # Add your project files
 file(GLOB SRCFILES *.cpp)
 
@@ -49,8 +66,9 @@ file(GLOB SRC_DOG
     Dog/Objectives/*.cpp
     Dog/Solvers/*.cpp)
 file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
+file(GLOB SRC_GUI Gui/*.cpp)
 
 add_library(libpardiso500-MACOS-X86-64 SHARED IMPORTED)
 set_target_properties(libpardiso500-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso500-MACOS-X86-64.dylib")
-add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS})
-target_link_libraries(${PROJECT_NAME}_bin igl::core igl::opengl_glfw igl::cgal igl::triangle libpardiso500-MACOS-X86-64)
+add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI})
+target_link_libraries(${PROJECT_NAME}_bin igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso500-MACOS-X86-64)
