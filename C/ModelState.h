@@ -2,7 +2,14 @@
 
 #include "Dog/Dog.h"
 
-struct ModelState {
+#include "igl/serialize.h"
+
+struct ModelState : public igl::Serializable {
 	Dog dog;
 	QuadTopology quadTop;
+
+	void InitSerialization() {
+      Add(dog,std::string("_dog"));
+      Add(quadTop,std::string("_quadTop"));
+    }
 };

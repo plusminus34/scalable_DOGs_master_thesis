@@ -22,6 +22,7 @@ struct DogEdgeStitching  : public igl::Serializable {
     }
 };
 
+// Encapsulate a dog mesh, the stitching constraints for multiple components and its rendered mesh
 class Dog : public igl::Serializable {
 public:
 	Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching, Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren);
@@ -32,10 +33,11 @@ public:
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi) {Vi = V_ren;}
 	
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
-	void update_rendering_v();
+	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
 	const Eigen::MatrixXi& getFrendering() const {return F_ren;}
 	const Eigen::MatrixXd& getVrendering() const {return V_ren;}
 
@@ -50,6 +52,8 @@ public:
     }
 	
 private:
+	void update_rendering_v();
+
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
 	// The initial rendered (triangular) mesh

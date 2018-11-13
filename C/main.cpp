@@ -34,12 +34,8 @@
 
 using namespace std;
 
-Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F, F_ren;
 bool is_optimizing = false;
-
-Dog* dogP = NULL;
 ModelState state;
-
 DOGFlowAndProject* solver = NULL;
 
 void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
@@ -70,7 +66,7 @@ void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& 
 
 void single_optimization() {
   cout << "running a single optimization routine" << endl;
-  Eigen::VectorXd x0,x; mat2_to_vec(state.dog.getV(),x0);
+  Eigen::VectorXd x0(state.dog.getV_vector()),x;
 
   // Objectives
   SimplifiedBendingObjective bending(state.quadTop);
@@ -82,7 +78,7 @@ void single_optimization() {
 
   solver->solve_single_iter(x0, compObj, dogConst, x);
   solver->resetSmoother();
-  //vec_to_mat2(x,state.V);
+  state.dog.update_V_vector(x);
 }
 
 void run_optimization() {
@@ -99,7 +95,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'F':
     single_optimization();
-    viewer.data().set_mesh(V_ren, F_ren);
+    viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   }
   return false;
@@ -133,8 +129,9 @@ int main(int argc, char *argv[]) {
   solver = new DOGFlowAndProject(state.dog, 1., 1);
 
   // check serialization
-  //igl::serialize(state,"State","bla",true);
-  //igl::deserialize(state,"State","bla");
+  igl::serialize(state,"State","bla",true);
+  ModelState state2;
+  igl::deserialize(state2,"State","bla");
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
