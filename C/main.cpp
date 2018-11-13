@@ -45,6 +45,31 @@ ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
 const int DEFAULT_GRID_RES = 21;
 
+void clear_all_and_set_default_params() {
+  if (solver){delete solver;}
+  solver = new DOGFlowAndProject(state.dog, 1., 1);
+}
+
+void save_workspace() {
+  std::string filename = igl::file_dialog_save();
+  if (filename.empty())
+    return;
+  state.save_to_workspace(filename);
+}
+
+void load_workspace(const std::string& path) {
+  cout << "loading workspace" << endl;
+  state.load_from_workspace(path);
+  clear_all_and_set_default_params();
+}
+
+void load_workspace() {
+  std::string filename = igl::file_dialog_open();
+  if (filename.empty())
+    return;
+  load_workspace(filename);
+}
+
 void single_optimization() {
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(state.dog.getV_vector()),x;
@@ -110,7 +135,7 @@ int main(int argc, char *argv[]) {
     state.init_from_mesh(input_path);
   }
   
-  solver = new DOGFlowAndProject(state.dog, 1., 1);
+  
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
@@ -129,16 +154,20 @@ int main(int argc, char *argv[]) {
         ImGuiWindowFlags_NoSavedSettings
     );
 
-
-    // Expose an enumeration type
-      enum Orientation { Up=0, Down, Left, Right };
-      static Orientation dir = Up;
+      // Expose an enumeration type
       ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "ViewModeMesh\0ViewModeCreases\0\0");
+      if (ImGui::Button("Save workspace", ImVec2(-1,0))) {
+        save_workspace();
+      }
+      if (ImGui::Button("Load workspace", ImVec2(-1,0))) {
+        load_workspace();
+      }
 
     ImGui::End();
   };
 
-  //viewer.data().set_mesh(V, F);
+  clear_all_and_set_default_params();
+  
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 
