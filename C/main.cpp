@@ -6,7 +6,6 @@
 #include <igl/edges.h>
 #include <igl/slice.h>
 #include <igl/Timer.h>
-#include <igl/readOBJ.h>
 #include <igl/pathinfo.h>
 
 #include "CreasePatterns/CreasePattern.h"
@@ -104,21 +103,6 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   return false;
 }
 
-void read_mesh(const std::string& mesh_path) {
-  Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F,F_ren;
-  igl::readOBJ(mesh_path, V, F_ren);
-  cout <<"F_ren.cols() = " << F_ren.cols() << endl;
-  F = F_to_Fsqr(F_ren);
-  quad_topology(V,F,state.quadTop);
-  const double edge_l = (V.row(state.quadTop.bnd_loop[1]) - V.row(state.quadTop.bnd_loop[0])).norm();
-  V *= 1. / edge_l;
-
-  V_ren = V; // no folds
-
-  DogEdgeStitching dogEdgeStitching; // no folds
-  state.dog = Dog(V,F,dogEdgeStitching,V_ren,F_ren);
-}
-
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   run_optimization();
   render_wireframe(viewer, state.dog.getV(), state.quadTop);
@@ -138,11 +122,11 @@ int main(int argc, char *argv[]) {
     exit(1);
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
+    state.load_from_workspace(input_path);
     exit(1);
   } else {
     // Assume obj/off or other types
-    std::cout << "Reading mesh " << input_path << endl;
-    read_mesh(input_path);
+    state.init_from_mesh(input_path);
   }
   
   solver = new DOGFlowAndProject(state.dog, 1., 1);
