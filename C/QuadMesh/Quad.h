@@ -4,7 +4,7 @@
 
 #include <vector>
 
-struct QuadTopology {
+struct QuadTopology : public igl::Serializable {
     Eigen::VectorXi stars;
     Eigen::VectorXi bnd4;
     Eigen::VectorXi bnd3; 
@@ -18,6 +18,19 @@ struct QuadTopology {
     std::vector<int> vi_to_star; // inner vertex to the star index in Eigen::VectorXi/ In case it's not an inner vertex, just -1
 
     int v_n;
+
+    void InitSerialization() {
+      Add(stars,std::string("_w_H"));
+      Add(bnd4,std::string("_w_FirstFund"));
+      Add(bnd3,std::string("_w_GridReg"));
+      Add(bnd2,std::string("_w_SecondFund"));
+      Add(bnd_loop,std::string("_w_smooth"));
+      Add(is_bnd_v,std::string("_w_cylindrical"));
+      Add(E,std::string("_w_conical"));
+      Add(VF,std::string("_w_Href"));
+      Add(A,std::string("_w_sqrGrid"));
+      Add(vi_to_star,std::string("_w_vEq"));
+    }
 };
 
 struct Edge  : public igl::Serializable {

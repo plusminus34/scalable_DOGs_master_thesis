@@ -30,13 +30,17 @@
 #include "Dog/Objectives/SimplifiedBendingObjective.h"
 #include "Dog/Solvers/DOGFlowAndProject.h"
 
+#include "ModelState.h"
+
 using namespace std;
 
 Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F, F_ren;
 bool is_optimizing = false;
+
 Dog* dogP = NULL;
+ModelState state;
+
 DOGFlowAndProject* solver = NULL;
-QuadTopology quadTop;
 
 void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
 {
@@ -56,7 +60,7 @@ void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, 
   }
 }
 
-void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V)
+void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const QuadTopology& quadTop)
 {
   Eigen::MatrixXd E1, E2;
   get_wireframe_edges(V, quadTop, E1, E2);
@@ -66,19 +70,19 @@ void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& 
 
 void single_optimization() {
   cout << "running a single optimization routine" << endl;
-  Eigen::VectorXd x0,x; mat2_to_vec(V,x0);
+  Eigen::VectorXd x0,x; mat2_to_vec(state.dog.getV(),x0);
 
   // Objectives
-  SimplifiedBendingObjective bending(quadTop);
-  IsometryObjective isoObj(quadTop,x0);
+  SimplifiedBendingObjective bending(state.quadTop);
+  IsometryObjective isoObj(state.quadTop,x0);
   CompositeObjective compObj({&bending, &isoObj}, {1,5});
 
   // Constraints
-  DogConstraints dogConst(quadTop);
+  DogConstraints dogConst(state.quadTop);
 
   solver->solve_single_iter(x0, compObj, dogConst, x);
   solver->resetSmoother();
-  vec_to_mat2(x,V); V_ren = V;
+  //vec_to_mat2(x,state.V);
 }
 
 void run_optimization() {
@@ -103,8 +107,8 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   run_optimization();
-  render_wireframe(viewer, V);
-  viewer.data().set_mesh(V_ren, F_ren);
+  render_wireframe(viewer, state.dog.getV(), state.quadTop);
+  viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   return false;
 }
 
@@ -114,24 +118,29 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   const std::string mesh_path = argv[1];
+  Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F,F_ren;
   igl::readOBJ(mesh_path, V, F_ren);
   cout <<"F_ren.cols() = " << F_ren.cols() << endl;
   F = F_to_Fsqr(F_ren);
-  quad_topology(V,F,quadTop);
-  const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
+  quad_topology(V,F,state.quadTop);
+  const double edge_l = (V.row(state.quadTop.bnd_loop[1]) - V.row(state.quadTop.bnd_loop[0])).norm();
   V *= 1. / edge_l;
 
   V_ren = V; // no folds
 
   DogEdgeStitching dogEdgeStitching; // no folds
-  dogP = new Dog(V,F,dogEdgeStitching,V_ren,F_ren);
-  solver = new DOGFlowAndProject(*dogP, 1., 1);
+  state.dog = Dog(V,F,dogEdgeStitching,V_ren,F_ren);
+  solver = new DOGFlowAndProject(state.dog, 1., 1);
+
+  // check serialization
+  //igl::serialize(state,"State","bla",true);
+  //igl::deserialize(state,"State","bla");
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   //viewer.data().set_mesh(V, F);
-  viewer.data().set_mesh(V_ren, F_ren);
-  viewer.core.align_camera_center(V,F_ren);
+  viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+  viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 
   viewer.callback_key_down = callback_key_down;
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
