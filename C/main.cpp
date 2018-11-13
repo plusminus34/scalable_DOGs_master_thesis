@@ -1,10 +1,13 @@
 #include <igl/opengl/glfw/Viewer.h>
 
+#include <boost/algorithm/string.hpp>
+
 #include <igl/combine.h>
 #include <igl/edges.h>
 #include <igl/slice.h>
 #include <igl/Timer.h>
 #include <igl/readOBJ.h>
+#include <igl/pathinfo.h>
 
 #include "CreasePatterns/CreasePattern.h"
 #include "CreasePatterns/OrthogonalGrid.h"
@@ -77,7 +80,7 @@ void single_optimization() {
   DogConstraints dogConst(state.quadTop);
 
   solver->solve_single_iter(x0, compObj, dogConst, x);
-  solver->resetSmoother();
+  //solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
 
@@ -101,19 +104,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   return false;
 }
 
-bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  run_optimization();
-  render_wireframe(viewer, state.dog.getV(), state.quadTop);
-  viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
-  return false;
-}
-
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    cout << "Usage: dog_editor mesh_path" << endl;
-    exit(1);
-  }
-  const std::string mesh_path = argv[1];
+void read_mesh(const std::string& mesh_path) {
   Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F,F_ren;
   igl::readOBJ(mesh_path, V, F_ren);
   cout <<"F_ren.cols() = " << F_ren.cols() << endl;
@@ -126,12 +117,41 @@ int main(int argc, char *argv[]) {
 
   DogEdgeStitching dogEdgeStitching; // no folds
   state.dog = Dog(V,F,dogEdgeStitching,V_ren,F_ren);
-  solver = new DOGFlowAndProject(state.dog, 1., 1);
+}
 
+bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
+  run_optimization();
+  render_wireframe(viewer, state.dog.getV(), state.quadTop);
+  viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+  return false;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    cout << "Usage: dog_editor input_path" << endl << "\t with input_path pointing to a mesh, svg, or a workspace" << endl;
+    exit(1);
+  }
+  const std::string input_path = argv[1];
+  std::string dirname,basename,extension,filename; igl::pathinfo(input_path, dirname, basename, extension, filename);
+  if (boost::iequals(extension, "svg")) {
+    std::cout << "Reading svg " << input_path << endl;
+    exit(1);
+  } else if (boost::iequals(extension, "work")) {
+    std::cout << "Reading workspace " << input_path << endl;
+    exit(1);
+  } else {
+    // Assume obj/off or other types
+    std::cout << "Reading mesh " << input_path << endl;
+    read_mesh(input_path);
+  }
+  
+  solver = new DOGFlowAndProject(state.dog, 1., 1);
+  /*
   // check serialization
   igl::serialize(state,"State","bla",true);
   ModelState state2;
   igl::deserialize(state2,"State","bla");
+  */
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
