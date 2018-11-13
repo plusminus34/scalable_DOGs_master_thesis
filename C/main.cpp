@@ -17,6 +17,7 @@
 
 #include "Dog/Objectives/DogConstraints.h"
 #include "Dog/Objectives/FoldingAngleConstraints.h"
+#include "Dog/Objectives/StitchingConstraints.h"
 #include "Dog/Objectives/IsometryObjective.h"
 #include "Dog/Objectives/SimplifiedBendingObjective.h"
 #include "Dog/Solvers/DOGFlowAndProject.h"
@@ -34,6 +35,7 @@ const int DEFAULT_GRID_RES = 21;
 double bending_weight = 1.;
 double isometry_weight = 1.;
 bool fold_mesh = true;
+double folding_angle = 0;
 
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
@@ -69,17 +71,29 @@ void single_optimization() {
   IsometryObjective isoObj(state.quadTop,x0);
   CompositeObjective compObj({&bending, &isoObj}, {bending_weight,isometry_weight});
 
-  if (fold_mesh) {
-    const DogEdgeStitching& eS = state.dog.getEdgeStitching();
-    int c_i = eS.edge_const_1.size()/2;
-    FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
-    //FoldingAngleConstraints angleConst(state.quadTop, state.dog.getV(), Edge edge1, Edge edge2, std::pair<double,double> edge_coordinates);
-    //double foldingConstraintAlpha = 0;
-  }
-
   // Constraints
   DogConstraints dogConst(state.quadTop);
+  //CompositeConstraints compConst;//({&dogConst});
+  //compConst.add_constraints(&dogConst);
+  /*
+  StitchingConstraints stitchingConstraints(state.quadTop,state.dog.getEdgeStitching());
 
+  const DogEdgeStitching& eS = state.dog.getEdgeStitching();
+  int c_i = eS.edge_const_1.size()/2;
+  FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+  angleConstraints.set_angle(folding_angle);
+
+  if (state.dog.has_creases()) {
+    compConst.add_constraints(&stitchingConstraints);
+  }
+
+  if (fold_mesh) {
+    compConst.add_constraints(&angleConstraints);
+  }
+  */
+  std::cout << "before" << std::endl;
+  //solver->solve_single_iter(x0, compObj, compConst, x);
+  std::cout << "after" << std::endl;
   solver->solve_single_iter(x0, compObj, dogConst, x);
   //solver->resetSmoother();
   state.dog.update_V_vector(x);
@@ -163,6 +177,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Bending", &bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &isometry_weight, 0, 0, "%.4f");
       ImGui::Checkbox("Folding", &fold_mesh);
+      ImGui::InputDouble("Fold angle", &folding_angle, 0, 0, "%.4f");
 
     ImGui::End();
   };
