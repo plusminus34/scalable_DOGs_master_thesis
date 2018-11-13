@@ -1,7 +1,8 @@
 #include "IsometryObjective.h"
 
-IsometryObjective::IsometryObjective(const QuadTopology& quadTop)  : quadTop(quadTop) {
+IsometryObjective::IsometryObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0)  : quadTop(quadTop) {
 	refL.resize(quadTop.E.rows()); refL.setZero();
+	set_ref(x0);
 }
 
 void IsometryObjective::set_ref(const Eigen::VectorXd& x) {

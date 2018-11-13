@@ -26,10 +26,15 @@ double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective
 }
 
 double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
+	cout << "obj before flow = " << f.obj(x0) << endl;
 	auto e_after_flow = flow(x0, f, constraints, x);
+	cout << "obj after flow = " << f.obj(x) << endl;
+	return e_after_flow;
+	/*
 	project(x, f, constraints, x);
 	auto e_after_proj = f.obj(x);
 	return e_after_proj;
+	*/
 }
 double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;

@@ -26,6 +26,8 @@
 #include "Optimization/Solvers/LBFGS.h"
 
 #include "Dog/Objectives/DogConstraints.h"
+#include "Dog/Objectives/IsometryObjective.h"
+#include "Dog/Objectives/SimplifiedBendingObjective.h"
 #include "Dog/Solvers/DOGFlowAndProject.h"
 
 using namespace std;
@@ -33,6 +35,7 @@ using namespace std;
 Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F, F_ren;
 bool is_optimizing = false;
 Dog* dogP = NULL;
+DOGFlowAndProject* solver = NULL;
 QuadTopology quadTop;
 
 void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
@@ -61,10 +64,26 @@ void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& 
   viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
 }
 
+void single_optimization() {
+  cout << "running a single optimization routine" << endl;
+  Eigen::VectorXd x0,x; mat2_to_vec(V,x0);
+
+  // Objectives
+  SimplifiedBendingObjective bending(quadTop);
+  IsometryObjective isoObj(quadTop,x0);
+  CompositeObjective compObj({&bending, &isoObj}, {1,0.2});
+
+  // Constraints
+  DogConstraints dogConst(quadTop);
+
+  solver->solve_single_iter(x0, compObj, dogConst, x);
+  vec_to_mat2(x,V); V_ren = V;
+}
 
 void run_optimization() {
   if (!is_optimizing)
     return;
+  single_optimization();
 }
 
 bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
@@ -74,7 +93,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'F':
-    run_optimization();
+    single_optimization();
     break;
   }
 
@@ -102,6 +121,7 @@ int main(int argc, char *argv[]) {
 
   DogEdgeStitching dogEdgeStitching; // Empty for now
   dogP = new Dog(V,F,dogEdgeStitching,V_ren,F_ren);
+  solver = new DOGFlowAndProject(*dogP, 1., 1);
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;

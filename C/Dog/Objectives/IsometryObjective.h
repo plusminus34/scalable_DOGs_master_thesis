@@ -7,7 +7,7 @@
 class IsometryObjective: public Objective {
   
 public:
-	IsometryObjective(const QuadTopology& quadTop);
+	IsometryObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0);
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
 	virtual void set_ref(const Eigen::VectorXd& x0);
