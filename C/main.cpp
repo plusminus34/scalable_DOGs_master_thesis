@@ -39,6 +39,7 @@ using namespace std;
 bool is_optimizing = false;
 ModelState state;
 DOGFlowAndProject* solver = NULL;
+const int DEFAULT_GRID_RES = 21;
 
 void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
 {
@@ -119,23 +120,20 @@ int main(int argc, char *argv[]) {
   std::string dirname,basename,extension,filename; igl::pathinfo(input_path, dirname, basename, extension, filename);
   if (boost::iequals(extension, "svg")) {
     std::cout << "Reading svg " << input_path << endl;
-    exit(1);
+    int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
+    if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
+    state.init_from_svg(input_path, x_res, y_res);
+
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
     state.load_from_workspace(input_path);
-    exit(1);
+    
   } else {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
   }
   
   solver = new DOGFlowAndProject(state.dog, 1., 1);
-  /*
-  // check serialization
-  igl::serialize(state,"State","bla",true);
-  ModelState state2;
-  igl::deserialize(state2,"State","bla");
-  */
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
