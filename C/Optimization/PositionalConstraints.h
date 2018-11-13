@@ -3,6 +3,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include <igl/slice.h>
+
 #include "Constraints.h"
 #include "QuadraticConstraintsSumObjective.h"
 
