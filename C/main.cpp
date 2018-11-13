@@ -4,6 +4,7 @@
 #include <igl/edges.h>
 #include <igl/slice.h>
 #include <igl/Timer.h>
+#include <igl/readOBJ.h>
 
 #include "CreasePatterns/CreasePattern.h"
 #include "CreasePatterns/OrthogonalGrid.h"
@@ -22,12 +23,98 @@
 #include "Optimization/QuadraticConstraintsSumObjective.h"
 #include "Optimization/CompositeConstraints.h"
 #include "Optimization/PositionalConstraints.h"
-#include "Dog/Objectives/DogConstraints.h"
-
 #include "Optimization/Solvers/LBFGS.h"
+
+#include "Dog/Objectives/DogConstraints.h"
+#include "Dog/Solvers/DOGFlowAndProject.h"
 
 using namespace std;
 
+Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F, F_ren;
+bool is_optimizing = false;
+Dog* dogP = NULL;
+QuadTopology quadTop;
+
+void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2)
+{
+  int e_num = quadTop.E.rows();
+  int e_disp_n;
+  e_disp_n = e_num;
+
+  E1.resize(e_disp_n, 3);
+  E2.resize(e_disp_n, 3);
+  int c = 0;
+  for (int i = 0; i < e_num; i++)
+  {
+    int v1 = quadTop.E(i, 0), v2 = quadTop.E(i, 1);
+    E1.row(c) = V.row(v1);
+    E2.row(c) = V.row(v2);
+    c++;
+  }
+}
+
+void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V)
+{
+  Eigen::MatrixXd E1, E2;
+  get_wireframe_edges(V, quadTop, E1, E2);
+  viewer.data().set_edges(Eigen::MatrixXd::Zero(0, 3), Eigen::MatrixXi::Zero(0, 3), Eigen::MatrixXd::Zero(0, 3));
+  viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
+}
+
+
+void run_optimization() {
+  if (!is_optimizing)
+    return;
+}
+
+bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
+{
+  switch (key) {
+  case ' ':
+    is_optimizing = !is_optimizing;
+    break;
+  case 'F':
+    run_optimization();
+    break;
+  }
+
+
+  return false;
+}
+
+bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
+  run_optimization();
+  render_wireframe(viewer, V);
+  return false;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    cout << "Usage: dog_editor mesh_path" << endl;
+    exit(1);
+  }
+  const std::string mesh_path = argv[1];
+  igl::readOBJ(mesh_path, V, F_ren);
+  cout <<"F_ren.cols() = " << F_ren.cols() << endl;
+  F = F_to_Fsqr(F_ren);
+  V_ren = V; // true now..
+  quad_topology(V,F,quadTop);
+
+  DogEdgeStitching dogEdgeStitching; // Empty for now
+  dogP = new Dog(V,F,dogEdgeStitching,V_ren,F_ren);
+
+  // Plot the mesh
+  igl::opengl::glfw::Viewer viewer;
+  //viewer.data().set_mesh(V, F);
+  viewer.data().set_mesh(V, F_ren);
+  viewer.core.align_camera_center(V,F_ren);
+
+  viewer.callback_key_down = callback_key_down;
+  viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
+  viewer.data().show_lines = false;
+  viewer.launch();
+}
+/*
 int main(int argc, char *argv[])
 {
   Geom_traits_2 traits;
@@ -96,3 +183,4 @@ int main(int argc, char *argv[])
   viewer.data().show_lines = false;
   viewer.launch();
 }
+*/
