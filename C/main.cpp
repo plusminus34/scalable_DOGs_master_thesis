@@ -44,6 +44,9 @@ ModelState state;
 ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
 const int DEFAULT_GRID_RES = 21;
+double bending_weight = 1.;
+double isometry_weight = 1.;
+bool folding_constraint = true;
 
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
@@ -77,7 +80,7 @@ void single_optimization() {
   // Objectives
   SimplifiedBendingObjective bending(state.quadTop);
   IsometryObjective isoObj(state.quadTop,x0);
-  CompositeObjective compObj({&bending, &isoObj}, {1,5});
+  CompositeObjective compObj({&bending, &isoObj}, {bending_weight,isometry_weight});
 
   // Constraints
   DogConstraints dogConst(state.quadTop);
@@ -148,7 +151,7 @@ int main(int argc, char *argv[]) {
   {
     // Define next window position + size
     ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(200, 160), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200, 300), ImGuiSetCond_FirstUseEver);
     ImGui::Begin(
         "DOG", nullptr,
         ImGuiWindowFlags_NoSavedSettings
@@ -162,6 +165,9 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) {
         load_workspace();
       }
+      ImGui::InputDouble("Bending weight", &bending_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Isometry weight", &isometry_weight, 0, 0, "%.4f");
+      ImGui::Checkbox("Folding constraint", &folding_constraint);
 
     ImGui::End();
   };
