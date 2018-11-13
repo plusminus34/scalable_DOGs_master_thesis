@@ -23,6 +23,8 @@ public:
 	
 	void update_rendering_v();
 
+	const Eigen::MatrixXi& getF() const {return F;}
+
 	static void V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitching& edgeStitching, Eigen::MatrixXd& V_ren);
 	
 private:
