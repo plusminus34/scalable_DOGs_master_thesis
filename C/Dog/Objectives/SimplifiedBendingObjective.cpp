@@ -1,6 +1,6 @@
 #include "SimplifiedBendingObjective.h"
 
-double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) {
+double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) const {
   double e = 0;
   int vnum = x.rows()/3;
     
@@ -50,7 +50,7 @@ double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) {
   return e;
 }
 
-Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) {
+Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) const {
   Eigen::VectorXd grad;
   grad.resize(x.rows(),1); grad.setZero();
   int vnum = x.rows()/3;
@@ -184,7 +184,7 @@ Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) {
   return grad;
 }
 
-Eigen::SparseMatrix<double> SimplifiedBendingObjective::hessian(const Eigen::VectorXd& x) {
+Eigen::SparseMatrix<double> SimplifiedBendingObjective::hessian(const Eigen::VectorXd& x) const {
 	Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
 	std::vector<Eigen::Triplet<double> > IJV;
 	// Almost every vertex has 2 constraints, each involves 2 of his neighbours (so 9*9 hessians) all of its neighbours constraints involving

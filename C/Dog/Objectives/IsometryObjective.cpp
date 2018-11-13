@@ -22,7 +22,7 @@ void IsometryObjective::set_ref(const Eigen::VectorXd& x) {
   }
 }
 
-double IsometryObjective::obj(const Eigen::VectorXd& x) {
+double IsometryObjective::obj(const Eigen::VectorXd& x) const {
 	double e = 0;
 	int vnum = x.rows()/3;
 
@@ -46,7 +46,7 @@ double IsometryObjective::obj(const Eigen::VectorXd& x) {
   return e;
 }
 
-Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) {
+Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) const {
   Eigen::VectorXd grad;
   grad.resize(x.rows(),1); grad.setZero();
   int vnum = x.rows()/3;
@@ -93,7 +93,7 @@ Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) {
   return grad;
 }
 
-Eigen::SparseMatrix<double> IsometryObjective::hessian(const Eigen::VectorXd& x) {
+Eigen::SparseMatrix<double> IsometryObjective::hessian(const Eigen::VectorXd& x) const {
 	Eigen::VectorXd grad;
   Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
   std::vector<Eigen::Triplet<double> > IJV;

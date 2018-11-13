@@ -1,21 +1,25 @@
 #include "DOGFlowAndProject.h"
 
 #include "../DogLaplacian.h"
+#include "../Objectives/LaplacianSimilarity.h"
+#include "../../Optimization/Solvers/LBFGSWithPenalty.h"
+
 #include "igl/cat.h"
 
 using namespace std;
 
-DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_iter): dog_init(dog), flow_t(flow_t), max_iter(max_iter),
-										 m_solver(ai,aj,K) {
-		first_solve = true;
-		m_solver.set_type(-2);
+DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter): dog_init(dog),
+									 flow_t(flow_t), max_flow_project_iter(max_flow_project_iter), max_lbfgs_proj_iter(max_lbfgs_proj_iter), 
+									 m_solver(ai,aj,K) {
+	first_solve = true;
+	m_solver.set_type(-2);
 }
 
 double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
 	// TODO: add stopping criteria
 	double f;
-	for (int iter = 0; iter < max_iter; iter++) {
+	for (int iter = 0; iter < max_flow_project_iter; iter++) {
 		f = solve_single_iter(x, obj, constraints, x);
 	}
 	return f;
@@ -86,8 +90,13 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	
 	return new_e;
 }
-void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
-
+void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, const Constraints& constraints, Eigen::VectorXd& x) {
+	LBFGSWithPenalty lbfgsWithPenalty(max_lbfgs_proj_iter);
+	// We don't optimize for the same objective, but just project the given mesh to the closest DOG
+	//	and we define "closest" in terms of the laplacian normals
+	// Use a smoothness objective on DOG, together with the same constraints
+	LaplacianSimilarity laplacianNormalsObj(dog_init, x0);
+	lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
 }
 
 double DOGFlowAndProject::line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy) {

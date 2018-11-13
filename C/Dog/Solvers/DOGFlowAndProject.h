@@ -7,7 +7,7 @@
 class DOGFlowAndProject : public ConstrainedSolver{
   
 public:
-	DOGFlowAndProject(const Dog& dog,  double flow_t, int max_iter);
+	DOGFlowAndProject(const Dog& dog,  double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter = 400);
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
@@ -20,7 +20,8 @@ private:
 
 	double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& obj, double cur_energy = -1);
 
-	int max_iter;
+	int max_flow_project_iter; 
+	int max_lbfgs_proj_iter;
 	double flow_t;
 	// initial dog
 	const Dog& dog_init;
