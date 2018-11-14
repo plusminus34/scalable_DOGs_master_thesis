@@ -55,6 +55,7 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	Eigen::VectorXd g(f.grad(x));
 	Eigen::VectorXd d(g.rows());
 	Eigen::SparseMatrix<double> J = constraints.Jacobian(x);
+	std::cout << "here with J" << std::endl;
 	
 	Eigen::SparseMatrix<double> Jt = J.transpose();
 	Eigen::SparseMatrix<double> L_jt; igl::cat(2,metric,Jt, L_jt);			

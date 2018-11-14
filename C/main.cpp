@@ -76,13 +76,11 @@ void single_optimization() {
 
   CompositeConstraints compConst({&dogConst});
 
-      StitchingConstraints stitchingConstraints(state.quadTop,state.dog.getEdgeStitching());
+  if (state.dog.has_creases()) {
+    StitchingConstraints stitchingConstraints(state.quadTop,state.dog.getEdgeStitching());
     const DogEdgeStitching& eS = state.dog.getEdgeStitching();
     compConst.add_constraints(&stitchingConstraints);
-  if (state.dog.has_creases()) {
-
-
-
+    
     if (fold_mesh) {
       int c_i = eS.edge_const_1.size()/2;
       FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
@@ -90,9 +88,7 @@ void single_optimization() {
       //compConst.add_constraints(&angleConstraints);
     }
   }
-  cout << "here" << endl;
   solver->solve_single_iter(x0, compObj, compConst, x);
-  cout << "there" << endl;
   //solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
