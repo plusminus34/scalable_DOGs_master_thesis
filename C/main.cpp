@@ -73,8 +73,8 @@ void single_optimization() {
 
   // Constraints
   DogConstraints dogConst(state.quadTop);
-  //CompositeConstraints compConst;//({&dogConst});
-  //compConst.add_constraints(&dogConst);
+
+  CompositeConstraints compConst({&dogConst});
   /*
   StitchingConstraints stitchingConstraints(state.quadTop,state.dog.getEdgeStitching());
 
@@ -92,9 +92,8 @@ void single_optimization() {
   }
   */
   std::cout << "before" << std::endl;
-  //solver->solve_single_iter(x0, compObj, compConst, x);
+  solver->solve_single_iter(x0, compObj, compConst, x);
   std::cout << "after" << std::endl;
-  solver->solve_single_iter(x0, compObj, dogConst, x);
   //solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
