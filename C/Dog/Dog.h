@@ -65,3 +65,5 @@ private:
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	DogEdgeStitching edgeStitching;
 };
+
+

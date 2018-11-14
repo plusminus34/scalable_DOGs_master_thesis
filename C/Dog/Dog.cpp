@@ -1,14 +1,14 @@
 #include "Dog.h"
 
+#include <igl/boundary_loop.h>
+
 Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching, Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren) : 
 				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren) {
 	// empty
-	// TODO: create/update V_ren?
 }
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),edgeStitching(d.edgeStitching),V_ren(d.V_ren), F_ren(d.F_ren){
 	// empty
-	// TODO: create/update V_ren?
 }
 
 void Dog::update_rendering_v() {

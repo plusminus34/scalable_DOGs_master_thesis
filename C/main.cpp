@@ -53,6 +53,16 @@ void save_workspace() {
   state.save_to_workspace(filename);
 }
 
+void load_svg() {
+  std::string filename = igl::file_dialog_open();
+  if (filename.empty())
+    return;
+  int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
+  state.init_from_svg(filename, x_res, y_res);
+  clear_all_and_set_default_params();
+  modelViewer.viewMode = ViewModeCreases;
+}
+
 void load_workspace(const std::string& path) {
   cout << "loading workspace" << endl;
   state.load_from_workspace(path);
@@ -139,6 +149,7 @@ int main(int argc, char *argv[]) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
     if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
     state.init_from_svg(input_path, x_res, y_res);
+    modelViewer.viewMode = ViewModeCreases;
 
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
@@ -148,8 +159,6 @@ int main(int argc, char *argv[]) {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
   }
-  
-  
 
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
@@ -170,12 +179,9 @@ int main(int argc, char *argv[]) {
 
       // Expose an enumeration type
       ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "ViewModeMesh\0ViewModeCreases\0\0");
-      if (ImGui::Button("Save workspace", ImVec2(-1,0))) {
-        save_workspace();
-      }
-      if (ImGui::Button("Load workspace", ImVec2(-1,0))) {
-        load_workspace();
-      }
+      if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
+      if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
+      if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       ImGui::InputDouble("Bending", &bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Const obj", &const_obj_penalty, 0, 0, "%.4f");
@@ -184,7 +190,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Max lbfgs iter", &max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &penalty_repetitions);
 
-    ImGui::End();
+      ImGui::End();
   };
 
   clear_all_and_set_default_params();

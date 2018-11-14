@@ -22,3 +22,23 @@ void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& 
   get_wireframe_edges(V, quadTop, E1, E2);
   viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
 }
+
+void render_dog_boundary(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
+  /*
+  const std::vector<std::vector<int>>& bndLoops = dog.getVrenBoundaryLoops();
+  int l_cnt = 0;
+  for (auto loop : bndLoops) {
+    const int loop_size = loop.size(); int c = 0;
+    std::cout << "loop " << l_cnt << " with size = " << loop_size << std::endl;
+    Eigen::MatrixXd E1(loop_size,3), E2(loop_size,3);
+    for (int i = 0; i < loop_size; i++) {
+      E1.row(c) = dog.getVrendering().row(loop[i]);
+      E2.row(c) = dog.getVrendering().row(loop[(i+1)%loop_size]);
+      c++;
+    }
+    viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
+    l_cnt++;
+  }
+ //const std::vector<std::vector<int>>& getVrenBoundaryLoops() const {return V_ren_bnd_loops;} 
+ */
+}

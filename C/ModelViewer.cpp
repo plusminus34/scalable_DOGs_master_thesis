@@ -12,6 +12,7 @@ ModelViewer::ModelViewer(const ModelState& modelState) : state(modelState) {
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	//viewer.data().set_edges(Eigen::MatrixXd::Zero(0, 3), Eigen::MatrixXi::Zero(0, 3), Eigen::MatrixXd::Zero(0, 3));
 	viewer.data().clear();
+	viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
 	switched_mode = ((viewMode != prevMode) || (first_rendering));
 	prevMode = viewMode;
 
@@ -25,8 +26,17 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
-	if (!state.dog.has_creases()) render_wireframe(viewer, state.dog.getV(), state.quadTop);
+	if (state.dog.has_creases()) {
+		render_dog_boundary(viewer, state.dog);
+	} else {
+		render_wireframe(viewer, state.dog.getV(), state.quadTop);
+	}
 	viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
+    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
+    Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
+    //viewer.data.set_colors(diffuse);
+    viewer.data().uniform_colors(ambient,diffuse,specular);
 	viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 }
 
