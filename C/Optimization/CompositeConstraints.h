@@ -8,12 +8,16 @@
 class CompositeConstraints : public Constraints {
 public:
 	CompositeConstraints() {}
-	CompositeConstraints(const std::vector<Constraints*>& constraints) : constraints(constraints){
+	virtual CompositeConstraints* clone() const {return new CompositeConstraints(*this);}
+
+	CompositeConstraints(const std::vector<Constraints*>& constraints_i) {
+		constraints.resize(constraints_i.size());
+		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i]->clone();
 		approx_nnz = 0; const_n = 0; 
 		for (auto cnst: constraints) {const_n+=cnst->getConstNum(); approx_nnz+= cnst->getApproxNonZeros();}
 	};
 
-	void add_constraints(Constraints* cnst) {constraints.push_back(cnst);}
+	void add_constraints(Constraints* cnst) {constraints.push_back(cnst->clone());}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd vals(const_n);

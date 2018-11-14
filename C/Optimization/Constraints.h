@@ -5,6 +5,9 @@
 
 class Constraints {
 public:
+
+	virtual Constraints* clone() const = 0;
+
 	int getConstNum(){return const_n;}
 	int getApproxNonZeros() {return approx_nnz;}
 

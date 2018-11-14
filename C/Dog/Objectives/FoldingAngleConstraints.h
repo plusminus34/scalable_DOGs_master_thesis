@@ -9,6 +9,7 @@
 class FoldingAngleConstraints: public Constraints {
 public:
 	FoldingAngleConstraints(const Eigen::MatrixXd& V, Edge edge1, Edge edge2, double edge_t_coordinate);
+	virtual FoldingAngleConstraints* clone() const {return new FoldingAngleConstraints(*this);}
 	Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
 	std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const;
 

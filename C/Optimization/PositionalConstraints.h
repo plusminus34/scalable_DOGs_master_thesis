@@ -12,6 +12,8 @@ class PositionalConstraints : public Constraints {
 public:
 	PositionalConstraints(const Eigen::VectorXi& b, const Eigen::VectorXd& bc) : b(b),bc(bc) {const_n = b.rows(); approx_nnz = const_n;};
 
+	virtual PositionalConstraints* clone() const {return new PositionalConstraints(*this);}
+
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd constrained_pts_coords; igl::slice(x,b,1, constrained_pts_coords);
 		// A vector of x(b)-bc for the constraints x(b)-bc = 0
