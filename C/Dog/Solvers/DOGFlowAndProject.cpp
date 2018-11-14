@@ -7,8 +7,8 @@
 
 using namespace std;
 
-DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter, 
-								int penalty_repetitions): dog_init(dog), flow_t(flow_t), max_flow_project_iter(max_flow_project_iter),
+DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, const int& max_flow_project_iter, const int& max_lbfgs_proj_iter, 
+								const int& penalty_repetitions): dog_init(dog), flow_t(flow_t), max_flow_project_iter(max_flow_project_iter),
 									 max_lbfgs_proj_iter(max_lbfgs_proj_iter), penalty_repetitions(penalty_repetitions),
 									 m_solver(ai,aj,K), lbfgsWithPenalty(max_lbfgs_proj_iter,penalty_repetitions) {
 	first_solve = true;

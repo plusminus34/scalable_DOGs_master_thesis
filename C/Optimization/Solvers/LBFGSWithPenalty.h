@@ -5,17 +5,17 @@
 class LBFGSWithPenalty : public ConstrainedSolver{
   
 public:
-	LBFGSWithPenalty(int max_lbfgs_iter, int penalty_repetitions = 10): max_lbfgs_iter(max_lbfgs_iter), 
+	LBFGSWithPenalty(const int& max_lbfgs_iter, const int& penalty_repetitions = 10): max_lbfgs_iter(max_lbfgs_iter), 
 								penalty_repetitions(penalty_repetitions), p (OBJ_P_INIT) {}
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 	double solve_single_iter_with_fixed_p(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
-	void set_max_iter(int max_lbfgs_iter) {max_lbfgs_iter = max_lbfgs_iter;}
+	//void set_max_iter(int max_lbfgs_iter) {max_lbfgs_iter = max_lbfgs_iter;}
 	void resetSmoother() { p = OBJ_P_INIT;}
 private:
-	int max_lbfgs_iter;
-	int penalty_repetitions;
+	const int& max_lbfgs_iter;
+	const int& penalty_repetitions;
 	const double OBJ_P_INIT = 0.1;
 	double p;
 };

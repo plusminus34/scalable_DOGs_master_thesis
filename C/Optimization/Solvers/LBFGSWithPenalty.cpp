@@ -8,6 +8,7 @@
 double LBFGSWithPenalty::solve_constrained(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints,
 													 Eigen::VectorXd& x) {
 	auto obj_val = f.obj(x0);
+	std::cout << "penalty_repetitions = " << penalty_repetitions << std::endl;
 	if (!penalty_repetitions) return obj_val;
 
 	x = x0;

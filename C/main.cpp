@@ -43,7 +43,7 @@ int penalty_repetitions = 1;
 
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
-  solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines);
+  solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines,penalty_repetitions);
 }
 
 void save_workspace() {
