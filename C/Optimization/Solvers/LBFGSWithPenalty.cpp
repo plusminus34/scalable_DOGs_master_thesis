@@ -12,7 +12,6 @@ double LBFGSWithPenalty::solve_constrained(const Eigen::VectorXd& x0, Objective&
 
 	x = x0;
 	// Solve a few times with different penalty methods. Every time set an objective with varying penalty on the constraints
-	double f;
 	for (int i = 0; i < penalty_repetitions; i++) {
 		obj_val = solve_single_iter_with_fixed_p(x0,f,constraints,x);
 		p*=0.5;
