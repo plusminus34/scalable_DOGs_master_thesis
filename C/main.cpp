@@ -91,10 +91,7 @@ void single_optimization() {
     }
   }
   
-  
-  cout << "before" << endl; int bla; cin >> bla;
   solver->solve_single_iter(x0, compObj, compConst, x);
-  cout << "after" << endl; cin >> bla;
   //solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
