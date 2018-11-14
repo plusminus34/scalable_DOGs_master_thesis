@@ -13,6 +13,7 @@
 #include "Optimization/CompositeObjective.h"
 #include "Optimization/CompositeConstraints.h"
 #include "Optimization/PositionalConstraints.h"
+#include "Optimization/QuadraticConstraintsSumObjective.h"
 #include "Optimization/Solvers/LBFGS.h"
 
 #include "Dog/Objectives/DogConstraints.h"
@@ -36,10 +37,13 @@ double bending_weight = 1.;
 double isometry_weight = 1.;
 bool fold_mesh = true;
 double folding_angle = 0;
+int max_lbfgs_routines = 400;
+double const_obj_penalty = 100.;
+int penalty_repetitions = 1;
 
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
-  solver = new DOGFlowAndProject(state.dog, 1., 1);
+  solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines);
 }
 
 void save_workspace() {
@@ -66,11 +70,6 @@ void single_optimization() {
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(state.dog.getV_vector()),x;
 
-  // Objectives
-  SimplifiedBendingObjective bending(state.quadTop);
-  IsometryObjective isoObj(state.quadTop,x0);
-  CompositeObjective compObj({&bending, &isoObj}, {bending_weight,isometry_weight});
-
   // Constraints
   DogConstraints dogConst(state.quadTop);
 
@@ -80,16 +79,25 @@ void single_optimization() {
     StitchingConstraints stitchingConstraints(state.quadTop,state.dog.getEdgeStitching());
     const DogEdgeStitching& eS = state.dog.getEdgeStitching();
     compConst.add_constraints(&stitchingConstraints);
-    
+
     if (fold_mesh) {
       int c_i = eS.edge_const_1.size()/2;
       FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
       angleConstraints.set_angle(folding_angle);
-      //compConst.add_constraints(&angleConstraints);
+      compConst.add_constraints(&angleConstraints);
     }
   }
+
+  // Objectives
+  SimplifiedBendingObjective bending(state.quadTop);
+  IsometryObjective isoObj(state.quadTop,x0);
+  QuadraticConstraintsSumObjective constObj(compConst);
+  CompositeObjective compObj({&bending, &isoObj,&constObj}, {bending_weight,isometry_weight,const_obj_penalty});
+  
+
   solver->solve_single_iter(x0, compObj, compConst, x);
-  //solver->resetSmoother();
+  //solver->solve_constrained(x0, compObj, compConst, x);
+  solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
 
@@ -170,8 +178,11 @@ int main(int argc, char *argv[]) {
       }
       ImGui::InputDouble("Bending", &bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Const obj", &const_obj_penalty, 0, 0, "%.4f");
       ImGui::Checkbox("Folding", &fold_mesh);
       ImGui::InputDouble("Fold angle", &folding_angle, 0, 0, "%.4f");
+      ImGui::InputInt("Max lbfgs iter", &max_lbfgs_routines);
+      ImGui::InputInt("Penalty repetitions", &penalty_repetitions);
 
     ImGui::End();
   };

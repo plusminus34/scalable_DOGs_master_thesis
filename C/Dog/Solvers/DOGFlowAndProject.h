@@ -8,7 +8,7 @@
 class DOGFlowAndProject : public ConstrainedSolver{
   
 public:
-	DOGFlowAndProject(const Dog& dog,  double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter = 400);
+	DOGFlowAndProject(const Dog& dog,  double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter = 400, int penalty_repetitions = 1);
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
@@ -25,6 +25,8 @@ private:
 
 	int max_flow_project_iter; 
 	int max_lbfgs_proj_iter;
+	int penalty_repetitions;
+	
 	double flow_t;
 	// initial dog
 	const Dog& dog_init;

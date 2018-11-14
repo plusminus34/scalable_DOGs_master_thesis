@@ -25,7 +25,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
-	render_wireframe(viewer, state.dog.getV(), state.quadTop);
+	if (!state.dog.has_creases()) render_wireframe(viewer, state.dog.getV(), state.quadTop);
 	viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
 	viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 }

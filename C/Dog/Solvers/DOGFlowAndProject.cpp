@@ -7,9 +7,10 @@
 
 using namespace std;
 
-DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter): dog_init(dog),
-									 flow_t(flow_t), max_flow_project_iter(max_flow_project_iter), max_lbfgs_proj_iter(max_lbfgs_proj_iter), 
-									 m_solver(ai,aj,K), lbfgsWithPenalty(max_lbfgs_proj_iter) {
+DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, int max_flow_project_iter, int max_lbfgs_proj_iter, 
+								int penalty_repetitions): dog_init(dog), flow_t(flow_t), max_flow_project_iter(max_flow_project_iter),
+									 max_lbfgs_proj_iter(max_lbfgs_proj_iter), penalty_repetitions(penalty_repetitions),
+									 m_solver(ai,aj,K), lbfgsWithPenalty(max_lbfgs_proj_iter,penalty_repetitions) {
 	first_solve = true;
 	m_solver.set_type(-2);
 }
@@ -55,7 +56,6 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	Eigen::VectorXd g(f.grad(x));
 	Eigen::VectorXd d(g.rows());
 	Eigen::SparseMatrix<double> J = constraints.Jacobian(x);
-	std::cout << "here with J" << std::endl;
 	
 	Eigen::SparseMatrix<double> Jt = J.transpose();
 	Eigen::SparseMatrix<double> L_jt; igl::cat(2,metric,Jt, L_jt);			
@@ -103,8 +103,8 @@ void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, con
 	//	and we define "closest" in terms of the laplacian normals
 	// Use a smoothness objective on DOG, together with the same constraints
 	LaplacianSimilarity laplacianNormalsObj(dog_init, x0);
-	//lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
-	lbfgsWithPenalty.solve_single_iter_with_fixed_p(x0, laplacianNormalsObj, constraints, x);
+	lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
+	//lbfgsWithPenalty.solve_single_iter_with_fixed_p(x0, laplacianNormalsObj, constraints, x);
 }
 
 double DOGFlowAndProject::line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy) {
