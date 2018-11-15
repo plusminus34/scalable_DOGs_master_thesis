@@ -22,7 +22,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
 
 	std::vector<Point_2> constrained_pts_non_unique;
-	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique);
+	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique,V);
 
 	std::vector<SubmeshPoly> submesh_polygons;
 	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
@@ -108,11 +108,11 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 // Another way to go about it is to get the vertices of the )orth grid + polylines) graph that share more than one face
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
-						std::vector<Point_2>& constrained_pts_non_unique) {
+						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
 	// Get all the polylines unique points (vertices will appear twice with each polyline)
-	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
 	std::set<Point_2> constrained_pts;
-	for (auto poly : polyline_pts) {
+	const std::vector<Polyline_2>& polylines = creasePattern.get_clipped_polylines();
+	for (auto poly : polylines) {
 		//std::cout << "new poly"<<std::endl;
 		std::vector<Point_2> pts; polyline_to_points(poly,pts);
 		constrained_pts.insert(pts.begin(),pts.end());
@@ -132,35 +132,22 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			constrained_pts_non_unique.push_back(pt);
 		}
 	}
-	/*
-	// set stitched_curves
-	edgeStitching.stitched_curves.resize(polyline_pts.size());
-	//for (auto poly : polyline_pts) {
-	for (int i = 0; i < polyline_pts.size(); i++) {
-		std::vector<Point_2> curve_pts; polyline_to_points(polyline_pts[i], curve_pts);
-		edgeStitching.stitched_curves[i].resize(curve_pts.size());
-		for int (j = 0; j < curve_pts.size(); j++) {
-			std::pair<Point_2,Point_2> edge_pts; Number_type t_precise;
-			if (!orthGrid.get_pt_edge_coordinates(curve_pts[j], edge_pts,t_precise)) {
-				std::cout << "Error, got a point pt = " << curve_pts[j] << " that is not on the grid " << std::endl;
-				exit(1); // Should never get here, and if so all is lost
-			}
-			double t = CGAL::to_double(t);
-			Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
-			Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
-			Edge edge()
-			edgeStitching.stitched_curves[i][j] = EdgePoint(edge,t);
-		}
-		
-		/*
-		auto pt = polyline_pts[i].subcurves_begin()->source();
+	
+	// set stitched_curves (once per edge, even if it is duplicated)
+	edgeStitching.stitched_curves.resize(polylines.size());
+	
+	for (int i = 0; i < polylines.size(); i++) {
+		std::vector<Point_2> pts; polyline_to_points(polylines[i],pts);
+		edgeStitching.stitched_curves[i].resize(pts.size());
+		for (int j = 0; j < pts.size(); j++) {
+			Number_type edge_t; std::vector<Edge> edge_v_indices;
+			pt_to_edge_coordiantes(pts[j], creasePattern, submeshVList, edge_v_indices, edge_t);
 
-		
-		/*
-		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-			constrained_pts.insert(seg_i->source()); constrained_pts.insert(seg_i->target());
-		}*//*
-	}*/
+			auto edge_v = CGAL::to_double(edge_t)*V.row(edge_v_indices[0].v1)+(1-CGAL::to_double(edge_t))*V.row(edge_v_indices[0].v2);
+			// Choose one of the edges, don't need the duplicates and they are all (approximately) equal anyhow
+			edgeStitching.stitched_curves[i][j] = EdgePoint(edge_v_indices[0],CGAL::to_double(edge_t));
+		}
+	}
 }
 
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons) {

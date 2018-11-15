@@ -39,6 +39,7 @@ struct Edge  : public igl::Serializable {
   Edge(int v1_, int v2_): v1(v1_),v2(v2_) {
     //if (v1 > v2) { std::swap(v1,v2);}
   }
+  Edge(const Edge& edge): v1(edge.v1),v2(edge.v2) {}
 
   void InitSerialization() {
     Add(v1,std::string("v1"));

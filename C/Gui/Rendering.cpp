@@ -23,22 +23,21 @@ void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& 
   viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
 }
 
-void render_dog_boundary(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
-  /*
-  const std::vector<std::vector<int>>& bndLoops = dog.getVrenBoundaryLoops();
-  int l_cnt = 0;
-  for (auto loop : bndLoops) {
-    const int loop_size = loop.size(); int c = 0;
-    std::cout << "loop " << l_cnt << " with size = " << loop_size << std::endl;
-    Eigen::MatrixXd E1(loop_size,3), E2(loop_size,3);
-    for (int i = 0; i < loop_size; i++) {
-      E1.row(c) = dog.getVrendering().row(loop[i]);
-      E2.row(c) = dog.getVrendering().row(loop[(i+1)%loop_size]);
-      c++;
+void render_dog_stitching_curves(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
+  const std::vector<std::vector<EdgePoint>> &stitched_curves = dog.getEdgeStitching().stitched_curves;
+  const Eigen::MatrixXd& V = dog.getV();
+  for (auto curve : stitched_curves) {
+    int e_num = curve.size()-1;
+
+    Eigen::MatrixXd E1(e_num,3), E2(e_num,3);
+    for (int i = 0; i < e_num; i++) {
+      EdgePoint e1(curve[i]), e2(curve[i+1]);
+      auto pt1 = e1.t*V.row(e1.edge.v1)+(1-e1.t)*V.row(e1.edge.v2);
+      auto pt2 = e2.t*V.row(e2.edge.v1)+(1-e2.t)*V.row(e2.edge.v2);
+
+      E1.row(i) = pt1;
+      E2.row(i) = pt2;
     }
     viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0, 0, 0));
-    l_cnt++;
   }
- //const std::vector<std::vector<int>>& getVrenBoundaryLoops() const {return V_ren_bnd_loops;} 
- */
 }

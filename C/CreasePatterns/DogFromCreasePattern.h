@@ -18,7 +18,7 @@ void init_mesh_vertices_and_faces_from_grid(const CreasePattern& creasePattern, 
 
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
-						std::vector<Point_2>& constrained_pts_non_unique);
+						std::vector<Point_2>& constrained_pts_non_unique,const Eigen::MatrixXd& V);
 
 // return a sorted list of submesh to polygons (so the polygons in the first submesh are first, then in the second, etc)
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons);

@@ -9,6 +9,9 @@
 #include "../QuadMesh/Quad.h"
 
 struct EdgePoint {
+	EdgePoint(){}
+	EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
+	
 	Edge edge;
 	double t;
 };
@@ -47,7 +50,7 @@ public:
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
-	const DogEdgeStitching& getEdgeStitching(){return edgeStitching;}
+	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}

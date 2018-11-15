@@ -27,7 +27,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (state.dog.has_creases()) {
-		render_dog_boundary(viewer, state.dog);
+		render_dog_stitching_curves(viewer, state.dog);
 	} else {
 		render_wireframe(viewer, state.dog.getV(), state.quadTop);
 	}
