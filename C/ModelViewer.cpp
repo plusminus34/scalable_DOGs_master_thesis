@@ -61,9 +61,13 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewer) {
 	Eigen::VectorXd x(state.dog.getV_vector());
 	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,state.b,1, constrained_pts_coords_vec);
-	Eigen::MatrixXd E1,E2;
-	vec_to_mat2(constrained_pts_coords_vec, E1);
-	vec_to_mat2(state.bc, E2);
+
+	int pts_num = state.b.size()/3;
+	Eigen::MatrixXd E1(pts_num,3),E2(pts_num,3);
+	for (int i = 0; i < pts_num; i++) {
+		E1.row(i) << constrained_pts_coords_vec(3*i),constrained_pts_coords_vec(3*i+1),constrained_pts_coords_vec(3*i+2);
+		E2.row(i) << state.bc(3*i),state.bc(3*i+1),state.bc(3*i+2);
+	}
 
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 }
