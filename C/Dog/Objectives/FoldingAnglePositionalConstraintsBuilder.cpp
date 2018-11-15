@@ -33,7 +33,13 @@ void FoldingAnglePositionalConstraintsBuilder::get_positional_constraints(Eigen:
 	Eigen::RowVector3d e1_p1_new_loc = rotate_vec(edge1_p1, center, axis, alpha);
 
 	bc_out.resize(const_n);
+	bc_out << e1_p1_new_loc(0),e1_p1_new_loc(1),e1_p1_new_loc(2),edge2_p1(0),edge2_p1(1),edge2_p1(2),edge2_p2(0),edge2_p2(1),edge2_p2(2);
 	b_out = b;
+
+	Eigen::VectorXd current_vals(const_n);
+	for (int i = 0; i < b.rows();i++) {current_vals(i) = x(b(i));}
+	std::cout << "bc = " << bc << endl;
+	std::cout << "current vals = " << current_vals << endl;
 }
 /*
 Eigen::VectorXd FoldingAngleConstraints::Vals(const Eigen::VectorXd& x) const {

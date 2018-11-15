@@ -9,6 +9,8 @@
 class Objective {
   
 public:
+  virtual Objective* clone() const = 0;
+
   virtual double obj(const Eigen::VectorXd& x) const = 0;
   virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const = 0;
 

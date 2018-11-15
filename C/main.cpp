@@ -32,6 +32,8 @@ bool is_optimizing = false;
 ModelState state;
 ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
+FoldingAnglePositionalConstraintsBuilder* angleConstraints = NULL;
+
 const int DEFAULT_GRID_RES = 21;
 double bending_weight = 1.;
 double isometry_weight = 1.;
@@ -44,6 +46,10 @@ int penalty_repetitions = 1;
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
   solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines,penalty_repetitions);
+  if (angleConstraints) {delete angleConstraints;}
+  const DogEdgeStitching& eS = state.dog.getEdgeStitching();
+  int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
+  angleConstraints = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
 }
 
 void save_workspace() {
@@ -69,6 +75,11 @@ void load_workspace(const std::string& path) {
   clear_all_and_set_default_params();
 }
 
+void change_fold_angle() {
+  angleConstraints->set_angle(folding_angle);
+  angleConstraints->get_positional_constraints(state.b,state.bc);
+}
+
 void load_workspace() {
   std::string filename = igl::file_dialog_open();
   if (filename.empty())
@@ -90,13 +101,9 @@ void single_optimization() {
     const DogEdgeStitching& eS = state.dog.getEdgeStitching();
     compConst.add_constraints(&stitchingConstraints);
 
-    if (fold_mesh) {
-      int c_i = eS.edge_const_1.size()/2;
-      FoldingAnglePositionalConstraintsBuilder angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
-      angleConstraints.set_angle(folding_angle);
-      Eigen::VectorXi foldingConstB; Eigen::VectorXd foldingConstBc;
-      angleConstraints.get_positional_constraints(foldingConstB,foldingConstBc);
-      PositionalConstraints posConst(foldingConstB,foldingConstBc);
+    // Check for any positional constraints (for now these will only be folding constraints)
+    if (state.b.rows()) {
+      PositionalConstraints posConst(state.b,state.bc);
       compConst.add_constraints(&posConst);
     }
   }
@@ -189,9 +196,10 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Isometry", &isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Const obj", &const_obj_penalty, 0, 0, "%.4f");
       ImGui::Checkbox("Folding", &fold_mesh);
-      ImGui::InputDouble("Fold angle", &folding_angle, 0, 0, "%.4f");
+      if (ImGui::InputDouble("Fold angle", &folding_angle, 0, 0, "%.4f") ) change_fold_angle();
       ImGui::InputInt("Max lbfgs iter", &max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &penalty_repetitions);
+      ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
 
       ImGui::End();
   };

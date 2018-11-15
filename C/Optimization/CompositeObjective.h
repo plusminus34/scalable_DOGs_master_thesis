@@ -5,8 +5,12 @@
 class CompositeObjective: public Objective {
   
 public:
-	CompositeObjective(std::vector<Objective*> objectives, std::vector<double> weights) : objectives(objectives), weights(weights) {};
-	void add_objective(Objective* e, double w = 1.) {objectives.push_back(e); weights.push_back(w);}
+	CompositeObjective(const std::vector<Objective*>& objectives_i, std::vector<double> weights) : weights(weights) {
+		objectives.resize(objectives_i.size());
+		for (int i = 0; i < objectives.size(); i++) objectives[i] = objectives_i[i]->clone();
+	}
+	virtual CompositeObjective* clone() const {return new CompositeObjective(*this);}
+	void add_objective(Objective* e, double w = 1.) {objectives.push_back(e->clone()); weights.push_back(w);}
 
 	virtual double obj(const Eigen::VectorXd& x) const {
 			double obj = 0;

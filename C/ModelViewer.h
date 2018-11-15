@@ -16,9 +16,11 @@ public:
 
 	ViewMode prevMode;
 	ViewMode viewMode;
+	bool render_pos_const;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
+	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
 
 	const ModelState& state;
 	bool first_rendering;

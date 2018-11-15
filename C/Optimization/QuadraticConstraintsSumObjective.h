@@ -14,6 +14,7 @@ class QuadraticConstraintsSumObjective : public Objective {
   
 public:
 	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints) {};
+	virtual QuadraticConstraintsSumObjective* clone() const {return new QuadraticConstraintsSumObjective(*this);}
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst.Vals(x).squaredNorm();
 	}

@@ -9,6 +9,8 @@ class LaplacianSimilarity: public Objective {
   
 public:
 	LaplacianSimilarity(const Dog& dog, const Eigen::VectorXd& x0);
+	virtual LaplacianSimilarity* clone() const {return new LaplacianSimilarity(*this);}
+
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
 	//virtual void set_ref(const Eigen::VectorXd& x0);
