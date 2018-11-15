@@ -3,20 +3,17 @@
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/Constraints.h"
 
-// TODO: Use positional constraints (update b every time and have positioal constraints)
-// Add that to set_angle
-
-class FoldingAngleConstraints: public Constraints {
+class FoldingAnglePositionalConstraintsBuilder {
 public:
-	FoldingAngleConstraints(const Eigen::MatrixXd& V, Edge edge1, Edge edge2, double edge_t_coordinate);
-	virtual FoldingAngleConstraints* clone() const {return new FoldingAngleConstraints(*this);}
-	Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
-	std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const;
+	FoldingAnglePositionalConstraintsBuilder(const Eigen::MatrixXd& V, Edge edge1, Edge edge2, double edge_t_coordinate);
+
+	void get_positional_constraints(Eigen::VectorXi& b, Eigen::VectorXd& bc);
 
 	void set_angle(double angle) {alpha = angle;}
 private:
 	static Eigen::RowVector3d rotate_vec(const Eigen::RowVector3d& pt, const Eigen::RowVector3d& center, const Eigen::Vector3d& axis, double angle);
 
+	int const_n;
 	double alpha; // starts at zero and goes up
 	// Constrained edge indices
 	Edge edge1, edge2;

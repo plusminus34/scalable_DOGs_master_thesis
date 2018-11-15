@@ -6,7 +6,6 @@
 #include <igl/slice.h>
 
 #include "Constraints.h"
-#include "QuadraticConstraintsSumObjective.h"
 
 class PositionalConstraints : public Constraints {
 public:
@@ -36,10 +35,11 @@ public:
 	};
 
 private:
-	const Eigen::VectorXi& b; const Eigen::VectorXd& bc;
+	Eigen::VectorXi b; Eigen::VectorXd bc;
 };
-
-
+/*
+// Not done with QuadraticConstraintsSumObjective over PositionalConstraints because we need the hessian here
+// and it was not implemented (with the chain rule) for QuadraticConstraintsSumObjective yet
 class SoftPositionalConstraints : public Objective {
 public:
 	SoftPositionalConstraints(const Eigen::VectorXi& b, const Eigen::VectorXd& bc) : posConst(b,bc), innerObj(posConst) {}
@@ -55,5 +55,4 @@ public:
 	}
 private:
 	const PositionalConstraints posConst;
-	const QuadraticConstraintsSumObjective innerObj;
-};
+};*/

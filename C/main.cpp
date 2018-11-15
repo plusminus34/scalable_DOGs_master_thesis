@@ -17,7 +17,7 @@
 #include "Optimization/Solvers/LBFGS.h"
 
 #include "Dog/Objectives/DogConstraints.h"
-#include "Dog/Objectives/FoldingAngleConstraints.h"
+#include "Dog/Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Dog/Objectives/StitchingConstraints.h"
 #include "Dog/Objectives/IsometryObjective.h"
 #include "Dog/Objectives/SimplifiedBendingObjective.h"
@@ -92,9 +92,12 @@ void single_optimization() {
 
     if (fold_mesh) {
       int c_i = eS.edge_const_1.size()/2;
-      FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+      FoldingAnglePositionalConstraintsBuilder angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
       angleConstraints.set_angle(folding_angle);
-      compConst.add_constraints(&angleConstraints);
+      Eigen::VectorXi foldingConstB; Eigen::VectorXd foldingConstBc;
+      angleConstraints.get_positional_constraints(foldingConstB,foldingConstBc);
+      PositionalConstraints posConst(foldingConstB,foldingConstBc);
+      compConst.add_constraints(&posConst);
     }
   }
 
