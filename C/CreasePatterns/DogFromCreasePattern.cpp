@@ -113,9 +113,9 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
 	std::set<Point_2> constrained_pts;
 	for (auto poly : polyline_pts) {
-		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-			constrained_pts.insert(seg_i->source()); constrained_pts.insert(seg_i->target());
-		}
+		//std::cout << "new poly"<<std::endl;
+		std::vector<Point_2> pts; polyline_to_points(poly,pts);
+		constrained_pts.insert(pts.begin(),pts.end());
 	}
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	for (auto pt: constrained_pts) {
@@ -363,7 +363,8 @@ void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePatter
 bool is_closed_polyline(const Polyline_2& poly) {
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
 	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
-	return (first_pt == last_pt);
+	bool is_closed = (first_pt == last_pt);
+	return is_closed;
 }
 
 void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
@@ -371,9 +372,9 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
 	int points_n = (is_closed_polyline(poly)) ? seg_n : seg_n+1;
 	
-	points.resize(points_n);
-	points.push_back(poly.subcurves_begin()->source());
+	points.resize(points_n); int cnt = 0;
+	points[cnt++] = poly.subcurves_begin()->source();
 	for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-		points.push_back(poly.subcurves_begin()->target());
+		points[cnt++] = seg_i->target();
 	}
 }
