@@ -104,67 +104,63 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 }
 
 
+
+// Another way to go about it is to get the vertices of the )orth grid + polylines) graph that share more than one face
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique) {
-	// Get all the polylines unique points.
+	// Get all the polylines unique points (vertices will appear twice with each polyline)
 	const std::vector<Polyline_2>& polyline_pts = creasePattern.get_clipped_polylines();
 	std::set<Point_2> constrained_pts;
 	for (auto poly : polyline_pts) {
 		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
 			constrained_pts.insert(seg_i->source()); constrained_pts.insert(seg_i->target());
-		} 
+		}
 	}
-	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	for (auto pt: constrained_pts) {
-		std::pair<Point_2,Point_2> edge_pts; Number_type t_precise;
-		if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,t_precise)) {
-			std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
-			exit(1); // Should never get here, and if so all is lost
-		}
-		double t = CGAL::to_double(t);
-		//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
-		// Now find the indices of both points and add them as constraints
-		// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
-		
-		Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
-		Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
-		std::vector<Edge> global_edge_indices;
-		// Go through every submesh
-		int global_idx_base = 0;
-		for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
-			// Find the indices of the pts in the submesh (if they exist)
-			int pt1_idx = -1, pt2_idx = -1;
-			for (int v_i = 0; v_i < submeshVList[sub_i].rows(); v_i++) {
-				if (submeshVList[sub_i].row(v_i) == pt1) {pt1_idx = v_i;}
-				if (submeshVList[sub_i].row(v_i) == pt2) {pt2_idx = v_i;}
-				if ((pt1_idx!=-1)&& (pt2_idx != -1)) break;
-			}
-			// Found the edge (both points) on the submesh
-			if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
-				// Insert the (global V) indices
-				global_edge_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
-			}
-			global_idx_base += submeshVList[sub_i].rows();
-		}
-		//std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
-		// We then need to map it to the global V which just have the submeshes concatenated
-		if (!global_edge_indices.size()){
-			std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
-			exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
-		}
-		
+
+		Number_type edge_t; std::vector<Edge> edge_v_indices;
+		pt_to_edge_coordiantes(pt, creasePattern, submeshVList, edge_v_indices, edge_t);
+
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
-		for (int const_i = 0; const_i < global_edge_indices.size()-1; const_i++) {
-			edgeStitching.edge_const_1.push_back(global_edge_indices[const_i]);
-			edgeStitching.edge_const_2.push_back(global_edge_indices[const_i+1]);
-			edgeStitching.edge_coordinates.push_back(CGAL::to_double(t_precise));
-			edgeStitching.edge_coordinates_precise.push_back(t_precise);
+		for (int const_i = 0; const_i < edge_v_indices.size()-1; const_i++) {
+			edgeStitching.edge_const_1.push_back(edge_v_indices[const_i]);
+			edgeStitching.edge_const_2.push_back(edge_v_indices[const_i+1]);
+			edgeStitching.edge_coordinates.push_back(CGAL::to_double(edge_t));
+			edgeStitching.edge_coordinates_precise.push_back(edge_t);
 			constrained_pts_non_unique.push_back(pt);
 		}
 	}
-	// 
+	/*
+	// set stitched_curves
+	edgeStitching.stitched_curves.resize(polyline_pts.size());
+	//for (auto poly : polyline_pts) {
+	for (int i = 0; i < polyline_pts.size(); i++) {
+		std::vector<Point_2> curve_pts; polyline_to_points(polyline_pts[i], curve_pts);
+		edgeStitching.stitched_curves[i].resize(curve_pts.size());
+		for int (j = 0; j < curve_pts.size(); j++) {
+			std::pair<Point_2,Point_2> edge_pts; Number_type t_precise;
+			if (!orthGrid.get_pt_edge_coordinates(curve_pts[j], edge_pts,t_precise)) {
+				std::cout << "Error, got a point pt = " << curve_pts[j] << " that is not on the grid " << std::endl;
+				exit(1); // Should never get here, and if so all is lost
+			}
+			double t = CGAL::to_double(t);
+			Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
+			Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
+			Edge edge()
+			edgeStitching.stitched_curves[i][j] = EdgePoint(edge,t);
+		}
+		
+		/*
+		auto pt = polyline_pts[i].subcurves_begin()->source();
+
+		
+		/*
+		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+			constrained_pts.insert(seg_i->source()); constrained_pts.insert(seg_i->target());
+		}*//*
+	}*/
 }
 
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons) {
@@ -320,5 +316,64 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
   			gridPolygons[y_i*(gx_coords.size()-1)+x_i] = P;
   			//std::cout << "y_i*(gx_coords.size()-1)+x_i = " <<  << std::endl;
 		}
+	}
+}
+
+void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+				std::vector<Edge>& edge_v_indices, Number_type& edge_t) {
+
+	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
+	std::pair<Point_2,Point_2> edge_pts; 
+	if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,edge_t)) {
+		std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
+		exit(1); // Should never get here, and if so all is lost
+	}
+	//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
+	// Now find the indices of both points and add them as constraints
+	// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
+	
+	Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
+	Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
+	
+	// Go through every submesh
+	int global_idx_base = 0;
+	for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
+		// Find the indices of the pts in the submesh (if they exist)
+		int pt1_idx = -1, pt2_idx = -1;
+		for (int v_i = 0; v_i < submeshVList[sub_i].rows(); v_i++) {
+			if (submeshVList[sub_i].row(v_i) == pt1) {pt1_idx = v_i;}
+			if (submeshVList[sub_i].row(v_i) == pt2) {pt2_idx = v_i;}
+			if ((pt1_idx!=-1)&& (pt2_idx != -1)) break;
+		}
+		// Found the edge (both points) on the submesh
+		if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
+			// Insert the (global V) indices
+			edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
+		}
+		global_idx_base += submeshVList[sub_i].rows();
+	}
+	//std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
+	// We then need to map it to the global V which just have the submeshes concatenated
+	if (!edge_v_indices.size()){
+		std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
+		exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
+	}	
+}
+
+bool is_closed_polyline(const Polyline_2& poly) {
+	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
+	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
+	return (first_pt == last_pt);
+}
+
+void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
+	// handle closed and open curves differently
+	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
+	int points_n = (is_closed_polyline(poly)) ? seg_n : seg_n+1;
+	
+	points.resize(points_n);
+	points.push_back(poly.subcurves_begin()->source());
+	for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+		points.push_back(poly.subcurves_begin()->target());
 	}
 }

@@ -28,3 +28,10 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 // Vlist is just needed to get indices inside V_ren (to know how many vertices are in)
 Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons,
 			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const std::vector<Point_2>& constrained_pts_non_unique);
+
+void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+				std::vector<Edge>& edge_v_indices, Number_type& t_precise);
+
+bool is_closed_polyline(const Polyline_2& poly);
+
+void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);

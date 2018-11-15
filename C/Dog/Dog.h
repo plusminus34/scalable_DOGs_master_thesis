@@ -8,9 +8,18 @@
 
 #include "../QuadMesh/Quad.h"
 
+struct EdgePoint {
+	Edge edge;
+	double t;
+};
+
 struct DogEdgeStitching  : public igl::Serializable {
 	std::vector<Edge> edge_const_1, edge_const_2;
 	std::vector<double> edge_coordinates;
+
+	// The folds polylines
+	std::vector<std::vector<EdgePoint>> stitched_curves;
+
 	// Use for cases when it's important to have a precise representation (usually it doesn't)
 	std::vector<CGAL::Exact_predicates_exact_constructions_kernel::FT> edge_coordinates_precise;
 
@@ -19,6 +28,7 @@ struct DogEdgeStitching  : public igl::Serializable {
       Add(edge_const_1,std::string("edge_const_1"));
       Add(edge_const_2,std::string("edge_const_2"));
       Add(edge_coordinates,std::string("edge_coordinates"));
+      Add(stitched_curves,std::string("stitched_curves"));
     }
 };
 
