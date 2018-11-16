@@ -13,17 +13,27 @@
 class QuadraticConstraintsSumObjective : public Objective {
   
 public:
-	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints) {};
+	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints.clone()) {};
 	virtual QuadraticConstraintsSumObjective* clone() const {return new QuadraticConstraintsSumObjective(*this);}
 	double obj(const Eigen::VectorXd& x) const {
-		return cnst.Vals(x).squaredNorm();
+		return cnst->Vals(x).squaredNorm();
 	}
 	
 	Eigen::VectorXd grad(const Eigen::VectorXd& x) const {
 		// The derivative of the sum of squares is twice times the sume of the gradients times the values
-		return 2*cnst.Jacobian(x).transpose()*cnst.Vals(x);
+		return 2*cnst->Jacobian(x).transpose()*cnst->Vals(x);
+	}
+
+	// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
+	virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
+		// The constraints is linear so the hessian is just simple 2*J'*J
+		// (Here it's even simpler as just 2*(diagonals with one at constrained indices) but this is simpler to write)
+		auto J = cnst->Jacobian(x);
+		auto H = 2*J.transpose()*J;
+		std::cout << "H.norm() = " << H.norm() << std::endl;
+		return H;
 	}
 
 private:
-	const Constraints& cnst;
+	Constraints* cnst;
 };

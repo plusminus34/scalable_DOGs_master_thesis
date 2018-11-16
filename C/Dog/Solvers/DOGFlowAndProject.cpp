@@ -49,6 +49,7 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	auto metric = DOG_laplacian(V_x,dog_init.getF());
 	Eigen::SparseMatrix<double> id(x.rows(),x.rows()); id.setIdentity();
 	metric = metric - (1e-8)*id;
+	metric = metric - f.hessian(x0); // adding hessian
 	
 	//energy->check_grad(x);
 	double old_e = f.obj(x);

@@ -24,7 +24,7 @@ public:
 		for (int b_i = 0; b_i < b.rows(); b_i++ ) {
 			int var_const_idx = b(b_i);
 			// Set the derivative at the 'var_const_idx' as d(x(val_idx)-value)/d(val_idx) = 1
-			IJV.push_back(Eigen::Triplet<double>(const_n, var_const_idx, 1));
+			IJV.push_back(Eigen::Triplet<double>(const_n++, var_const_idx, 1));
 		}
 		return IJV;
 	}

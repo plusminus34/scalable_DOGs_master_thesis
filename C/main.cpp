@@ -21,6 +21,7 @@
 #include "Dog/Objectives/StitchingConstraints.h"
 #include "Dog/Objectives/IsometryObjective.h"
 #include "Dog/Objectives/SimplifiedBendingObjective.h"
+#include "Dog/Objectives/FoldingAngleConstraints.h"
 #include "Dog/Solvers/DOGFlowAndProject.h"
 
 #include "ModelState.h"
@@ -32,11 +33,12 @@ bool is_optimizing = false;
 ModelState state;
 ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
-FoldingAnglePositionalConstraintsBuilder* angleConstraints = NULL;
+FoldingAnglePositionalConstraintsBuilder* angleConstraintsBuilder = NULL;
+FoldingAngleConstraints *angleConstraints = NULL;
 
 const int DEFAULT_GRID_RES = 21;
 double bending_weight = 1.;
-double isometry_weight = 1.;
+double isometry_weight = 100.;
 bool fold_mesh = true;
 double folding_angle = 0;
 int max_lbfgs_routines = 400;
@@ -46,10 +48,11 @@ int penalty_repetitions = 1;
 void clear_all_and_set_default_params() {
   if (solver){delete solver;}
   solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines,penalty_repetitions);
-  if (angleConstraints) {delete angleConstraints;}
+  if (angleConstraintsBuilder) {delete angleConstraintsBuilder;}
   const DogEdgeStitching& eS = state.dog.getEdgeStitching();
   int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
-  angleConstraints = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+  angleConstraintsBuilder = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+  angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
 }
 
 void save_workspace() {
@@ -76,8 +79,8 @@ void load_workspace(const std::string& path) {
 }
 
 void change_fold_angle() {
-  angleConstraints->set_angle(folding_angle);
-  angleConstraints->get_positional_constraints(state.b,state.bc);
+  angleConstraintsBuilder->set_angle(folding_angle);
+  angleConstraintsBuilder->get_positional_constraints(state.b,state.bc);
 }
 
 void load_workspace() {
@@ -102,21 +105,53 @@ void single_optimization() {
     compConst.add_constraints(&stitchingConstraints);
 
     // Check for any positional constraints (for now these will only be folding constraints)
+    /*
     if (state.b.rows()) {
       PositionalConstraints posConst(state.b,state.bc);
       compConst.add_constraints(&posConst);
+
+      FoldingAngleConstraints
     }
+    */
   }
 
   // Objectives
   SimplifiedBendingObjective bending(state.quadTop);
   IsometryObjective isoObj(state.quadTop,x0);
-  QuadraticConstraintsSumObjective constObj(compConst);
-  CompositeObjective compObj({&bending, &isoObj,&constObj}, {bending_weight,isometry_weight,const_obj_penalty});
+  QuadraticConstraintsSumObjective constObjBesidesPos(compConst);
+
+
+  //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
+  CompositeObjective compObj({&bending, &isoObj}, {bending_weight,isometry_weight});
+  if (state.b.rows()) {
+    //int c_i = eS.edge_const_1.size()/2;
+    //FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+    //int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
+    //angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+    //angleConstraints->set_angle(folding_angle);
+    //compConst.add_constraints(angleConstraints);
+
+    PositionalConstraints posConst(state.b,state.bc);
+    
+    if (folding_angle) {
+      //std::cout << "folding_angle = " << folding_angle << std::endl;  
+      std::cout << "(angleConstraints->Vals(x0) - posConst.Vals()).norm(x0) = " << (angleConstraints->Vals(x0) - posConst.Vals(x0)).norm() << std::endl;
+      //std::cout << "(posConst.Jacobian()-angleConstraints.Jacobian()).norm() = " << (posConst.Jacobian(x0)-angleConstraints->Jacobian(x0)).norm() << endl;
+      //exit(1);
+    }
+    /*
+    QuadraticConstraintsSumObjective softPosConst(posConst);
+    compObj.add_objective(&softPosConst,const_obj_penalty,true);
+    */
+    compConst.add_constraints(&posConst);
+  }
   
 
-  solver->solve_single_iter(x0, compObj, compConst, x);
+  //solver->solve_single_iter(x0, compObj, compConst, x);
   //solver->solve_constrained(x0, compObj, compConst, x);
+  LBFGSWithPenalty lbfsgSolver(max_lbfgs_routines, penalty_repetitions);
+  lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
+
   solver->resetSmoother();
   state.dog.update_V_vector(x);
 }
