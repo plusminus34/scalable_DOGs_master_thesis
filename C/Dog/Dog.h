@@ -11,6 +11,9 @@
 struct EdgePoint {
 	EdgePoint(){}
 	EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
+
+
+	Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
 	
 	Edge edge;
 	double t;

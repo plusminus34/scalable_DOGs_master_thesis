@@ -51,8 +51,8 @@ void clear_all_and_set_default_params() {
   if (angleConstraintsBuilder) {delete angleConstraintsBuilder;}
   const DogEdgeStitching& eS = state.dog.getEdgeStitching();
   int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
-  angleConstraintsBuilder = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
-  angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
+  angleConstraintsBuilder = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS);
+  //angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
 }
 
 void save_workspace() {
@@ -135,7 +135,7 @@ void single_optimization() {
     
     if (folding_angle) {
       //std::cout << "folding_angle = " << folding_angle << std::endl;  
-      std::cout << "(angleConstraints->Vals(x0) - posConst.Vals()).norm(x0) = " << (angleConstraints->Vals(x0) - posConst.Vals(x0)).norm() << std::endl;
+      //std::cout << "(angleConstraints->Vals(x0) - posConst.Vals()).norm(x0) = " << (angleConstraints->Vals(x0) - posConst.Vals(x0)).norm() << std::endl;
       //std::cout << "(posConst.Jacobian()-angleConstraints.Jacobian()).norm() = " << (posConst.Jacobian(x0)-angleConstraints->Jacobian(x0)).norm() << endl;
       //exit(1);
     }
