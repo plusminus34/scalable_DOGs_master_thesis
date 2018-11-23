@@ -12,7 +12,6 @@ public:
 
 	void set_angle(double angle) {alpha = angle;}
 private:
-	static Eigen::RowVector3d rotate_vec(const Eigen::RowVector3d& pt, const Eigen::RowVector3d& center, const Eigen::Vector3d& axis, double angle);
 	void setRotAxis(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 				const Eigen::RowVector3d& rotCenter);
 
