@@ -9,7 +9,7 @@ FoldingAnglePositionalConstraintsBuilder::FoldingAnglePositionalConstraintsBuild
 	alpha = 0;
 	const_n = 9; // Constrain 4 vertices = 12 vars
 
-	int c_i = eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
+	int c_i = 3*eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
 
 	edge1 = eS.edge_const_1[c_i]; edge2 = eS.edge_const_2[c_i]; edge_t_coordinate = eS.edge_coordinates[c_i];
 	edge1_p1 = V.row(edge1.v1);

@@ -21,7 +21,6 @@
 #include "Dog/Objectives/StitchingConstraints.h"
 #include "Dog/Objectives/IsometryObjective.h"
 #include "Dog/Objectives/SimplifiedBendingObjective.h"
-#include "Dog/Objectives/FoldingAngleConstraints.h"
 #include "Dog/Solvers/DOGFlowAndProject.h"
 
 #include "ModelState.h"
@@ -34,7 +33,6 @@ ModelState state;
 ModelViewer modelViewer(state);
 DOGFlowAndProject* solver = NULL;
 FoldingAnglePositionalConstraintsBuilder* angleConstraintsBuilder = NULL;
-FoldingAngleConstraints *angleConstraints = NULL;
 
 const int DEFAULT_GRID_RES = 21;
 double bending_weight = 1.;
@@ -52,7 +50,6 @@ void clear_all_and_set_default_params() {
   const DogEdgeStitching& eS = state.dog.getEdgeStitching();
   int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
   angleConstraintsBuilder = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS);
-  //angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
 }
 
 void save_workspace() {
@@ -124,21 +121,8 @@ void single_optimization() {
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
   CompositeObjective compObj({&bending, &isoObj}, {bending_weight,isometry_weight});
   if (state.b.rows()) {
-    //int c_i = eS.edge_const_1.size()/2;
-    //FoldingAngleConstraints angleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
-    //int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
-    //angleConstraints = new FoldingAngleConstraints(state.dog.getV(), eS.edge_const_1[c_i], eS.edge_const_2[c_i], eS.edge_coordinates[c_i]);
-    //angleConstraints->set_angle(folding_angle);
-    //compConst.add_constraints(angleConstraints);
-
     PositionalConstraints posConst(state.b,state.bc);
     
-    if (folding_angle) {
-      //std::cout << "folding_angle = " << folding_angle << std::endl;  
-      //std::cout << "(angleConstraints->Vals(x0) - posConst.Vals()).norm(x0) = " << (angleConstraints->Vals(x0) - posConst.Vals(x0)).norm() << std::endl;
-      //std::cout << "(posConst.Jacobian()-angleConstraints.Jacobian()).norm() = " << (posConst.Jacobian(x0)-angleConstraints->Jacobian(x0)).norm() << endl;
-      //exit(1);
-    }
     /*
     QuadraticConstraintsSumObjective softPosConst(posConst);
     compObj.add_objective(&softPosConst,const_obj_penalty,true);
