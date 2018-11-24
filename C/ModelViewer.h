@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModelState.h"
+#include "Dog/DogSolver.h"
 #include <igl/opengl/glfw/Viewer.h>
 
 enum ViewMode {
@@ -10,7 +11,7 @@ enum ViewMode {
 
 class ModelViewer {
 public:
-	ModelViewer(const ModelState& modelState);
+	ModelViewer(const ModelState& modelState, const DogSolver& dogSolver);
 
 	void render(igl::opengl::glfw::Viewer& viewer);
 
@@ -23,6 +24,7 @@ private:
 	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
 
 	const ModelState& state;
+	const DogSolver& solver;
 	bool first_rendering;
 	bool switched_mode;
 };

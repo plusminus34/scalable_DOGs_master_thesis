@@ -12,8 +12,7 @@ public:
 	
 	void single_optimization();
 	void update_positional_constraints();
-	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) {b_out=b;bc_out = bc;};
-
+	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
 
 	struct Params {
 		double bending_weight = 1.;

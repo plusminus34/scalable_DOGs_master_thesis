@@ -5,7 +5,7 @@
 #include <igl/slice.h>
 
 
-ModelViewer::ModelViewer(const ModelState& modelState) : state(modelState) {
+ModelViewer::ModelViewer(const ModelState& modelState, const DogSolver& dogSolver) : state(modelState), solver(dogSolver) {
 	viewMode = ViewModeMesh; 
 	prevMode = viewMode;
 	first_rendering = true;
@@ -60,13 +60,14 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewer) {
 	Eigen::VectorXd x(state.dog.getV_vector());
-	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,state.b,1, constrained_pts_coords_vec);
+	Eigen::VectorXi b; Eigen::VectorXd bc; solver.get_positional_constraints(b,bc);
+	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,b,1, constrained_pts_coords_vec);
 
-	int pts_num = state.b.size()/3;
+	int pts_num = b.size()/3;
 	Eigen::MatrixXd E1(pts_num,3),E2(pts_num,3);
 	for (int i = 0; i < pts_num; i++) {
 		E1.row(i) << constrained_pts_coords_vec(i),constrained_pts_coords_vec(pts_num+i),constrained_pts_coords_vec(2*pts_num+i);
-		E2.row(i) << state.bc(i),state.bc(pts_num+i),state.bc(2*pts_num+i);
+		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 }

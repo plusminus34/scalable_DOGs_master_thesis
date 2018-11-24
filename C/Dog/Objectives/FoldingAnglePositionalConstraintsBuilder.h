@@ -6,17 +6,15 @@
 
 class FoldingAnglePositionalConstraintsBuilder {
 public:
-	FoldingAnglePositionalConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS);
+	FoldingAnglePositionalConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, const double& alpha);
 
 	void get_positional_constraints(Eigen::VectorXi& b, Eigen::VectorXd& bc);
-
-	void set_angle(double angle) {alpha = angle;}
 private:
 	void setRotAxis(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 				const Eigen::RowVector3d& rotCenter);
 
 	int const_n;
-	double alpha; // starts at zero and goes up
+	const double& alpha; // starts at zero and goes up
 	// Constrained edge indices
 	Edge edge1, edge2;
 	double edge_t_coordinate;

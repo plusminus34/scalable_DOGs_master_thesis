@@ -20,7 +20,7 @@ using namespace std;
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
-					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching()) {
+					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle) {
 	// empty on purpose
 }
 

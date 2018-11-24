@@ -27,9 +27,6 @@ struct ModelState : public igl::Serializable {
 	QuadTopology quadTop;
 	CreasesVisualization creasesVisualization;
 
-	// Positional constraints
-	Eigen::VectorXi b; Eigen::VectorXd bc;
-
 	void init_from_mesh(const std::string& mesh_path);
 	void init_from_svg(const std::string& svg_path, int x_res, int y_res);
 	void load_from_workspace(const std::string& workspace_path) {igl::deserialize(*this,"State",workspace_path);}
