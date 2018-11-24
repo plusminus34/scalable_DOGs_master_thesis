@@ -48,7 +48,6 @@ void clear_all_and_set_default_params() {
   solver = new DOGFlowAndProject(state.dog, 1., 1,max_lbfgs_routines,penalty_repetitions);
   if (angleConstraintsBuilder) {delete angleConstraintsBuilder;}
   const DogEdgeStitching& eS = state.dog.getEdgeStitching();
-  int c_i = eS.edge_const_1.size()/2; // TODO: This logic should be inside the constraints builder..
   angleConstraintsBuilder = new FoldingAnglePositionalConstraintsBuilder(state.dog.getV(), eS);
 }
 

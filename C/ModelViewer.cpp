@@ -65,9 +65,8 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	int pts_num = state.b.size()/3;
 	Eigen::MatrixXd E1(pts_num,3),E2(pts_num,3);
 	for (int i = 0; i < pts_num; i++) {
-		E1.row(i) << constrained_pts_coords_vec(3*i),constrained_pts_coords_vec(3*i+1),constrained_pts_coords_vec(3*i+2);
-		E2.row(i) << state.bc(3*i),state.bc(3*i+1),state.bc(3*i+2);
+		E1.row(i) << constrained_pts_coords_vec(i),constrained_pts_coords_vec(pts_num+i),constrained_pts_coords_vec(2*pts_num+i);
+		E2.row(i) << state.bc(i),state.bc(pts_num+i),state.bc(2*pts_num+i);
 	}
-
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 }

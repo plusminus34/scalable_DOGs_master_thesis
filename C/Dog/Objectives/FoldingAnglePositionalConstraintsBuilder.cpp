@@ -9,7 +9,8 @@ FoldingAnglePositionalConstraintsBuilder::FoldingAnglePositionalConstraintsBuild
 	alpha = 0;
 	const_n = 9; // Constrain 4 vertices = 12 vars
 
-	int c_i = 0.5*eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
+	//int c_i = 0.5*eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
+	int c_i = eS.edge_const_1.size()/2;
 
 	edge1 = eS.edge_const_1[c_i]; edge2 = eS.edge_const_2[c_i]; edge_t_coordinate = eS.edge_coordinates[c_i];
 	edge1_p1 = V.row(edge1.v1);
@@ -39,7 +40,10 @@ FoldingAnglePositionalConstraintsBuilder::FoldingAnglePositionalConstraintsBuild
 	int vnum = V.rows();
 	b.resize(const_n);
 	//b << edge1.v1,edge1.v1+vnum,edge1.v1+2*vnum, edge1.v2,edge1.v2+vnum,edge1.v2+2*vnum,edge2.v1,edge2.v1+vnum,edge2.v1+2*vnum;//,edge2.v2,edge2.v2+vnum,edge2.v2+2*vnum;
-	b << edge1.v1,edge1.v1+vnum,edge1.v1+2*vnum,edge2.v1,edge2.v1+vnum,edge2.v1+2*vnum,edge2.v2,edge2.v2+vnum,edge2.v2+2*vnum;
+	//b << edge1.v1,edge1.v1+vnum,edge1.v1+2*vnum,edge2.v1,edge2.v1+vnum,edge2.v1+2*vnum,edge2.v2,edge2.v2+vnum,edge2.v2+2*vnum;
+	b << edge1.v1,edge2.v1,edge2.v2,
+		edge1.v1+vnum,edge2.v1+vnum,edge2.v2+vnum,
+		edge1.v1+2*vnum,edge2.v1+2*vnum,edge2.v2+2*vnum;
 }
 
 void FoldingAnglePositionalConstraintsBuilder::setRotAxis(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
@@ -75,7 +79,11 @@ void FoldingAnglePositionalConstraintsBuilder::get_positional_constraints(Eigen:
 	Eigen::RowVector3d e1_p1_new_loc = rotate_vec(edge1_p1, center, axis, alpha);
 
 	bc_out.resize(const_n);
-	bc_out << e1_p1_new_loc(0),e1_p1_new_loc(1),e1_p1_new_loc(2),edge2_p1(0),edge2_p1(1),edge2_p1(2),edge2_p2(0),edge2_p2(1),edge2_p2(2);
+	bc_out << e1_p1_new_loc(0),edge2_p1(0),edge2_p2(0),
+			e1_p1_new_loc(1),edge2_p1(1),edge2_p2(1),
+			e1_p1_new_loc(2),edge2_p1(2),edge2_p2(2);
+
+		//bc_out << e1_p1_new_loc(0),e1_p1_new_loc(1),e1_p1_new_loc(2),edge2_p1(0),edge2_p1(1),edge2_p1(2),edge2_p2(0),edge2_p2(1),edge2_p2(2);
 	b_out = b;
 }
 /*
