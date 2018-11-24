@@ -34,6 +34,9 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
+	Eigen::VectorXi getPositionIndices() const {return b;}
+	Eigen::VectorXd getPositionVals() const {return bc;}
+
 private:
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 };
