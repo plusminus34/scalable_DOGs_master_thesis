@@ -8,17 +8,6 @@
 
 #include "../QuadMesh/Quad.h"
 
-struct EdgePoint {
-	EdgePoint(){}
-	EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
-
-
-	Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
-	
-	Edge edge;
-	double t;
-};
-
 struct DogEdgeStitching  : public igl::Serializable {
 	std::vector<Edge> edge_const_1, edge_const_2;
 	std::vector<double> edge_coordinates;

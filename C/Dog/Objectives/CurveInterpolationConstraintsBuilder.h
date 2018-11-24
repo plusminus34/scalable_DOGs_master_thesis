@@ -13,8 +13,8 @@ public:
 
 	void get_positional_constraints(Eigen::VectorXi& b, Eigen::VectorXd& bc);
 private:
-
 	int const_n;
+	//Curve* srcCurve, dstCurve;
 	// between 0 and 1
 	const double& timestep;
 };

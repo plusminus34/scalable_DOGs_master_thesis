@@ -6,14 +6,13 @@
 class SurfaceCurve {
 public:
 	Eigen::MatrixXd get_curve_coords(const Eigen::MatrixXd& V) const {
-		Eigen::MatrixXd coords(curve_edges.size(),3);
-		for (int i = 0; i < curve_edges.size(); i++) {
-			coords.row(i) = edge_t[i]*V.row(curve_edges[i].v1) + (1-edge_t[i])*V.row(curve_edges[i].v2);
+		Eigen::MatrixXd coords(edgePoints.size(),3);
+		for (int i = 0; i < edgePoints.size(); i++) {
+			coords.row(i) = edgePoints[i].getPositionInMesh(V);
 		}
 		return coords;
 	}
-	std::vector<Edge> curve_edges; 
-	std::vector<double> edge_t;
+	std::vector<EdgePoint> edgePoints;
 };
 
 // Describe a curve up to rigid motion with discrete edge lengths, curvature and torsion

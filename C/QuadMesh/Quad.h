@@ -64,6 +64,18 @@ struct Edge  : public igl::Serializable {
   }
 };
 
+
+struct EdgePoint {
+  EdgePoint(){}
+  EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
+
+
+  Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
+  
+  Edge edge;
+  double t;
+};
+
 struct EdgeConstI {int const_i=-1; bool edge_1;};
 struct FaceEdgeConst{EdgeConstI e_const1, e_const2;};
 
