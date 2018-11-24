@@ -26,7 +26,12 @@ DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::
 
 void DogSolver::update_positional_constraints() {
 	// TODO support curve constraints as well
-	state->angleConstraintsBuilder.get_positional_constraints(b,bc);
+	if (p.deformationType == DIHEDRAL_FOLDING) {
+		state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
+	} else if (p.deformationType == CURVE_DEFORMATION) {
+		// update curve constrained folds
+	}
+	
 }
 
 void DogSolver::single_optimization() {

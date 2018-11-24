@@ -48,10 +48,6 @@ void load_workspace(const std::string& path) {
   clear_all_and_set_default_params();
 }
 
-void change_fold_angle() {
-  dogSolver.update_positional_constraints();
-}
-
 void load_workspace() {
   std::string filename = igl::file_dialog_open();
   if (filename.empty())
@@ -130,11 +126,12 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
+      ImGui::Combo("Deformation type", (int *)(&dogSolver.p.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::InputDouble("Bending", &dogSolver.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &dogSolver.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Const obj", &dogSolver.p.const_obj_penalty, 0, 0, "%.4f");
-      ImGui::Checkbox("Folding", &dogSolver.p.fold_mesh);
-      if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) change_fold_angle();
+      if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
