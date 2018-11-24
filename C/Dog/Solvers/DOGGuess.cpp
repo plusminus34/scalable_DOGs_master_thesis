@@ -12,6 +12,8 @@ void DOGGuess::guess(Eigen::MatrixXd& V, const PositionalConstraints& postConst,
 void DOGGuess::guessARAP(Eigen::MatrixXd& V, const PositionalConstraints& postConst, Eigen::MatrixXd& guess) {
 	auto b = postConst.getPositionIndices(); auto bc = postConst.getPositionVals();
 	Eigen::VectorXi b_V(b.rows()/3); Eigen::MatrixXd bc_V(b_V.rows(),3);
+	for (int i =0 ; i < b_V.rows(); i++) {b_V(i) = b(i);}
+	vec_to_mat2(bc, bc_V);
 
 	// getPositionIndices,getPositionBals
 	igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
