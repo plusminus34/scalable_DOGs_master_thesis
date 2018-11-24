@@ -38,5 +38,5 @@ void CurveInterpolationConstraintsBuilder::get_positional_constraints(Eigen::Vec
 	// Assuming that other mesh is fixed this linear constraints become a standard positional constraint
 	// This should be ok
 	// How fast can this work?
-	// Meaning we just need to write an ICP class
+	// Meaning we just need to write an ICP class (start with assuming 2 connected components)
 }
