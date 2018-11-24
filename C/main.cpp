@@ -5,25 +5,10 @@
 
 #include <boost/algorithm/string.hpp>
 
-
 #include <igl/pathinfo.h>
 
 #include "Dog/Dog.h"
 #include "Dog/DogSolver.h"
-
-#include "Optimization/CompositeObjective.h"
-#include "Optimization/CompositeConstraints.h"
-#include "Optimization/PositionalConstraints.h"
-#include "Optimization/QuadraticConstraintsSumObjective.h"
-#include "Optimization/Solvers/LBFGS.h"
-
-#include "Dog/Objectives/DogConstraints.h"
-#include "Dog/Objectives/FoldingAnglePositionalConstraintsBuilder.h"
-#include "Dog/Objectives/StitchingConstraints.h"
-#include "Dog/Objectives/IsometryObjective.h"
-#include "Dog/Objectives/SimplifiedBendingObjective.h"
-#include "Dog/Solvers/DOGFlowAndProject.h"
-
 #include "ModelState.h"
 #include "ModelViewer.h"
 
@@ -134,7 +119,7 @@ int main(int argc, char *argv[]) {
   {
     // Define next window position + size
     ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(200, 300), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(210, 500), ImGuiSetCond_FirstUseEver);
     ImGui::Begin(
         "DOG", nullptr,
         ImGuiWindowFlags_NoSavedSettings
@@ -153,6 +138,9 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
+
+      ImGui::InputDouble("Constraints deviation", &dogSolver.constraints_deviation);
+      ImGui::InputDouble("objective", &dogSolver.objective);
 
       ImGui::End();
   };

@@ -81,6 +81,9 @@ void DogSolver::single_optimization() {
 
   //state->flowProject.resetSmoother();
   state->dog.update_V_vector(x);
+
+  constraints_deviation = compConst.Vals(x).squaredNorm();
+  objective = compObj.obj(x);
 }
 
 void DogSolver::init_from_new_dog(Dog& dog, const QuadTopology& quadTop) {

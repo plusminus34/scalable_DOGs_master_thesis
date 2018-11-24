@@ -25,6 +25,8 @@ public:
 	};
 
 	DogSolver::Params p;
+	double constraints_deviation;
+	double objective;
 	
 private:
 	void init_solver_state(Dog& dog, const QuadTopology& quadTop);
