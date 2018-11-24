@@ -32,4 +32,11 @@ void CurveInterpolationConstraintsBuilder::get_positional_constraints(Eigen::Vec
 	// We can generalize the previous constraints for these linear constraints (plotting but also optimization)
 	// TODO: write EdgePointConstraints? Then viewer should be able to show it and all optimization as well
 	// (Besides ARAP now anc procrustes now)
+
+	// The procrustes solver can do multiple rounds of ICP, where one mesh can be forced to not move
+	// At every iteration we set positional constraints from the linear constraints
+	// Assuming that other mesh is fixed this linear constraints become a standard positional constraint
+	// This should be ok
+	// How fast can this work?
+	// Meaning we just need to write an ICP class
 }
