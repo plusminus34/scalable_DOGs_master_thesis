@@ -33,6 +33,7 @@ public:
 	Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching, Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren,
 		std::vector<int> submeshVSize);
 	Dog(const Dog& dog);
+	Dog(Eigen::MatrixXd V, Eigen::MatrixXi F);
 	Dog(){/*Needed for deserilization*/};
 
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi, Eigen::MatrixXi& Fi) {Vi = V_ren; Fi = F_ren;}
@@ -40,6 +41,8 @@ public:
 	
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
+
+	void get_submesh_min_max_i(int& submesh_min_i, int& submesh_max_i);
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
@@ -70,7 +73,7 @@ private:
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	DogEdgeStitching edgeStitching;
-	std::vector<int> submeshVSize;
+	std::vector<std::pair<int,int>> submesh_min_max_i;
 };
 
 

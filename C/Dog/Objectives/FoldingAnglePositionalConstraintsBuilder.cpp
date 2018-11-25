@@ -39,7 +39,6 @@ void FoldingAnglePositionalConstraintsBuilder::setRotAxis(const Eigen::MatrixXd&
 	for (auto curve: eS.stitched_curves) {
 		for (int i = 1; i < curve.size()-1; i++) {
 			if (curve[i].getPositionInMesh(V) == rotCenter) {
-				std::cout << "Found at i = " << i << std::endl;
 				auto pxb = curve[i-1].getPositionInMesh(V), p0 = rotCenter, pxf = curve[i+1].getPositionInMesh(V);
 				auto e1 = pxf-p0, e2 = p0-pxb;
 
