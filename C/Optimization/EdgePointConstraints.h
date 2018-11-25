@@ -5,8 +5,8 @@
 
 #include <igl/slice.h>
 
-#include "../../Optimization/Constraints.h"
-#include "../../QuadMesh/Quad.h"
+#include "Constraints.h"
+#include "../QuadMesh/Quad.h"
 
 class EdgePointConstraints : public Constraints {
 public:

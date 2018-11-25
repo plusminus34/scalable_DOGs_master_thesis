@@ -7,13 +7,13 @@
 #include "../Optimization/CompositeObjective.h"
 #include "../Optimization/CompositeConstraints.h"
 #include "../Optimization/PositionalConstraints.h"
+#include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
 #include "../Optimization/Solvers/LBFGS.h"
 
 #include "Objectives/DogConstraints.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Objectives/StitchingConstraints.h"
-#include "Objectives/EdgePointConstraints.h"
 
 using namespace std;
 
