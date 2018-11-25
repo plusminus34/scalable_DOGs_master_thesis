@@ -10,24 +10,35 @@
 class EdgePointConstraints : public Constraints {
 public:
 	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& curveCoords) {
-		const_n = 3*edgePoints.rows(); approx_nnz = 2*const_n;
+		bc = mat2_to_vec(curveCoords); // flatten to a vector
+		const_n = bc.rows(); approx_nnz = 2*const_n; // 2 points per edge
 	};
 
 	virtual PositionalConstraints* clone() const {return new EdgePointConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
-		Eigen::MatrixXd curveCoords(EdgePoint::getPositionInMesh(edgePoints, ))
-		//Eigen::VectorXd constrained_pts_coords; igl::slice(x,b,1, constrained_pts_coords);
-		// A vector of x(b)-bc for the constraints x(b)-bc = 0
+		Eigen::VectorXd curveCoords(EdgePoint::getPositionInMesh(edgePoints, x));
 		return constrained_pts_coords-bc;
 	}
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
+		int vn = x.rows()/3;
 		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
 		int const_n = 0;
-		for (int b_i = 0; b_i < b.rows(); b_i++ ) {
-			int var_const_idx = b(b_i);
-			// Set the derivative at the 'var_const_idx' as d(x(val_idx)-value)/d(val_idx) = 1
-			IJV.push_back(Eigen::Triplet<double>(const_n++, var_const_idx, 1));
+		for (int b_i = 0; b_i < edgePoints.size(); b_i++ ) {
+			int v1 = edgePoints[b_i].edge.v1, v2 = edgePoints[b_i].edge.v2;
+			double t = edgePoints[b_i].t;
+
+			// 1 constraint for every coordinate
+			IJV.push_back(Eigen::Triplet<double>(const_n, v1, t));
+			IJV.push_back(Eigen::Triplet<double>(const_n, v2, 1-t));
+
+			IJV.push_back(Eigen::Triplet<double>(const_n+1, vn+v1, t));
+			IJV.push_back(Eigen::Triplet<double>(const_n+1, vn+v2, 1-t));
+
+			IJV.push_back(Eigen::Triplet<double>(const_n+2, 2*vn+v1, t));
+			IJV.push_back(Eigen::Triplet<double>(const_n+2, 2*vn+v2, 1-t));
+
+			const_n+=3;
 		}
 		return IJV;
 	}
