@@ -13,6 +13,7 @@
 #include "Objectives/DogConstraints.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Objectives/StitchingConstraints.h"
+#include "Objectives/EdgePointConstraints.h"
 
 using namespace std;
 

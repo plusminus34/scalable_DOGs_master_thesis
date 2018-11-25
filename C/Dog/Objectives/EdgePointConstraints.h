@@ -5,21 +5,23 @@
 
 #include <igl/slice.h>
 
-#include "Constraints.h"
+#include "../../Optimization/Constraints.h"
+#include "../../QuadMesh/Quad.h"
 
 class EdgePointConstraints : public Constraints {
 public:
 	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& curveCoords) {
-		bc = mat2_to_vec(curveCoords); // flatten to a vector
+		mat2_to_vec(curveCoords, bc); // flatten to a vector
 		const_n = bc.rows(); approx_nnz = 2*const_n; // 2 points per edge
 	};
 
-	virtual PositionalConstraints* clone() const {return new EdgePointConstraints(*this);}
+	virtual EdgePointConstraints* clone() const {return new EdgePointConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd curveCoords(EdgePoint::getPositionInMesh(edgePoints, x));
-		return constrained_pts_coords-bc;
+		return curveCoords-bc;
 	}
+
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
 		int vn = x.rows()/3;
 		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
@@ -48,8 +50,8 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
-	Eigen::VectorXi getPositionIndices() const {return b;}
-	Eigen::VectorXd getPositionVals() const {return bc;}
+	std::vector<EdgePoint> getEdgePoints() const {return edgePoints;}
+	Eigen::VectorXd getEdgePointConstraints() const {return bc;}
 
 private:
 	std::vector<EdgePoint> edgePoints; Eigen::VectorXd bc;
