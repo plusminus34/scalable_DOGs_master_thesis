@@ -4,7 +4,7 @@
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
-	SurfaceCurve surfaceCurve; surfaceCurve.edgePoints = eS.stitched_curves[0];
+	 surfaceCurve.edgePoints = eS.stitched_curves[0];
 	auto initCoords = surfaceCurve.get_curve_coords(V);
 	srcCurve = new Curve(initCoords);
 	Curve::getTranslationAndFrameFromCoords(initCoords, T, F);
@@ -21,11 +21,12 @@ CurveInterpolationConstraintsBuilder::~CurveInterpolationConstraintsBuilder() {
 	delete dstCurve;
 }
 
-void CurveInterpolationConstraintsBuilder::get_positional_constraints(Eigen::VectorXi& b, Eigen::VectorXd& bc) {
+void CurveInterpolationConstraintsBuilder::get_positional_constraints(SurfaceCurve& surfaceCurve_out, Eigen::VectorXd& bc) {
 	// Interpolate with timestep
 	Curve intCurve(*srcCurve,*dstCurve,timestep);
 	// Return coordinates
-	auto coords = intCurve.getCoords(T,F);
+	bc = intCurve.getCoords(T,F);
+	surfaceCurve_out = surfaceCurve;
 	// TODO this gives us linear constraints and we can't use b or bc here since these are edge points
 	// So we need to indices at b and at bc
 

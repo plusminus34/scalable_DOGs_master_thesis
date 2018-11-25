@@ -12,13 +12,16 @@ public:
 			const double& timestep);
 	~CurveInterpolationConstraintsBuilder();
 
-	void get_positional_constraints(Eigen::VectorXi& b, Eigen::VectorXd& bc);
+	void get_positional_constraints(SurfaceCurve& surfaceCurve_out, Eigen::VectorXd& bc);
 private:
 	int const_n;
+	// The constraint (intrinsic) surface cure given by edge point
+	SurfaceCurve surfaceCurve;
 	Curve* srcCurve;
 	Curve* dstCurve;
 	// Rigid motion
 	Eigen::RowVector3d T; Eigen::Matrix3d F;
 	// between 0 and 1
 	const double& timestep;
+
 };

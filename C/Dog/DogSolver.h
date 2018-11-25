@@ -52,4 +52,6 @@ private:
 	DogSolver::State* state;
 	// Positional constraints
 	Eigen::VectorXi b; Eigen::VectorXd bc;
+	// Curve constraints
+	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 };

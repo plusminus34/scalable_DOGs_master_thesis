@@ -3,6 +3,7 @@
 #include "igl/serialize.h"
 
 #include <vector>
+#include "Edge.h"
 
 struct QuadTopology : public igl::Serializable {
     Eigen::VectorXi stars;
@@ -31,49 +32,6 @@ struct QuadTopology : public igl::Serializable {
       Add(A,std::string("_w_sqrGrid"));
       Add(vi_to_star,std::string("_w_vEq"));
     }
-};
-
-struct Edge  : public igl::Serializable {
-
-  Edge(): v1(-1),v2(-1){}
-  Edge(int v1_, int v2_): v1(v1_),v2(v2_) {
-    //if (v1 > v2) { std::swap(v1,v2);}
-  }
-  Edge(const Edge& edge): v1(edge.v1),v2(edge.v2) {}
-
-  void InitSerialization() {
-    Add(v1,std::string("v1"));
-    Add(v2,std::string("v2"));
-  }
-  int v1,v2;
-
-  inline bool operator==(const Edge& rhs) const { /* do actual comparison */ 
-    if (v1 == rhs.v1 && v2 == rhs.v2) {
-      return true;
-    }
-    if (v1 == rhs.v2 && v2 == rhs.v1) {
-      return true;
-    }
-    return false;
-  }
-
-  bool operator<( const Edge& rhs ) const {
-    if (v1 < rhs.v1) return true;
-    else if (v1 > rhs.v1) return false;
-    else return v2 < rhs.v2;
-  }
-};
-
-
-struct EdgePoint {
-  EdgePoint(){}
-  EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
-
-
-  Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
-  
-  Edge edge;
-  double t;
 };
 
 struct EdgeConstI {int const_i=-1; bool edge_1;};
