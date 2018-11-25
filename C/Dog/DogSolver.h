@@ -2,6 +2,7 @@
 
 #include "Dog.h"
 
+#include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGFlowAndProject.h"
 
@@ -19,6 +20,7 @@ public:
 	void single_optimization();
 	void update_positional_constraints();
 	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
+	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
 
 	struct Params {
 		DogSolver::DeformationType deformationType;
@@ -45,8 +47,9 @@ private:
 		Dog& dog;
 		const QuadTopology& quadTop;
 		const DogSolver::Params& p;
-		DOGFlowAndProject flowProject;// = NULL;
-		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;// = NULL;
+		DOGFlowAndProject flowProject;
+		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
+		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
 	};
 
 	DogSolver::State* state;

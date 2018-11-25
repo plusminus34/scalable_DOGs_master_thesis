@@ -1,8 +1,9 @@
 #include "ModelViewer.h"
 
 #include "Gui/Rendering.h"
-
 #include <igl/slice.h>
+
+using namespace std;
 
 
 ModelViewer::ModelViewer(const ModelState& modelState, const DogSolver& dogSolver) : state(modelState), solver(dogSolver) {
@@ -33,7 +34,10 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	} else {
 		render_wireframe(viewer, state.dog.getV(), state.quadTop);
 	}
-	if (render_pos_const) render_positional_constraints(viewer);
+	if (render_pos_const) {
+		render_positional_constraints(viewer);
+		render_edge_points_constraints(viewer);
+	}
 
 	viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
@@ -70,4 +74,12 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
+}
+
+void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
+	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+	solver.get_edge_point_constraints(edgePoints, edgeCoords);
+	if (!edgePoints.size()) return;
+	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, state.dog.getV());
+	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));
 }

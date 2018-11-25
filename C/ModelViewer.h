@@ -22,6 +22,7 @@ private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
 	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
+	void render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer);
 
 	const ModelState& state;
 	const DogSolver& solver;

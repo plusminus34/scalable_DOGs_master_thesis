@@ -21,7 +21,7 @@ CurveInterpolationConstraintsBuilder::~CurveInterpolationConstraintsBuilder() {
 	delete dstCurve;
 }
 
-void CurveInterpolationConstraintsBuilder::get_positional_constraints(SurfaceCurve& surfaceCurve_out, Eigen::VectorXd& bc) {
+void CurveInterpolationConstraintsBuilder::get_curve_constraints(SurfaceCurve& surfaceCurve_out, Eigen::MatrixXd& bc) {
 	// Interpolate with timestep
 	Curve intCurve(*srcCurve,*dstCurve,timestep);
 	// Return coordinates

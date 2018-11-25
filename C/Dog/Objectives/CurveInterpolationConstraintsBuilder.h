@@ -12,7 +12,7 @@ public:
 			const double& timestep);
 	~CurveInterpolationConstraintsBuilder();
 
-	void get_positional_constraints(SurfaceCurve& surfaceCurve_out, Eigen::VectorXd& bc);
+	void get_curve_constraints(SurfaceCurve& surfaceCurve_out, Eigen::MatrixXd& bc);
 private:
 	int const_n;
 	// The constraint (intrinsic) surface cure given by edge point

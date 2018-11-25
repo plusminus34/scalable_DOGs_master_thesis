@@ -21,7 +21,8 @@ using namespace std;
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
-					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle) {
+					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
+					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep) {
 	// empty on purpose
 }
 
@@ -31,6 +32,9 @@ void DogSolver::update_positional_constraints() {
 		state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
 	} else if (p.deformationType == CURVE_DEFORMATION) {
 		// update curve constrained folds
+		SurfaceCurve surfaceCurve;
+		state->curveConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
+		edgePoints = surfaceCurve.edgePoints;
 	}
 	
 }
