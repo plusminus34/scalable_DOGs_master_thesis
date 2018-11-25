@@ -43,12 +43,14 @@ public:
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
 	void get_submesh_min_max_i(int& submesh_min_i, int& submesh_max_i);
+	int get_submesh_i() {return submesh_min_max_i.size();}
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	Eigen::MatrixXd& getVMutable() {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
 	const Eigen::MatrixXi& getFrendering() const {return F_ren;}
 	const Eigen::MatrixXd& getVrendering() const {return V_ren;}
