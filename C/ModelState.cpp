@@ -30,8 +30,9 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 
 	V_ren = V; // no folds
 	DogEdgeStitching dogEdgeStitching; // no folds  
+	std::vector<int> submeshVSize; submeshVSize.push_back(V.rows()); // only 1 component
 
-	dog = Dog(V,F,dogEdgeStitching,V_ren,F_ren);
+	dog = Dog(V,F,dogEdgeStitching,V_ren,F_ren,submeshVSize);
 }
 
 void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res) {

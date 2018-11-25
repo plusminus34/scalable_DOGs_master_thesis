@@ -2,12 +2,14 @@
 
 #include <igl/boundary_loop.h>
 
-Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching, Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren) : 
-				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren) {
+Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching, 
+		Eigen::MatrixXd V_ren, Eigen::MatrixXi F_ren, std::vector<int> submeshVSize) : 
+				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize) {
 	// empty
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),edgeStitching(d.edgeStitching),V_ren(d.V_ren), F_ren(d.F_ren){
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),edgeStitching(d.edgeStitching),V_ren(d.V_ren), F_ren(d.F_ren),
+						submeshVSize(d.submeshVSize) {
 	// empty
 }
 
