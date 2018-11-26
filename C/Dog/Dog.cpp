@@ -7,20 +7,23 @@ Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F, DogEdgeStitching edgeStitching,
 				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren) {
 
 	// set mesh_min_max_i;
+	vi_to_submesh.resize(V.rows());
 	submesh_min_max_i.resize(submeshVSize.size()); int min_idx = 0;
 	for (int sub_i = 0; sub_i < submeshVSize.size(); sub_i++) {
-		int submesh_vn = submeshVSize[sub_i];
-		submesh_min_max_i[sub_i] = std::pair<int,int>(min_idx, min_idx+submesh_vn-1);
+		int submesh_vn = submeshVSize[sub_i]; int max_idx = min_idx +submesh_vn-1;
+		submesh_min_max_i[sub_i] = std::pair<int,int>(min_idx, max_idx);
+		for (int subm_vi = min_idx; subm_vi <= max_idx; subm_vi++) vi_to_submesh[subm_vi] = sub_i;
 		min_idx += submesh_vn;
 	}
 }
 
 Dog::Dog(Eigen::MatrixXd V, Eigen::MatrixXi F) : V(V), F(F),V_ren(V), F_ren(F) {
 	submesh_min_max_i.push_back(std::pair<int,int>(0,V.rows()-1)); // only 1 component
+	vi_to_submesh.assign(V.rows(),0);
 }
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),edgeStitching(d.edgeStitching),V_ren(d.V_ren), F_ren(d.F_ren),
-						submesh_min_max_i(d.submesh_min_max_i) {
+						submesh_min_max_i(d.submesh_min_max_i), vi_to_submesh(d.vi_to_submesh) {
 	// empty
 }
 

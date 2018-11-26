@@ -25,6 +25,15 @@ double GeneralizedProcrustes::solve(Dog& dog, int fixed_mesh_i,
 			//  on a submesh (should be almost the same as procrustes_on_submesh, so we can actually just make it bigger)
 
 
+			// For now assume only 2 meshes (so all stitching constraints can be changed to edge point ones)
+			const DogEdgeStitching& eS = dog.getEdgeStitching();
+			std::vector<EdgePoint> edgePoints(eS.edge_const_1.size()); Eigen::MatrixXd edgePointCoords(edgePoints.size(),3);
+			//EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords)
+			for (int i = 0; i < eS.edge_const_1.size(); i++) {
+				//if (eS.edge_const_1[i].v1)
+				//std::vector<Edge> edge_const_1, edge_const_2;
+			}
+	//std::vector<double> edge_coordinates;
 		}
 	}
 	return 0;

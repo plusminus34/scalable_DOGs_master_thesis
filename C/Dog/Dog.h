@@ -45,6 +45,7 @@ public:
 	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i);
 	int get_submesh_n() { return submesh_min_max_i.size();}
 	int get_submesh_i_size(int submesh_i) {return 1+submesh_min_max_i[submesh_i].second-submesh_min_max_i[submesh_i].first;}
+	int v_to_submesh_idx(int v) {return vi_to_submesh[v];}
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
@@ -77,6 +78,7 @@ private:
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	DogEdgeStitching edgeStitching;
 	std::vector<std::pair<int,int>> submesh_min_max_i;
+	std::vector<int> vi_to_submesh;
 };
 
 
