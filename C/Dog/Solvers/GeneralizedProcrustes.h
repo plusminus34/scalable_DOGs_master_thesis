@@ -27,5 +27,8 @@ private:
 								const EdgePointConstraints& edgePointConstraints);
 
 	void procrustes_on_submesh(Dog& dog, int submesh_i, const PositionalConstraints& posConst);
+
+	PositionalConstraints submesh_positional_constraints_from_mesh_positional_constraints(Dog& dog, int submesh_i, const PositionalConstraints& posConst);
+	
 	int max_iter;
 };
