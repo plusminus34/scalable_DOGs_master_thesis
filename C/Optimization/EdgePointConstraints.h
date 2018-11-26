@@ -10,16 +10,17 @@
 
 class EdgePointConstraints : public Constraints {
 public:
-	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& curveCoords) {
-		mat2_to_vec(curveCoords, bc); // flatten to a vector
+	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) {
+		mat2_to_vec(edgePointCoords, bc); // flatten to a vector
 		const_n = bc.rows(); approx_nnz = 2*const_n; // 2 points per edge
 	};
+	EdgePointConstraints() {const_n = 0; approx_nnz = 0; edgePoints.resize(0); bc.resize(0);} // empty set of constraints c'tor
 
 	virtual EdgePointConstraints* clone() const {return new EdgePointConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
-		Eigen::VectorXd curveCoords(EdgePoint::getPositionInMesh(edgePoints, x));
-		return curveCoords-bc;
+		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
+		return edgeCoords-bc;
 	}
 
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {

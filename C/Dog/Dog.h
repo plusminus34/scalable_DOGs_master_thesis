@@ -42,8 +42,9 @@ public:
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
-	void get_submesh_min_max_i(int& submesh_min_i, int& submesh_max_i);
-	int get_submesh_i() {return submesh_min_max_i.size();}
+	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i);
+	int get_submesh_n() { return submesh_min_max_i.size();}
+	int get_submesh_i_size(int submesh_i) {return 1+submesh_min_max_i[submesh_i].second-submesh_min_max_i[submesh_i].first;}
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 

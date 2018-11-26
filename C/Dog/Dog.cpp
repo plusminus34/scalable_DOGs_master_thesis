@@ -39,7 +39,7 @@ void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitchin
 	V_ren << V,V_folds_polygons;
 }
 
-void Dog::get_submesh_min_max_i(int& submesh_min_i, int& submesh_max_i) {
-	submesh_min_i = submesh_min_max_i[submesh_min_i].first;
-	submesh_min_i = submesh_min_max_i[submesh_min_i].second;
+void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i) {
+	submesh_min_i = submesh_min_max_i[submesh_i].first;
+	submesh_max_i = submesh_min_max_i[submesh_i].second;
 }

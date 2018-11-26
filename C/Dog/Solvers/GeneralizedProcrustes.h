@@ -17,11 +17,15 @@ public:
 	double solve(Dog& dog, int fixed_mesh_i,
 		const PositionalConstraints& posConst,
         const StitchingConstraints& stitchingConstraints,
-        /*const PositionalConstraints& EdgePointConstraints, TODO */
+        /*const EdgePointConstraints& edgePointConstraints, TODO */
         Eigen::MatrixXd& Vout);
 
 	void set_max_iter(int max_iter) {max_iter = max_iter;}
 private:
-	void procrustes_on_submesh(Dog& dog, int fixed_mesh_i, const PositionalConstraints& posConst);
+	void procrustes_on_submesh(Dog& dog, int submesh_i, 
+								const PositionalConstraints& posConst,
+								const EdgePointConstraints& edgePointConstraints);
+
+	void procrustes_on_submesh(Dog& dog, int submesh_i, const PositionalConstraints& posConst);
 	int max_iter;
 };
