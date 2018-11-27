@@ -47,7 +47,7 @@ void DogSolver::single_optimization() {
   if (state->dog.has_creases()) {
     PositionalConstraints posConst(b,bc);
     StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
-    state->p.dogGuess.guess(state->dog, posConst, stitchingConstraints);
+    state->dogGuess.guess(state->dog, posConst, stitchingConstraints);
   }
 
 	cout << "running a single optimization routine" << endl;
