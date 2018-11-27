@@ -15,6 +15,7 @@ void DOGGuess::guess(Dog& dog, const PositionalConstraints& postConst, const Sti
 	if (deform_arap) {
 		guessARAP(dog, postConst);
 	}
+	dog.update_Vren();
 }
 
 void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst) {

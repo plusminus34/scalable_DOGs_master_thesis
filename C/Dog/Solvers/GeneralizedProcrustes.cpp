@@ -33,18 +33,20 @@ double GeneralizedProcrustes::solve(Dog& dog,
 			std::vector<EdgePoint> edgePoints(eS.edge_const_1.size()); Eigen::MatrixXd edgePointCoords(edgePoints.size(),3);
 			//EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords)
 			for (int i = 0; i < eS.edge_const_1.size(); i++) {
-				double t = eS.edge_coordinates[i]; Edge edge;
+				double t = eS.edge_coordinates[i]; Edge edge_src,edge_target;
 				if (dog.v_to_submesh_idx(eS.edge_const_1[i].v1) != fixed_mesh_i ) {
-					edge = eS.edge_const_1[i];
+					edge_src = eS.edge_const_1[i];
+					edge_target = eS.edge_const_2[i];
 				} else {
-					edge = eS.edge_const_2[i];
+					edge_src = eS.edge_const_2[i];
+					edge_target = eS.edge_const_1[i];
 				}
-				EdgePoint edgePoint(edge,t);
-				edgePoints[i] = edgePoint;
-				edgePointCoords.row(i) = edgePoint.getPositionInMesh(dog.getV());
+				EdgePoint edge_point_src(edge_src,t), edge_point_target(edge_target, t);
+				edgePoints[i] = edge_point_src;
+				edgePointCoords.row(i) = edge_point_target.getPositionInMesh(dog.getV());
 			}
 			EdgePointConstraints submeshEdgePtConst(edgePoints, edgePointCoords);
-			procrustes_on_submesh(dog, submesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst),
+			procrustes_on_submesh(dog, submesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, submesh_i, posConst),
 									 submeshEdgePtConst);
 		}
 	}
@@ -103,10 +105,11 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 
 PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from_mesh_positional_constraints(Dog& dog, 
 		int submesh_i, const PositionalConstraints& posConst) {
+	int vn = dog.getV().rows();
 	Eigen::VectorXi bGlobal(posConst.getPositionIndices()); Eigen::VectorXd bcGlobal(posConst.getPositionVals());
 	std::cout << "bGlobal = " << bGlobal << std::endl;
 	std::vector<bool> b_in_submesh(bGlobal.rows()/3); 
-	for (int i = 0; i < b_in_submesh.size(); i++) b_in_submesh[i] = (dog.v_to_submesh_idx(bGlobal[i]) == submesh_i);
+	for (int i = 0; i < b_in_submesh.size(); i++) b_in_submesh[i] = (dog.v_to_submesh_idx(bGlobal[i]%vn) == submesh_i);
 	int pos_const_in_submesh = std::count(b_in_submesh.begin(), b_in_submesh.end(), true);
 
 	Eigen::VectorXi bSubmesh(3*pos_const_in_submesh); Eigen::VectorXd bcSubmesh(bSubmesh.size());
@@ -124,12 +127,14 @@ PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from
 
 int GeneralizedProcrustes::get_best_aligned_submesh(const Dog& dog, const PositionalConstraints& posConst) {
 	int submesh_n = dog.get_submesh_n();
+	int vn = dog.getV().rows();
 	std::vector<int> non_satisfied_const_per_submesh(submesh_n);
 	Eigen::VectorXi b(posConst.getPositionIndices()); Eigen::VectorXd bc(posConst.getPositionVals());
 	Eigen::VectorXd constrained_pts_coords; igl::slice(dog.getV_vector(),b,1, constrained_pts_coords);
 	for (int pos_i = 0; pos_i < b.rows(); pos_i++) {
+		std::cout << " b(i) = " << b(pos_i) << " const for submesh = " << dog.v_to_submesh_idx(b(pos_i)%vn) << std::endl;
 		if (bc(pos_i) != constrained_pts_coords(pos_i)) {
-			int submesh_i = dog.v_to_submesh_idx(b(pos_i)/3);
+			int submesh_i = dog.v_to_submesh_idx(b(pos_i)%vn);
 			non_satisfied_const_per_submesh[pos_i]++;
 		}
 	}

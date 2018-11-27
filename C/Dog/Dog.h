@@ -39,6 +39,7 @@ public:
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi, Eigen::MatrixXi& Fi) {Vi = V_ren; Fi = F_ren;}
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi) {Vi = V_ren;}
 	
+	void update_Vren() {update_rendering_v();}
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
