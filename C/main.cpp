@@ -134,7 +134,6 @@ int main(int argc, char *argv[]) {
       if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
-      ImGui::InputBooolean("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);
       ImGui::Checkbox("ARAP Guess", &&dogSolver.p.arap_guess);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
