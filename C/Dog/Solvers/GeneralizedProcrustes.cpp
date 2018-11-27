@@ -9,9 +9,9 @@ double GeneralizedProcrustes::solve(Dog& dog,
         int fixed_mesh_i) {
 
 	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
-	exit(1);
+	std::cout << "fixed_mesh_i = " << fixed_mesh_i << std::endl;
 
-	procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));
+	//procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));
 
 	// For now just support 2 meshes, so we assume all the linear constraints are determined
 	// In general we need to do a bfs, each time propagating constraints and setting free variables after procrustes
@@ -58,15 +58,17 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 	// Build set of positional constraint points in the mesh
 	Eigen::VectorXi b(posConst.getPositionIndices()); Eigen::VectorXd bc(posConst.getPositionVals());
 	Eigen::MatrixXd targetPointPositions; vec_to_mat2(bc,targetPointPositions);
+	std::cout << "b = " << b << std::endl;
 	Eigen::VectorXi bV(b.rows()/3); for (int i = 0; i < bV.rows(); i++) bV(i) = b(i);
-	Eigen::MatrixXd constrainedPositions; igl::slice(dog.getV(),bV,1, constrainedPositions);
-	
+	Eigen::MatrixXd constrainedPositions(bV.rows(),3); igl::slice(dog.getV(),bV,1, constrainedPositions);
+	std::cout << "constrainedPositions = " << constrainedPositions << std::endl;
 	
 	// Build set of positional constraint points from edge point constraints
 	Eigen::VectorXd edgePointsBc(edgePointConstraints.getEdgePointConstraints());
 	Eigen::MatrixXd targetEdgePoints; vec_to_mat2(edgePointsBc,targetEdgePoints);
 	std::vector<EdgePoint> edgePoints = edgePointConstraints.getEdgePoints();
 	Eigen::MatrixXd constrainedEdgePoints = EdgePoint::getPositionInMesh(edgePoints, dog.getV());
+	std::cout << "constrainedEdgePoints = " << constrainedEdgePoints << std::endl;
 
 
 	Eigen::MatrixXd src(constrainedPositions.rows() + constrainedEdgePoints.rows(),3);
@@ -74,10 +76,14 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 	Eigen::MatrixXd target(targetPointPositions.rows()+targetEdgePoints.rows(), 3);
 	target << targetPointPositions, targetEdgePoints;
 
+	std::cout << "src = " << src << std::endl;
+	std::cout << "target = " << target << std::endl;
 
 	// rigid motion (and scale which we ignore for now)
 	Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
 	igl::procrustes(src,target,false,false,scale_dummy,R,t);
+
+	std::cout << "R = " << R << std::endl;
 
 	// go through mesh vertices and set them
 	int submesh_min_i, submesh_max_i; dog.get_submesh_min_max_i(submesh_i, submesh_min_i, submesh_max_i);
@@ -97,6 +103,7 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from_mesh_positional_constraints(Dog& dog, 
 		int submesh_i, const PositionalConstraints& posConst) {
 	Eigen::VectorXi bGlobal(posConst.getPositionIndices()); Eigen::VectorXd bcGlobal(posConst.getPositionVals());
+	std::cout << "bGlobal = " << bGlobal << std::endl;
 	std::vector<bool> b_in_submesh(bGlobal.rows()/3); 
 	for (int i = 0; i < b_in_submesh.size(); i++) b_in_submesh[i] = (dog.v_to_submesh_idx(bGlobal[i]) == submesh_i);
 	int pos_const_in_submesh = std::count(b_in_submesh.begin(), b_in_submesh.end(), true);
