@@ -2,11 +2,14 @@
 
 #include <igl/procrustes.h>
 
-double GeneralizedProcrustes::solve(Dog& dog, int fixed_mesh_i,
+double GeneralizedProcrustes::solve(Dog& dog, 
 		const PositionalConstraints& posConst,
         const StitchingConstraints& stitchingConstraints,
         /*const PositionalConstraints& EdgePointConstraints, TODO */
-        Eigen::MatrixXd& Vout) {
+        Eigen::MatrixXd& Vout,
+        int fixed_mesh_i) {
+
+	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
 
 	procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));
 
@@ -109,4 +112,25 @@ PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from
 	}
 
 	return PositionalConstraints(bSubmesh, bcSubmesh);
+}
+
+int GeneralizedProcrustes::get_best_aligned_submesh(const Dog& dog, const PositionalConstraints& posConst) {
+	int submesh_n = dog.get_submesh_n();
+	std::vector<int> non_satisfied_const_per_submesh(submesh_n);
+	Eigen::VectorXi b(posConst.getPositionIndices()); Eigen::VectorXd bc(posConst.getPositionVals());
+	Eigen::VectorXd constrained_pts_coords; igl::slice(dog.getV_vector(),b,1, constrained_pts_coords);
+	for (int pos_i = 0; pos_i < b.rows(); pos_i++) {
+		if (bc(pos_i) != constrained_pts_coords(pos_i)) {
+			int submesh_i = dog.v_to_submesh_idx(b(pos_i)/3);
+			non_satisfied_const_per_submesh[pos_i]++;
+		}
+	}
+	// dbg
+	int cnt = 0;
+	for (auto non_sat_consts: non_satisfied_const_per_submesh) {
+		std::cout << "submesh " << cnt << " has " << non_sat_consts << " non satsified constraints" << std::endl;
+		cnt++;
+	}
+	auto min_el_pt = std::min_element(non_satisfied_const_per_submesh.begin(), non_satisfied_const_per_submesh.end());
+	return min_el_pt-non_satisfied_const_per_submesh.begin();
 }
