@@ -5,6 +5,7 @@
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGFlowAndProject.h"
+#include "Solvers/DOGGuess.h"
 
 
 class DogSolver {
@@ -51,6 +52,7 @@ private:
 		const QuadTopology& quadTop;
 		const DogSolver::Params& p;
 		DOGFlowAndProject flowProject;
+		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
 		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
 	};

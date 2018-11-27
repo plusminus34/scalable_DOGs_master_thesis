@@ -21,6 +21,7 @@ using namespace std;
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
+          dogGuess(dog, p.align_procrustes, p.arap_guess),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep) {
 	// empty on purpose
@@ -41,6 +42,14 @@ void DogSolver::update_positional_constraints() {
 
 void DogSolver::single_optimization() {
 	if (!state) return; // No optimizer
+
+  cout << "guessing!" << endl;
+  if (state->dog.has_creases()) {
+    PositionalConstraints posConst(b,bc);
+    StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
+    state->p.dogGuess.guess(state->dog, posConst, stitchingConstraints);
+  }
+
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(state->dog.getV_vector()),x;
 
@@ -51,7 +60,6 @@ void DogSolver::single_optimization() {
 
   if (state->dog.has_creases()) {
     StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
-    const DogEdgeStitching& eS = state->dog.getEdgeStitching();
     compConst.add_constraints(&stitchingConstraints);
 
     // Check for any positional constraints (for now these will only be folding constraints)
