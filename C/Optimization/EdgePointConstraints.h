@@ -10,7 +10,7 @@
 
 class EdgePointConstraints : public Constraints {
 public:
-	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) {
+	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) : edgePoints(edgePoints) {
 		mat2_to_vec(edgePointCoords, bc); // flatten to a vector
 		const_n = bc.rows(); approx_nnz = 2*const_n; // 2 points per edge
 	};

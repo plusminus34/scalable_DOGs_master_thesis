@@ -67,6 +67,7 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 	Eigen::VectorXd edgePointsBc(edgePointConstraints.getEdgePointConstraints());
 	Eigen::MatrixXd targetEdgePoints; vec_to_mat2(edgePointsBc,targetEdgePoints);
 	std::vector<EdgePoint> edgePoints = edgePointConstraints.getEdgePoints();
+	std::cout << "edgePoints.size()= " << edgePoints.size() << std::endl;
 	Eigen::MatrixXd constrainedEdgePoints = EdgePoint::getPositionInMesh(edgePoints, dog.getV());
 	std::cout << "constrainedEdgePoints = " << constrainedEdgePoints << std::endl;
 
