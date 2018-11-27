@@ -6,7 +6,6 @@ double GeneralizedProcrustes::solve(Dog& dog,
 		const PositionalConstraints& posConst,
         const StitchingConstraints& stitchingConstraints,
         /*const PositionalConstraints& EdgePointConstraints, TODO */
-        Eigen::MatrixXd& Vout,
         int fixed_mesh_i) {
 
 	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);

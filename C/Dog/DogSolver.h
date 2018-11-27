@@ -32,6 +32,9 @@ public:
 
 		double folding_angle = 0;
 		double curve_timestep = 0;
+
+		bool align_procrustes;
+		bool arap_guess;
 	};
 
 	DogSolver::Params p;
