@@ -10,9 +10,9 @@ using namespace std;
 DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, const int& max_flow_project_iter, const int& max_lbfgs_proj_iter, 
 								const int& penalty_repetitions): dog_init(dog), flow_t(flow_t), max_flow_project_iter(max_flow_project_iter),
 									 max_lbfgs_proj_iter(max_lbfgs_proj_iter), penalty_repetitions(penalty_repetitions),
-									 m_solver(ai,aj,K), lbfgsWithPenalty(max_lbfgs_proj_iter,penalty_repetitions) {
+									 /*m_solver(ai,aj,K),*/ lbfgsWithPenalty(max_lbfgs_proj_iter,penalty_repetitions) {
 	first_solve = true;
-	m_solver.set_type(-2);
+	//m_solver.set_type(-2);
 }
 
 double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x) {
@@ -70,17 +70,19 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	A = A + 0*id_all; // todo: stupid but I want to add zeros explicitly
 	
     if (first_solve) {
+    	/*
 		m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
 	    m_solver.set_pattern();
     	m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
     	m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
     	m_solver.iparm[20] = 1;
 	    m_solver.analyze_pattern();
+	    */
 	    first_solve = false;
     } else {
-		m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
+		//m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
     }
-    m_solver.factorize();
+    //m_solver.factorize();
 
 	Eigen::VectorXd zeroV(J.rows()); zeroV.setZero();
 	Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
@@ -88,7 +90,7 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	
 	Eigen::VectorXd res;
 	//cout << "solving!" << endl;
-	m_solver.solve(g_const,res);
+	//m_solver.solve(g_const,res);
 
 	for (int d_i = 0; d_i < g.rows(); d_i++) {
 		d[d_i] = res[d_i];

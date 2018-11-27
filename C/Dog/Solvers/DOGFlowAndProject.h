@@ -35,8 +35,10 @@ private:
 
 	LBFGSWithPenalty lbfgsWithPenalty;
 
+	/*
 	// Linear system solving related
 	PardisoSolver m_solver;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
+	*/
 };

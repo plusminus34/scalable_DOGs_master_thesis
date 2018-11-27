@@ -69,6 +69,7 @@ file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
 file(GLOB SRC_GUI Gui/*.cpp)
 file(GLOB SRC_GEOMETRY_PRIMITIVES GeometryPrimitives/*.cpp)
 
+ 
 add_library(libpardiso500-MACOS-X86-64 SHARED IMPORTED)
 set_target_properties(libpardiso500-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso500-MACOS-X86-64.dylib")
 add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES})
