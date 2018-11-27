@@ -40,7 +40,7 @@ double GeneralizedProcrustes::solve(Dog& dog,
 					edge = eS.edge_const_2[i];
 				}
 				EdgePoint edgePoint(edge,t);
-				edgePoints.push_back(edgePoint);
+				edgePoints[i] = edgePoint;
 				edgePointCoords.row(i) = edgePoint.getPositionInMesh(dog.getV());
 			}
 			EdgePointConstraints submeshEdgePtConst(edgePoints, edgePointCoords);
