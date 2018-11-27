@@ -76,8 +76,9 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon_2>& gridPolygons, const std::vector<std::vector<bool>>& sqr_in_polygon,
 					std::vector<Eigen::MatrixXd>& submeshVList, std::vector<Eigen::MatrixXi>& submeshFList, std::vector<std::vector<bool>>& submeshV_is_inner,
 					Eigen::MatrixXd& V, Eigen::MatrixXi& F) {
-	int submesh_n = gridPolygons.size();
-	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n); submeshV_is_inner.resize(submesh_n);
+	int grid_polygons_n = gridPolygons.size();
+	int submesh_n = sqr_in_polygon.size();
+	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n); submeshV_is_inner.resize(grid_polygons_n);
 
 	
 	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
@@ -248,10 +249,10 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 			PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
 			
 			if (submesh_pt_to_V_ren.count(pt)) {
-				std::cout << "pt has key in submesh "  << std::endl;
+				//std::cout << "pt has key in submesh "  << std::endl;
 				polygons_v_ren_indices[poly_i][poly_vi] = submesh_pt_to_V_ren[pt];
 			} else if (poly_fold_pt_to_V_ren.count(pt)) {
-				std::cout << "pt has key in fold map" << std::endl;
+				//std::cout << "pt has key in fold map" << std::endl;
 				polygons_v_ren_indices[poly_i][poly_vi] = poly_fold_pt_to_V_ren[pt];
 			} else {
 				std::cout << "Error! Could not map point to polygon " << std::endl;

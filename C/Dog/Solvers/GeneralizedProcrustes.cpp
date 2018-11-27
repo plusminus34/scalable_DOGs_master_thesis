@@ -9,6 +9,7 @@ double GeneralizedProcrustes::solve(Dog& dog,
         int fixed_mesh_i) {
 
 	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
+	exit(1);
 
 	procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));
 
