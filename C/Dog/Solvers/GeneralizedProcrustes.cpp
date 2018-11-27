@@ -60,18 +60,18 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 	// Build set of positional constraint points in the mesh
 	Eigen::VectorXi b(posConst.getPositionIndices()); Eigen::VectorXd bc(posConst.getPositionVals());
 	Eigen::MatrixXd targetPointPositions; vec_to_mat2(bc,targetPointPositions);
-	std::cout << "b = " << b << std::endl;
+	//std::cout << "b = " << b << std::endl;
 	Eigen::VectorXi bV(b.rows()/3); for (int i = 0; i < bV.rows(); i++) bV(i) = b(i);
 	Eigen::MatrixXd constrainedPositions(bV.rows(),3); igl::slice(dog.getV(),bV,1, constrainedPositions);
-	std::cout << "constrainedPositions = " << constrainedPositions << std::endl;
+	//std::cout << "constrainedPositions = " << constrainedPositions << std::endl;
 	
 	// Build set of positional constraint points from edge point constraints
 	Eigen::VectorXd edgePointsBc(edgePointConstraints.getEdgePointConstraints());
 	Eigen::MatrixXd targetEdgePoints; vec_to_mat2(edgePointsBc,targetEdgePoints);
 	std::vector<EdgePoint> edgePoints = edgePointConstraints.getEdgePoints();
-	std::cout << "edgePoints.size()= " << edgePoints.size() << std::endl;
+	//std::cout << "edgePoints.size()= " << edgePoints.size() << std::endl;
 	Eigen::MatrixXd constrainedEdgePoints = EdgePoint::getPositionInMesh(edgePoints, dog.getV());
-	std::cout << "constrainedEdgePoints = " << constrainedEdgePoints << std::endl;
+	//std::cout << "constrainedEdgePoints = " << constrainedEdgePoints << std::endl;
 
 
 	Eigen::MatrixXd src(constrainedPositions.rows() + constrainedEdgePoints.rows(),3);
@@ -79,14 +79,14 @@ void GeneralizedProcrustes::procrustes_on_submesh(Dog& dog, int submesh_i,
 	Eigen::MatrixXd target(targetPointPositions.rows()+targetEdgePoints.rows(), 3);
 	target << targetPointPositions, targetEdgePoints;
 
-	std::cout << "src = " << src << std::endl;
-	std::cout << "target = " << target << std::endl;
+	//std::cout << "src = " << src << std::endl;
+	//std::cout << "target = " << target << std::endl;
 
 	// rigid motion (and scale which we ignore for now)
 	Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
 	igl::procrustes(src,target,false,false,scale_dummy,R,t);
 
-	std::cout << "R = " << R << std::endl;
+	//std::cout << "R = " << R << std::endl;
 
 	// go through mesh vertices and set them
 	int submesh_min_i, submesh_max_i; dog.get_submesh_min_max_i(submesh_i, submesh_min_i, submesh_max_i);
@@ -107,7 +107,7 @@ PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from
 		int submesh_i, const PositionalConstraints& posConst) {
 	int vn = dog.getV().rows();
 	Eigen::VectorXi bGlobal(posConst.getPositionIndices()); Eigen::VectorXd bcGlobal(posConst.getPositionVals());
-	std::cout << "bGlobal = " << bGlobal << std::endl;
+	//std::cout << "bGlobal = " << bGlobal << std::endl;
 	std::vector<bool> b_in_submesh(bGlobal.rows()/3); 
 	for (int i = 0; i < b_in_submesh.size(); i++) b_in_submesh[i] = (dog.v_to_submesh_idx(bGlobal[i]%vn) == submesh_i);
 	int pos_const_in_submesh = std::count(b_in_submesh.begin(), b_in_submesh.end(), true);
@@ -115,7 +115,7 @@ PositionalConstraints GeneralizedProcrustes::submesh_positional_constraints_from
 	Eigen::VectorXi bSubmesh(3*pos_const_in_submesh); Eigen::VectorXd bcSubmesh(bSubmesh.size());
 	int cnt = 0;
 	for (int i = 0; i < bGlobal.rows(); i++) {
-		if (b_in_submesh[i/3]) {
+		if (b_in_submesh[i%b_in_submesh.size()]) {
 			bSubmesh(cnt) = bGlobal[i];
 			bcSubmesh(cnt) = bcGlobal[i];
 			cnt++;
@@ -132,18 +132,19 @@ int GeneralizedProcrustes::get_best_aligned_submesh(const Dog& dog, const Positi
 	Eigen::VectorXi b(posConst.getPositionIndices()); Eigen::VectorXd bc(posConst.getPositionVals());
 	Eigen::VectorXd constrained_pts_coords; igl::slice(dog.getV_vector(),b,1, constrained_pts_coords);
 	for (int pos_i = 0; pos_i < b.rows(); pos_i++) {
-		std::cout << " b(i) = " << b(pos_i) << " const for submesh = " << dog.v_to_submesh_idx(b(pos_i)%vn) << std::endl;
+		//std::cout << " b(i) = " << b(pos_i) << " const for submesh = " << dog.v_to_submesh_idx(b(pos_i)%vn) << std::endl;
 		if (bc(pos_i) != constrained_pts_coords(pos_i)) {
 			int submesh_i = dog.v_to_submesh_idx(b(pos_i)%vn);
 			non_satisfied_const_per_submesh[pos_i]++;
 		}
 	}
 	// dbg
+	/*
 	int cnt = 0;
 	for (auto non_sat_consts: non_satisfied_const_per_submesh) {
 		std::cout << "submesh " << cnt << " has " << non_sat_consts << " non satsified constraints" << std::endl;
 		cnt++;
-	}
+	}*/
 	auto min_el_pt = std::min_element(non_satisfied_const_per_submesh.begin(), non_satisfied_const_per_submesh.end());
 	return min_el_pt-non_satisfied_const_per_submesh.begin();
 }

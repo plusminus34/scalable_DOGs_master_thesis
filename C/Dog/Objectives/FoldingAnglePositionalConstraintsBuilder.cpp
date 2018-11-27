@@ -68,4 +68,5 @@ void FoldingAnglePositionalConstraintsBuilder::get_positional_constraints(Eigen:
 			e1_p1_new_loc(1),edge2_p1(1),edge2_p2(1),
 			e1_p1_new_loc(2),edge2_p1(2),edge2_p2(2);
 	b_out = b;
+	std::cout << "bc_out = " << bc_out << std::endl;
 }
