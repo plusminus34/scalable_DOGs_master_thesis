@@ -90,17 +90,22 @@ void DogSolver::single_optimization() {
     */
     compConst.add_constraints(&posConst);
   }
+  if (edgeCoords.rows()) {
+    EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
+    compConst.add_constraints(&edgePtConst);
+  }
   
+    std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 
   //state->flowProject.solve_single_iter(x0, compObj, compConst, x);
   //state->flowProject.solve_constrained(x0, compObj, compConst, x);
-  /*
+  
   LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
   lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
 
   state->flowProject.resetSmoother();
   state->dog.update_V_vector(x);
-  */
+  
   constraints_deviation = compConst.Vals(x).squaredNorm();
   objective = compObj.obj(x);
 }

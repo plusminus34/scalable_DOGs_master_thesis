@@ -20,6 +20,9 @@ public:
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
+		//std::cout << "edgeCoords.rows() = " << edgeCoords.rows() << std::endl;
+		//std::cout << "bc.rows() = " << edgeCoords.rows() << std::endl;
+		//std::cout << "(edgeCoords-bc).norm() = " << (edgeCoords-bc).norm() << std::endl;
 		return edgeCoords-bc;
 	}
 

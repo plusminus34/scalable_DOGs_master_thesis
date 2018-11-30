@@ -19,7 +19,7 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 	for (int i = 0; i < vn-2; i++) {
 		Eigen::RowVector3d e1 = (coords.row(i+1)-coords.row(i)).normalized();
 		Eigen::RowVector3d e2 = (coords.row(i+2)-coords.row(i+1)).normalized();
-		double angle = get_angle(e1,e2); //cout << "angle = " << angle << endl;
+		double angle = get_angle_and_orientation(e1,e2); //cout << "angle = " << angle << endl;
 		k[i] = 2*sin(angle)/(coords.row(i+2)-coords.row(i)).norm();
 
 		/*
@@ -50,7 +50,7 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 		} else {
 			Eigen::RowVector3d b1 = e1.cross(e2); // First binormal
 			Eigen::RowVector3d b2 = e2.cross(e3); // Second binormal
-			double angle = get_angle(b1,b2);
+			double angle = get_angle_and_orientation(b1,b2);
 			// This quantity, as opposed to curvature is defined on the edge and so normalized by it's length
 			t[i] = sin(angle)/(coords.row(i+2)-coords.row(i+1)).norm();
 			//t[i] = 0;
@@ -121,8 +121,12 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 	return coords;
 }
 
-double Curve::get_angle(Eigen::RowVector3d e1,Eigen::RowVector3d e2) {
-	return acos(e1.dot(e2)/(e1.norm()*e2.norm()));
+double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d e2) {
+	auto angle = acos(e1.dot(e2)/(e1.norm()*e2.norm()));
+	auto n = e1.cross(e2);
+	Eigen::Matrix3d orientMat; orientMat.row(0) = e1; orientMat.row(1) = e2; orientMat.row(2) = n;
+	if (orientMat.determinant() < 0) angle = -1*angle;
+	return angle;
 }
 
 void Curve::getTranslationAndFrameFromCoords(const Eigen::MatrixXd& coords, Eigen::RowVector3d& T, Eigen::Matrix3d& F) {
