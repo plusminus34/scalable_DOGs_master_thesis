@@ -44,8 +44,8 @@ struct EdgePoint {
   Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
   Eigen::RowVector3d getPositionInMesh(const Eigen::VectorXd& x) const {
     int vn = x.rows()/3;
-    Eigen::Vector3d v1(x(edge.v1),x(vn+edge.v1),x(2*vn+edge.v1));
-    Eigen::Vector3d v2(x(edge.v2),x(vn+edge.v2),x(2*vn+edge.v2));
+    Eigen::RowVector3d v1(x(edge.v1),x(vn+edge.v1),x(2*vn+edge.v1));
+    Eigen::RowVector3d v2(x(edge.v2),x(vn+edge.v2),x(2*vn+edge.v2));
     return t * v1 + (1-t) * v2;
   }
   static Eigen::MatrixXd getPositionInMesh(const std::vector<EdgePoint>& edgePoints, const Eigen::MatrixXd& V) {
