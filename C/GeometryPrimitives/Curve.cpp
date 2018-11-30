@@ -104,7 +104,7 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 		
 		double euc_l = e_b.norm();
 		double edge_torsion = t[i-3];
-		double t_alpha = asin(edge_torsion*euc_l);
+		double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
 		// Rotate the binormal by the angle given by the torsion and lengths
 		Eigen::RowVector3d b = old_b;
 		if (t_alpha > 1e-10) {
@@ -122,7 +122,8 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 }
 
 double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d e2) {
-	auto angle = acos(e1.dot(e2)/(e1.norm()*e2.norm()));
+	auto dot_prod = e1.dot(e2)/(e1.norm()*e2.norm());
+	auto angle = acos(clip(dot_prod,-1,1));
 	auto n = e1.cross(e2);
 	Eigen::Matrix3d orientMat; orientMat.row(0) = e1; orientMat.row(1) = e2; orientMat.row(2) = n;
 	if (orientMat.determinant() < 0) angle = -1*angle;
@@ -137,7 +138,7 @@ void Curve::getTranslationAndFrameFromCoords(const Eigen::MatrixXd& coords, Eige
 	//cout << "coords.row(1) = " << coords.row(1) << endl;
 	//cout << "coords.row(2) = " << coords.row(2) << endl;
 	double len = (coords.row(2)-coords.row(1)).norm();
-	double alpha = acos((coords.row(2)-coords.row(1)).normalized().dot((coords.row(1)-coords.row(0)).normalized()));
+	double alpha = acos(clip((coords.row(2)-coords.row(1)).normalized().dot((coords.row(1)-coords.row(0)).normalized()),-1,1));
 	//cout << "alpha = " << alpha << endl;
 	//cout << "coords.row(1) + len[1]*(cos(0.5*alpha)*T1+sin(0.5*alpha)*N1) = " << coords.row(1) + len*(cos(0.5*alpha)*t1+sin(0.5*alpha)*(n1)) << endl;
 	//exit(1);
@@ -150,13 +151,13 @@ double Curve::get_angle_from_lengths_and_k(double l1, double l2, double k) {
 	double s= s1+s2; // Get the full arc of the circle with curvature k
 	// now get the euc length from arc length
 	double euc = arc_to_euc(s,k);
-	return asin(k*euc/2);
+	return asin(clip(k*euc/2,-1,1));
 }
 
 double Curve::euc_to_arc(double arc, double k) {
 	// see http://mathworld.wolfram.com/CircularSegment.html
 	double R = 1./k;
-	double theta = 2*asin(arc/(2*R));
+	double theta = 2*asin(clip(arc/(2*R),-1,1));
 	return R*theta;
 }
 
@@ -165,4 +166,16 @@ double Curve::arc_to_euc(double s, double k) {
 	double R = 1./k;
 	double theta = s/R;
 	return 2*R*sin(0.5*theta);
+}
+
+void Curve::print_geometric_represenation() {
+	std::cout << "curve with " << 1+len.size() << " points" << std::endl;
+	std::cout << "lengths: "; for (auto l: len) std::cout << " " << l << ","; std::cout<<std::endl;
+	std::cout << "curvatures: "; for (auto ki: k) std::cout << " " << ki << ","; std::cout<<std::endl;
+std::cout << "torsions: "; for (auto ti: t) std::cout << " " << ti << ","; std::cout<<std::endl;
+	//std::vector<double> len, k, t;
+}
+
+double Curve::clip(double n, double lower, double upper) {
+  return std::max(lower, std::min(n, upper));
 }

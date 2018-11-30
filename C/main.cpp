@@ -20,7 +20,7 @@ DogSolver dogSolver;
 ModelViewer modelViewer(state, dogSolver);
 
 double timestep = 0;
-Curve* srcCurve = NULL; //Curve* targetCurve = NULL;
+Curve* srcCurve = NULL; Curve* targetCurve = NULL;
 Eigen::MatrixXd targetCurveCoords;
 
 const int DEFAULT_GRID_RES = 21;
@@ -101,10 +101,18 @@ bool callback_pre_draw_curve(igl::opengl::glfw::Viewer& viewer) {
   Eigen::Matrix3d frame; frame.setIdentity(); Eigen::RowVector3d t; t.setZero();
 
   Curve targetCur(targetCurveCoords);
+  
+  std::cout << "first curve " << endl;
+  targetCur.print_geometric_represenation(); 
+  std::cout << "second curve " << endl;
+  targetCurve->print_geometric_represenation();
+  //for (auto targetCur.length)
+  int x; cout << "check " << endl; cin >> x;
+
   Curve intCurve(*srcCurve,targetCur, timestep);
   Eigen::MatrixXd intCurveCoords = intCurve.getCoords(t,frame);
 
-  //draw_curve(viewer, targetCurveCoords, Eigen::RowVector3d(1,0,0));
+  draw_curve(viewer, targetCurveCoords, Eigen::RowVector3d(1,0,0));
   draw_curve(viewer, intCurveCoords, Eigen::RowVector3d(0,0,0));
 
   std::cout << "targetCurveCoords.rows() = " << targetCurveCoords.rows() << endl;
@@ -147,10 +155,10 @@ int main(int argc, char *argv[]) {
     //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(1);}
 
     srcCurve = new Curve(len,curvature1, torsion1);
-    Curve targetCurve(len,curvature2, torsion2);
+    targetCurve = new Curve(len,curvature2,torsion2);//Curve targetCurve(len,curvature2, torsion2);
 
     Eigen::Matrix3d frame; frame.setIdentity(); Eigen::RowVector3d t; t.setZero();
-    targetCurveCoords = targetCurve.getCoords(t,frame);
+    targetCurveCoords = targetCurve->getCoords(t,frame);
 
     viewer.callback_key_down = callback_key_down;
     viewer.callback_pre_draw = callback_pre_draw_curve; // calls at each frame
