@@ -50,27 +50,15 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
       jacobianIJV_V[cnt++] = Eigen::Triplet<double>(const_i,JacobianIJV[i].col(),JacobianIJV[i].value());
     }
   }
-  //std::cout << "JacobianIJV_V.size() = " << jacobianIJV_V.size() << " JacobianIJV.size()/3 = " << JacobianIJV.size()/3 << std::endl;
-  //std::cout << "const_num = " << const_i+1 << " compConst.getConstNum()/3 = " << compConst.getConstNum()/3 << std::endl;
   
   Eigen::SparseMatrix<double> Jacobian(compConst.getConstNum()/3, vn);
   Jacobian.setFromTriplets(jacobianIJV_V.begin(),jacobianIJV_V.end());
   
   arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
-  
-  //std::cout << "Other jacobian = " << compConst.Jacobian(x) << std::endl;
-  //std::cout << "Jacobian = " << Jacobian << std::endl;
-  
-  //std::cout << "stitchConst.Vals(x) = " << stitchConst.Vals(x) << std::endl;
-  //std::cout << "edgePointConstraints.Vals(x) = " << edgePointConstraints.Vals(x) << std::endl;
-  //Eigen::VectorXd eq_vals(compConst.Vals(x));
-  //Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
-  //std::cout << "eq_vals_V.rows() = " << eq_vals_V.rows() << " and Jacobian.rows() = " << Jacobian.rows() << std::endl;
   Eigen::MatrixXd stitchingConstRhs(stitchConst.getConstNum()/3,3); stitchingConstRhs.setZero();
   auto edge_p_vec(edgePointConstraints.getEdgePointConstraints());
   Eigen::MatrixXd edgePtsRhs; vec_to_mat2(edge_p_vec, edgePtsRhs);
   Eigen::MatrixXd rhs(stitchingConstRhs.rows()+edgePtsRhs.rows(),3); rhs << stitchingConstRhs, edgePtsRhs;
-  std::cout << "rhs = " << rhs << std::endl;
   
   arap_solve_linear_constraints(bc_V,rhs,arapData,dog.getVMutable());
   //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
@@ -96,7 +84,6 @@ IGL_INLINE bool DOGGuess::arap_precomputation_linear_equalities(
   // number of vertices
   const int n = V.rows();
   data.n = n;
-  std::cout << "n = " << n << std::endl;
   assert((b.size() == 0 || b.maxCoeff() < n) && "b out of bounds");
   assert((b.size() == 0 || b.minCoeff() >=0) && "b out of bounds");
   // remember b
