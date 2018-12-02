@@ -20,17 +20,14 @@ public:
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
-		//std::cout << "edgeCoords.rows() = " << edgeCoords.rows() << std::endl;
-		//std::cout << "bc.rows() = " << edgeCoords.rows() << std::endl;
-		//std::cout << "(edgeCoords-bc).norm() = " << (edgeCoords-bc).norm() << std::endl;
 		return edgeCoords-bc;
 	}
 
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
 		int vn = x.rows()/3;
 		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
-		int const_n = 0;
-		for (int b_i = 0; b_i < edgePoints.size(); b_i++ ) {
+		int const_n = 0; int edge_points_n = edgePoints.size();
+		for (int b_i = 0; b_i < edge_points_n; b_i++ ) {
 			int v1 = edgePoints[b_i].edge.v1, v2 = edgePoints[b_i].edge.v2;
 			double t = edgePoints[b_i].t;
 
@@ -38,14 +35,17 @@ public:
 			IJV.push_back(Eigen::Triplet<double>(const_n, v1, t));
 			IJV.push_back(Eigen::Triplet<double>(const_n, v2, 1-t));
 
-			IJV.push_back(Eigen::Triplet<double>(const_n+1, vn+v1, t));
-			IJV.push_back(Eigen::Triplet<double>(const_n+1, vn+v2, 1-t));
+			IJV.push_back(Eigen::Triplet<double>(edge_points_n+const_n, vn+v1, t));
+			IJV.push_back(Eigen::Triplet<double>(edge_points_n+const_n, vn+v2, 1-t));
 
-			IJV.push_back(Eigen::Triplet<double>(const_n+2, 2*vn+v1, t));
-			IJV.push_back(Eigen::Triplet<double>(const_n+2, 2*vn+v2, 1-t));
+			IJV.push_back(Eigen::Triplet<double>(2*edge_points_n+const_n, 2*vn+v1, t));
+			IJV.push_back(Eigen::Triplet<double>(2*edge_points_n+const_n, 2*vn+v2, 1-t));
 
-			const_n+=3;
+			const_n++;
 		}
+		Eigen::SparseMatrix<double> checking(edge_points_n*3,x.rows());
+		checking.setFromTriplets(IJV.begin(),IJV.end());
+		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
 		return IJV;
 	}
 	

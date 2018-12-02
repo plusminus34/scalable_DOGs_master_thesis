@@ -63,11 +63,16 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   
   //std::cout << "stitchConst.Vals(x) = " << stitchConst.Vals(x) << std::endl;
   //std::cout << "edgePointConstraints.Vals(x) = " << edgePointConstraints.Vals(x) << std::endl;
-  Eigen::VectorXd eq_vals(compConst.Vals(x));
-  Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
+  //Eigen::VectorXd eq_vals(compConst.Vals(x));
+  //Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
   //std::cout << "eq_vals_V.rows() = " << eq_vals_V.rows() << " and Jacobian.rows() = " << Jacobian.rows() << std::endl;
+  Eigen::MatrixXd stitchingConstRhs(stitchConst.getConstNum(),3); stitchingConstRhs.setZero();
+  auto edge_p_vec(edgePointConstraints.getEdgePointConstraints());
+  Eigen::MatrixXd edgePtsRhs; vec_to_mat2(edge_p_vec, edgePtsRhs);
+  Eigen::MatrixXd rhs(stitchingConstRhs.rows()+edgePtsRhs.rows(),3); rhs << stitchingConstRhs, edgePtsRhs;
+  std::cout << "rhs = " << rhs << std::endl;
   
-  arap_solve_linear_constraints(bc_V,eq_vals_V,arapData,dog.getVMutable());
+  arap_solve_linear_constraints(bc_V,rhs,arapData,dog.getVMutable());
   //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
 	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
 
