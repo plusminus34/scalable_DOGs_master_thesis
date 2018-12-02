@@ -35,7 +35,7 @@ private:
   typename DerivedU>
 IGL_INLINE bool arap_solve_linear_constraints(
   const Eigen::PlainObjectBase<Derivedbc> & bc,
-  const Eigen::RowVectorXd& linear_const_vals,
+  const Eigen::MatrixXd& linear_const_vals,
   igl::ARAPData & data,
   Eigen::PlainObjectBase<DerivedU> & U);
 
