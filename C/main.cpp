@@ -107,7 +107,7 @@ bool callback_pre_draw_curve(igl::opengl::glfw::Viewer& viewer) {
   std::cout << "second curve " << endl;
   targetCurve->print_geometric_represenation();
   //for (auto targetCur.length)
-  int x; cout << "check " << endl; cin >> x;
+  //int x; cout << "check " << endl; cin >> x;
 
   Curve intCurve(*srcCurve,targetCur, timestep);
   Eigen::MatrixXd intCurveCoords = intCurve.getCoords(t,frame);
@@ -149,10 +149,10 @@ int main(int argc, char *argv[]) {
     int pts_n = 20;
     std:vector<double> len,curvature1,torsion1, curvature2,torsion2;
     for (int i = 0; i < pts_n-1; i++) len.push_back(1);
-    for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.05*((pts_n-2)/2.-i));}
-    for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(0);}
-    //for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(1);}
-    //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(1);}
+    //for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.05*((pts_n-2)/2.-i));}
+    //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(0);}
+    for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.2);}
+    for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(0.05*((pts_n-2)/2.-i));}
 
     srcCurve = new Curve(len,curvature1, torsion1);
     targetCurve = new Curve(len,curvature2,torsion2);//Curve targetCurve(len,curvature2, torsion2);

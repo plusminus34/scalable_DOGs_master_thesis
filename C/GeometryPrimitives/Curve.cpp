@@ -122,37 +122,39 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 }
 
 double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d e2) {
-	auto dot_prod = e1.dot(e2)/(e1.norm()*e2.norm());
-	auto angle = acos(clip(dot_prod,-1,1));
-	std::cout << "e1 = " << e1 << " e2 = " << e2 << std::endl;
-	std::cout << "dot_prod = " << dot_prod << std::endl;
-	if (angle == 0) return angle;
-	// rotate e1,e2,n such that e1 will be on the x axis and n on the z
-	Eigen::Matrix3d orthFrameTarget; orthFrameTarget.setIdentity();
-	//auto orth1 = e1.normalized(); auto orth2 = (e2-orth1.dot(e2)*orth1).normalized();
-	auto orth1 = (e1+e2).normalized(); auto orth2 = (e1-e2).normalized();
+	auto vec_norm_prod = e1.norm()*e2.norm();
+	auto dot_prod = e1.dot(e2)/vec_norm_prod;
+	auto cos_angle = clip(dot_prod,-1,1);
+	if (cos_angle == 1) return acos(cos_angle);
+
 	/*
-	Eigen::Matrix3d orthFrameSource; orthFrameSource.row(0) = orth1; orthFrameSource.row(1) = orth2; orthFrameSource.row(2) = orth1.cross(orth2);
-
-	auto rot = orthFrameSource.transpose()*orthFrameTarget;
-	std::cout << "rot.determinant() = " << rot.determinant() << std::endl;
+	auto sin_angle = clip(e1.cross(e2).norm()/vec_norm_prod,-1,1);
+	std::cout << "cos_angle = " << cos_angle << std::endl; 
+	std::cout << "sin_angle = " << sin_angle << std::endl;
+	auto tan_angle = sin_angle/cos_angle;
+	return atan(tan_angle);
 	*/
-	//auto v1_plane = e1*rot; auto v2_plane = e2*rot;
-	Eigen::Vector2d v1_plane(orth1.dot(e1),orth2.dot(e1)); Eigen::Vector2d v2_plane(orth1.dot(e2),orth2.dot(e2));
-	std::cout << "v1_plane = " << v1_plane << std::endl;
-	std::cout << "v2_plane = " << v2_plane << std::endl;
-	Eigen::Matrix2d orientMat; orientMat << v1_plane(0),v1_plane(1),v2_plane(0),v2_plane(1);;
 
-	// write e1,e2 in an orthonormal base
-	
-	//std::cout << "orth1 = " << orth1 << std::endl; std::cout << "orth2 = " << orth2 << std::endl;
-	//Eigen::Matrix2d orientMat; orientMat.row(0) << 1,0; orientMat.row(1) << e2.dot(orth1), e2.dot(orth2);
-	//std::cout << "orientMat.row(1) = " << orientMat.row(1) << std::endl;
-	//std::cout << "orientMat = " << orientMat << std::endl;
-	//std::cout << "orientMat.determinant() = " << orientMat.determinant() << std::endl;
-	//std::cout << "orientMat.determinant() < 0 = " << (orientMat.determinant() < 0) << std::endl;
-	if (orientMat.determinant() < 0) angle = -1*angle;
+	auto angle = acos(cos_angle);
+	auto b = e1.cross(e2).normalized();
+	Eigen::RowVector3d zero3d; zero3d.setZero();
+	auto diff1 = (e2-rotate_vec(e1, zero3d, b, angle)).norm();
+	auto diff2 = (e2-rotate_vec(e1, zero3d, b, -angle)).norm();
+	if (diff2 < diff1 ) angle = -angle;
+	//std::cout << "angle = " << angle << std::endl;
+	//std::cout << "diff1 = " << diff1 << " diff2 = " << diff2 << std::endl;
+	//std::cout << "b = " << b << std::endl;
 	return angle;
+
+	//auto angle = acos(cos_angle);
+	//std::cout << "e1 = " << e1 << " e2 = " << e2 << std::endl;
+	//std::cout << "dot_prod = " << dot_prod << std::endl;
+	
+
+
+	// = rotate_vec(e_b, zero3d, b, k_alpha);
+	
+	//return angle;
 }
 
 void Curve::getTranslationAndFrameFromCoords(const Eigen::MatrixXd& coords, Eigen::RowVector3d& T, Eigen::Matrix3d& F) {

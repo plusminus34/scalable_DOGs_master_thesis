@@ -15,7 +15,11 @@ public:
 	std::vector<EdgePoint> edgePoints;
 };
 
-// Describe a curve up to rigid motion with discrete edge lengths, curvature and torsion
+
+// Idea, when reading just keep a angle + "frame difference"
+// Then have a function to get curvature and torsion from the frame difference (you get a rotation around an axis)
+//	so check if it is a minus or a plus
+// The function should be consistent with a positive curvature and torsion at the beginning, I think
 class Curve {
 public:
 	Curve(const std::vector<double>& len, const std::vector<double>& k, const std::vector<double>& t);
