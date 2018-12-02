@@ -33,8 +33,8 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
 	vec_to_mat2(bc, bc_V);
 
   
-  //CompositeConstraints compConst({&stitchConst,&edgePointConstraints});
-  CompositeConstraints compConst({&stitchConst});
+  CompositeConstraints compConst({&stitchConst,&edgePointConstraints});
+  //CompositeConstraints compConst({&stitchConst});
   auto x = dog.getV_vector();
   auto JacobianIJV(compConst.JacobianIJV(x));
   
@@ -63,13 +63,18 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
  
   arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
   
+  std::cout << "Jacobian = " << Jacobian << std::endl;
+  std::cout << "stitchConst.Vals(x) = " << stitchConst.Vals(x) << std::endl;
+  std::cout << "edgePointConstraints.Vals(x) = " << edgePointConstraints.Vals(x) << std::endl;
   Eigen::VectorXd eq_vals(compConst.Vals(x));
   Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
+  std::cout << "eq_vals = " << eq_vals << std::endl;
+  std::cout << "eq_vals_V = " << eq_vals_V << std::endl;
+  
   arap_solve_linear_constraints(bc_V,eq_vals_V,arapData,dog.getVMutable());
   //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
 	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
 
-  // the order is x,y,z x1,y1,z1
 }
 
 template <
