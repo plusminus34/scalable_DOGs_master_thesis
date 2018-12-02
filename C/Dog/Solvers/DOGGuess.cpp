@@ -66,7 +66,7 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   //Eigen::VectorXd eq_vals(compConst.Vals(x));
   //Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
   //std::cout << "eq_vals_V.rows() = " << eq_vals_V.rows() << " and Jacobian.rows() = " << Jacobian.rows() << std::endl;
-  Eigen::MatrixXd stitchingConstRhs(stitchConst.getConstNum(),3); stitchingConstRhs.setZero();
+  Eigen::MatrixXd stitchingConstRhs(stitchConst.getConstNum()/3,3); stitchingConstRhs.setZero();
   auto edge_p_vec(edgePointConstraints.getEdgePointConstraints());
   Eigen::MatrixXd edgePtsRhs; vec_to_mat2(edge_p_vec, edgePtsRhs);
   Eigen::MatrixXd rhs(stitchingConstRhs.rows()+edgePtsRhs.rows(),3); rhs << stitchingConstRhs, edgePtsRhs;
