@@ -43,9 +43,6 @@ public:
 
 			const_n++;
 		}
-		Eigen::SparseMatrix<double> checking(edge_points_n*3,x.rows());
-		checking.setFromTriplets(IJV.begin(),IJV.end());
-		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
 		return IJV;
 	}
 	
