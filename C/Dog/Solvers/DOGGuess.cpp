@@ -40,7 +40,7 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   
   std::vector<Eigen::Triplet<double> > jacobianIJV_V(JacobianIJV.size()/3);
   
-  int const_i = -1; int prev_vec_const_i = -2;
+  int cnt = 0; int const_i = -1; int prev_vec_const_i = -2;
   for (int i = 0; i < JacobianIJV.size(); i++) {
     //std::cout << "JacobianIJV[i].col() = " << JacobianIJV[i].col() << std::endl;
     if (JacobianIJV[i].col() < vn) {
@@ -49,8 +49,9 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
         const_i++;
         prev_vec_const_i = JacobianIJV[i].row();
       }
-      //std::cout << "JacobianIJV[i].row() = " << JacobianIJV[i].row() << " and const_i = " << const_i << std::endl;
-      jacobianIJV_V[const_i] = Eigen::Triplet<double>(const_i,JacobianIJV[i].col(),JacobianIJV[i].value());
+      std::cout << "JacobianIJV[i].row() = " << JacobianIJV[i].row() << " and const_i = " << const_i << std::endl;
+      std::cout << "adding value " << JacobianIJV[i].value() << std::endl;
+      jacobianIJV_V[cnt++] = Eigen::Triplet<double>(const_i,JacobianIJV[i].col(),JacobianIJV[i].value());
     }
   }
   //std::cout << "JacobianIJV_V.size() = " << jacobianIJV_V.size() << " JacobianIJV.size()/3 = " << JacobianIJV.size()/3 << std::endl;
@@ -63,7 +64,9 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
  
   arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
   
-  std::cout << "Jacobian = " << Jacobian << std::endl;
+  //std::cout << "Other jacobian = " << compConst.Jacobian(x) << std::endl;
+  //std::cout << "Jacobian = " << Jacobian << std::endl;
+  
   std::cout << "stitchConst.Vals(x) = " << stitchConst.Vals(x) << std::endl;
   std::cout << "edgePointConstraints.Vals(x) = " << edgePointConstraints.Vals(x) << std::endl;
   Eigen::VectorXd eq_vals(compConst.Vals(x));
