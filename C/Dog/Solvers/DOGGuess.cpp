@@ -1,6 +1,7 @@
 #include "DOGGuess.h"
 
 #include "GeneralizedProcrustes.h"
+#include "../../Optimization/CompositeConstraints.h"
 
 using namespace igl;
 
@@ -10,8 +11,8 @@ DOGGuess::DOGGuess(const Dog& dog, const bool& align_procrustes, const bool& def
 	arapData.max_iter = 5;	
 }
 
-void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, const StitchingConstraints& stitchConst,
-		const EdgePointConstraints& edgePointConstraints) {
+void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, StitchingConstraints& stitchConst,
+		EdgePointConstraints& edgePointConstraints) {
 	if (align_procrustes){
 		GeneralizedProcrustes genProc; genProc.solve(dog, posConst, stitchConst);	
 	}
@@ -22,28 +23,41 @@ void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, const Stit
 }
 
 void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst, 
-					const StitchingConstraints& stitchConst,
-					const EdgePointConstraints& edgePointConstraints) {
+					StitchingConstraints& stitchConst,
+					EdgePointConstraints& edgePointConstraints) {
 	auto b = postConst.getPositionIndices(); auto bc = postConst.getPositionVals();
 	Eigen::VectorXi b_V(b.rows()/3); Eigen::MatrixXd bc_V(b_V.rows(),3);
 	for (int i =0 ; i < b_V.rows(); i++) {b_V(i) = b(i);}
 	vec_to_mat2(bc, bc_V);
 
+  CompositeConstraints compConst({&stitchConst,&edgePointConstraints});
+  auto x = dog.getV_vector();
+  auto JacobianIJV(compConst.JacobianIJV(x));
+  std::vector<Eigen::Triplet<double> > jacobianIJV_V(JacobianIJV.size()/3);
+  for (int i = 0; i < JacobianIJV.size()/3; i++) jacobianIJV_V[i] = JacobianIJV[i];
+
+  Eigen::SparseMatrix<double> Jacobian(compConst.getConstNum()/3, dog.getV().rows());
+  Jacobian.setFromTriplets(jacobianIJV_V.begin(),jacobianIJV_V.end());
+  //auto aeq(compConst.Jacobian(x));
+  Eigen::VectorXd eq_vals(compConst.Vals(x));
+  Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
 	// getPositionIndices,getPositionVals
-	igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
-	igl::arap_solve(bc_V,arapData,dog.getVMutable());
+  arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
+  arap_solve_linear_constraints(bc_V,eq_vals_V,arapData,dog.getVMutable());
+	//igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
+	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
 }
 
 template <
   typename DerivedV,
   typename DerivedF,
   typename Derivedb>
-IGL_INLINE bool arap_precomputation_linear_equalities(
+IGL_INLINE bool DOGGuess::arap_precomputation_linear_equalities(
   const Eigen::PlainObjectBase<DerivedV> & V,
   const Eigen::PlainObjectBase<DerivedF> & F,
   const int dim,
-  const Eigen::SparseMatrix<double>& Aeq,
   const Eigen::PlainObjectBase<Derivedb> & b,
+  const Eigen::SparseMatrix<double>& Aeq,
   ARAPData & data)
 {
   using namespace std;
@@ -181,7 +195,7 @@ IGL_INLINE bool arap_precomputation_linear_equalities(
 template <
   typename Derivedbc,
   typename DerivedU>
-IGL_INLINE bool arap_solve_linear_constraints(
+IGL_INLINE bool DOGGuess::arap_solve_linear_constraints(
   const Eigen::PlainObjectBase<Derivedbc> & bc,
   const Eigen::RowVectorXd& linear_const_vals,
   ARAPData & data,
@@ -292,7 +306,7 @@ IGL_INLINE bool arap_solve_linear_constraints(
     assert(Bcol.size() == data.n*data.dim);
     for(int c = 0;c<data.dim;c++)
     {
-      VectorXd Uc,Bc,bcc;//,Beq;
+      VectorXd Uc,Bc,bcc,Beq;
       Bc = Bcol.block(c*n,0,n,1);
       if(data.with_dynamics)
       {
@@ -302,9 +316,13 @@ IGL_INLINE bool arap_solve_linear_constraints(
       {
         bcc = bc.col(c);
       }
+      if (linear_const_vals.size()>0)
+      {
+        Beq = linear_const_vals.col(c);
+      }
       min_quad_with_fixed_solve(
         data.solver_data,
-        Bc,bcc,linear_const_vals,
+        Bc,bcc,Beq,
         Uc);
       U.col(c) = Uc;
     }

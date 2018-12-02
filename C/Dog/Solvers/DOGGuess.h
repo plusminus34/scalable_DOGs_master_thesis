@@ -10,13 +10,13 @@
 class DOGGuess {
 public:
 	DOGGuess(const Dog& dog, const bool& align_procrustes, const bool& deform_arap);
-	void guess(Dog& dog, const PositionalConstraints& posConst, const StitchingConstraints& stitchConst,
-		const EdgePointConstraints& edgePointConstraints);
+	void guess(Dog& dog, const PositionalConstraints& posConst, StitchingConstraints& stitchConst,
+		EdgePointConstraints& edgePointConstraints);
 
 	void update_ref(const Eigen::MatrixXd& Vref_i) {Vref = Vref_i;}
 private:
-	void guessARAP(Dog& dog, const PositionalConstraints& postConst, const StitchingConstraints& stitchConst,
-					const EdgePointConstraints& edgePointConstraints);
+	void guessARAP(Dog& dog, const PositionalConstraints& postConst, StitchingConstraints& stitchConst,
+					EdgePointConstraints& edgePointConstraints);
 
 	 template <
     typename DerivedV,
