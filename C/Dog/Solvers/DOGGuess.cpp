@@ -8,6 +8,7 @@ using namespace igl;
 DOGGuess::DOGGuess(const Dog& dog, const bool& align_procrustes, const bool& deform_arap) : dog_init(dog), align_procrustes(align_procrustes),
 															deform_arap(deform_arap) {
 	Ftri = Fsqr_to_F(dog.getF());
+  Vref = dog.getV();
 	arapData.max_iter = 5;	
 }
 
@@ -25,27 +26,50 @@ void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, StitchingC
 void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst, 
 					StitchingConstraints& stitchConst,
 					EdgePointConstraints& edgePointConstraints) {
+  int vn = dog.getV().rows();
 	auto b = postConst.getPositionIndices(); auto bc = postConst.getPositionVals();
 	Eigen::VectorXi b_V(b.rows()/3); Eigen::MatrixXd bc_V(b_V.rows(),3);
 	for (int i =0 ; i < b_V.rows(); i++) {b_V(i) = b(i);}
 	vec_to_mat2(bc, bc_V);
 
-  CompositeConstraints compConst({&stitchConst,&edgePointConstraints});
+  
+  //CompositeConstraints compConst({&stitchConst,&edgePointConstraints});
+  CompositeConstraints compConst({&stitchConst});
   auto x = dog.getV_vector();
   auto JacobianIJV(compConst.JacobianIJV(x));
+  
   std::vector<Eigen::Triplet<double> > jacobianIJV_V(JacobianIJV.size()/3);
-  for (int i = 0; i < JacobianIJV.size()/3; i++) jacobianIJV_V[i] = JacobianIJV[i];
-
-  Eigen::SparseMatrix<double> Jacobian(compConst.getConstNum()/3, dog.getV().rows());
+  
+  int const_i = -1; int prev_vec_const_i = -2;
+  for (int i = 0; i < JacobianIJV.size(); i++) {
+    //std::cout << "JacobianIJV[i].col() = " << JacobianIJV[i].col() << std::endl;
+    if (JacobianIJV[i].col() < vn) {
+      // Various IJV can refer to the same constraint, and this is how we determine when to increment const_i
+      if (prev_vec_const_i!= JacobianIJV[i].row()) {
+        const_i++;
+        prev_vec_const_i = JacobianIJV[i].row();
+      }
+      //std::cout << "JacobianIJV[i].row() = " << JacobianIJV[i].row() << " and const_i = " << const_i << std::endl;
+      jacobianIJV_V[const_i] = Eigen::Triplet<double>(const_i,JacobianIJV[i].col(),JacobianIJV[i].value());
+    }
+  }
+  //std::cout << "JacobianIJV_V.size() = " << jacobianIJV_V.size() << " JacobianIJV.size()/3 = " << JacobianIJV.size()/3 << std::endl;
+  //std::cout << "const_num = " << const_i+1 << " compConst.getConstNum()/3 = " << compConst.getConstNum()/3 << std::endl;
+  
+  Eigen::SparseMatrix<double> Jacobian(compConst.getConstNum()/3, vn);
   Jacobian.setFromTriplets(jacobianIJV_V.begin(),jacobianIJV_V.end());
+  
   //auto aeq(compConst.Jacobian(x));
+ 
+  arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
+  
   Eigen::VectorXd eq_vals(compConst.Vals(x));
   Eigen::MatrixXd eq_vals_V; vec_to_mat2(eq_vals,eq_vals_V);
-	// getPositionIndices,getPositionVals
-  arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
   arap_solve_linear_constraints(bc_V,eq_vals_V,arapData,dog.getVMutable());
-	//igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
+  //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
 	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
+
+  // the order is x,y,z x1,y1,z1
 }
 
 template <
@@ -66,6 +90,7 @@ IGL_INLINE bool DOGGuess::arap_precomputation_linear_equalities(
   // number of vertices
   const int n = V.rows();
   data.n = n;
+  std::cout << "n = " << n << std::endl;
   assert((b.size() == 0 || b.maxCoeff() < n) && "b out of bounds");
   assert((b.size() == 0 || b.minCoeff() >=0) && "b out of bounds");
   // remember b

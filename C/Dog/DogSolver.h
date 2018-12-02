@@ -24,7 +24,7 @@ public:
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
 
 	struct Params {
-		DogSolver::DeformationType deformationType;
+		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
 		double bending_weight = 1.;
 		double isometry_weight = 100.;
 		int max_lbfgs_routines = 400;
