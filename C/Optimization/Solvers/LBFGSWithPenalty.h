@@ -2,7 +2,7 @@
 
 #include "../Solver.h"
 
-class LBFGSWithPenalty : public ConstrainedSolver{
+class LBFGSWithPenalty : public ConstrainedSolver {
   
 public:
 	LBFGSWithPenalty(const int& max_lbfgs_iter, const int& penalty_repetitions): max_lbfgs_iter(max_lbfgs_iter), 

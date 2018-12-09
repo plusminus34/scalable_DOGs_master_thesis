@@ -7,6 +7,8 @@
 #include "Solvers/DOGFlowAndProject.h"
 #include "Solvers/DOGGuess.h"
 
+#include "../Optimization/Solvers/IpOptSolver.h"
+
 
 class DogSolver {
 public:
