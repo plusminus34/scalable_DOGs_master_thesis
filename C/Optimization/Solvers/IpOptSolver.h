@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Solver.h"
+
 #include <ifopt/variable_set.h>
 #include <ifopt/constraint_set.h>
 #include <ifopt/cost_term.h>
@@ -12,6 +13,7 @@ public:
 	// x0 is the initial guess, x is the result, the return value is the objective value
     virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, 
             Eigen::VectorXd& x);
+    
 };
 
 class IpOptVariables : public VariableSet {
