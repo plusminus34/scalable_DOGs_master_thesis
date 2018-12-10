@@ -68,20 +68,15 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	A.makeCompressed();
 	Eigen::SparseMatrix<double> id_all(A.rows(),A.rows()); id_all.setIdentity();
 	A = A + 0*id_all; // todo: stupid but I want to add zeros explicitly
-	
-    if (first_solve) {
-    	/*
-		m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
-	    m_solver.set_pattern();
-    	m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
-    	m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
-    	m_solver.iparm[20] = 1;
-	    m_solver.analyze_pattern();
-	    */
-	    first_solve = false;
-    } else {
-		//m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
-    }
+
+	Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
+	cout << "factorizing" << endl;
+    //solver.factorize(A);
+    solver.compute(A);
+	if(solver.info()!=Eigen::Success) {
+		cout << "Eigen Failure!" << endl;
+		exit(1);
+	}
     //m_solver.factorize();
 
 	Eigen::VectorXd zeroV(J.rows()); zeroV.setZero();
@@ -90,8 +85,8 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	
 	Eigen::VectorXd res;
 	//cout << "solving!" << endl;
-	//m_solver.solve(g_const,res);
-
+	res = solver.solve(g_const);
+	
 	for (int d_i = 0; d_i < g.rows(); d_i++) {
 		d[d_i] = res[d_i];
 	}
