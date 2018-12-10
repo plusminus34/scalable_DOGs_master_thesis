@@ -1,17 +1,31 @@
 #pragma once
 
 #include "../Solver.h"
+#include "lbfgs/LBFGSSolver.h"
 
-class LBFGS : public Solver{
+class LBFGS : public Solver {
   
 public:
-	LBFGS(int max_iter): max_iter(max_iter) {}
+	LBFGS(int max_iter) {
+        param.epsilon = 1e-5;
+        param.delta = 1e-5;
+        param.max_iterations = max_iter;
+
+        solver = new LBFGSpp::LBFGSSolver<double>(param);
+    }
+    ~LBFGS() {delete solver;}
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve(const Eigen::VectorXd& x0, Objective& obj, Eigen::VectorXd& x);
 
-	void set_max_iter(int max_iter) {max_iter = max_iter;}
+	void set_max_iter(int max_iter) {
+        param.max_iterations = max_iter;
+        delete solver;
+        solver = new LBFGSpp::LBFGSSolver<double>(param);
+    }
 private:
-	int max_iter;
+    LBFGSpp::LBFGSParam<double> param;
+    // Create solver and function object
+    LBFGSpp::LBFGSSolver<double>* solver;
 };
 
 class LBFGS_obj_grad_interface {

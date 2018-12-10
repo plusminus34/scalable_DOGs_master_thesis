@@ -19,6 +19,7 @@ ModelState state;
 DogSolver dogSolver;
 ModelViewer modelViewer(state, dogSolver);
 
+double curve_timestep_diff = 0;
 double timestep = 0;
 Curve* srcCurve = NULL; Curve* targetCurve = NULL;
 Eigen::MatrixXd targetCurveCoords;
@@ -62,6 +63,11 @@ void load_workspace() {
 void run_optimization() {
   if (!is_optimizing)
     return;
+  
+  if (curve_timestep_diff) {
+    dogSolver.p.curve_timestep += curve_timestep_diff;  
+    dogSolver.update_positional_constraints();
+  }
   dogSolver.single_optimization();
 }
 
@@ -200,6 +206,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Const obj", &dogSolver.p.const_obj_penalty, 0, 0, "%.4f");
       if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);

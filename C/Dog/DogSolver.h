@@ -33,7 +33,7 @@ public:
 
 	struct Params {
 		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
-		DogSolver::SolverType solverType = SOLVE_FLOW_PROJECT;
+		DogSolver::SolverType solverType = SOLVE_PENALTY;
 		double bending_weight = 1.;
 		double isometry_weight = 100.;
 		int max_lbfgs_routines = 400;
