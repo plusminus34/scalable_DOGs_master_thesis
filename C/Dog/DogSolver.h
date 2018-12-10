@@ -16,6 +16,12 @@ public:
 		DIHEDRAL_FOLDING = 0,
 		CURVE_DEFORMATION = 1
 	};
+	enum SolverType {
+		SOLVE_NON = 0,
+		SOLVE_FLOW_PROJECT = 1,
+		SOLVE_PENALTY = 2,
+		SOLVE_IPOPT = 3
+	};
 
 	DogSolver() : state(NULL) {};
 	void init_from_new_dog(Dog& dog, const QuadTopology& quadTop);
@@ -27,6 +33,7 @@ public:
 
 	struct Params {
 		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
+		DogSolver::SolverType solverType = SOLVE_FLOW_PROJECT;
 		double bending_weight = 1.;
 		double isometry_weight = 100.;
 		int max_lbfgs_routines = 400;

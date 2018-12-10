@@ -13,7 +13,7 @@ option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"          ON)
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package(LIBIGL REQUIRED QUIET)
-find_package(ifopt REQUIRED)
+#find_package(ifopt REQUIRED)
 
 # Dependencies are linked as INTERFACE targets unless libigl is compiled as a static library
 if(LIBIGL_USE_STATIC_LIBRARY)

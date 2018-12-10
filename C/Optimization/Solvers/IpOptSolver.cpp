@@ -1,5 +1,5 @@
 #include "IpOptSolver.h"
-
+/*
 #include <ifopt/problem.h>
 
 double IpOptSolver::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, 
@@ -20,3 +20,4 @@ double IpOptSolver::solve_constrained(const Eigen::VectorXd& x0, Objective& obj,
     ipopt.Solve(nlp);
     x = nlp.GetOptVariables()->GetValues();
 }
+*/

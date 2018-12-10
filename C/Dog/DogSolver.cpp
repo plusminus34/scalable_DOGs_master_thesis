@@ -97,15 +97,20 @@ void DogSolver::single_optimization() {
     compConst.add_constraints(&edgePtConst);
   }
   
-    std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+  std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 
-  //state->flowProject.solve_single_iter(x0, compObj, compConst, x);
-  //state->flowProject.solve_constrained(x0, compObj, compConst, x);
-  
-  //LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
-  //lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
-
-  state->flowProject.resetSmoother();
+  switch (p.solverType) {
+    case SOLVE_FLOW_PROJECT: {
+      state->flowProject.solve_single_iter(x0, compObj, compConst, x);
+      //state->flowProject.solve_constrained(x0, compObj, compConst, x);
+      state->flowProject.resetSmoother();
+      break;
+    }
+    case SOLVE_PENALTY: {
+      LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
+      lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
+    }
+  }
   state->dog.update_V_vector(x);
   
   constraints_deviation = compConst.Vals(x).squaredNorm();
