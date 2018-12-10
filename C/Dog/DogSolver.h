@@ -17,7 +17,7 @@ public:
 		CURVE_DEFORMATION = 1
 	};
 	enum SolverType {
-		SOLVE_NON = 0,
+		SOLVE_NONE = 0,
 		SOLVE_FLOW_PROJECT = 1,
 		SOLVE_PENALTY = 2,
 		SOLVE_IPOPT = 3

@@ -110,6 +110,14 @@ void DogSolver::single_optimization() {
       LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
       lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
     }
+    case SOLVE_IPOPT: {
+      //TODO implement
+      break;
+    }
+    case SOLVE_NONE: {
+      // Empty on purpose
+      break;
+    }
   }
   state->dog.update_V_vector(x);
   
