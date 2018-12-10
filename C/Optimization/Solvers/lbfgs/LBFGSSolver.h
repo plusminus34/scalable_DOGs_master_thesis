@@ -116,11 +116,11 @@ public:
             m_gradp.noalias() = m_grad;
 
             //cout << "step before = " << step << endl;
-            tmp = timer.getElapsedTime();
+            //tmp = timer.getElapsedTime();
             // Line search to update x, fx and gradient
             
             LineSearch<Scalar>::Backtracking(f, fx, x, m_grad, step, m_drt, m_xp, m_param);
-            ls_t += timer.getElapsedTime() - tmp;
+            //ls_t += timer.getElapsedTime() - tmp;
             //cout << "step after = " << step << endl;
 
             
@@ -181,7 +181,7 @@ public:
             Scalar yy = yvec.squaredNorm();
             m_ys[end] = ys;
 
-            tmp = timer.getElapsedTime();
+            //tmp = timer.getElapsedTime();
 
             // Recursive formula to compute d = -H * g
             m_drt.noalias() = -m_grad;
@@ -207,7 +207,7 @@ public:
                 m_drt.noalias() += (m_alpha[j] - beta) * sj;
                 j = (j + 1) % m_param.m;
             }
-            rst_t += timer.getElapsedTime() - tmp;
+            //rst_t += timer.getElapsedTime() - tmp;
             // step = 1.0 as initial guess
             step = Scalar(1.0);
             k++;

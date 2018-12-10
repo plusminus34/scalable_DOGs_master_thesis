@@ -2,13 +2,14 @@
 
 #include "../Solver.h"
 #include "lbfgs/LBFGSSolver.h"
+#include "igl/Timer.h"
 
 class LBFGS : public Solver {
   
 public:
 	LBFGS(int max_iter) {
-        param.epsilon = 1e-5;
-        param.delta = 1e-5;
+        param.epsilon = 1e-10;
+        param.delta = 1e-10;
         param.max_iterations = max_iter;
 
         solver = new LBFGSpp::LBFGSSolver<double>(param);
@@ -31,13 +32,25 @@ private:
 class LBFGS_obj_grad_interface {
 public:
     LBFGS_obj_grad_interface(const Objective& obj) : objective(obj) {}
-    double obj(const Eigen::VectorXd& x) {return objective.obj(x);}
-    void grad(const Eigen::VectorXd& x, Eigen::VectorXd& grad) { grad = objective.grad(x);}
+    double obj(const Eigen::VectorXd& x) {
+        auto t = timer.getElapsedTime();
+        auto obj =  objective.obj(x);
+        f_time += timer.getElapsedTime()-t;
+        return obj;
+    }
+    void grad(const Eigen::VectorXd& x, Eigen::VectorXd& grad) { 
+        auto t = timer.getElapsedTime();
+        grad = objective.grad(x);
+        g_time += timer.getElapsedTime()-t;
+    }
 
     double operator()(const Eigen::VectorXd& x, Eigen::VectorXd& g) {
         grad(x,g);
         return obj(x);
      }
+     double g_time = 0;
+     double f_time = 0;
 private:
 	const Objective& objective;
+    igl::Timer timer;
 };

@@ -65,7 +65,7 @@ void run_optimization() {
     return;
   
   if (curve_timestep_diff) {
-    dogSolver.p.curve_timestep += curve_timestep_diff;  
+    if (dogSolver.p.curve_timestep < 0.2) {dogSolver.p.curve_timestep += curve_timestep_diff;}
     dogSolver.update_positional_constraints();
   }
   dogSolver.single_optimization();
