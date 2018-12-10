@@ -55,6 +55,7 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   Jacobian.setFromTriplets(jacobianIJV_V.begin(),jacobianIJV_V.end());
   
   arap_precomputation_linear_equalities(Vref,Ftri,3,b_V,Jacobian,arapData);
+  //arap_precomputation_linear_equalities(dog.getV(),Ftri,3,b_V,Jacobian,arapData);
   Eigen::MatrixXd stitchingConstRhs(stitchConst.getConstNum()/3,3); stitchingConstRhs.setZero();
   auto edge_p_vec(edgePointConstraints.getEdgePointConstraints());
   Eigen::MatrixXd edgePtsRhs; vec_to_mat2(edge_p_vec, edgePtsRhs);
