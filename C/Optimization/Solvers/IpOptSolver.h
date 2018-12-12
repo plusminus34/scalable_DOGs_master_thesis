@@ -58,7 +58,7 @@ private:
 
 class IpOptConstraints : public ifopt::ConstraintSet {
 public:
-  IpOptConstraints(Constraints& constraints_i) : ConstraintSet(constraints_i.getConstNum(),"IpOptConstraints"),
+  IpOptConstraints(const Constraints& constraints_i) : ConstraintSet(constraints_i.getConstNum(),"IpOptConstraints"),
                                                      constraints(constraints_i) {}
   // The constraint value minus the constant value "1", moved to bounds.
   VectorXd GetValues() const override{
@@ -71,6 +71,13 @@ public:
       jac_block = constraints.Jacobian(x);
     }
   }
+
+  VecBound GetBounds() const override {
+    VecBound bounds(GetRows());
+    //TODO: implement get bounds in constraints!!
+    for (int i = 0; i < GetRows(); i++) {bounds.at(i) = 0;}
+    return bounds;
+  }
 private:
-    Constraints& constraints;
+    const Constraints& constraints;
 };

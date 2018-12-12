@@ -8,8 +8,8 @@ public:
 
 	virtual Constraints* clone() const = 0;
 
-	int getConstNum(){return const_n;}
-	int getApproxNonZeros() {return approx_nnz;}
+	int getConstNum() const {return const_n;}
+	int getApproxNonZeros() const {return approx_nnz;}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const = 0;
 	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const = 0;

@@ -7,7 +7,7 @@ double IpOptSolver::solve_constrained(const Eigen::VectorXd& x0, Objective& obj,
     ifopt::Problem nlp;
     nlp.AddVariableSet  (std::make_shared<IpOptVariables>(x0));
     nlp.AddConstraintSet(std::make_shared<IpOptConstraints>(constraints));
-    //nlp.AddCostSet      (std::make_shared<IpOptObjective(obj)>());
+    nlp.AddCostSet      (std::make_shared<IpOptObjective>(obj));
     nlp.PrintCurrent();
 /*
     // 2. choose solver and options
