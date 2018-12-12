@@ -13,7 +13,12 @@ option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"          ON)
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package(LIBIGL REQUIRED QUIET)
+#set(EIGEN3_VERSION_OK TRUE)
+#set(EIGEN3_INCLUDE_DIR "/Users/michaelrabinovich/libigl/external/eigen")
 #find_package(ifopt REQUIRED)
+
+#list(APPEND CMAKE_MODULE_PATH "/Users/michaelrabinovich/ifopt")
+#include(ifopt-config)
 
 # Dependencies are linked as INTERFACE targets unless libigl is compiled as a static library
 if(LIBIGL_USE_STATIC_LIBRARY)
@@ -69,9 +74,20 @@ file(GLOB SRC_DOG
 file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
 file(GLOB SRC_GUI Gui/*.cpp)
 file(GLOB SRC_GEOMETRY_PRIMITIVES GeometryPrimitives/*.cpp)
+file(GLOB IFOPT_SRC ifopt_core/src/*.cc)
 
+#message("${IFOPT_SRC}")
  
-add_library(libpardiso500-MACOS-X86-64 SHARED IMPORTED)
-set_target_properties(libpardiso500-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso500-MACOS-X86-64.dylib")
-add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES})
-target_link_libraries(${PROJECT_NAME}_bin igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso500-MACOS-X86-64)
+#add_library(libpardiso500-MACOS-X86-64 SHARED IMPORTED)
+#set_target_properties(libpardiso500-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso500-MACOS-X86-64.dylib")
+
+#add_library(libifopt_core SHARED IMPORTED)
+#set_target_properties(libifopt_core PROPERTIES IMPORTED_LOCATION "libifopt_core.dylib")
+
+add_library(libifopt_ipopt SHARED IMPORTED)
+set_target_properties(libifopt_ipopt PROPERTIES IMPORTED_LOCATION "libifopt_ipopt.dylib")
+
+#target_include_directories(ifopt "/Users/michaelrabinovich/ifopt")
+
+add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES} ${IFOPT_SRC})
+target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libifopt_ipopt)

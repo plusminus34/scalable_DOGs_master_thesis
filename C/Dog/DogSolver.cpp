@@ -101,9 +101,7 @@ void DogSolver::single_optimization() {
 
   switch (p.solverType) {
     case SOLVE_FLOW_PROJECT: {
-      std::cout << "here!" << std::endl;
       state->flowProject.solve_single_iter(x0, compObj, compConst, x);
-      std::cout << "there!" << std::endl;
       //state->flowProject.solve_constrained(x0, compObj, compConst, x);
       state->flowProject.resetSmoother();
       break;

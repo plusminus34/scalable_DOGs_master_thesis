@@ -35,12 +35,12 @@ public:
     double obj(const Eigen::VectorXd& x) {
         auto t = timer.getElapsedTime();
         auto obj =  objective.obj(x);
-        f_time += timer.getElapsedTime()-t;
+        f_time += timer.getElapsedTime()-t; f_cnt++;
         return obj;
     }
     void grad(const Eigen::VectorXd& x, Eigen::VectorXd& grad) { 
         auto t = timer.getElapsedTime();
-        grad = objective.grad(x);
+        grad = objective.grad(x); g_cnt++;
         g_time += timer.getElapsedTime()-t;
     }
 
@@ -48,8 +48,8 @@ public:
         grad(x,g);
         return obj(x);
      }
-     double g_time = 0;
-     double f_time = 0;
+     double g_time = 0; int g_cnt = 0;
+     double f_time = 0; int f_cnt = 0;
 private:
 	const Objective& objective;
     igl::Timer timer;

@@ -2,7 +2,6 @@
 
 #include "../Dog.h"
 #include "../../Optimization/Solver.h"
-#include "../../Optimization/Solvers/PardisoSolver.h"
 #include "../../Optimization/Solvers/LBFGSWithPenalty.h"
 
 class DOGFlowAndProject : public ConstrainedSolver{
