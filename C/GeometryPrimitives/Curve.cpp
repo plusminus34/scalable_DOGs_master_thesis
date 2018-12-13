@@ -52,21 +52,25 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 				(coords.row(i+2)-coords.row(i+1) - len[i+1]*e_f).norm() << endl;
 		*/
 	}
+	Eigen::RowVector3d old_b = get_frame(coords,1).col(2);
 	for (int i = 0; i < vn-3; i++) {
 		Eigen::RowVector3d e1 = (coords.row(i+1)-coords.row(i)).normalized();
 		Eigen::RowVector3d e2 = (coords.row(i+2)-coords.row(i+1)).normalized();
 		Eigen::RowVector3d e3 = (coords.row(i+3)-coords.row(i+2)).normalized();
 
 		// TODO: should work for straight lines but not sure it's the best way
-		if ((k[i] == 0) || (k[i+1]==0) ) {
+		//if ((k[i] == 0) || (k[i+1]==0) ) {
+		if (k[i+1] == 0){
 			t[i] = 0;
 		} else {
-			Eigen::RowVector3d b1 = e1.cross(e2); // First binormal
-			Eigen::RowVector3d b2 = e2.cross(e3); // Second binormal
-			double angle = get_angle_and_orientation(b1,b2);
+			//Eigen::RowVector3d b1 = e1.cross(e2); // First binormal
+			//Eigen::RowVector3d b2 = e2.cross(e3); // Second binormal
+			auto new_b = get_frame(coords,i+2).col(2);
+			double angle = get_angle_and_orientation(old_b,new_b);
 			// This quantity, as opposed to curvature is defined on the edge and so normalized by it's length
 			t[i] = sin(angle)/(coords.row(i+2)-coords.row(i+1)).norm();
 			//t[i] = 0;
+			old_b = new_b;
 		}
 	}
 
@@ -99,6 +103,7 @@ Curve::Curve(const std::vector<double>& len1, const std::vector<double>& k1, con
 	}
 	for (int i = 0; i < t1.size(); i++) {
 		t.push_back(time*t2[i]+(1-time)*t1[i]);
+		std::cout << "torsion at " << i << ": first curve = " << t1[i] << ", second = " << t2[i] << " and t[i] = " << t[i] << std::endl;
 	}
 
 }
@@ -234,10 +239,10 @@ double Curve::arc_to_euc(double s, double k) {
 }
 
 void Curve::print_geometric_represenation() {
-	//std::cout << "curve with " << 1+len.size() << " points" << std::endl;
-	//std::cout << "lengths: "; for (auto l: len) std::cout << " " << l << ","; std::cout<<std::endl;
-	//std::cout << "curvatures: "; for (auto ki: k) std::cout << " " << ki << ","; std::cout<<std::endl;
-	//std::cout << "torsions: "; for (auto ti: t) std::cout << " " << ti << ","; std::cout<<std::endl;
+	std::cout << "curve with " << 1+len.size() << " points" << std::endl;
+	std::cout << "lengths: "; for (auto l: len) std::cout << " " << l << ","; std::cout<<std::endl;
+	std::cout << "curvatures: "; for (auto ki: k) std::cout << " " << ki << ","; std::cout<<std::endl;
+	std::cout << "torsions: "; for (auto ti: t) std::cout << " " << ti << ","; std::cout<<std::endl;
 	//std::vector<double> len, k, t;
 }
 
