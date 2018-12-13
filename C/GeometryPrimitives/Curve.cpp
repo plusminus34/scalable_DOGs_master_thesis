@@ -16,12 +16,25 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 	for (int i = 0; i < vn-1; i++) {
 		len[i] = (coords.row(i+1)-coords.row(i)).norm();
 	}
+	auto cur_frame = get_frame(coords,1);
+	int k_sign = 1;
 	for (int i = 0; i < vn-2; i++) {
 		Eigen::RowVector3d e1 = (coords.row(i+1)-coords.row(i)).normalized();
 		Eigen::RowVector3d e2 = (coords.row(i+2)-coords.row(i+1)).normalized();
 		double angle = get_angle_and_orientation(e1,e2); //cout << "angle = " << angle << endl;
-		k[i] = 2*sin(angle)/(coords.row(i+2)-coords.row(i)).norm();
+		k[i] = k_sign*2*sin(angle)/(coords.row(i+2)-coords.row(i)).norm();
 
+		if ( (i > 1) && (k[i]!=0) ) {
+			auto new_frame = get_frame(coords,i+1);
+			auto old_b = cur_frame.col(2); auto new_b = new_frame.col(2);
+			//std::cout << "old_b = " << old_b << " new_b = " << new_b << std::endl;
+			if (old_b.dot(new_b) < 0) {
+				std::cout << "Boom!" << std::endl;
+				k[i] = -1*k[i]; 
+				k_sign = -1*k_sign;
+			}
+			cur_frame = new_frame;
+		}
 		/*
 		// maybe here I have the tangents, normals, binormal
 		// Can check the equality of the next edge by t,n with angle
@@ -56,6 +69,20 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 			//t[i] = 0;
 		}
 	}
+
+	cur_frame = get_frame(coords,1);
+	for (int i = 2; i < vn-2; i++) {
+		auto next_frame = get_frame(coords,i);
+		auto frame_diff = cur_frame.transpose()*next_frame;
+		frame_diff_vec.push_back(frame_diff);
+		cur_frame = next_frame;
+
+		auto N = cur_frame.col(1);
+		//std::cout << "N = " << N << std::endl;
+		//std::cout << "B = " << cur_frame.col(2) << std::endl;
+		//std::cout << "cur_frame = " << cur_frame << std::endl;
+	}
+	//exit(1);
 }
 
 Curve::Curve(const SurfaceCurve& surfaceCurve, const Eigen::MatrixXd& V) :Curve(surfaceCurve.get_curve_coords(V)) {
@@ -119,6 +146,17 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 		old_b = b;
 	}
 	return coords;
+}
+
+Eigen::Matrix3d Curve::get_frame(const Eigen::MatrixXd& coords, int i) {
+	Eigen::RowVector3d ef = (coords.row(i+1)-coords.row(i)).normalized();
+	Eigen::RowVector3d eb = (coords.row(i-1)-coords.row(i)).normalized();
+
+	Eigen::RowVector3d T = (ef-eb).normalized();
+	Eigen::RowVector3d N = (ef+eb).normalized();
+	Eigen::RowVector3d B = T.cross(N);
+	Eigen::Matrix3d frame; frame.col(0) = T; frame.col(1) = N; frame.col(2) = B;
+	return frame;
 }
 
 double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d e2) {
@@ -196,10 +234,10 @@ double Curve::arc_to_euc(double s, double k) {
 }
 
 void Curve::print_geometric_represenation() {
-	std::cout << "curve with " << 1+len.size() << " points" << std::endl;
-	std::cout << "lengths: "; for (auto l: len) std::cout << " " << l << ","; std::cout<<std::endl;
-	std::cout << "curvatures: "; for (auto ki: k) std::cout << " " << ki << ","; std::cout<<std::endl;
-std::cout << "torsions: "; for (auto ti: t) std::cout << " " << ti << ","; std::cout<<std::endl;
+	//std::cout << "curve with " << 1+len.size() << " points" << std::endl;
+	//std::cout << "lengths: "; for (auto l: len) std::cout << " " << l << ","; std::cout<<std::endl;
+	//std::cout << "curvatures: "; for (auto ki: k) std::cout << " " << ki << ","; std::cout<<std::endl;
+	//std::cout << "torsions: "; for (auto ti: t) std::cout << " " << ti << ","; std::cout<<std::endl;
 	//std::vector<double> len, k, t;
 }
 

@@ -61,6 +61,8 @@ public:
   IpOptConstraints(const Constraints& constraints_i) : ConstraintSet(constraints_i.getConstNum(),"IpOptConstraints"),
                                                      constraints(constraints_i) {}
   // The constraint value minus the constant value "1", moved to bounds.
+   // TODO remove the bounds from here!
+
   VectorXd GetValues() const override{
     VectorXd x = GetVariables()->GetComponent("IpOptVariables")->GetValues();
     return constraints.Vals(x);
