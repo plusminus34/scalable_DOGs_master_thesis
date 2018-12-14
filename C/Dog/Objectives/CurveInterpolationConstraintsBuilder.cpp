@@ -12,7 +12,7 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 	// todo create dst curve from the curve parameters
 	std::vector<double> dst_len = srcCurve->len, dst_k = srcCurve->k, dst_t = srcCurve->t;
 	for (auto& k: dst_k) k*=2;
-	for (auto& t: dst_t) t+=0.1;
+	for (auto& t: dst_t) t+=0.2;
 	dstCurve = new Curve(dst_len, dst_k, dst_t);
 }
 
