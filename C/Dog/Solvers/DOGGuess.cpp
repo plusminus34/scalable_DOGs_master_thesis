@@ -9,7 +9,7 @@ DOGGuess::DOGGuess(const Dog& dog, const bool& align_procrustes, const bool& def
 															deform_arap(deform_arap) {
 	Ftri = Fsqr_to_F(dog.getF());
   Vref = dog.getV();
-	arapData.max_iter = 20;	
+	arapData.max_iter = 200;	
 }
 
 void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, StitchingConstraints& stitchConst,
@@ -63,8 +63,8 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   
   arap_solve_linear_constraints(bc_V,rhs,arapData,dog.getVMutable());
   //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
-  igl::arap_precomputation(dog.getV(),Ftri,3,b_V,arapData);
-	igl::arap_solve(bc_V,arapData,dog.getVMutable());
+  //igl::arap_precomputation(dog.getV(),Ftri,3,b_V,arapData);
+	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
 
 }
 

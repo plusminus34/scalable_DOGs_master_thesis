@@ -56,13 +56,13 @@ void DogSolver::single_optimization() {
 	if (!state) return; // No optimizer
 
   cout << "guessing!" << endl;
-  if (state->dog.has_creases()) {
+  //if (state->dog.has_creases()) {
     PositionalConstraints posConst(b,bc);
     StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
 
     state->dogGuess.guess(state->dog, posConst, stitchingConstraints, edgePtConst);
-  }
+  //}
 
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(state->dog.getV_vector()), x(x0);
