@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
   }
-
+  std::cout << "here maybe" << std::endl;
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   // Attach a menu plugin
@@ -220,9 +220,7 @@ int main(int argc, char *argv[]) {
 
       ImGui::End();
   };
-
   clear_all_and_set_default_params();
-  
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 

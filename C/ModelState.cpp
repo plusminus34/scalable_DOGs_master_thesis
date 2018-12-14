@@ -11,7 +11,7 @@ using namespace std;
 
 void ModelState::init_from_mesh(const std::string& mesh_path) {
 	std::cout << "Reading mesh " << mesh_path << endl;
-	Eigen::MatrixXd V,V_ren; Eigen::MatrixXi F,F_ren;
+	Eigen::MatrixXd V; Eigen::MatrixXi F,F_ren;
 	igl::readOBJ(mesh_path, V, F_ren);
 	
 	// We either read a triangle mesh or a quad mesh
@@ -28,7 +28,6 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 	const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
 	V *= 1. / edge_l;
 
-	V_ren = V; // no folds
 	DogEdgeStitching dogEdgeStitching; // no folds  
 	std::vector<pair<int,int>> submesh_min_max; submesh_min_max.push_back(pair<int,int>(0,V.rows()-1)); // only 1 component
 

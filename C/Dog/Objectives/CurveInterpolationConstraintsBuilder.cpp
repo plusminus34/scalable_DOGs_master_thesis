@@ -4,8 +4,10 @@
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
-	 surfaceCurve.edgePoints = eS.stitched_curves[0];
-	 init_from_surface_curve(V);
+	 if (eS.edge_const_1.size()) {
+	 	surfaceCurve.edgePoints = eS.stitched_curves[0];
+	 	init_from_surface_curve(V);
+	 }
 }
 
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, std::vector<int>& v_indices,

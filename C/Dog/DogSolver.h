@@ -65,6 +65,7 @@ private:
 		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
 		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
+		CurveInterpolationConstraintsBuilder geoConstraintsBuilder;
 	};
 
 	DogSolver::State* state;

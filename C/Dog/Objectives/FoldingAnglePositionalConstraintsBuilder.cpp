@@ -7,29 +7,31 @@ using namespace Eigen;
 
 FoldingAnglePositionalConstraintsBuilder::FoldingAnglePositionalConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS,
 					const double& alpha) : alpha(alpha) {
-	const_n = 9; // Constrain 4 vertices = 12 vars
+	if (eS.edge_const_1.size()) {
+		const_n = 9; // Constrain 4 vertices = 12 vars
 
-	//int c_i = 0.5*eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
-	int c_i = eS.edge_const_1.size()/2;
+		//int c_i = 0.5*eS.edge_const_1.size()/4-3; // TODO: This logic should be inside the constraints builder..
+		int c_i = eS.edge_const_1.size()/2;
 
-	edge1 = eS.edge_const_1[c_i]; edge2 = eS.edge_const_2[c_i]; edge_t_coordinate = eS.edge_coordinates[c_i];
-	edge1_p1 = V.row(edge1.v1);
-	edge1_p2 = V.row(edge1.v2);
-	edge2_p1 = V.row(edge2.v1);
-	edge2_p2 = V.row(edge2.v2);
+		edge1 = eS.edge_const_1[c_i]; edge2 = eS.edge_const_2[c_i]; edge_t_coordinate = eS.edge_coordinates[c_i];
+		edge1_p1 = V.row(edge1.v1);
+		edge1_p2 = V.row(edge1.v2);
+		edge2_p1 = V.row(edge2.v1);
+		edge2_p2 = V.row(edge2.v2);
 
-	// Rotation center (the point)
+		// Rotation center (the point)
 
-	center = EdgePoint(edge1,edge_t_coordinate).getPositionInMesh(V);//edge_t_coordinate * edge1_p1 + (1-edge_t_coordinate) * edge1_p2;
-	
-	//axis = getRotAxis(V, es, center);
-	setRotAxis(V,eS,center);
-	
-	int vnum = V.rows();
-	b.resize(const_n);
-	b << edge1.v1,edge2.v1,edge2.v2,
-		edge1.v1+vnum,edge2.v1+vnum,edge2.v2+vnum,
-		edge1.v1+2*vnum,edge2.v1+2*vnum,edge2.v2+2*vnum;
+		center = EdgePoint(edge1,edge_t_coordinate).getPositionInMesh(V);//edge_t_coordinate * edge1_p1 + (1-edge_t_coordinate) * edge1_p2;
+		
+		//axis = getRotAxis(V, es, center);
+		setRotAxis(V,eS,center);
+		
+		int vnum = V.rows();
+		b.resize(const_n);
+		b << edge1.v1,edge2.v1,edge2.v2,
+			edge1.v1+vnum,edge2.v1+vnum,edge2.v2+vnum,
+			edge1.v1+2*vnum,edge2.v1+2*vnum,edge2.v2+2*vnum;
+	}
 }
 
 void FoldingAnglePositionalConstraintsBuilder::setRotAxis(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
