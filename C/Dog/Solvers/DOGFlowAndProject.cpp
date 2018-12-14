@@ -13,6 +13,7 @@ DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, const int& m
 									 /*m_solver(ai,aj,K),*/ lbfgsWithPenalty(max_lbfgs_proj_iter,penalty_repetitions) {
 	first_solve = true;
 	//m_solver.set_type(-2);
+	//L_init = DOG_laplacian(dog.getV(),dog_init.getF());
 }
 
 double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x) {

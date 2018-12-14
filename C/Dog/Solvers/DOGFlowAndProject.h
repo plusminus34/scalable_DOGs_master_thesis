@@ -33,6 +33,7 @@ private:
 	bool first_solve;
 
 	LBFGSWithPenalty lbfgsWithPenalty;
+	//Eigen::SparseMatrix<double> L_init;
 
 	/*
 	// Linear system solving related
