@@ -12,7 +12,7 @@ public:
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
-	double solve_single_iter(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
+	double solve_single_iter(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow = true);
 
 	void set_max_iter(int max_iter) {max_iter = max_iter;}
 

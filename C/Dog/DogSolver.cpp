@@ -3,6 +3,7 @@
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
+#include "Objectives/HEnergy.h"
 #include "Objectives/LaplacianSimilarity.h"
 
 #include "../Optimization/CompositeObjective.h"
@@ -26,7 +27,6 @@ DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
           geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
-	// empty on purpose
 }
 
 void DogSolver::update_positional_constraints() {
@@ -88,8 +88,9 @@ void DogSolver::single_optimization() {
   }
 
   // Objectives
-  SimplifiedBendingObjective bending(state->quadTop);
-  IsometryObjective isoObj(state->quadTop,x0);
+  //SimplifiedBendingObjective bending(state->quadTop);
+  HEnergy bending(state->quadTop);
+  IsometryObjective isoObj(state->quadTop,x0); isoObj.set_ref(init_x0);
   QuadraticConstraintsSumObjective constObjBesidesPos(compConst);
   LaplacianSimilarity laplacianSimilarity(state->dog,x0);
 
@@ -107,20 +108,22 @@ void DogSolver::single_optimization() {
   }
   if (edgeCoords.rows()) {
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
-    compConst.add_constraints(&edgePtConst);
+    /*
+    if (p.solverType != SOLVE_FLOW_PROJECT) {compConst.add_constraints(&edgePtConst);};
+    if (p.solverType == SOLVE_FLOW_PROJECT) {
+      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
+      compObj.add_objective(&edgePosConst,1,true);
+    }
+    */
+    QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
+    compObj.add_objective(&edgePosConst,p.const_obj_penalty,true);
   }
   
   std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 
   switch (p.solverType) {
     case SOLVE_FLOW_PROJECT: {
-      if (edgeCoords.rows()) {
-        EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
-        QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-        compObj.add_objective(&edgePosConst,1,true);
-      }
-
-      state->flowProject.solve_single_iter(x0, compObj, compConst, x);
+      state->flowProject.solve_single_iter(x0, compObj, compConst, x,p.project_after_flow);
       //state->flowProject.solve_constrained(x0, compObj, compConst, x);
       state->flowProject.resetSmoother();
       break;
@@ -146,6 +149,7 @@ void DogSolver::single_optimization() {
 
 void DogSolver::init_from_new_dog(Dog& dog, const QuadTopology& quadTop) {
 	init_solver_state(dog,quadTop);
+  init_x0 = state->dog.getV_vector();
 }
 
 void DogSolver::init_solver_state(Dog& dog, const QuadTopology& quadTop) {

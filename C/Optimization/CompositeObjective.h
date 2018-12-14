@@ -27,15 +27,11 @@ public:
 
 	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
 		Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
-		std::cout << "CompositeObjective computing hessian" << std::endl;
 		for (int i = 0; i < objectives.size(); i++) {
-			std::cout << "i = " << i << std::endl;
 			if (use_hessian[i]) {
-				std::cout << "using hessian!" << std::endl;
 				hessian+=weights[i]*objectives[i]->hessian(x);
 			};
 		}
-		exit(1);
 		return hessian;
 	};
 

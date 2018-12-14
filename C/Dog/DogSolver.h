@@ -40,6 +40,7 @@ public:
 		int max_lbfgs_routines = 400;
 		double const_obj_penalty = 100.;
 		int penalty_repetitions = 1;
+		bool project_after_flow = true;
 
 		double folding_angle = 0;
 		double curve_timestep = 0;
@@ -69,6 +70,7 @@ private:
 	};
 
 	DogSolver::State* state;
+	Eigen::VectorXd init_x0;
 	// Positional constraints
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	// Curve constraints

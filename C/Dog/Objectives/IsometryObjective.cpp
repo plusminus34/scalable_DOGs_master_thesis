@@ -19,6 +19,7 @@ void IsometryObjective::set_ref(const Eigen::VectorXd& x) {
 		double t3 = p0_y-pxf_y;
 		double t4 = p0_z-pxf_z;
 		refL[h_cnt] = t2*t2+t3*t3+t4*t4; // squared length
+		std::cout << "squared l = " << refL[h_cnt] << std::endl;
 		h_cnt++;
   }
 }

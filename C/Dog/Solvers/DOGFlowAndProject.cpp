@@ -25,17 +25,17 @@ double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective
 	return f;
 }
 
-double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
-	cout << "obj before flow = " << f.obj(x0) << endl;
-	cout << "const deviation before flow = " << constraints.deviation(x0) << endl;
+double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow) {
+	//cout << "obj before flow = " << f.obj(x0) << endl;
+	//cout << "const deviation before flow = " << constraints.deviation(x0) << endl;
 	auto e_after_flow = flow(x0, f, constraints, x);
-	cout << "obj after flow = " << f.obj(x) << endl;
+	//cout << "obj after flow = " << f.obj(x) << endl;
 	//return e_after_flow;
-	cout << "const deviation after flow = " << constraints.deviation(x) << endl;
-	project(x, f, constraints, x);
+	//cout << "const deviation after flow = " << constraints.deviation(x) << endl;
+	if (project_after_flow) project(x, f, constraints, x);
 	auto e_after_proj = f.obj(x);
-	cout << "obj after project = " << f.obj(x) << endl;
-	cout << "const deviation after project = " << constraints.deviation(x) << endl;
+	//cout << "obj after project = " << f.obj(x) << endl;
+	//cout << "const deviation after project = " << constraints.deviation(x) << endl;
 	return e_after_proj;
 	
 }
@@ -50,7 +50,6 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	Eigen::SparseMatrix<double> id(x.rows(),x.rows()); id.setIdentity();
 	metric = metric - (1e-8)*id;
 	metric = metric - f.hessian(x0); // adding hessian
-	std::cout << "f.hessian(x0).norm() = " << f.hessian(x0).norm() << std::endl;
 	
 	//energy->check_grad(x);
 	double old_e = f.obj(x);
@@ -102,8 +101,8 @@ void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, con
 	//	and we define "closest" in terms of the laplacian normals
 	// Use a smoothness objective on DOG, together with the same constraints
 	LaplacianSimilarity laplacianNormalsObj(dog_init, x0);
-	lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
-	//lbfgsWithPenalty.solve_single_iter_with_fixed_p(x0, laplacianNormalsObj, constraints, x);
+	//lbfgsWithPenalty.solve_constrained(x0, laplacianNormalsObj, constraints, x);
+	lbfgsWithPenalty.solve_single_iter_with_fixed_p(x0, laplacianNormalsObj, constraints, x);
 }
 
 double DOGFlowAndProject::line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy) {

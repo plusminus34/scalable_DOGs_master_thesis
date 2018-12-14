@@ -30,7 +30,6 @@ public:
 		// (Here it's even simpler as just 2*(diagonals with one at constrained indices) but this is simpler to write)
 		auto J = cnst->Jacobian(x);
 		auto H = 2*J.transpose()*J;
-		std::cout << "H.norm() = " << H.norm() << std::endl;
 		return H;
 	}
 

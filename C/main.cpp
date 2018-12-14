@@ -211,6 +211,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
+      ImGui::Checkbox("Project after", &dogSolver.p.project_after_flow);
       ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);
       ImGui::Checkbox("ARAP Guess", &dogSolver.p.arap_guess);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
