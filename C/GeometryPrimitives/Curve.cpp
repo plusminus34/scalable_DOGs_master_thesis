@@ -29,7 +29,6 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 			auto old_b = cur_frame.col(2); auto new_b = new_frame.col(2);
 			//std::cout << "old_b = " << old_b << " new_b = " << new_b << std::endl;
 			if (old_b.dot(new_b) < 0) {
-				std::cout << "Boom!" << std::endl;
 				k[i] = -1*k[i]; 
 				k_sign = -1*k_sign;
 			}
@@ -52,41 +51,35 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 				(coords.row(i+2)-coords.row(i+1) - len[i+1]*e_f).norm() << endl;
 		*/
 	}
+	auto old_frame = get_frame(coords,1);
 	Eigen::RowVector3d old_b = get_frame(coords,1).col(2);
 	for (int i = 0; i < vn-3; i++) {
 		Eigen::RowVector3d e1 = (coords.row(i+1)-coords.row(i)).normalized();
 		Eigen::RowVector3d e2 = (coords.row(i+2)-coords.row(i+1)).normalized();
 		Eigen::RowVector3d e3 = (coords.row(i+3)-coords.row(i+2)).normalized();
 
-		// TODO: should work for straight lines but not sure it's the best way
-		//if ((k[i] == 0) || (k[i+1]==0) ) {
 		if (k[i+1] == 0){
 			t[i] = 0;
 		} else {
-			//Eigen::RowVector3d b1 = e1.cross(e2); // First binormal
-			//Eigen::RowVector3d b2 = e2.cross(e3); // Second binormal
+			auto new_frame = get_frame(coords,i+2);
 			auto new_b = get_frame(coords,i+2).col(2);
 			double angle = get_angle_and_orientation(old_b,new_b);
 			// This quantity, as opposed to curvature is defined on the edge and so normalized by it's length
+			//int sign = 1;
+			//if (old_frame.col(2).dot(new_frame.col(0)) < 0) {sign = -1;}
 			t[i] = sin(angle)/(coords.row(i+2)-coords.row(i+1)).norm();
+
+			Eigen::RowVector3d zero3d; zero3d.setZero();
+			auto check1 = rotate_vec(old_b, zero3d, e2.normalized(), angle);
+			auto check2 = rotate_vec(old_b, zero3d, e2.normalized(), -angle);
+			if ((check2-new_b.transpose()).norm() < (check1-new_b.transpose()).norm()) t[i] = -t[i];
+			//std::cout << "check1 = " << check1 << " check2 = " << check2 << " new_b = " << new_b <<std::endl;
 			//t[i] = 0;
 			old_b = new_b;
+			new_frame = old_frame;
+			//exit(1);
 		}
 	}
-
-	cur_frame = get_frame(coords,1);
-	for (int i = 2; i < vn-2; i++) {
-		auto next_frame = get_frame(coords,i);
-		auto frame_diff = cur_frame.transpose()*next_frame;
-		frame_diff_vec.push_back(frame_diff);
-		cur_frame = next_frame;
-
-		auto N = cur_frame.col(1);
-		//std::cout << "N = " << N << std::endl;
-		//std::cout << "B = " << cur_frame.col(2) << std::endl;
-		//std::cout << "cur_frame = " << cur_frame << std::endl;
-	}
-	//exit(1);
 }
 
 Curve::Curve(const SurfaceCurve& surfaceCurve, const Eigen::MatrixXd& V) :Curve(surfaceCurve.get_curve_coords(V)) {
@@ -103,7 +96,6 @@ Curve::Curve(const std::vector<double>& len1, const std::vector<double>& k1, con
 	}
 	for (int i = 0; i < t1.size(); i++) {
 		t.push_back(time*t2[i]+(1-time)*t1[i]);
-		std::cout << "torsion at " << i << ": first curve = " << t1[i] << ", second = " << t2[i] << " and t[i] = " << t[i] << std::endl;
 	}
 
 }
@@ -139,7 +131,8 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 		double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
 		// Rotate the binormal by the angle given by the torsion and lengths
 		Eigen::RowVector3d b = old_b;
-		if (t_alpha > 1e-10) {
+		//if (std::abs(t_alpha) > 1e-10) {
+		if (t_alpha) {
 			b = rotate_vec(old_b, zero3d, e_b.normalized(), t_alpha);
 		}
 		//cout << "b = " <<  b << endl;

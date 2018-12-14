@@ -125,10 +125,6 @@ bool callback_pre_draw_curve(igl::opengl::glfw::Viewer& viewer) {
 
   draw_curve(viewer, targetCurveCoords, Eigen::RowVector3d(1,0,0));
   draw_curve(viewer, intCurveCoords, Eigen::RowVector3d(0,0,0));
-
-  std::cout << "targetCurveCoords.rows() = " << targetCurveCoords.rows() << endl;
-  std::cout << "intCurveCoords.rows() = " << intCurveCoords.rows() << endl;
-  //std::cout << "intCurveCoords = " << endl << intCurveCoords << std::endl << endl << endl;
   
   // draw curve
   return false;
@@ -160,9 +156,11 @@ int main(int argc, char *argv[]) {
     int pts_n = 20;
     std:vector<double> len,curvature1,torsion1, curvature2,torsion2;
     for (int i = 0; i < pts_n-1; i++) len.push_back(1);
-      for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.2);}
+    for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.2);}
+    for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(0.05*((pts_n-3)/2.-i));}
     //for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.05*((pts_n-2)/2.-i));}
-    for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(-0.2);}
+    //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(curvature2[i]);}
+    //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(-0.2);}
     //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(-1*abs(curvature2[i]));}
     //for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.2);}
     //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(1*curvature2[i]);}
