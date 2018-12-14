@@ -204,6 +204,7 @@ int main(int argc, char *argv[]) {
       ImGui::Combo("Solver type", (int *)(&dogSolver.p.solverType), "None\0ProjectFlow\0Penalty LBFGS\0");
       ImGui::InputDouble("Bending", &dogSolver.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &dogSolver.p.isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Laplacian Similarity", &dogSolver.p.laplacian_similarity_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Const obj", &dogSolver.p.const_obj_penalty, 0, 0, "%.4f");
       if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();

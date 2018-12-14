@@ -3,6 +3,7 @@
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
+#include "Objectives/LaplacianSimilarity.h"
 
 #include "../Optimization/CompositeObjective.h"
 #include "../Optimization/CompositeConstraints.h"
@@ -79,10 +80,11 @@ void DogSolver::single_optimization() {
   SimplifiedBendingObjective bending(state->quadTop);
   IsometryObjective isoObj(state->quadTop,x0);
   QuadraticConstraintsSumObjective constObjBesidesPos(compConst);
+  LaplacianSimilarity laplacianSimilarity(state->dog,x0);
 
 
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
-  CompositeObjective compObj({&bending, &isoObj}, {p.bending_weight,p.isometry_weight});
+  CompositeObjective compObj({&bending, &isoObj, &laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
   if (b.rows()) {
     PositionalConstraints posConst(b,bc);
     

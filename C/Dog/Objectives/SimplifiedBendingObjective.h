@@ -11,7 +11,6 @@ public:
 	
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
-	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const;
 
 private:
 	const QuadTopology& quadTop;
