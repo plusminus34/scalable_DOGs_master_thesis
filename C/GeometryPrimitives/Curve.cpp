@@ -34,22 +34,6 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 			}
 			cur_frame = new_frame;
 		}
-		/*
-		// maybe here I have the tangents, normals, binormal
-		// Can check the equality of the next edge by t,n with angle
-		Eigen::RowVector3d ef = (coords.row(i+2)-coords.row(i+1)).normalized(), eb = (coords.row(i+1)-coords.row(i)).normalized();
-		Eigen::RowVector3d t1 = (ef+eb).normalized(), n1 = (ef-eb).normalized();
-		
-		cout << "t,n way diff norm = " << 
-				(coords.row(i+2)-coords.row(i+1) - len[i+1]*(cos(0.5*angle)*t1+sin(0.5*angle)*n1)).norm() << endl;
-		
-		// Can also check the equality by rotation around the binormal
-		Eigen::RowVector3d b = e1.cross(e2).normalized(); cout << "b = " << b << endl;
-		Eigen::RowVector3d zero3d; zero3d.setZero();
-		Eigen::RowVector3d e_f = rotate_vec(e1, zero3d, b, angle).normalized();
-		cout << "binormal way diff norm = " << 
-				(coords.row(i+2)-coords.row(i+1) - len[i+1]*e_f).norm() << endl;
-		*/
 	}
 	auto old_frame = get_frame(coords,1);
 	Eigen::RowVector3d old_b = get_frame(coords,1).col(2);
@@ -73,7 +57,6 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 			auto check1 = rotate_vec(old_b, zero3d, e2.normalized(), angle);
 			auto check2 = rotate_vec(old_b, zero3d, e2.normalized(), -angle);
 			if ((check2-new_b.transpose()).norm() < (check1-new_b.transpose()).norm()) t[i] = -t[i];
-			//std::cout << "check1 = " << check1 << " check2 = " << check2 << " new_b = " << new_b <<std::endl;
 			//t[i] = 0;
 			old_b = new_b;
 			new_frame = old_frame;
@@ -163,14 +146,6 @@ double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d
 	auto cos_angle = clip(dot_prod,-1,1);
 	if (cos_angle == 1) return acos(cos_angle);
 
-	/*
-	auto sin_angle = clip(e1.cross(e2).norm()/vec_norm_prod,-1,1);
-	std::cout << "cos_angle = " << cos_angle << std::endl; 
-	std::cout << "sin_angle = " << sin_angle << std::endl;
-	auto tan_angle = sin_angle/cos_angle;
-	return atan(tan_angle);
-	*/
-
 	auto angle = acos(cos_angle);
 	auto b = e1.cross(e2).normalized();
 	Eigen::RowVector3d zero3d; zero3d.setZero();
@@ -181,16 +156,6 @@ double Curve::get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d
 	//std::cout << "diff1 = " << diff1 << " diff2 = " << diff2 << std::endl;
 	//std::cout << "b = " << b << std::endl;
 	return angle;
-
-	//auto angle = acos(cos_angle);
-	//std::cout << "e1 = " << e1 << " e2 = " << e2 << std::endl;
-	//std::cout << "dot_prod = " << dot_prod << std::endl;
-	
-
-
-	// = rotate_vec(e_b, zero3d, b, k_alpha);
-	
-	//return angle;
 }
 
 void Curve::getTranslationAndFrameFromCoords(const Eigen::MatrixXd& coords, Eigen::RowVector3d& T, Eigen::Matrix3d& F) {
