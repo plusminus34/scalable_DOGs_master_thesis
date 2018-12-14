@@ -5,6 +5,21 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
 	 surfaceCurve.edgePoints = eS.stitched_curves[0];
+	 init_from_surface_curve(V);
+}
+
+CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, std::vector<int>& v_indices,
+			const double& timestep) : timestep(timestep) {
+	surfaceCurve.edgePoints.resize(v_indices.size());
+	int vi_cnt = 0;
+	for (auto edgePt: surfaceCurve.edgePoints) {
+		edgePt.edge.v1 = edgePt.edge.v2 = v_indices[vi_cnt++];
+		edgePt.t = 1;
+	}
+	init_from_surface_curve(V);
+}
+
+void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::MatrixXd& V) {
 	auto initCoords = surfaceCurve.get_curve_coords(V);
 	srcCurve = new Curve(initCoords);
 	Curve::getTranslationAndFrameFromCoords(initCoords, T, F);
@@ -27,17 +42,4 @@ void CurveInterpolationConstraintsBuilder::get_curve_constraints(SurfaceCurve& s
 	// Return coordinates
 	bc = intCurve.getCoords(T,F);
 	surfaceCurve_out = surfaceCurve;
-	// TODO this gives us linear constraints and we can't use b or bc here since these are edge points
-	// So we need to indices at b and at bc
-
-	// We can generalize the previous constraints for these linear constraints (plotting but also optimization)
-	// TODO: write EdgePointConstraints? Then viewer should be able to show it and all optimization as well
-	// (Besides ARAP now anc procrustes now)
-
-	// The procrustes solver can do multiple rounds of ICP, where one mesh can be forced to not move
-	// At every iteration we set positional constraints from the linear constraints
-	// Assuming that other mesh is fixed this linear constraints become a standard positional constraint
-	// This should be ok
-	// How fast can this work?
-	// Meaning we just need to write an ICP class (start with assuming 2 connected components)
 }
