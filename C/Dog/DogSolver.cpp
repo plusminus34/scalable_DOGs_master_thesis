@@ -114,6 +114,12 @@ void DogSolver::single_optimization() {
 
   switch (p.solverType) {
     case SOLVE_FLOW_PROJECT: {
+      if (edgeCoords.rows()) {
+        EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
+        QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
+        compObj.add_objective(&edgePosConst,1,true);
+      }
+
       state->flowProject.solve_single_iter(x0, compObj, compConst, x);
       //state->flowProject.solve_constrained(x0, compObj, compConst, x);
       state->flowProject.resetSmoother();
