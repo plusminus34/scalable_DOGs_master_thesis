@@ -88,8 +88,8 @@ void DogSolver::single_optimization() {
   }
 
   // Objectives
-  //SimplifiedBendingObjective bending(state->quadTop);
-  HEnergy bending(state->quadTop);
+  SimplifiedBendingObjective bending(state->quadTop);
+  //HEnergy bending(state->quadTop);
   IsometryObjective isoObj(state->quadTop,x0); isoObj.set_ref(init_x0);
   QuadraticConstraintsSumObjective constObjBesidesPos(compConst);
   LaplacianSimilarity laplacianSimilarity(state->dog,x0);

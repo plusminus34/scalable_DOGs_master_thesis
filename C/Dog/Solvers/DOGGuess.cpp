@@ -63,7 +63,8 @@ void DOGGuess::guessARAP(Dog& dog, const PositionalConstraints& postConst,
   
   arap_solve_linear_constraints(bc_V,rhs,arapData,dog.getVMutable());
   //igl::arap_precomputation(Vref,Ftri,3,b_V,arapData);
-	//igl::arap_solve(bc_V,arapData,dog.getVMutable());
+  igl::arap_precomputation(dog.getV(),Ftri,3,b_V,arapData);
+	igl::arap_solve(bc_V,arapData,dog.getVMutable());
 
 }
 
