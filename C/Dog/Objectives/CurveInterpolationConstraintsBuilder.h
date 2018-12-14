@@ -10,7 +10,7 @@ class CurveInterpolationConstraintsBuilder {
 public:
 	CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 			const double& timestep);
-	CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, std::vector<int>& v_indices,
+	CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const std::vector<int>& v_indices,
 			const double& timestep);
 	~CurveInterpolationConstraintsBuilder();
 	void get_curve_constraints(SurfaceCurve& surfaceCurve_out, Eigen::MatrixXd& bc);

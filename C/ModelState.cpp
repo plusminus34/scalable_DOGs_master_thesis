@@ -21,7 +21,6 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 		F = F_ren;F_ren = Fsqr_to_F(F);
 	}
 
-
 	quad_topology(V,F,quadTop);
 
 	// Scale the mesh

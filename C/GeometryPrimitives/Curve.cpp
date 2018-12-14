@@ -80,7 +80,6 @@ Curve::Curve(const std::vector<double>& len1, const std::vector<double>& k1, con
 	for (int i = 0; i < t1.size(); i++) {
 		t.push_back(time*t2[i]+(1-time)*t1[i]);
 	}
-
 }
 
 Curve::Curve(const Curve& curve1, const Curve& curve2, double time) : Curve(curve1.len,curve1.k,curve1.t,curve2.len,curve2.k,curve2.t,time) {

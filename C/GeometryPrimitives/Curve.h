@@ -41,7 +41,6 @@ public:
 	
 	// edge lengths, vertex curvature, edge torsion
 	std::vector<double> len, k, t;
-	std::vector<Eigen::Matrix3d> frame_diff_vec;
 private:
 	double get_angle_and_orientation(Eigen::RowVector3d e1,Eigen::RowVector3d e2);
 	double get_angle_from_lengths_and_k(double l1, double l2, double k);

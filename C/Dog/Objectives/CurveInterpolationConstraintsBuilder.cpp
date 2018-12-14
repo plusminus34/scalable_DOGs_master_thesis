@@ -1,6 +1,5 @@
 #include "CurveInterpolationConstraintsBuilder.h"
 
-
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
@@ -10,11 +9,11 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 	 }
 }
 
-CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, std::vector<int>& v_indices,
+CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const std::vector<int>& v_indices,
 			const double& timestep) : timestep(timestep) {
 	surfaceCurve.edgePoints.resize(v_indices.size());
 	int vi_cnt = 0;
-	for (auto edgePt: surfaceCurve.edgePoints) {
+	for (auto& edgePt: surfaceCurve.edgePoints) {
 		edgePt.edge.v1 = edgePt.edge.v2 = v_indices[vi_cnt++];
 		edgePt.t = 1;
 	}
@@ -25,10 +24,11 @@ void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::
 	auto initCoords = surfaceCurve.get_curve_coords(V);
 	srcCurve = new Curve(initCoords);
 	Curve::getTranslationAndFrameFromCoords(initCoords, T, F);
+	if (isnan(F(1,1))) F.setIdentity(); //Fix for straight x curve..
 	// todo save frame
 	// todo create dst curve from the curve parameters
 	std::vector<double> dst_len = srcCurve->len, dst_k = srcCurve->k, dst_t = srcCurve->t;
-	for (auto& k: dst_k) k*=4;
+	for (auto& k: dst_k) {k+=0.1;k*=2;};
 	for (auto& t: dst_t) t+=0.1;
 	dstCurve = new Curve(dst_len, dst_k, dst_t);
 }

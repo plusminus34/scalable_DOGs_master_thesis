@@ -18,14 +18,14 @@
 
 using namespace std;
 
-
+std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
           dogGuess(dog, p.align_procrustes, p.arap_guess),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
-          geoConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep) {
+          geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
 	// empty on purpose
 }
 
@@ -39,14 +39,17 @@ void DogSolver::update_positional_constraints() {
     if (state->dog.has_creases()) {
       state->curveConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
     } else {
-      std::cout << "shalom" << std::endl;
-      //std::vector<int> curve_i; int v_n = state->dog.getV().rows();
-      //for (int i = sqrt(v_n); i < 2*sqrt(v_n); i++) {curve_i.push_back(i);}
-      //state->geoConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
+      state->geoConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
     }
 		edgePoints = surfaceCurve.edgePoints;
 	}
 	
+}
+
+std::vector<int> get_second_dog_row(Dog& dog) {
+  std::vector<int> curve_i; int v_n = dog.getV().rows();
+  for (int i = sqrt(v_n); i < 2*sqrt(v_n); i++) {curve_i.push_back(i);}
+  return curve_i;
 }
 
 void DogSolver::single_optimization() {
