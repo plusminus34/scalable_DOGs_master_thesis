@@ -28,6 +28,7 @@ struct ModelState : public igl::Serializable {
 	CreasesVisualization creasesVisualization;
 
 	void init_from_mesh(const std::string& mesh_path);
+	void init_from_planar(int square_h, int square_w);
 	void init_from_svg(const std::string& svg_path, int x_res, int y_res);
 	void load_from_workspace(const std::string& workspace_path) {igl::deserialize(*this,"State",workspace_path);}
 	void save_to_workspace(const std::string& workspace_path) {igl::serialize(*this,"State",workspace_path);}
@@ -37,5 +38,7 @@ struct ModelState : public igl::Serializable {
       Add(quadTop,std::string("_quadTop"));
       Add(creasesVisualization,std::string("_creasesVisualization"));
     }
+private:
+	void setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 };
 

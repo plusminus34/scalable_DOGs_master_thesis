@@ -1,5 +1,7 @@
 #include "CurveInterpolationConstraintsBuilder.h"
 
+#include "igl/procrustes.h"
+
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
@@ -24,7 +26,9 @@ void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::
 	auto initCoords = surfaceCurve.get_curve_coords(V);
 	srcCurve = new Curve(initCoords);
 	Curve::getTranslationAndFrameFromCoords(initCoords, T, F);
-	if (isnan(F(1,1))) F.setIdentity(); //Fix for straight x curve..
+	if (isnan(F(1,1))) {
+		F.setIdentity(); //Fix for straight x curve..
+	}
 	// todo save frame
 	// todo create dst curve from the curve parameters
 	std::vector<double> dst_len = srcCurve->len, dst_k = srcCurve->k, dst_t = srcCurve->t;
@@ -43,5 +47,12 @@ void CurveInterpolationConstraintsBuilder::get_curve_constraints(SurfaceCurve& s
 	Curve intCurve(*srcCurve,*dstCurve,timestep);
 	// Return coordinates
 	bc = intCurve.getCoords(T,F);
+	//Eigen::MatrixXd bc_src = srcCurve->getCoords(T,F);
+
+	//Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
+	//igl::procrustes(bc,bc_src,false,false,scale_dummy,R,t);
+	//bc = (bc*R).rowwise() + t.transpose();
+	//std::cout << "R = " << R << " t = " << t << std::endl;
+
 	surfaceCurve_out = surfaceCurve;
 }

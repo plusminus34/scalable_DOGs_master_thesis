@@ -16,7 +16,7 @@ public:
 	double solve(Dog& dog,
 		const PositionalConstraints& posConst,
         const StitchingConstraints& stitchingConstraints,
-        /*const EdgePointConstraints& edgePointConstraints, TODO */
+        const EdgePointConstraints& edgePointConstraints,
         int fixed_mesh_i = -1);
 
 private:

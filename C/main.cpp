@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Reading workspace " << input_path << endl;
     state.load_from_workspace(input_path);
 
-  } else if (boost::iequals(extension, "curve")) { 
+  } else if (boost::iequals(basename, "curve")) { 
     std::cout << "checking curve inteprolation!" << std::endl;
     // Plot the mesh
     igl::opengl::glfw::Viewer viewer;
@@ -173,11 +173,14 @@ int main(int argc, char *argv[]) {
     viewer.core.animation_max_fps = 30.;
     viewer.launch();
 
+  } else if (boost::iequals(basename, "planar")) {
+    int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
+    if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
+    state.init_from_planar(x_res,y_res);
   } else {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
   }
-  std::cout << "here maybe" << std::endl;
   // Plot the mesh
   igl::opengl::glfw::Viewer viewer;
   // Attach a menu plugin

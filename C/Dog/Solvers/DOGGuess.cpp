@@ -15,7 +15,7 @@ DOGGuess::DOGGuess(const Dog& dog, const bool& align_procrustes, const bool& def
 void DOGGuess::guess(Dog& dog, const PositionalConstraints& posConst, StitchingConstraints& stitchConst,
 		EdgePointConstraints& edgePointConstraints) {
 	if (align_procrustes){
-		GeneralizedProcrustes genProc; genProc.solve(dog, posConst, stitchConst);	
+		GeneralizedProcrustes genProc; genProc.solve(dog, posConst, stitchConst, edgePointConstraints);	
 	}
 	if (deform_arap) {
 		guessARAP(dog, posConst, stitchConst, edgePointConstraints);

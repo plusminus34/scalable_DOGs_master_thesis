@@ -2,13 +2,35 @@
 
 #include <igl/procrustes.h>
 
+#include "../../QuadMesh/Quad.h"
+
 double GeneralizedProcrustes::solve(Dog& dog, 
 		const PositionalConstraints& posConst,
         const StitchingConstraints& stitchingConstraints,
-        /*const PositionalConstraints& EdgePointConstraints, TODO */
+        const EdgePointConstraints& edgePointConstraints,
         int fixed_mesh_i) {
 
 	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
+	// align this mesh to edge point constraints
+	{
+		//std::cout << "aligning submesh " << fixed_mesh_i << " to edge point constraints" << std::endl;
+		Eigen::MatrixXd edgeCoords(EdgePoint::getPositionInMesh(edgePointConstraints.getEdgePoints(), dog.getV()));
+		Eigen::VectorXd bc_vec = edgePointConstraints.getEdgePointConstraints();
+		Eigen::MatrixXd bc; vec_to_mat2(bc_vec,bc);
+
+		Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
+		igl::procrustes(edgeCoords,bc,false,false,scale_dummy,R,t);
+		// go through mesh vertices and set them
+		int submesh_min_i, submesh_max_i; dog.get_submesh_min_max_i(fixed_mesh_i, submesh_min_i, submesh_max_i);
+		//std::cout << "R = " << R << " t = " << t << std::endl;
+		for (int i = submesh_min_i; i <= submesh_max_i; i++) {
+			// Todo check if we need Rt or R here..c
+			dog.getVMutable().row(i) = (dog.getVMutable().row(i)*R)+t.transpose();
+		}
+		//bc = (bc*R).rowwise() + t.transpose();
+	}
+
+
 	std::cout << "fixed_mesh_i = " << fixed_mesh_i << std::endl;
 
 	//procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));

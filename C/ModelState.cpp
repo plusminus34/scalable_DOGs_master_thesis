@@ -20,17 +20,27 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 	} else {
 		F = F_ren;F_ren = Fsqr_to_F(F);
 	}
+	setup_non_creased_dog(V,F);
+}
 
+void ModelState::setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
 	quad_topology(V,F,quadTop);
 
 	// Scale the mesh
 	const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
-	V *= 1. / edge_l;
+	auto scaled_V =V* (1. / edge_l);
 
 	DogEdgeStitching dogEdgeStitching; // no folds  
 	std::vector<pair<int,int>> submesh_min_max; submesh_min_max.push_back(pair<int,int>(0,V.rows()-1)); // only 1 component
 
-	dog = Dog(V,F);
+	dog = Dog(scaled_V,F);
+}
+
+void ModelState::init_from_planar(int square_h, int square_w) {
+	std::cout << "init from planar with  square_h = " << square_h << " square_w = " << square_w << std::endl;
+	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	get_planar_square_mesh(V, F, square_h, square_w); F = F_to_Fsqr(F);
+	setup_non_creased_dog(V,F);
 }
 
 void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res) {
