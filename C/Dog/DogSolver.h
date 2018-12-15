@@ -35,10 +35,10 @@ public:
 		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
 		DogSolver::SolverType solverType = SOLVE_PENALTY;
 		double bending_weight = 1.;
-		double isometry_weight = 1.;
+		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
 		int max_lbfgs_routines = 400;
-		double const_obj_penalty = 100.;
+		double const_obj_penalty = 1;
 		int penalty_repetitions = 1;
 		bool project_after_flow = true;
 
