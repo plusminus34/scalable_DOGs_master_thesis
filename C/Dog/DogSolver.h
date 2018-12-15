@@ -46,7 +46,7 @@ public:
 		double folding_angle = 0;
 		double curve_timestep = 0;
 
-		bool align_procrustes;
+		bool align_procrustes = true;
 		bool arap_guess;
 	};
 
