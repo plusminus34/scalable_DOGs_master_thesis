@@ -5,6 +5,7 @@
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/HEnergy.h"
 #include "Objectives/LaplacianSimilarity.h"
+#include "Objectives/EqualDiagObjective.h"
 
 #include "../Optimization/CompositeObjective.h"
 #include "../Optimization/CompositeConstraints.h"
@@ -15,7 +16,6 @@
 
 #include "Objectives/DogConstraints.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
-#include "Objectives/StitchingConstraints.h"
 
 using namespace std;
 
@@ -131,9 +131,13 @@ void DogSolver::single_optimization() {
     case SOLVE_PENALTY: {
       LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
       lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
+      break;
     }
-    case SOLVE_IPOPT: {
-      //TODO implement
+    case SOLVE_LBFGS: {
+      EqualDiagObjective eqDiag(state->quadTop);
+      compObj.add_objective(&eqDiag,p.diag_length_weight);
+      LBFGS lbfsgSolver(p.max_lbfgs_routines);
+      lbfsgSolver.solve(x0, compObj, x);
       break;
     }
     case SOLVE_NONE: {
