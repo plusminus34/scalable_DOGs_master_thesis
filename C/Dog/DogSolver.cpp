@@ -12,7 +12,6 @@
 #include "../Optimization/PositionalConstraints.h"
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
-#include "../Optimization/Solvers/LBFGS.h"
 
 #include "Objectives/DogConstraints.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
@@ -23,6 +22,8 @@ std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
+          laplacePreconditioner(dog),
+          lbfsgSolver(p.max_lbfgs_routines),
           dogGuess(dog, p.align_procrustes, p.arap_guess),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
@@ -136,8 +137,13 @@ void DogSolver::single_optimization() {
     case SOLVE_LBFGS: {
       EqualDiagObjective eqDiag(state->quadTop);
       compObj.add_objective(&eqDiag,p.diag_length_weight);
-      LBFGS lbfsgSolver(p.max_lbfgs_routines);
-      lbfsgSolver.solve(x0, compObj, x);
+      state->lbfsgSolver.solve(x0, compObj, x);
+      break;
+    }
+    case SOLVE_LAPLACIAN: {
+      EqualDiagObjective eqDiag(state->quadTop);
+      compObj.add_objective(&eqDiag,p.diag_length_weight);
+      state->laplacePreconditioner.solve(x0, compObj, x);
       break;
     }
     case SOLVE_NONE: {
