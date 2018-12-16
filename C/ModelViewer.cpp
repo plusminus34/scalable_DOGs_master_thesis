@@ -2,6 +2,7 @@
 
 #include "Gui/Rendering.h"
 #include <igl/slice.h>
+#include <igl/per_vertex_normals.h>
 
 using namespace std;
 
@@ -11,6 +12,9 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DogSolver& dogSolve
 	prevMode = viewMode;
 	first_rendering = true;
 	render_pos_const = true;
+
+	igl::readOBJ("../../data/sphere.obj",sphereV,sphereF);
+	center_and_scale_gauss_sphere(sphereV,sphereF);
 }
 
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
@@ -23,6 +27,8 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 		render_mesh_and_wireframe(viewer);
 	} else if (viewMode == ViewModeCreases) {
 		render_crease_pattern(viewer);
+	} else if (viewMode == ViewModeGauss) {
+		render_gauss_map(viewer);
 	}
 
 	first_rendering = false;
@@ -45,6 +51,9 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
     Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
+
+    Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
+  	viewer.data().set_normals(VN);
 	viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 }
 
@@ -82,4 +91,34 @@ void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& view
 	if (!edgePoints.size()) return;
 	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, state.dog.getV());
 	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));
+}
+
+void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
+  viewer.data().set_mesh(sphereV, sphereF);
+  Eigen::Vector3d diffuse; diffuse << 0.98,0.98,0.98;
+  Eigen::Vector3d ambient; ambient << 0,0,0;//0.05*diffuse;
+  Eigen::Vector3d specular; specular << 0,0,0;
+  viewer.data().uniform_colors(ambient,diffuse,specular);
+  //viewer.core.shininess = 0;
+  
+  viewer.core.align_camera_center(sphereV, sphereF);
+  //viewer.core.show_lines = false;
+
+  // TODO support curved folds by looking at normal map of each one separately
+  Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
+  //viewer.data.set_normals(VN);
+  render_wireframe(viewer,VN,state.quadTop, false);
+}
+
+void ModelViewer::center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF) {
+  Eigen::RowVectorXd colmean = GV.colwise().mean();
+  for (int i = 0; i < GV.rows(); i++) {
+    GV.row(i) = GV.row(i)-colmean; // TODO can't this be done in 1 line?
+  }
+  Eigen::VectorXd area_v;
+  igl::doublearea(GV,GF,area_v);
+  double area = area_v.sum()/2.;
+  double eps = 2e-1;
+  double scale = sqrt((4-eps)*M_PI/area); // make it a little bit smaller so we could see the lines
+  GV = GV * scale;
 }

@@ -4,6 +4,6 @@
 #include "../QuadMesh/Quad.h"
 #include "../Dog/Dog.h"
 
-void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2);
-void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const QuadTopology& quadTop);
+void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2, bool display_border);
+void render_wireframe(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const QuadTopology& quadTop, bool display_border = true);
 void render_dog_stitching_curves(igl::opengl::glfw::Viewer& viewer, const Dog& dog);

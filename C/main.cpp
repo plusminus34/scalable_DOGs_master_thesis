@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "ViewModeMesh\0ViewModeCreases\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
