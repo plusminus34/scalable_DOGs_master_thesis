@@ -21,8 +21,6 @@ private:
 	double flow(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 	void project(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
 
-	double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& obj, double cur_energy = -1);
-
 	const int& max_flow_project_iter; 
 	const int& max_lbfgs_proj_iter;
 	const int& penalty_repetitions;

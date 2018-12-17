@@ -26,9 +26,10 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 void ModelState::setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
 	quad_topology(V,F,quadTop);
 
-	// Scale the mesh
+	// Scale the mesh so that the entire x curve will be of length 20
 	const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
-	auto scaled_V =V* (1. / edge_l);
+	double cur_v_len = edge_l*sqrt(V.rows());
+	auto scaled_V =V* (20. / cur_v_len);
 
 	DogEdgeStitching dogEdgeStitching; // no folds  
 	std::vector<pair<int,int>> submesh_min_max; submesh_min_max.push_back(pair<int,int>(0,V.rows()-1)); // only 1 component
