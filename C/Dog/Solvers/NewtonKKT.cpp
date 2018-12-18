@@ -1,6 +1,7 @@
 #include "NewtonKKT.h"
 
 #include "../../QuadMesh/Quad.h"
+#include "../../Optimization/line_search.h"
 
 #include "igl/cat.h"
 

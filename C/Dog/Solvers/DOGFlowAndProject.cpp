@@ -5,6 +5,8 @@
 
 #include "igl/cat.h"
 
+#include "../../Optimization/line_search.h"
+
 using namespace std;
 
 DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, const int& max_flow_project_iter, const int& max_lbfgs_proj_iter, 

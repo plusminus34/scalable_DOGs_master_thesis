@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Optimization/Solver.h"
+#include "../../Optimization/line_search.h"
 
 class Newton : public Solver {
   
