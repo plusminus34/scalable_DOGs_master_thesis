@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../Optimization/Solver.h"
-#include "../DogLaplacian.h"
 
 class Newton : public Solver {
   

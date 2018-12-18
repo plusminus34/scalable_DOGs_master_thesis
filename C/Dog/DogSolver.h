@@ -68,7 +68,7 @@ private:
 		const DogSolver::Params& p;
 		DOGFlowAndProject flowProject;
 		Newton newton;
-		Newton newtonKKT;
+		NewtonKKT newtonKKT;
 		LBFGS lbfsgSolver;
 		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
