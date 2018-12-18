@@ -7,6 +7,7 @@
 #include "Solvers/DOGFlowAndProject.h"
 #include "Solvers/DOGGuess.h"
 #include "Solvers/Newton.h"
+#include "Solvers/NewtonKKT.h"
 
 #include "../Optimization/Solvers/LBFGS.h"
 
@@ -67,6 +68,7 @@ private:
 		const DogSolver::Params& p;
 		DOGFlowAndProject flowProject;
 		Newton newton;
+		Newton newtonKKT;
 		LBFGS lbfsgSolver;
 		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
