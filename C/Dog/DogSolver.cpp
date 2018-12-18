@@ -23,6 +23,7 @@ DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
           lbfsgSolver(p.max_lbfgs_routines),
+          newtonKKT(p.merit_p),
           dogGuess(dog, p.align_procrustes, p.arap_guess),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),

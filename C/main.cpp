@@ -213,6 +213,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
+      ImGui::InputDouble("Merit penalty", &dogSolver.p.merit_p);
       ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Project after", &dogSolver.p.project_after_flow);

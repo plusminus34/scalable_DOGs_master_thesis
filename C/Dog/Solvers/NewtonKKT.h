@@ -7,6 +7,9 @@
 class NewtonKKT : public ConstrainedSolver {
   
 public:
+	NewtonKKT(const double& merit_p) : merit_p(merit_p) {}
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
+
+	const double& merit_p;
 };

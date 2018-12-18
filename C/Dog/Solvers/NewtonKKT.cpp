@@ -57,7 +57,8 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
         d[d_i] = res[d_i];
     }
     double init_t = 1;
-    new_e = line_search(x,d,init_t,f);
+    //new_e = line_search(x,d,init_t,f);
+    new_e = exact_l2_merit_lineserach(x,d,init_t,f,constraints,merit_p);
     
     old_e = f.obj(x);
     

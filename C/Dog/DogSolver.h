@@ -44,6 +44,7 @@ public:
 		int max_lbfgs_routines = 400;
 		double const_obj_penalty = 1;
 		int penalty_repetitions = 1;
+		double merit_p = 1;
 		bool project_after_flow = true;
 
 		double folding_angle = 0;
