@@ -36,7 +36,7 @@ public:
 
 	struct Params {
 		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
-		DogSolver::SolverType solverType = SOLVE_PENALTY;
+		DogSolver::SolverType solverType = SOLVE_NEWTON;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
@@ -50,7 +50,7 @@ public:
 		double folding_angle = 0;
 		double curve_timestep = 0;
 
-		bool align_procrustes = true;
+		bool align_procrustes = false;
 		bool arap_guess;
 	};
 
