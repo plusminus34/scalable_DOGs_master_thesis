@@ -5,6 +5,7 @@
 class CompositeObjective: public Objective {
   
 public:
+	CompositeObjective(){/*empty on purpose*/}
 	CompositeObjective(const std::vector<Objective*>& objectives_i, std::vector<double> weights) : weights(weights) {
 		objectives.resize(objectives_i.size());
 		for (int i = 0; i < objectives.size(); i++) objectives[i] = objectives_i[i]->clone();

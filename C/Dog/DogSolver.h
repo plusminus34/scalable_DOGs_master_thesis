@@ -6,7 +6,7 @@
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGFlowAndProject.h"
 #include "Solvers/DOGGuess.h"
-#include "Solvers/LaplacianPreconditioner.h"
+#include "Solvers/Newton.h"
 
 #include "../Optimization/Solvers/LBFGS.h"
 
@@ -22,7 +22,7 @@ public:
 		SOLVE_FLOW_PROJECT = 1,
 		SOLVE_PENALTY = 2,
 		SOLVE_LBFGS = 3,
-		SOLVE_LAPLACIAN = 4
+		SOLVE_NEWTON = 4
 	};
 
 	DogSolver() : state(NULL) {};
@@ -66,7 +66,7 @@ private:
 		const QuadTopology& quadTop;
 		const DogSolver::Params& p;
 		DOGFlowAndProject flowProject;
-		LaplacianPreconditioner laplacePreconditioner;
+		Newton newton;
 		LBFGS lbfsgSolver;
 		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;

@@ -22,7 +22,6 @@ std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
 					: dog(dog), quadTop(quadTop), p(p),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
-          laplacePreconditioner(dog),
           lbfsgSolver(p.max_lbfgs_routines),
           dogGuess(dog, p.align_procrustes, p.arap_guess),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
@@ -107,6 +106,7 @@ void DogSolver::single_optimization() {
     */
     compConst.add_constraints(&posConst);
   }
+  CompositeObjective compObj2;
   if (edgeCoords.rows()) {
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
     /*
@@ -140,10 +140,17 @@ void DogSolver::single_optimization() {
       state->lbfsgSolver.solve(x0, compObj, x);
       break;
     }
-    case SOLVE_LAPLACIAN: {
-      EqualDiagObjective eqDiag(state->quadTop);
-      compObj.add_objective(&eqDiag,p.diag_length_weight);
-      state->laplacePreconditioner.solve(x0, compObj, x);
+    case SOLVE_NEWTON: {
+      //EqualDiagObjective eqDiag(state->quadTop);
+      //compObj.add_objective(&eqDiag,p.diag_length_weight);
+      
+      compObj2.add_objective(&bending,p.bending_weight,true);
+      compObj2.add_objective(&isoObj,p.isometry_weight,true);
+      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
+      compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
+      
+      // TODO add diag isometry to this newton thing
+      state->newton.solve(x0, compObj2, x);
       break;
     }
     case SOLVE_NONE: {
