@@ -3,6 +3,8 @@
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/line_search.h"
 
+#include "igl/Timer.h"
+
 #include "igl/cat.h"
 
 using namespace std;
@@ -12,11 +14,16 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     int vnum = x.rows()/3;
     double new_e;
 
+
+    igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get hessian
     Eigen::MatrixXd V_x; vec_to_mat2(x,V_x); 
     Eigen::SparseMatrix<double> id(x.rows(),x.rows()); id.setIdentity();
     //Eigen::SparseMatrix<double> H = -1e-2*id;
     Eigen::SparseMatrix<double> H = -f.hessian(x) - 1e-7*id;
+
+    auto hessian_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
     
     //energy->check_grad(x);
     double old_e = f.obj(x);
@@ -34,15 +41,23 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     A.makeCompressed();
     Eigen::SparseMatrix<double> id_all(A.rows(),A.rows()); id_all.setIdentity();
     A = A + 0*id_all; // todo: stupid but I want to add zeros explicitly
+    auto kkt_system_build_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
 
     Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
-    cout << "factorizing" << endl;
+    //cout << "analayzing pattern" << endl;
+    solver.analyzePattern(A);
+    auto analyze_pattern_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
     //solver.factorize(A);
-    solver.compute(A);
+    solver.factorize(A);
     if(solver.info()!=Eigen::Success) {
         cout << "Eigen Failure!" << endl;
         exit(1);
     }
+    auto factorize_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
+    
     //m_solver.factorize();
 
     Eigen::VectorXd zeroV(J.rows()); zeroV.setZero();
@@ -56,9 +71,23 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     for (int d_i = 0; d_i < g.rows(); d_i++) {
         d[d_i] = res[d_i];
     }
+    auto solve_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
     double init_t = 1;
     //new_e = line_search(x,d,init_t,f);
     new_e = exact_l2_merit_lineserach(x,d,init_t,f,constraints,merit_p);
+    auto linesearch_time = timer.getElapsedTime()-t;
+    t = timer.getElapsedTime();
+
+
+    double total_time = timer.getElapsedTime()-init_t;
+    cout << endl << endl << "total kkt system time  = " << total_time << endl;
+    cout << "hessian compute time  = " << hessian_time << endl;
+    cout << "kkt_system_build_time  = " << kkt_system_build_time << endl;
+    cout << "hessian analyze_pattern_time = " << analyze_pattern_time << endl;
+    cout << "factorize_time = " << factorize_time << endl;
+    cout << "solve_time  = " << solve_time << endl;
+    cout << "linesearch_time  = " << linesearch_time << endl;
     
     old_e = f.obj(x);
     
