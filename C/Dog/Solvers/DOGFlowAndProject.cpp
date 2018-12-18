@@ -65,7 +65,7 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
 	Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
 	Eigen::SparseMatrix<double> A; igl::cat(1, L_jt, J_0, A);
-	
+
 	A.makeCompressed();
 	Eigen::SparseMatrix<double> id_all(A.rows(),A.rows()); id_all.setIdentity();
 	A = A + 0*id_all; // todo: stupid but I want to add zeros explicitly

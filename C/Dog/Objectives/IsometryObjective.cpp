@@ -112,6 +112,20 @@ Eigen::SparseMatrix<double> IsometryObjective::hessian(const Eigen::VectorXd& x)
 		const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
 		double l0 = refL[h_cnt];
 
+		/*
+		Convexication: If l0 <= than current squared length than the hessian is PSD otherwise not,
+			and we need to change to a majorizer with an l0* at the hessian which is of a bit of a smaller from l0 (by some epsilon)
+		*/
+		double x_diff = p0_x-pxf_x;
+  		double y_diff = p0_y-pxf_y;
+  		double z_diff = p0_z-pxf_z;
+  		double cur_squared_l = x_diff*x_diff+y_diff*y_diff+z_diff*z_diff;
+  		if (cur_squared_l < l0) {
+  			const double eps = 1e-10;
+  			auto diff = cur_squared_l-l0;
+  			l0 += diff + eps;
+  		}
+
 		double t2 = pxf_x*4.0;
 		double t3 = pxf_y*4.0;
 		double t4 = pxf_z*4.0;

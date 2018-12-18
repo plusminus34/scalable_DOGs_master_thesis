@@ -146,13 +146,14 @@ void DogSolver::single_optimization() {
       
       compObj2.add_objective(&bending,p.bending_weight,true);
       compObj2.add_objective(&isoObj,p.isometry_weight,true);
+      //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
       
       // TODO add diag isometry to this newton thing
-      state->newton.solve(x0, compObj2, x);
+      //state->newton.solve(x0, compObj2, x);
 
-      //state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
+      state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
       break;
     }
     case SOLVE_NONE: {
