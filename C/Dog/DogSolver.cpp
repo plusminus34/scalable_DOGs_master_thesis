@@ -150,9 +150,17 @@ void DogSolver::single_optimization() {
       //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
-      
+
+
+      /*
       // TODO add diag isometry to this newton thing
-      //state->newton.solve(x0, compObj2, x);
+      for (int i = 0; i < 5; i++) {
+        CompositeObjective compObj3(compObj2);
+        QuadraticConstraintsSumObjective dogConstSoft(dogConst);
+        compObj3.add_objective(&dogConstSoft,1000*p.const_obj_penalty,true);
+        state->newton.solve(x0, compObj3, x);  
+      }
+      */
 
       state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
       break;

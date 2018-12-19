@@ -76,12 +76,13 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     t = timer.getElapsedTime();
     double init_timestep = 1;
     //new_e = line_search(x,d,init_t,f);
-    new_e = exact_l2_merit_lineserach(x,d,init_timestep,f,constraints,merit_p);
+    new_e = exact_l2_merit_linesearch(x,d,init_timestep,f,constraints,merit_p);
     auto linesearch_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
 
 
     double total_time = timer.getElapsedTime()-init_time;
+    /*
     cout << endl << endl << "total kkt system time  = " << total_time << endl;
     cout << "hessian compute time  = " << hessian_time << endl;
     cout << "kkt_system_build_time  = " << kkt_system_build_time << endl;
@@ -89,10 +90,12 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     cout << "factorize_time = " << factorize_time << endl;
     cout << "solve_time  = " << solve_time << endl;
     cout << "linesearch_time  = " << linesearch_time << endl;
-
-    std::ofstream out_file(std::string("KKT_mat"));
-    out_file << igl::matlab_format(A,"A");
-    out_file << igl::matlab_format(g_const,"g_const");
+    */
+    //std::ofstream out_file(std::string("KKT_mat"));
+    //out_file << igl::matlab_format(A,"A");
+    //out_file << igl::matlab_format(g_const,"g_const");
+    //std::ofstream out_file(std::string("null_space.m"));
+    //out_file << igl::matlab_format(Jt,"Jt");
     
     old_e = f.obj(x);
     

@@ -8,7 +8,7 @@
   t9 = p0_y-pxf_y;
   t10 = p0_z-pxf_z;
   t11 = t5*t5;
-  t12 = t6*t6;
+  t12 = t6*t6;  
   t13 = t7*t7;
   t14 = t11+t12+t13;
   t15 = 1.0/sqrt(t14);

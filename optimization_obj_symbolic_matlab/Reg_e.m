@@ -74,3 +74,24 @@ E_x = simplify((norm(ex_f).^2-norm(ex_b).^2)^2);
 ccode(E_x,'file','Reg_E');
 ccode(gradient(E_x),'file','Reg_G');
 ccode(hessian(E_x),'file','Reg_H');
+
+hess = hessian(E_x);
+% seems that if d=abs(norm(ex_f)-norm(ex_b)) than we can use the hessian of
+% norm(ex_f).^4+norm(ex_b).^4-(2-d)*norm(ex_f)^2*norm(ex_b)^2) and it is
+% tight for this kind of expression!
+% since diff will be small this should be reasonable!
+
+diff = sym('diff','real');
+E_x2 = simplify(norm(ex_f).^4+norm(ex_b).^4-(2-4*diff)*norm(ex_f)^2*norm(ex_b)^2);
+
+hess_E_x2 = hessian(E_x2);
+hess_E_x2 = hess_E_x2(1:9,1:9);
+ccode(hess_E_x2,'file','Reg_convex_H');
+
+diff = 0.001;
+
+hess2 = hessian(E_x2);
+check = double(subs(hess,[p_0,p_xf,p_xb],[0,0,0 ...
+1+diff,0,0,0,0,-1]))
+check2 = double(subs(hess2,[p_0,p_xf,p_xb],[0,0,0 ...
+1+diff,0,0,0,0,-1]))

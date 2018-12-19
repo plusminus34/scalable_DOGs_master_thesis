@@ -46,7 +46,7 @@ double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_siz
 
 
 
-double exact_l2_merit_lineserach(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, const Constraints& constraints,
+double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, const Constraints& constraints,
 				const double& merit_penalty,
 				double cur_energy) {
 
