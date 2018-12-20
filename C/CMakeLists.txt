@@ -32,29 +32,6 @@ set(LIBIGL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../libigl/")
 set(LIBIGL_SOURCE_DIR "${LIBIGL_ROOT}/include")
 set(LIBIGL_EXTERNAL "${LIBIGL_ROOT}/external")
 
-#if(LIBIGL_WITH_TRIANGLE)
-  set(TRIANGLE_DIR "${LIBIGL_EXTERNAL}/triangle")
-  if(NOT TARGET triangle)
-    igl_download_triangle()
-    add_subdirectory("${TRIANGLE_DIR}" "triangle")
-  endif()
-  compile_igl_module("triangle")
-  target_link_libraries(igl_triangle ${IGL_SCOPE} triangle)
-  target_include_directories(igl_triangle ${IGL_SCOPE} ${TRIANGLE_DIR})
-#endif()
-
-### Compile the ImGui part ###
-#if(LIBIGL_WITH_OPENGL_GLFW_IMGUI)
-#  if(TARGET igl::opengl_glfw)
-    # ImGui module
-    compile_igl_module("opengl/glfw/imgui")
-    if(NOT TARGET imgui)
-      igl_download_imgui()
-      add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
-    endif()
-    target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
- # endif()
-#endif()
 
 #add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
 #target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
@@ -79,9 +56,14 @@ file(GLOB SRC_GEOMETRY_PRIMITIVES GeometryPrimitives/*.cpp)
 #file(GLOB IFOPT_IPOPT_SRC ifopt_ipopt/src/*.cc)
 
 #message("${IFOPT_SRC}")
- 
-#add_library(libpardiso500-MACOS-X86-64 SHARED IMPORTED)
-#set_target_properties(libpardiso500-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso500-MACOS-X86-64.dylib")
+#find_package(OpenMP)
+#find_package(OpenMP3)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(MyTarget PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
+add_library(libpardiso600-MACOS-X86-64 SHARED IMPORTED)
+set_target_properties(libpardiso600-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso600-MACOS-X86-64.dylib")
 
 #add_library(libifopt_core SHARED IMPORTED)
 #set_target_properties(libifopt_core PROPERTIES IMPORTED_LOCATION "libifopt_core.dylib")
@@ -90,6 +72,18 @@ file(GLOB SRC_GEOMETRY_PRIMITIVES GeometryPrimitives/*.cpp)
 #set_target_properties(libifopt_ipopt PROPERTIES IMPORTED_LOCATION "libifopt_ipopt.dylib")
 
 #target_include_directories(ifopt "/Users/michaelrabinovich/ifopt")
+#add_definitions("-fopenmp")
+
+
+
+add_definitions(-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+add_definitions(-DOpenMP_CXX_LIB_NAMES="omp")
+add_definitions(-DOpenMP_omp_LIBRARY=/usr/local/opt/libomp/lib/libomp.dylib)
+#add_definitions()
+SET(CMAKE_EXE_LINKER_FLAGS  "-L/usr/local/opt/libomp/lib -I/usr/local/opt/libomp/include")
+
+add_library(libomp SHARED IMPORTED)
+set_target_properties(libomp PROPERTIES IMPORTED_LOCATION "libomp.dylib")
 
 add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES})
-target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle)
+target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso600-MACOS-X86-64 libomp)
