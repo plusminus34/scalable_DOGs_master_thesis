@@ -107,7 +107,6 @@ void DogSolver::single_optimization() {
     */
     compConst.add_constraints(&posConst);
   }
-  CompositeObjective compObj2;
   if (edgeCoords.rows()) {
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
     /*
@@ -141,26 +140,33 @@ void DogSolver::single_optimization() {
       state->lbfsgSolver.solve(x0, compObj, x);
       break;
     }
-    case SOLVE_NEWTON: {
-      //EqualDiagObjective eqDiag(state->quadTop);
-      //compObj.add_objective(&eqDiag,p.diag_length_weight);
-      
+    case SOLVE_NEWTON_PENALTY: {
+      CompositeObjective compObj2;
       compObj2.add_objective(&bending,p.bending_weight,true);
       compObj2.add_objective(&isoObj,p.isometry_weight,true);
       //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
 
-
-      /*
-      // TODO add diag isometry to this newton thing
-      for (int i = 0; i < 5; i++) {
+      double penalty = 1;
+      for (int i = 0; i < p.penalty_repetitions  ; i++) {
         CompositeObjective compObj3(compObj2);
         QuadraticConstraintsSumObjective dogConstSoft(dogConst);
-        compObj3.add_objective(&dogConstSoft,1000*p.const_obj_penalty,true);
-        state->newton.solve(x0, compObj3, x);  
+        compObj3.add_objective(&dogConstSoft,penalty*p.const_obj_penalty,true);
+        state->newton.solve(x0, compObj3, x); 
+        penalty*=2;
       }
-      */
+      break;
+    }
+    case SOLVE_NEWTON_FLOW: {
+      //EqualDiagObjective eqDiag(state->quadTop);
+      //compObj.add_objective(&eqDiag,p.diag_length_weight);
+      CompositeObjective compObj2;
+      compObj2.add_objective(&bending,p.bending_weight,true);
+      compObj2.add_objective(&isoObj,p.isometry_weight,true);
+      //compConst.add_constraints(&edgePtConst);
+      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
+      compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
 
       state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
       break;

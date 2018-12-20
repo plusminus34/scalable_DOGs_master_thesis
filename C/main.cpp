@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       ImGui::Combo("Deformation type", (int *)(&dogSolver.p.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Solver type", (int *)(&dogSolver.p.solverType), "None\0ProjectFlow\0Penalty LBFGS\0LBFGS\0Newton\0\0");
+      ImGui::Combo("Solver type", (int *)(&dogSolver.p.solverType), "None\0ProjectFlow\0Penalty LBFGS\0LBFGS\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &dogSolver.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &dogSolver.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Laplacian Similarity", &dogSolver.p.laplacian_similarity_weight, 0, 0, "%.4f");

@@ -23,7 +23,8 @@ public:
 		SOLVE_FLOW_PROJECT = 1,
 		SOLVE_PENALTY = 2,
 		SOLVE_LBFGS = 3,
-		SOLVE_NEWTON = 4
+		SOLVE_NEWTON_PENALTY = 4,
+		SOLVE_NEWTON_FLOW = 5
 	};
 
 	DogSolver() : state(NULL) {};
@@ -36,7 +37,7 @@ public:
 
 	struct Params {
 		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
-		DogSolver::SolverType solverType = SOLVE_NEWTON;
+		DogSolver::SolverType solverType = SOLVE_NEWTON_FLOW;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
