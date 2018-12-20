@@ -9,7 +9,9 @@
 #include "igl/matlab_format.h"
 
 using namespace std;
-
+//m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
+                //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
+                //m_solver.iparm[20] = 1;
 double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
     int vnum = x.rows()/3;
@@ -41,21 +43,29 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
 
     A.makeCompressed();
     Eigen::SparseMatrix<double> id_all(A.rows(),A.rows()); id_all.setIdentity();
-    //A = A + 0*id_all; // todo: stupid but I want to add zeros explicitly
+    A = A + 0*id_all; // todo: stupid but Paradiso wants to add zeros explicitly
     auto kkt_system_build_time = timer.getElapsedTime()-t;
-    t = timer.getElapsedTime();
 
-    Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
+    t = timer.getElapsedTime();
+    //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
-    solver.analyzePattern(A);
+    //solver.analyzePattern(A);
+    if (first_solve) {
+        m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
+        m_solver.set_pattern();
+        m_solver.analyze_pattern();
+        first_solve = false;
+    } else {
+        m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
+    }
     auto analyze_pattern_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
-    //solver.factorize(A);
-    solver.factorize(A);
+    m_solver.factorize();
+    /*solver.factorize(A);
     if(solver.info()!=Eigen::Success) {
         cout << "Eigen Failure!" << endl;
         exit(1);
-    }
+    }*/
     auto factorize_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
     
@@ -67,7 +77,8 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     
     Eigen::VectorXd res;
     //cout << "solving!" << endl;
-    res = solver.solve(g_const);
+    //res = solver.solve(g_const);
+    m_solver.solve(g_const,res);
     
     for (int d_i = 0; d_i < g.rows(); d_i++) {
         d[d_i] = res[d_i];
@@ -82,7 +93,7 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
 
 
     double total_time = timer.getElapsedTime()-init_time;
-    /*
+    
     cout << endl << endl << "total kkt system time  = " << total_time << endl;
     cout << "hessian compute time  = " << hessian_time << endl;
     cout << "kkt_system_build_time  = " << kkt_system_build_time << endl;
@@ -90,7 +101,7 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     cout << "factorize_time = " << factorize_time << endl;
     cout << "solve_time  = " << solve_time << endl;
     cout << "linesearch_time  = " << linesearch_time << endl;
-    */
+    
     //std::ofstream out_file(std::string("KKT_mat"));
     //out_file << igl::matlab_format(A,"A");
     //out_file << igl::matlab_format(g_const,"g_const");

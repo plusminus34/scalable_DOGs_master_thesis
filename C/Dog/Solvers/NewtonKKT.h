@@ -16,6 +16,7 @@ public:
 
 	PardisoSolver m_solver;
 
+	bool first_solve = true;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
 };
