@@ -15,7 +15,7 @@ public:
 	virtual void set_ref(const Eigen::VectorXd& x0);
 
 private:
-	virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const;
+	virtual void updateHessianIJV(const Eigen::VectorXd& x);
 	
 	const QuadTopology& quadTop;
 	Eigen::VectorXd refL;

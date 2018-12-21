@@ -1,5 +1,10 @@
 #include "SimplifiedBendingObjective.h"
 
+SimplifiedBendingObjective::SimplifiedBendingObjective(const QuadTopology& quadTop)  : quadTop(quadTop) {
+	// Number of hessian triplets
+	IJV.resize(51*quadTop.stars.rows()/5+27*quadTop.bnd3.rows()/4);
+}
+
 double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) const {
   double e = 0;
   int vnum = x.rows()/3;
@@ -135,13 +140,11 @@ Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) const
 }
 
 
-std::vector<Eigen::Triplet<double> > SimplifiedBendingObjective::hessianIJV(const Eigen::VectorXd& x) const {
-  std::vector<Eigen::Triplet<double> > IJV;
-
-  IJV.reserve(quadTop.stars.rows()*3*15+quadTop.bnd3.rows()*3*12);
+void SimplifiedBendingObjective::updateHessianIJV(const Eigen::VectorXd& x) {
+  // Number of ijv values
   int vnum = x.rows()/3;
   int v_num = vnum;
-
+  int h_cnt = 0;
   #pragma clang loop vectorize(enable)
   for (int si = 0; si < quadTop.stars.rows(); si+=5) {
         //local_grad.setZero();
@@ -154,57 +157,57 @@ std::vector<Eigen::Triplet<double> > SimplifiedBendingObjective::hessianIJV(cons
         const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
         const double pyf_x(x(p_yf_i+0)); const double pyf_y(x(p_yf_i+1*vnum)); const double pyf_z(x(p_yf_i+2*vnum));
 
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_0_i, 1.6E1));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_xb_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_xf_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_yb_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_yf_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, 1.6E1));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_yb_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_yf_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, 1.6E1));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_yb_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_yf_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_xb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_xf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_xb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_xf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i,p_yb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i,p_yf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+vnum,p_yb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+vnum,p_yf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+2*vnum,p_yb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yb_i+2*vnum,p_yf_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i,p_yb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i,p_yf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+vnum,p_yb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+vnum,p_yf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+2*vnum,p_yb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_yf_i+2*vnum,p_yf_i+2*vnum, 2.0));
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_0_i, 1.6E1);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_xb_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_xf_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_yb_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_yf_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, 1.6E1);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_yb_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_yf_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, 1.6E1);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_yb_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_yf_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_xb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_xf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_xb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_xf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i,p_yb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i,p_yf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+vnum,p_yb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+vnum,p_yf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+2*vnum,p_yb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yb_i+2*vnum,p_yf_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i,p_yb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i,p_yf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+vnum,p_yb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+vnum,p_yf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+2*vnum,p_yb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_yf_i+2*vnum,p_yf_i+2*vnum, 2.0);
    }
 
    for (int si = 0; si < quadTop.bnd3.rows(); si+=4) {
@@ -214,34 +217,33 @@ std::vector<Eigen::Triplet<double> > SimplifiedBendingObjective::hessianIJV(cons
 		const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
 		const double pyf_x(x(p_yf_i+0)); const double pyf_y(x(p_yf_i+1*vnum)); const double pyf_z(x(p_yf_i+2*vnum));
 
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_0_i, 8.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_xb_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i,p_xf_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, 8.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, 8.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_xb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i,p_xf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_0_i, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_xb_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i,p_xf_i, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, -4.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, 2.0));
-		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, 2.0));
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_0_i, 8.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_xb_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i,p_xf_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, 8.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, 8.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_xb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i,p_xf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_0_i, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_xb_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i,p_xf_i, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, -4.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, 2.0);
+		IJV[h_cnt++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, 2.0);
 
 	}
-	return IJV;
 }

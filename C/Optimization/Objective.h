@@ -20,11 +20,13 @@ public:
   // Can be overloaded by a function that build it by another way, not through IJV
   virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
   	//Eigen::SparseMatrix<double> H(x.rows(),x.rows());
-    auto IJV = hessianIJV(x);
+    updateHessianIJV(x);
     if ( cachedH.rows() == 0) {
+      std::cout << "nnnnnooot cached" << std::endl;
       cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
       igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
     } else {
+      std::cout << "yes cached" << std::endl;
       igl::sparse_cached(IJV, cached_ijv_data, cachedH);
     }
   	return cachedH;
@@ -36,11 +38,11 @@ public:
 
   void check_grad(const Eigen::VectorXd& x) const;
 
+ protected:
+   std::vector<Eigen::Triplet<double> > IJV;
  private:
   // return 0 sparse matrix if not implemented
-  virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const {
-  	std::vector<Eigen::Triplet<double> > IJV; return IJV;
-  };
+  virtual void updateHessianIJV(const Eigen::VectorXd& x) { /*empty on purpose */ } 
 
   Eigen::VectorXi cached_ijv_data;
   Eigen::SparseMatrix<double> cachedH;

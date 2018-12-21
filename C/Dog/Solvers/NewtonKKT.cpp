@@ -20,7 +20,6 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get hessian
-    Eigen::MatrixXd V_x; vec_to_mat2(x,V_x); 
     Eigen::SparseMatrix<double> id(x.rows(),x.rows()); id.setIdentity();
     //Eigen::SparseMatrix<double> H = -1e-2*id;
     Eigen::SparseMatrix<double> H = -f.hessian(x) - 1e-7*id;
