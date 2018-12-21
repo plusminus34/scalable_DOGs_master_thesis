@@ -134,8 +134,8 @@ Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) const
   return grad;
 }
 
-Eigen::SparseMatrix<double> SimplifiedBendingObjective::hessian(const Eigen::VectorXd& x) const {
-  Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
+
+std::vector<Eigen::Triplet<double> > SimplifiedBendingObjective::hessianIJV(const Eigen::VectorXd& x) const {
   std::vector<Eigen::Triplet<double> > IJV;
 
   IJV.reserve(quadTop.stars.rows()*3*15+quadTop.bnd3.rows()*3*12);
@@ -243,6 +243,5 @@ Eigen::SparseMatrix<double> SimplifiedBendingObjective::hessian(const Eigen::Vec
 		IJV.push_back(Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, 2.0));
 
 	}
-	hessian.setFromTriplets(IJV.begin(),IJV.end());
-	return hessian;
+	return IJV;
 }
