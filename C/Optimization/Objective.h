@@ -14,11 +14,6 @@ public:
   virtual double obj(const Eigen::VectorXd& x) const = 0;
   virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const = 0;
 
-  // return 0 sparse matrix if not implemented
-  virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const {
-  	std::vector<Eigen::Triplet<double> > IJV; return IJV;
-  };
-
   // builds the hessian from an IJV
   // Can be overloaded by a function that build it by another way, not through IJV
   virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
@@ -35,6 +30,10 @@ public:
   void check_grad(const Eigen::VectorXd& x) const;
 
  private:
+  // return 0 sparse matrix if not implemented
+  virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const {
+  	std::vector<Eigen::Triplet<double> > IJV; return IJV;
+  };
 
   void finiteGradient(const Eigen::VectorXd &x, Eigen::VectorXd &grad, int accuracy = 1) const;
 };

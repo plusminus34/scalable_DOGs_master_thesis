@@ -9,6 +9,11 @@
 #include "Solvers/Newton.h"
 #include "Solvers/NewtonKKT.h"
 
+#include "Objectives/IsometryObjective.h"
+#include "Objectives/SimplifiedBendingObjective.h"
+#include "Objectives/HEnergy.h"
+#include "Objectives/LaplacianSimilarity.h"
+
 #include "../Optimization/Solvers/LBFGS.h"
 
 
@@ -55,15 +60,25 @@ public:
 		bool arap_guess;
 	};
 
+	struct Objectives {
+	  Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0) : 
+	  		bending(quadTop), isoObj(quadTop, init_x0), laplacianSimilarity(dog,init_x0) {}
+	  // Objectives
+	  SimplifiedBendingObjective bending;
+	  //HEnergy bending(state->quadTop);
+	  IsometryObjective isoObj;
+	  LaplacianSimilarity laplacianSimilarity;
+	};
+
 	DogSolver::Params p;
 	double constraints_deviation;
 	double objective;
 	
 private:
-	void init_solver_state(Dog& dog, const QuadTopology& quadTop);
+	void init_solver_state(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0);
 
 	struct State {
-		State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p);
+		State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0);
 
 		Dog& dog;
 		const QuadTopology& quadTop;
@@ -76,10 +91,12 @@ private:
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
 		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
 		CurveInterpolationConstraintsBuilder geoConstraintsBuilder;
+
+		Eigen::VectorXd init_x0;
+		DogSolver::Objectives obj;
 	};
 
 	DogSolver::State* state;
-	Eigen::VectorXd init_x0;
 	// Positional constraints
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	// Curve constraints

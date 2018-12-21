@@ -11,8 +11,9 @@ public:
 	
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
-	virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const;
 
 private:
+	virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const;
+	
 	const QuadTopology& quadTop;
 };

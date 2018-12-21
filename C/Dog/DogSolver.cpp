@@ -1,10 +1,6 @@
 #include "DogSolver.h"
 
 #include "Objectives/StitchingConstraints.h"
-#include "Objectives/IsometryObjective.h"
-#include "Objectives/SimplifiedBendingObjective.h"
-#include "Objectives/HEnergy.h"
-#include "Objectives/LaplacianSimilarity.h"
 #include "Objectives/EqualDiagObjective.h"
 
 #include "../Optimization/CompositeObjective.h"
@@ -19,8 +15,8 @@
 using namespace std;
 
 std::vector<int> get_second_dog_row(Dog& dog);
-DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p) 
-					: dog(dog), quadTop(quadTop), p(p),
+DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0) 
+					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
           lbfsgSolver(p.max_lbfgs_routines),
           newtonKKT(p.merit_p),
@@ -28,6 +24,7 @@ DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
           geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
+            
 }
 
 void DogSolver::update_positional_constraints() {
@@ -88,16 +85,8 @@ void DogSolver::single_optimization() {
     */
   }
 
-  // Objectives
-  SimplifiedBendingObjective bending(state->quadTop);
-  //HEnergy bending(state->quadTop);
-  IsometryObjective isoObj(state->quadTop,x0); isoObj.set_ref(init_x0);
-  QuadraticConstraintsSumObjective constObjBesidesPos(compConst);
-  LaplacianSimilarity laplacianSimilarity(state->dog,x0);
-
-
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
-  CompositeObjective compObj({&bending, &isoObj, &laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
+  CompositeObjective compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
   if (b.rows()) {
     PositionalConstraints posConst(b,bc);
     
@@ -142,8 +131,8 @@ void DogSolver::single_optimization() {
     }
     case SOLVE_NEWTON_PENALTY: {
       CompositeObjective compObj2;
-      compObj2.add_objective(&bending,p.bending_weight,true);
-      compObj2.add_objective(&isoObj,p.isometry_weight,true);
+      compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
+      compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
       //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
@@ -162,8 +151,8 @@ void DogSolver::single_optimization() {
       //EqualDiagObjective eqDiag(state->quadTop);
       //compObj.add_objective(&eqDiag,p.diag_length_weight);
       CompositeObjective compObj2;
-      compObj2.add_objective(&bending,p.bending_weight,true);
-      compObj2.add_objective(&isoObj,p.isometry_weight,true);
+      compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
+      compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
       //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
@@ -183,11 +172,11 @@ void DogSolver::single_optimization() {
 }
 
 void DogSolver::init_from_new_dog(Dog& dog, const QuadTopology& quadTop) {
-	init_solver_state(dog,quadTop);
-  init_x0 = state->dog.getV_vector();
+  auto init_x0 = dog.getV_vector();
+	init_solver_state(dog,quadTop, init_x0);
 }
 
-void DogSolver::init_solver_state(Dog& dog, const QuadTopology& quadTop) {
+void DogSolver::init_solver_state(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0) {
 	if (state) delete state;
-	state = new DogSolver::State(dog,quadTop,p);
+	state = new DogSolver::State(dog,quadTop,p, init_x0);
 }
