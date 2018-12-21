@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Objective.h"
+#include <igl/Timer.h>
 
 class CompositeObjective: public Objective {
   
@@ -30,6 +31,7 @@ public:
 	};
 
 	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
+		igl::Timer timer; double init_t = timer.getElapsedTime();
 		Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
 		for (int i = 0; i < objectives.size(); i++) {
 			if (use_hessian[i]) {
@@ -46,3 +48,6 @@ private:
 	std::vector<double> weights;
 	std::vector<bool> use_hessian;
 };
+
+//This hessian time = 0.000199551
+//This hessian time = 0.00027908

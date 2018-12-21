@@ -19,4 +19,8 @@ public:
 	bool first_solve = true;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
+
+	// cached stuff
+	Eigen::SparseMatrix<double> id;
+	Eigen::SparseMatrix<double> eps_id;
 };

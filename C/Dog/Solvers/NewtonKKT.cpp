@@ -17,12 +17,14 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     int vnum = x.rows()/3;
     double new_e;
 
+    if (id.rows() == 0) {
+        id = Eigen::SparseMatrix<double>(x.rows(),x.rows()); id.setIdentity();
+        eps_id = 1e-7*id;
+    }
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get hessian
-    Eigen::SparseMatrix<double> id(x.rows(),x.rows()); id.setIdentity();
-    //Eigen::SparseMatrix<double> H = -1e-2*id;
-    Eigen::SparseMatrix<double> H = -f.hessian(x) - 1e-7*id;
+    Eigen::SparseMatrix<double> H = -f.hessian(x) - eps_id;
 
     auto hessian_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
@@ -73,6 +75,7 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, con
     Eigen::VectorXd zeroV(J.rows()); zeroV.setZero();
     Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
     Eigen::VectorXd g_const; igl::cat(1, g, constraints_deviation, g_const);
+    //g_const = -1*g_const;
     
     Eigen::VectorXd res;
     //cout << "solving!" << endl;

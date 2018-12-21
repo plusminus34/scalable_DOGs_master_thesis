@@ -22,11 +22,9 @@ public:
   	//Eigen::SparseMatrix<double> H(x.rows(),x.rows());
     updateHessianIJV(x);
     if ( cachedH.rows() == 0) {
-      std::cout << "nnnnnooot cached" << std::endl;
       cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
       igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
     } else {
-      std::cout << "yes cached" << std::endl;
       igl::sparse_cached(IJV, cached_ijv_data, cachedH);
     }
   	return cachedH;
