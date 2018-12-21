@@ -129,8 +129,7 @@ void DogSolver::single_optimization() {
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective_permanent(edgePosConst,p.const_obj_penalty,true);
 
-      //state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
-      state->newtonKKT.solve_constrained(x0, compObj2,state->constraints.dogConst, x);
+      state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
       break;
     }
     case SOLVE_NONE: {

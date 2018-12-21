@@ -1,14 +1,6 @@
 #include "StitchingConstraints.h"
 
 using namespace std;
-/*
-struct DogFoldingConstraints {
-	std::vector<std::pair<int,int>> edge_const_1, edge_const_2;
-	std::vector<double> edge_coordinates;
-	// Use for cases when it's important to have a precise representation (usually it doesn't)
-	std::vector<CGAL::Exact_predicates_exact_constructions_kernel::FT> edge_coordinates_precise;
-};
-*/
 
 StitchingConstraints::StitchingConstraints(const QuadTopology& quadTop,const DogEdgeStitching& edgeStitching) : quadTop(quadTop), 
 																					eS(edgeStitching) {
