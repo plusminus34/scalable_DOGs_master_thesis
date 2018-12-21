@@ -24,7 +24,7 @@ DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
           geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
-            
+
 }
 
 void DogSolver::update_positional_constraints() {
@@ -151,11 +151,11 @@ void DogSolver::single_optimization() {
       //EqualDiagObjective eqDiag(state->quadTop);
       //compObj.add_objective(&eqDiag,p.diag_length_weight);
       CompositeObjective compObj2;
-      compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
-      compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
+      compObj2.add_objective_permanent(state->obj.bending,p.bending_weight,true);
+      compObj2.add_objective_permanent(state->obj.isoObj,p.isometry_weight,true);
       //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-      compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
+      compObj2.add_objective_permanent(edgePosConst,p.const_obj_penalty,true);
 
       state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
       break;

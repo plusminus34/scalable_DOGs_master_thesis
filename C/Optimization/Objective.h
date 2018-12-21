@@ -6,6 +6,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include <igl/sparse_cached.h>
+
 class Objective {
   
 public:
@@ -16,11 +18,16 @@ public:
 
   // builds the hessian from an IJV
   // Can be overloaded by a function that build it by another way, not through IJV
-  virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
-  	Eigen::SparseMatrix<double> H(x.rows(),x.rows());
-  	auto IJV = hessianIJV(x);
-  	H.setFromTriplets(IJV.begin(),IJV.end());
-  	return H;
+  virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
+  	//Eigen::SparseMatrix<double> H(x.rows(),x.rows());
+    auto IJV = hessianIJV(x);
+    if ( cachedH.rows() == 0) {
+      cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
+      igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
+    } else {
+      igl::sparse_cached(IJV, cached_ijv_data, cachedH);
+    }
+  	return cachedH;
   }
   
 
@@ -34,6 +41,9 @@ public:
   virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const {
   	std::vector<Eigen::Triplet<double> > IJV; return IJV;
   };
+
+  Eigen::VectorXi cached_ijv_data;
+  Eigen::SparseMatrix<double> cachedH;
 
   void finiteGradient(const Eigen::VectorXd &x, Eigen::VectorXd &grad, int accuracy = 1) const;
 };

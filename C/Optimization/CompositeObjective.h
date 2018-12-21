@@ -15,6 +15,9 @@ public:
 	void add_objective(Objective* e, double w = 1., bool c_use_hessian = false) {objectives.push_back(e->clone()); 
 								weights.push_back(w); use_hessian.push_back(c_use_hessian);}
 
+	void add_objective_permanent(Objective& e, double w = 1., bool c_use_hessian = false) {objectives.push_back(&e); 
+								weights.push_back(w); use_hessian.push_back(c_use_hessian);}
+
 	virtual double obj(const Eigen::VectorXd& x) const {
 			double obj = 0;
 			for (int i = 0; i < objectives.size(); i++) {obj+=weights[i]*objectives[i]->obj(x);}
@@ -26,7 +29,7 @@ public:
 		return grad;
 	};
 
-	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
+	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
 		Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
 		for (int i = 0; i < objectives.size(); i++) {
 			if (use_hessian[i]) {

@@ -41,6 +41,6 @@ std::vector<Eigen::Triplet<double>> LaplacianSimilarity::to_triplets(Eigen::Spar
 */
 
 
-Eigen::SparseMatrix<double> LaplacianSimilarity::hessian(const Eigen::VectorXd& x) const {
+Eigen::SparseMatrix<double> LaplacianSimilarity::hessian(const Eigen::VectorXd& x) {
 	return 2*L.transpose();
 }

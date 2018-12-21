@@ -26,7 +26,7 @@ public:
 
 	// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
 	virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
-		// The constraints is linear so the hessian is just simple 2*J'*J
+		// The constraints are linear so the hessian is just simple 2*J'*J
 		// (Here it's even simpler as just 2*(diagonals with one at constrained indices) but this is simpler to write)
 		auto J = cnst->Jacobian(x);
 		auto H = 2*J.transpose()*J;
