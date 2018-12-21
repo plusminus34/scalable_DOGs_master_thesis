@@ -218,7 +218,6 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Project after", &dogSolver.p.project_after_flow);
       ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);
-      ImGui::Checkbox("ARAP Guess", &dogSolver.p.arap_guess);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
 
       ImGui::InputDouble("Constraints deviation", &dogSolver.constraints_deviation);

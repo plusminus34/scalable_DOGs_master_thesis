@@ -7,20 +7,29 @@
 
 class CompositeConstraints : public Constraints {
 public:
-	CompositeConstraints() {}
+	CompositeConstraints() {};
 	virtual CompositeConstraints* clone() const {return new CompositeConstraints(*this);}
 
 	CompositeConstraints(const std::vector<Constraints*>& constraints_i) {
 		constraints.resize(constraints_i.size());
 		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i]->clone();
-		approx_nnz = 0; const_n = 0; 
-		for (auto cnst: constraints) {const_n+=cnst->getConstNum(); approx_nnz+= cnst->getApproxNonZeros();}
+		const_n = 0; 
+		for (auto cnst: constraints) {const_n+=cnst->getConstNum(); ijv_size += cnst->get_IJV_size();}
+		IJV.resize(ijv_size);
 	};
+
+	void add_constraints_permanent(Constraints* cnst) {
+		constraints.push_back(cnst);
+		const_n+= cnst->getConstNum();
+		ijv_size += cnst->get_IJV_size();
+		IJV.resize(ijv_size);
+	}
 
 	void add_constraints(Constraints* cnst) {
 		constraints.push_back(cnst->clone());
 		const_n+= cnst->getConstNum();
-		approx_nnz+= cnst->getApproxNonZeros();
+		ijv_size += cnst->get_IJV_size();
+		IJV.resize(ijv_size);
 	}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
@@ -36,18 +45,17 @@ public:
 		}
 		return vals;
 	}
-	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
-		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
-		int row_base = 0;
+	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
+		int row_base = 0; int ijv_idx = 0;
 		for (auto cnst: constraints) {
-			std::vector<Eigen::Triplet<double> > cnst_IJV = cnst->JacobianIJV(x);
+			cnst->updateJacobianIJV(x);
+			const std::vector<Eigen::Triplet<double> >& cnst_IJV = cnst->JacobianIJV();
 			
 			for (auto val : cnst_IJV) {
-				IJV.push_back(Eigen::Triplet<double>(val.row() + row_base, val.col(), val.value()));
+				IJV[ijv_idx++] = Eigen::Triplet<double>(val.row() + row_base, val.col(), val.value());
 			}
 			row_base += cnst->getConstNum();
 		}
-		return IJV;
 	}
 	
 	virtual Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
@@ -58,4 +66,5 @@ public:
 
 private:
 	std::vector<Constraints*> constraints;
+	int ijv_size = 0;
 };

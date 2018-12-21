@@ -12,9 +12,11 @@ class EdgePointConstraints : public Constraints {
 public:
 	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) : edgePoints(edgePoints) {
 		mat2_to_vec(edgePointCoords, bc); // flatten to a vector
-		const_n = bc.rows(); approx_nnz = 2*const_n; // 2 points per edge
+		const_n = bc.rows(); 
+		// 2 points per edge
+		IJV.resize(2*const_n);
 	};
-	EdgePointConstraints() {const_n = 0; approx_nnz = 0; edgePoints.resize(0); bc.resize(0);} // empty set of constraints c'tor
+	EdgePointConstraints() {const_n = 0; edgePoints.resize(0); bc.resize(0);} // empty set of constraints c'tor
 
 	virtual EdgePointConstraints* clone() const {return new EdgePointConstraints(*this);}
 
@@ -23,27 +25,26 @@ public:
 		return edgeCoords-bc;
 	}
 
-	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
+	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
 		int vn = x.rows()/3;
-		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
-		int const_n = 0; int edge_points_n = edgePoints.size();
+		
+		int const_row = 0; int edge_points_n = edgePoints.size(); int ijv_cnt = 0;
 		for (int b_i = 0; b_i < edge_points_n; b_i++ ) {
 			int v1 = edgePoints[b_i].edge.v1, v2 = edgePoints[b_i].edge.v2;
 			double t = edgePoints[b_i].t;
 
 			// 1 constraint for every coordinate
-			IJV.push_back(Eigen::Triplet<double>(const_n, v1, t));
-			IJV.push_back(Eigen::Triplet<double>(const_n, v2, 1-t));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v1, t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v2, 1-t);
 
-			IJV.push_back(Eigen::Triplet<double>(edge_points_n+const_n, vn+v1, t));
-			IJV.push_back(Eigen::Triplet<double>(edge_points_n+const_n, vn+v2, 1-t));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vn+v1, t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vn+v2, 1-t);
 
-			IJV.push_back(Eigen::Triplet<double>(2*edge_points_n+const_n, 2*vn+v1, t));
-			IJV.push_back(Eigen::Triplet<double>(2*edge_points_n+const_n, 2*vn+v2, 1-t));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vn+v1, t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vn+v2, 1-t);
 
-			const_n++;
+			const_row++;
 		}
-		return IJV;
 	}
 	
 	// These are first order constraints and so the hessian is zero and there's no need in overriding the default zero hessian

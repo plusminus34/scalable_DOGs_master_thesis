@@ -9,6 +9,7 @@
 #include "Solvers/Newton.h"
 #include "Solvers/NewtonKKT.h"
 
+#include "Objectives/DogConstraints.h"
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/HEnergy.h"
@@ -70,6 +71,11 @@ public:
 	  LaplacianSimilarity laplacianSimilarity;
 	};
 
+	struct Constraints {
+		Constraints(const QuadTopology& quadTop) : dogConst(quadTop) {}
+		DogConstraints dogConst;
+	};
+
 	DogSolver::Params p;
 	double constraints_deviation;
 	double objective;
@@ -94,6 +100,7 @@ private:
 
 		Eigen::VectorXd init_x0;
 		DogSolver::Objectives obj;
+		DogSolver::Constraints constraints;
 	};
 
 	DogSolver::State* state;

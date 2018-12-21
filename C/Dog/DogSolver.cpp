@@ -9,18 +9,17 @@
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
 
-#include "Objectives/DogConstraints.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 
 using namespace std;
 
 std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0) 
-					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0),
+					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0), constraints(quadTop),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
           lbfsgSolver(p.max_lbfgs_routines),
           newtonKKT(p.merit_p),
-          dogGuess(dog, p.align_procrustes, p.arap_guess),
+          dogGuess(dog, p.align_procrustes),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
 					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
           geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
@@ -66,9 +65,9 @@ void DogSolver::single_optimization() {
 	Eigen::VectorXd x0(state->dog.getV_vector()), x(x0);
 
   	// Constraints
-  	DogConstraints dogConst(state->quadTop);
 
-  CompositeConstraints compConst({&dogConst});
+  CompositeConstraints compConst;
+  compConst.add_constraints_permanent(&state->constraints.dogConst);
 
   if (state->dog.has_creases()) {
     StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
@@ -140,7 +139,7 @@ void DogSolver::single_optimization() {
       double penalty = 1;
       for (int i = 0; i < p.penalty_repetitions  ; i++) {
         CompositeObjective compObj3(compObj2);
-        QuadraticConstraintsSumObjective dogConstSoft(dogConst);
+        QuadraticConstraintsSumObjective dogConstSoft(state->constraints.dogConst);
         compObj3.add_objective(&dogConstSoft,penalty*p.const_obj_penalty,true);
         state->newton.solve(x0, compObj3, x); 
         penalty*=2;

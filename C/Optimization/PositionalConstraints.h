@@ -9,7 +9,10 @@
 
 class PositionalConstraints : public Constraints {
 public:
-	PositionalConstraints(const Eigen::VectorXi& b, const Eigen::VectorXd& bc) : b(b),bc(bc) {const_n = b.rows(); approx_nnz = const_n;};
+	PositionalConstraints(const Eigen::VectorXi& b, const Eigen::VectorXd& bc) : b(b),bc(bc) {
+		const_n = b.rows();
+		IJV.resize(const_n);
+	};
 
 	virtual PositionalConstraints* clone() const {return new PositionalConstraints(*this);}
 
@@ -18,15 +21,13 @@ public:
 		// A vector of x(b)-bc for the constraints x(b)-bc = 0
 		return constrained_pts_coords-bc;
 	}
-	virtual std::vector<Eigen::Triplet<double> > JacobianIJV(const Eigen::VectorXd& x) const {
-		std::vector<Eigen::Triplet<double> > IJV; IJV.reserve(approx_nnz);
+	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
 		int const_n = 0;
 		for (int b_i = 0; b_i < b.rows(); b_i++ ) {
 			int var_const_idx = b(b_i);
 			// Set the derivative at the 'var_const_idx' as d(x(val_idx)-value)/d(val_idx) = 1
-			IJV.push_back(Eigen::Triplet<double>(const_n++, var_const_idx, 1));
+			IJV[b_i] = Eigen::Triplet<double>(const_n++, var_const_idx, 1);
 		}
-		return IJV;
 	}
 	
 	// These are first order constraints and so the hessian is zero and there's no need in overriding the default zero hessian
