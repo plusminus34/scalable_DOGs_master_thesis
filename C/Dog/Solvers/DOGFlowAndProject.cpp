@@ -18,7 +18,7 @@ DOGFlowAndProject::DOGFlowAndProject(const Dog& dog, double flow_t, const int& m
 	//L_init = DOG_laplacian(dog.getV(),dog_init.getF());
 }
 
-double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x) {
+double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
 	// TODO: add stopping criteria
 	double f;
@@ -28,7 +28,7 @@ double DOGFlowAndProject::solve_constrained(const Eigen::VectorXd& x0, Objective
 	return f;
 }
 
-double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow) {
+double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow) {
 	//cout << "obj before flow = " << f.obj(x0) << endl;
 	//cout << "const deviation before flow = " << constraints.deviation(x0) << endl;
 	auto e_after_flow = flow(x0, f, constraints, x);
@@ -42,7 +42,7 @@ double DOGFlowAndProject::solve_single_iter(const Eigen::VectorXd& x0, Objective
 	return e_after_proj;
 	
 }
-double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
+double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
 	int vnum = x.rows()/3;
 	double new_e;
@@ -99,7 +99,7 @@ double DOGFlowAndProject::flow(const Eigen::VectorXd& x0, Objective& f, const Co
 	
 	return new_e;
 }
-void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, const Constraints& constraints, Eigen::VectorXd& x) {
+void DOGFlowAndProject::project(const Eigen::VectorXd& x0, Objective& /*f*/, Constraints& constraints, Eigen::VectorXd& x) {
 	// We don't optimize for the same objective, but just project the given mesh to the closest DOG
 	//	and we define "closest" in terms of the laplacian normals
 	// Use a smoothness objective on DOG, together with the same constraints

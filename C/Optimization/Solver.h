@@ -20,5 +20,5 @@ class ConstrainedSolver {
   
 public:
 	// x0 is the initial guess, x is the result, the return value is the objective value
-	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x) = 0;
+	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x) = 0;
 };

@@ -3,6 +3,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include <igl/sparse_cached.h>
+
 class Constraints {
 public:
 
@@ -21,14 +23,20 @@ public:
 	double deviation(const Eigen::VectorXd& x) const {return Vals(x).squaredNorm();}
 
 	// The user just needs to implement JacobianIJV, so other methods could efficiently concatenate multiple constraints jacobian
-	virtual Eigen::SparseMatrix<double> Jacobian(const Eigen::VectorXd& x) const {
+	virtual Eigen::SparseMatrix<double> Jacobian(const Eigen::VectorXd& x) {
 		Eigen::SparseMatrix<double> Jacobian(const_n, x.rows());
 		auto IJV = JacobianIJV(x);
-		Jacobian.setFromTriplets(IJV.begin(),IJV.end());
-		return Jacobian;
+    	if (cached_ijv_data.rows() == 0) {
+      		igl::sparse_cached_precompute(IJV, cached_ijv_data, Jacobian);
+    	} else {
+      		igl::sparse_cached(IJV, cached_ijv_data, Jacobian);
+    	}
+    	return Jacobian;
 	};
 
 protected:
 	int const_n;
 	int approx_nnz;
+private:
+	Eigen::VectorXi cached_ijv_data;
 };

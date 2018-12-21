@@ -10,16 +10,16 @@ public:
 	DOGFlowAndProject(const Dog& dog,  double flow_t, const int& max_flow_project_iter, const int& max_lbfgs_proj_iter = 400, 
 								const int& penalty_repetitions = 1);
 	// x0 is the initial guess, x is the result, the return value is the objective value
-	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
+	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x);
 
-	double solve_single_iter(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow = true);
+	double solve_single_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x, bool project_after_flow = true);
 
 	void set_max_iter(int max_iter) {max_iter = max_iter;}
 
 	void resetSmoother() {lbfgsWithPenalty.resetSmoother();}
 private:
-	double flow(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
-	void project(const Eigen::VectorXd& x0, Objective& obj, const Constraints& constraints, Eigen::VectorXd& x);
+	double flow(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x);
+	void project(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x);
 
 	const int& max_flow_project_iter; 
 	const int& max_lbfgs_proj_iter;

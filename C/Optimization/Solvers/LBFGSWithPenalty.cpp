@@ -5,7 +5,7 @@
 
 #include "LBFGS.h"
 
-double LBFGSWithPenalty::solve_constrained(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints,
+double LBFGSWithPenalty::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints,
 													 Eigen::VectorXd& x) {
 	auto obj_val = f.obj(x0);
 	std::cout << "penalty_repetitions = " << penalty_repetitions << std::endl;
@@ -21,7 +21,7 @@ double LBFGSWithPenalty::solve_constrained(const Eigen::VectorXd& x0, Objective&
 	return obj_val;
 }
 
-double LBFGSWithPenalty::solve_single_iter_with_fixed_p(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
+double LBFGSWithPenalty::solve_single_iter_with_fixed_p(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
 	QuadraticConstraintsSumObjective constObj(constraints);
 	CompositeObjective compObj({&constObj, &f}, {1,p});
 	LBFGS solver(max_lbfgs_iter);

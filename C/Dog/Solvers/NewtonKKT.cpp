@@ -12,7 +12,7 @@ using namespace std;
 //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
-double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, const Constraints& constraints, Eigen::VectorXd& x) {
+double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
 	x = x0;
     int vnum = x.rows()/3;
     double new_e;
