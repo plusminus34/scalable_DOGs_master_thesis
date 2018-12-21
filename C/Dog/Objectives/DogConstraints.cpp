@@ -6,6 +6,7 @@ DogConstraints::DogConstraints(const QuadTopology& quadTop, bool offset_planar) 
 									 offset_planar(offset_planar) {
 	const_n= 3*(quadTop.stars.rows()/5)+1*quadTop.bnd3.rows()/4;
 	IJV.resize(36*(quadTop.stars.rows()/5) + 12*(quadTop.bnd3.rows()/4));
+	int what; std::cout << "what" << std::endl; cin >> what;
 }
 
 void DogConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {

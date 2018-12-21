@@ -26,11 +26,8 @@ public:
 	};
 	enum SolverType {
 		SOLVE_NONE = 0,
-		SOLVE_FLOW_PROJECT = 1,
-		SOLVE_PENALTY = 2,
-		SOLVE_LBFGS = 3,
-		SOLVE_NEWTON_PENALTY = 4,
-		SOLVE_NEWTON_FLOW = 5
+		SOLVE_NEWTON_PENALTY = 1,
+		SOLVE_NEWTON_FLOW = 2
 	};
 
 	DogSolver() : state(NULL) {};
@@ -58,7 +55,6 @@ public:
 		double curve_timestep = 0;
 
 		bool align_procrustes = false;
-		bool arap_guess;
 	};
 
 	struct Objectives {

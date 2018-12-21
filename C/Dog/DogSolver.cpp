@@ -86,15 +86,7 @@ void DogSolver::single_optimization() {
 
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
   CompositeObjective compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
-  if (b.rows()) {
-    PositionalConstraints posConst(b,bc);
-    
-    /*
-    QuadraticConstraintsSumObjective softPosConst(posConst);
-    compObj.add_objective(&softPosConst,const_obj_penalty,true);
-    */
-    compConst.add_constraints(&posConst);
-  }
+  
   if (edgeCoords.rows()) {
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
     /*
@@ -111,28 +103,10 @@ void DogSolver::single_optimization() {
   std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 
   switch (p.solverType) {
-    case SOLVE_FLOW_PROJECT: {
-      state->flowProject.solve_single_iter(x0, compObj, compConst, x,p.project_after_flow);
-      //state->flowProject.solve_constrained(x0, compObj, compConst, x);
-      state->flowProject.resetSmoother();
-      break;
-    }
-    case SOLVE_PENALTY: {
-      LBFGSWithPenalty lbfsgSolver(p.max_lbfgs_routines, p.penalty_repetitions);
-      lbfsgSolver.solve_constrained(x0, compObj, compConst, x);
-      break;
-    }
-    case SOLVE_LBFGS: {
-      EqualDiagObjective eqDiag(state->quadTop);
-      compObj.add_objective(&eqDiag,p.diag_length_weight);
-      state->lbfsgSolver.solve(x0, compObj, x);
-      break;
-    }
     case SOLVE_NEWTON_PENALTY: {
       CompositeObjective compObj2;
       compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
       compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
-      //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
 
@@ -152,11 +126,11 @@ void DogSolver::single_optimization() {
       CompositeObjective compObj2;
       compObj2.add_objective_permanent(state->obj.bending,p.bending_weight,true);
       compObj2.add_objective_permanent(state->obj.isoObj,p.isometry_weight,true);
-      //compConst.add_constraints(&edgePtConst);
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective_permanent(edgePosConst,p.const_obj_penalty,true);
 
-      state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
+      //state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
+      state->newtonKKT.solve_constrained(x0, compObj2,state->constraints.dogConst, x);
       break;
     }
     case SOLVE_NONE: {

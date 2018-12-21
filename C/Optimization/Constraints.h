@@ -31,10 +31,8 @@ public:
     	if (cachedJacobian.rows() == 0) {
     		cachedJacobian =  Eigen::SparseMatrix<double>(const_n, x.rows());
       		igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedJacobian);
-      		std::cout << "not cached" << std::endl;
     	} else {
       		igl::sparse_cached(IJV, cached_ijv_data, cachedJacobian);
-      		std::cout << "yeaaahah" << std::endl;
     	}
     	return cachedJacobian;
 	};
