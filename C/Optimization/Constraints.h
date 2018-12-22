@@ -23,10 +23,14 @@ public:
 
 	double deviation(const Eigen::VectorXd& x) const {return Vals(x).squaredNorm();}
 
+	const std::vector<Eigen::Triplet<double> >& update_and_get_jacobian_ijv(const Eigen::VectorXd& x) {
+    	updateJacobianIJV(x); return IJV; 
+  	}
+
 	const std::vector<Eigen::Triplet<double>>& JacobianIJV() {return IJV;}
 
 	// The user just needs to implement JacobianIJV, so other methods could efficiently concatenate multiple constraints jacobian
-	virtual Eigen::SparseMatrix<double> Jacobian(const Eigen::VectorXd& x) {
+	virtual const Eigen::SparseMatrix<double>& Jacobian(const Eigen::VectorXd& x) {
 		updateJacobianIJV(x);
     	if (cachedJacobian.rows() == 0) {
     		cachedJacobian =  Eigen::SparseMatrix<double>(const_n, x.rows());

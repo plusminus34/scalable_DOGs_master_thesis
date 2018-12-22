@@ -18,7 +18,7 @@ public:
 
   // builds the hessian from an IJV
   // Can be overloaded by a function that build it by another way, not through IJV
-  virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
+  virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
   	//Eigen::SparseMatrix<double> H(x.rows(),x.rows());
     updateHessianIJV(x);
     if ( cachedH.rows() == 0) {
@@ -30,7 +30,9 @@ public:
   	return cachedH;
   }
   
-
+  const std::vector<Eigen::Triplet<double> >& update_and_get_hessian_ijv(const Eigen::VectorXd& x) {
+    updateHessianIJV(x); return IJV; 
+  }
   // For objectives that depeends on a state/reference shape (which might also be updated at various times)
   virtual void set_ref(const Eigen::VectorXd& x0) {};
 
@@ -38,12 +40,12 @@ public:
 
  protected:
    std::vector<Eigen::Triplet<double> > IJV;
+   Eigen::SparseMatrix<double> cachedH;
  private:
   // return 0 sparse matrix if not implemented
   virtual void updateHessianIJV(const Eigen::VectorXd& x) { /*empty on purpose */ } 
 
   Eigen::VectorXi cached_ijv_data;
-  Eigen::SparseMatrix<double> cachedH;
 
   void finiteGradient(const Eigen::VectorXd &x, Eigen::VectorXd &grad, int accuracy = 1) const;
 };

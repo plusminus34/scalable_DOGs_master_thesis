@@ -12,6 +12,10 @@ public:
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& constraints, Eigen::VectorXd& x);
 
+private:
+	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
+						Eigen::SparseMatrix<double>& KKT);
+
 	const double& merit_p;
 
 	PardisoSolver m_solver;
@@ -21,7 +25,6 @@ public:
 	Eigen::VectorXd K;
 
 	// cached stuff
-	Eigen::SparseMatrix<double> id;
 	Eigen::SparseMatrix<double> eps_id;
 	Eigen::SparseMatrix<double> id_KKT;
 };

@@ -30,15 +30,15 @@ public:
 		return grad;
 	};
 
-	Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) {
+	virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
 		igl::Timer timer; double init_t = timer.getElapsedTime();
-		Eigen::SparseMatrix<double> hessian(x.rows(),x.rows());
+		cachedH = Eigen::SparseMatrix<double>(x.rows(),x.rows());
 		for (int i = 0; i < objectives.size(); i++) {
 			if (use_hessian[i]) {
-				hessian+=weights[i]*objectives[i]->hessian(x);
+				cachedH+=weights[i]*objectives[i]->hessian(x);
 			};
 		}
-		return hessian;
+		return cachedH;
 	};
 
 	virtual void set_ref(const Eigen::VectorXd& x0) {for (auto obj : objectives) {obj->set_ref(x0);}};

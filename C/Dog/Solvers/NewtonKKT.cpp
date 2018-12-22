@@ -17,45 +17,29 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     int vnum = x.rows()/3;
     double new_e;
 
-    if (id.rows() == 0) {
-        id = Eigen::SparseMatrix<double>(x.rows(),x.rows()); id.setIdentity();
-        eps_id = 1e-7*id;
-    }
-
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
-    // Get hessian
-    Eigen::SparseMatrix<double> H = -f.hessian(x) - eps_id;
-
+    // Get Hessian
+    auto hessian = f.hessian(x); 
     auto hessian_time = timer.getElapsedTime()-t;
+
+    // Get Jacobian
     t = timer.getElapsedTime();
-    
-    //energy->check_grad(x);
-    double old_e = f.obj(x);
+    auto jacobian = constraints.Jacobian(x);
+    auto jacobian_time = timer.getElapsedTime()-t;
 
-    Eigen::VectorXd g(f.grad(x));
-    Eigen::VectorXd d(g.rows());
-    auto J_time = timer.getElapsedTime();
-    Eigen::SparseMatrix<double> J = constraints.Jacobian(x);
-    J_time = timer.getElapsedTime()-J_time;
-    auto transpose_time = timer.getElapsedTime();
-    Eigen::SparseMatrix<double> Jt = J.transpose();
-    transpose_time = timer.getElapsedTime()-transpose_time;
-    auto kkt_init = timer.getElapsedTime();
-    Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
-
-    Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
-    Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
-    Eigen::SparseMatrix<double> A; igl::cat(1, H_jt, J_0, A);
-    auto kkt_without_J = timer.getElapsedTime()-kkt_init;
-
-    //A.makeCompressed();
-    if (!id_KKT.rows()) {id_KKT = Eigen::SparseMatrix<double>(A.rows(),A.rows()); id_KKT.setIdentity(); id_KKT = 0*id_KKT;}
-    auto id_add_time = timer.getElapsedTime();
-    A = A + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
-    id_add_time = timer.getElapsedTime()-id_add_time;
+    t = timer.getElapsedTime();
+    Eigen::SparseMatrix<double> A; build_kkt_system(hessian,jacobian,A);
     auto kkt_time = timer.getElapsedTime()-t;
 
+
+    
+
     t = timer.getElapsedTime();
+
+    //energy->check_grad(x);
+    double old_e = f.obj(x);
+    Eigen::VectorXd g(f.grad(x));
+    Eigen::VectorXd d(g.rows());
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
@@ -80,7 +64,7 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     
     //m_solver.factorize();
 
-    Eigen::VectorXd zeroV(J.rows()); zeroV.setZero();
+    Eigen::VectorXd zeroV(jacobian.rows()); zeroV.setZero();
     Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
     Eigen::VectorXd g_const; igl::cat(1, g, constraints_deviation, g_const);
     //g_const = -1*g_const;
@@ -104,13 +88,11 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
 
     double total_time = timer.getElapsedTime()-init_time;
     
-    cout << endl << endl << "total kkt system time  = " << total_time << endl;
-    cout << "hessian compute time  = " << hessian_time << endl;
-    cout << "total kkt_system_build_time  = " << kkt_time << endl;
-    cout << "\t Out of it J time was  = " << J_time << endl;
-    cout << "\t Transposing J time was  = " << transpose_time << endl;
-    cout << "\t kkt_system_build_time_without jacobian  = " << kkt_without_J << endl;
-    cout << "\t id_add_time time was  = " << id_add_time << endl;
+    cout << endl << endl << "total_kkt_system_time  = " << total_time << endl;
+    cout << "Hessian_compute_time  = " << hessian_time << endl;
+    cout << "Jacobian_compute_time  = " << jacobian_time << endl;
+    cout << "kkt_system_build_time  = " << kkt_time << endl;
+    
     cout << "hessian analyze_pattern_time = " << analyze_pattern_time << endl;
     cout << "factorize_time = " << factorize_time << endl;
     cout << "solve_time  = " << solve_time << endl;
@@ -125,4 +107,25 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     old_e = f.obj(x);
     
     return new_e;
+}
+
+void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& J,
+                        Eigen::SparseMatrix<double>& KKT) {
+    if (eps_id.rows() == 0) {
+        Eigen::SparseMatrix<double> id (hessian.rows(),hessian.cols()); id.setIdentity();
+        eps_id = 1e-8*id;
+    }
+
+    Eigen::SparseMatrix<double> H = -hessian - eps_id;
+    
+    Eigen::SparseMatrix<double> Jt = J.transpose();
+
+    Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
+    Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
+    Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
+    igl::cat(1, H_jt, J_0, KKT);
+
+    //A.makeCompressed();
+    if (!id_KKT.rows()) {id_KKT = Eigen::SparseMatrix<double>(KKT.rows(),KKT.rows()); id_KKT.setIdentity(); id_KKT = 0*id_KKT;}
+    KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
 }
