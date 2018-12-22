@@ -16,6 +16,10 @@ private:
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 
+	void build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV,
+                                     std::vector<Eigen::Triplet<double> >& kkt_IJV);
+
 	const double& merit_p;
 
 	PardisoSolver m_solver;

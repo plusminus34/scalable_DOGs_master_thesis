@@ -109,6 +109,11 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     return new_e;
 }
 
+void NewtonKKT::build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV,
+                                     std::vector<Eigen::Triplet<double> >& kkt_IJV) {
+    
+}
 void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& J,
                         Eigen::SparseMatrix<double>& KKT) {
     if (eps_id.rows() == 0) {
