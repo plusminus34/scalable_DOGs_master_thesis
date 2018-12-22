@@ -45,7 +45,6 @@ public:
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
 		double diag_length_weight = 0;
-		int max_lbfgs_routines = 400;
 		double const_obj_penalty = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 1;

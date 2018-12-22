@@ -208,13 +208,11 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Bending", &dogSolver.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &dogSolver.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Laplacian Similarity", &dogSolver.p.laplacian_similarity_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Diag length", &dogSolver.p.diag_length_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Const obj", &dogSolver.p.const_obj_penalty, 0, 0, "%.4f");
       if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputDouble("Merit penalty", &dogSolver.p.merit_p);
-      ImGui::InputInt("Max lbfgs iter", &dogSolver.p.max_lbfgs_routines);
       ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
       ImGui::Checkbox("Project after", &dogSolver.p.project_after_flow);
       ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);
