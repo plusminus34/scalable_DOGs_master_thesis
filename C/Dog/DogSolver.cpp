@@ -62,42 +62,14 @@ void DogSolver::single_optimization() {
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(state->dog.getV_vector()), x(x0);
 
-  	// Constraints
-
-  //compConst.add_constraints_permanent(&state->constraints.dogConst);
-/*
-  if (state->dog.has_creases()) {
-    StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
-    compConst.add_constraints(&stitchingConstraints);
-
-    // Check for any positional constraints (for now these will only be folding constraints)
-    /*
-    if (state->b.rows()) {
-      PositionalConstraints posConst(state->b,state->bc);
-      compConst.add_constraints(&posConst);
-
-      FoldingAngleConstraints
-    }
-    
-  }*/
-
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
   CompositeObjective compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
   
   if (edgeCoords.rows()) {
     EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
-    /*
-    if (p.solverType != SOLVE_FLOW_PROJECT) {compConst.add_constraints(&edgePtConst);};
-    if (p.solverType == SOLVE_FLOW_PROJECT) {
-      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-      compObj.add_objective(&edgePosConst,1,true);
-    }
-    */
     QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
     compObj.add_objective(&edgePosConst,p.const_obj_penalty,true);
   }
-  
-  std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {
