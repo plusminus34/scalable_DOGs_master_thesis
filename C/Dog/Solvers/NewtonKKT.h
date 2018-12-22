@@ -23,4 +23,5 @@ public:
 	// cached stuff
 	Eigen::SparseMatrix<double> id;
 	Eigen::SparseMatrix<double> eps_id;
+	Eigen::SparseMatrix<double> id_KKT;
 };

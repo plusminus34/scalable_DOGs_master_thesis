@@ -14,6 +14,8 @@ set(CMAKE_BUILD_TYPE "Release")
 
 find_package(LIBIGL REQUIRED QUIET)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -fno-vectorize -fno-slp-vectorize -fslp-vectorize-aggressive -O2")
+
 #set(EIGEN3_VERSION_OK TRUE)
 #set(EIGEN3_INCLUDE_DIR "/Users/michaelrabinovich/libigl/external/eigen")
 #find_package(ifopt REQUIRED)
@@ -32,9 +34,36 @@ set(LIBIGL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../libigl/")
 set(LIBIGL_SOURCE_DIR "${LIBIGL_ROOT}/include")
 set(LIBIGL_EXTERNAL "${LIBIGL_ROOT}/external")
 
+#if(LIBIGL_WITH_TRIANGLE)
+  set(TRIANGLE_DIR "${LIBIGL_EXTERNAL}/triangle")
+  if(NOT TARGET triangle)
+    igl_download_triangle()
+    add_subdirectory("${TRIANGLE_DIR}" "triangle")
+  endif()
+  compile_igl_module("triangle")
+  target_link_libraries(igl_triangle ${IGL_SCOPE} triangle)
+  target_include_directories(igl_triangle ${IGL_SCOPE} ${TRIANGLE_DIR})
+#endif()
+
+### Compile the ImGui part ###
+#if(LIBIGL_WITH_OPENGL_GLFW_IMGUI)
+#  if(TARGET igl::opengl_glfw)
+    # ImGui module
+    compile_igl_module("opengl/glfw/imgui")
+    if(NOT TARGET imgui)
+      igl_download_imgui()
+      add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
+    endif()
+    target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
+ # endif()
+#endif()
+
+
 
 #add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
 #target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -fno-vectorize -fno-slp-vectorize -fslp-vectorize-aggressive -O2")
 
 # Add your project files
 file(GLOB SRCFILES *.cpp)

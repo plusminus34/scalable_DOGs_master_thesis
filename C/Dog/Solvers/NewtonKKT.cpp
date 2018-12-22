@@ -34,18 +34,26 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
 
     Eigen::VectorXd g(f.grad(x));
     Eigen::VectorXd d(g.rows());
+    auto J_time = timer.getElapsedTime();
     Eigen::SparseMatrix<double> J = constraints.Jacobian(x);
+    J_time = timer.getElapsedTime()-J_time;
+    auto transpose_time = timer.getElapsedTime();
     Eigen::SparseMatrix<double> Jt = J.transpose();
+    transpose_time = timer.getElapsedTime()-transpose_time;
+    auto kkt_init = timer.getElapsedTime();
     Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
 
     Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
     Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
     Eigen::SparseMatrix<double> A; igl::cat(1, H_jt, J_0, A);
+    auto kkt_without_J = timer.getElapsedTime()-kkt_init;
 
-    A.makeCompressed();
-    Eigen::SparseMatrix<double> id_all(A.rows(),A.rows()); id_all.setIdentity();
-    A = A + 0*id_all; // todo: stupid but Paradiso wants to add zeros explicitly
-    auto kkt_system_build_time = timer.getElapsedTime()-t;
+    //A.makeCompressed();
+    if (!id_KKT.rows()) {id_KKT = Eigen::SparseMatrix<double>(A.rows(),A.rows()); id_KKT.setIdentity(); id_KKT = 0*id_KKT;}
+    auto id_add_time = timer.getElapsedTime();
+    A = A + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
+    id_add_time = timer.getElapsedTime()-id_add_time;
+    auto kkt_time = timer.getElapsedTime()-t;
 
     t = timer.getElapsedTime();
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
@@ -98,7 +106,11 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     
     cout << endl << endl << "total kkt system time  = " << total_time << endl;
     cout << "hessian compute time  = " << hessian_time << endl;
-    cout << "kkt_system_build_time  = " << kkt_system_build_time << endl;
+    cout << "total kkt_system_build_time  = " << kkt_time << endl;
+    cout << "\t Out of it J time was  = " << J_time << endl;
+    cout << "\t Transposing J time was  = " << transpose_time << endl;
+    cout << "\t kkt_system_build_time_without jacobian  = " << kkt_without_J << endl;
+    cout << "\t id_add_time time was  = " << id_add_time << endl;
     cout << "hessian analyze_pattern_time = " << analyze_pattern_time << endl;
     cout << "factorize_time = " << factorize_time << endl;
     cout << "solve_time  = " << solve_time << endl;
