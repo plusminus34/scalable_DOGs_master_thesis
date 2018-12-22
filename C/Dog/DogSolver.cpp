@@ -14,8 +14,6 @@ using namespace std;
 std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0) 
 					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0), constraints(dog, quadTop),
-					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
-          lbfsgSolver(p.max_lbfgs_routines),
           newtonKKT(p.merit_p),
           dogGuess(dog, p.align_procrustes),
 					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),

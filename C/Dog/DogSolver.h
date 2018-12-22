@@ -4,7 +4,6 @@
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
-#include "Solvers/DOGFlowAndProject.h"
 #include "Solvers/DOGGuess.h"
 #include "Solvers/Newton.h"
 #include "Solvers/NewtonKKT.h"
@@ -17,8 +16,6 @@
 
 #include "Objectives/StitchingConstraints.h"
 #include "../Optimization/CompositeConstraints.h"
-
-#include "../Optimization/Solvers/LBFGS.h"
 
 
 class DogSolver {
@@ -94,10 +91,8 @@ private:
 		Dog& dog;
 		const QuadTopology& quadTop;
 		const DogSolver::Params& p;
-		DOGFlowAndProject flowProject;
 		Newton newton;
 		NewtonKKT newtonKKT;
-		LBFGS lbfsgSolver;
 		DOGGuess dogGuess;
 		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
 		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
