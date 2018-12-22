@@ -16,8 +16,8 @@ private:
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 
-	void build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
-                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV,
+	void build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n,
                                      std::vector<Eigen::Triplet<double> >& kkt_IJV);
 
 	const double& merit_p;
@@ -27,8 +27,4 @@ private:
 	bool first_solve = true;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
-
-	// cached stuff
-	Eigen::SparseMatrix<double> eps_id;
-	Eigen::SparseMatrix<double> id_KKT;
 };
