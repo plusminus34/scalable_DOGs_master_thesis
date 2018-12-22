@@ -20,91 +20,68 @@
 
 class DogSolver {
 public:
-	enum DeformationType {
-		DIHEDRAL_FOLDING = 0,
-		CURVE_DEFORMATION = 1
-	};
+	DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
+		Eigen::VectorXi& b, Eigen::VectorXd& bc,
+		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+	
+	void single_iteration(double& constraints_deviation, double& objective);
+	void update_edge_coords(Eigen::MatrixXd& edgeCoords& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords)}
+	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc)}
+	
 	enum SolverType {
 		SOLVE_NONE = 0,
 		SOLVE_NEWTON_PENALTY = 1,
 		SOLVE_NEWTON_FLOW = 2
 	};
 
-	DogSolver() : state(NULL) {};
-	void init_from_new_dog(Dog& dog, const QuadTopology& quadTop);
-	
-	void single_optimization();
-	void update_positional_constraints();
-	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
-	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
-
 	struct Params {
-		DogSolver::DeformationType deformationType = CURVE_DEFORMATION;
-		DogSolver::SolverType solverType = SOLVE_NEWTON_FLOW;
+		DeformationController::SolverType solverType = SOLVE_NEWTON_FLOW;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
-		double diag_length_weight = 0;
-		double const_obj_penalty = 1;
+		double soft_pos_weight = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 1;
-		bool project_after_flow = true;
-
-		double folding_angle = 0;
-		double curve_timestep = 0;
 
 		bool align_procrustes = false;
 	};
 
-	struct Objectives {
-	  Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0) : 
-	  		bending(quadTop), isoObj(quadTop, init_x0), laplacianSimilarity(dog,init_x0) {}
-	  // Objectives
-	  SimplifiedBendingObjective bending;
-	  //HEnergy bending(state->quadTop);
-	  IsometryObjective isoObj;
-	  LaplacianSimilarity laplacianSimilarity;
-	};
-
 	struct Constraints {
-		Constraints(const Dog& dog, const QuadTopology& quadTop) : 
-										dogConst(quadTop),
-										stitchingConstraints(quadTop, dog.getEdgeStitching()),
-										compConst({&dogConst, &stitchingConstraints}) {}
+		Constraints(const Dog& dog, const QuadTopology& quadTop,
+			Eigen::VectorXi& b, Eigen::VectorXd& bc,
+			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+
 		DogConstraints dogConst;
 		StitchingConstraints stitchingConstraints;
+		PositionalConstraints posConst;
+		EdgePointConstraints edgePtConst;
 		CompositeConstraints compConst;
-		
 	};
 
-	DogSolver::Params p;
-	double constraints_deviation;
-	double objective;
-	
+	struct Objectives {
+	  Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0,
+	  			EdgePointConstraints& edgePtConst);
+
+	  	SimplifiedBendingObjective bending;
+	  	IsometryObjective isoObj;
+	  	//LaplacianSimilarity laplacianSimilarity;
+      	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
+      	QuadraticConstraintsSumObjective edgePosSoftConstraints;
+      	CompositeObjective compObj;
+	};
+
 private:
-	void init_solver_state(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0);
+	Dog& dog;
+	const QuadTopology& quadTop;
 
-	struct State {
-		State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0);
+	// Optimization parameters
+	Eigen::VectorXd init_x0;
+	DogSolver::Objectives obj;
+	DogSolver::Constraints constraints;
+	const DogSolver::Params& p;
 
-		Dog& dog;
-		const QuadTopology& quadTop;
-		const DogSolver::Params& p;
-		Newton newton;
-		NewtonKKT newtonKKT;
-		DOGGuess dogGuess;
-		FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
-		CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
-		CurveInterpolationConstraintsBuilder geoConstraintsBuilder;
-
-		Eigen::VectorXd init_x0;
-		DogSolver::Objectives obj;
-		DogSolver::Constraints constraints;
-	};
-
-	DogSolver::State* state;
-	// Positional constraints
-	Eigen::VectorXi b; Eigen::VectorXd bc;
-	// Curve constraints
-	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+	// Solvers
+	Newton newton;
+	NewtonKKT newtonKKT;
+	DOGGuess dogGuess;
 };

@@ -15,7 +15,7 @@
 class QuadraticConstraintsSumObjective : public Objective {
   
 public:
-	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints.clone()) {};
+	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints) {};
 	virtual QuadraticConstraintsSumObjective* clone() const {return new QuadraticConstraintsSumObjective(*this);}
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst->Vals(x).squaredNorm();
@@ -26,6 +26,7 @@ public:
 		return 2*cnst->Jacobian(x).transpose()*cnst->Vals(x);
 	}
 
+//std::vector<Eigen::Triplet<double>> to_triplets(Eigen::SparseMatrix<double> & M)
 	// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
 	virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
 		igl::Timer timer; auto init_time = timer.getElapsedTime();
@@ -38,5 +39,13 @@ public:
 	}
 
 private:
+	virtual void updateHessianIJV(const Eigen::VectorXd& x) {
+		// Could write it directly maybe, or have an eddificent A*A' at least..
+		// Or preallocate the IJV (second time)
+		auto J = cnst->Jacobian(x);
+		cachedH = 2*J.transpose()*J;
+		IJV = to_triplets(cachedH);
+	}
+
 	Constraints* cnst;
 };

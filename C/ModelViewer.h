@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ModelState.h"
-#include "Dog/DogSolver.h"
+#include "Dog/DeformationController.h"
 #include <igl/opengl/glfw/Viewer.h>
 
 enum ViewMode {
@@ -12,7 +12,7 @@ enum ViewMode {
 
 class ModelViewer {
 public:
-	ModelViewer(const ModelState& modelState, const DogSolver& dogSolver);
+	ModelViewer(const ModelState& modelState, const DeformationController& deformationController);
 
 	void render(igl::opengl::glfw::Viewer& viewer);
 
@@ -28,7 +28,7 @@ private:
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
 
 	const ModelState& state;
-	const DogSolver& solver;
+	const DeformationController& deformationController;
 	bool first_rendering;
 	bool switched_mode;
 

@@ -16,8 +16,8 @@ using namespace std;
 
 bool is_optimizing = false;
 ModelState state;
-DogSolver dogSolver;
-ModelViewer modelViewer(state, dogSolver);
+DeformationController deformationController;
+ModelViewer modelViewer(state, deformationController);
 
 double curve_timestep_diff = 0;
 double timestep = 0;
@@ -27,7 +27,7 @@ Eigen::MatrixXd targetCurveCoords;
 const int DEFAULT_GRID_RES = 21;
 
 void clear_all_and_set_default_params() {
-  dogSolver.init_from_new_dog(state.dog, state.quadTop);
+  deformationController.init_from_new_dog(state.dog, state.quadTop);
 }
 
 void save_workspace() {
@@ -66,11 +66,11 @@ void run_optimization() {
   
   if (curve_timestep_diff) {
     //if (dogSolver.p.curve_timestep < 0.2) {dogSolver.p.curve_timestep += curve_timestep_diff;}
-    if (dogSolver.p.curve_timestep > 1) return;
-    dogSolver.p.curve_timestep += curve_timestep_diff;
-    dogSolver.update_positional_constraints();
+    if (deformationController.p.curve_timestep > 1) return;
+    deformationController.p.curve_timestep += curve_timestep_diff;
+    deformationController.update_positional_constraints();
   }
-  dogSolver.single_optimization();
+  deformationController.single_optimization();
 }
 
 bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
@@ -203,23 +203,22 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      ImGui::Combo("Deformation type", (int *)(&dogSolver.p.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Solver type", (int *)(&dogSolver.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
-      ImGui::InputDouble("Bending", &dogSolver.p.bending_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Isometry", &dogSolver.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Laplacian Similarity", &dogSolver.p.laplacian_similarity_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Const obj", &dogSolver.p.const_obj_penalty, 0, 0, "%.4f");
-      if (ImGui::InputDouble("Fold angle", &dogSolver.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      if (ImGui::InputDouble("Curve timestep", &dogSolver.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      ImGui::Combo("Deformation type", (int *)(&deformationController.p.deformationType), "Dihedral Folding\0Curve\0\0");
+      ImGui::Combo("Solver type", (int *)(&deformationController.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
+      ImGui::InputDouble("Bending", &deformationController.p.bending_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Isometry", &deformationController.p.isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Laplacian Similarity", &deformationController.p.laplacian_similarity_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Soft constraints", &deformationController.p.soft_pos_weight, 0, 0, "%.4f");
+      if (ImGui::InputDouble("Fold angle", &deformationController.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      if (ImGui::InputDouble("Curve timestep", &deformationController.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
-      ImGui::InputDouble("Merit penalty", &dogSolver.p.merit_p);
-      ImGui::InputInt("Penalty repetitions", &dogSolver.p.penalty_repetitions);
-      ImGui::Checkbox("Project after", &dogSolver.p.project_after_flow);
-      ImGui::Checkbox("Align Procrustes", &dogSolver.p.align_procrustes);
+      ImGui::InputDouble("Merit penalty", &deformationController.p.merit_p);
+      ImGui::InputInt("Penalty repetitions", &deformationController.p.penalty_repetitions);
+      ImGui::Checkbox("Align Procrustes", &deformationController.p.align_procrustes);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
 
-      ImGui::InputDouble("Constraints deviation", &dogSolver.constraints_deviation);
-      ImGui::InputDouble("objective", &dogSolver.objective);
+      ImGui::InputDouble("Constraints deviation", &deformationController.constraints_deviation);
+      ImGui::InputDouble("objective", &deformationController.objective);
 
       ImGui::End();
   };

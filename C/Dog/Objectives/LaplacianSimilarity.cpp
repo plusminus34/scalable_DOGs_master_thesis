@@ -30,18 +30,10 @@ virtual std::vector<Eigen::Triplet<double> > LaplacianSimilarity::hessianIJV(con
 	return L_hessian_IJV;
 }
 */
+
 /*
-std::vector<Eigen::Triplet<double>> LaplacianSimilarity::to_triplets(Eigen::SparseMatrix<double> & M) {
-	std::vector<Eigen::Triplet<double>> v;
-    for(int i = 0; i < M.outerSize(); i++)
-        for(typename Eigen::SparseMatrix<double>::InnerIterator it(M,i); it; ++it)
-            v.emplace_back(it.row(),it.col(),it.value());
-    return v;
-}
-*/
-
-
 const Eigen::SparseMatrix<double>& LaplacianSimilarity::hessian(const Eigen::VectorXd& x) {
 	cachedH = 2*L.transpose();
 	return cachedH;
 }
+*/

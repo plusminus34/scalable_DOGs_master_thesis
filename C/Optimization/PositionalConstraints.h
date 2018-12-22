@@ -35,6 +35,7 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
+	void update_coords(Eigen::VectorXd& bc_i) {bc = bc_i;}
 	Eigen::VectorXi getPositionIndices() const {return b;}
 	Eigen::VectorXd getPositionVals() const {return bc;}
 

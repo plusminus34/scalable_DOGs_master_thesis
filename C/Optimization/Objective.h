@@ -16,19 +16,7 @@ public:
   virtual double obj(const Eigen::VectorXd& x) const = 0;
   virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const = 0;
 
-  // builds the hessian from an IJV
-  // Can be overloaded by a function that build it by another way, not through IJV
-  virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
-  	//Eigen::SparseMatrix<double> H(x.rows(),x.rows());
-    updateHessianIJV(x);
-    if ( cachedH.rows() == 0) {
-      cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
-      igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
-    } else {
-      igl::sparse_cached(IJV, cached_ijv_data, cachedH);
-    }
-  	return cachedH;
-  }
+  int get_hessian_IJV_size() {return IJV.size();}
   
   const std::vector<Eigen::Triplet<double> >& update_and_get_hessian_ijv(const Eigen::VectorXd& x) {
     updateHessianIJV(x); return IJV; 
@@ -38,10 +26,31 @@ public:
 
   void check_grad(const Eigen::VectorXd& x) const;
 
+  std::vector<Eigen::Triplet<double>> to_triplets(Eigen::SparseMatrix<double> & M) {
+    std::vector<Eigen::Triplet<double>> v;
+    for(int i = 0; i < M.outerSize(); i++)
+        for(typename Eigen::SparseMatrix<double>::InnerIterator it(M,i); it; ++it)
+            v.emplace_back(it.row(),it.col(),it.value());
+    return v;
+  }
+
  protected:
    std::vector<Eigen::Triplet<double> > IJV;
    Eigen::SparseMatrix<double> cachedH;
  private:
+  // builds the hessian from an IJV
+  virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
+    //Eigen::SparseMatrix<double> H(x.rows(),x.rows());
+    updateHessianIJV(x);
+    if ( cachedH.rows() == 0) {
+      cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
+      igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
+    } else {
+      igl::sparse_cached(IJV, cached_ijv_data, cachedH);
+    }
+    return cachedH;
+  }
+  
   // return 0 sparse matrix if not implemented
   virtual void updateHessianIJV(const Eigen::VectorXd& x) { /*empty on purpose */ } 
 

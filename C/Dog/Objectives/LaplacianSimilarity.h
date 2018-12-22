@@ -13,14 +13,15 @@ public:
 
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
+
+	//virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x);
+
 	//virtual void set_ref(const Eigen::VectorXd& x0);
-	virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x);
+	
 	//virtual std::vector<Eigen::Triplet<double> > hessianIJV(const Eigen::VectorXd& x) const;
 
 	//Eigen::VectorXd refA,refB;
 private:
-	//std::vector<Eigen::Triplet<double>> to_triplets(Eigen::SparseMatrix<double> & M);
-
 	Eigen::SparseMatrix<double> L;
 	//std::vector<Eigen::Triplet<double>> L_hessian_IJV;
 	Eigen::VectorXd lRef;

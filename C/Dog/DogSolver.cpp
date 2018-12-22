@@ -11,66 +11,58 @@
 
 using namespace std;
 
-std::vector<int> get_second_dog_row(Dog& dog);
-DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0) 
-					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0), constraints(dog, quadTop),
+
+DogSolver::DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, 
+        const DogSolver::Params& p,
+        Eigen::VectorXi& b, Eigen::VectorXd& bc,
+        std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
+
+          dog(dog), quadTop(quadTop), init_x0(init_x0), p(p),
+          constraints(dog, quadTop, b, bc, edgePoints, edgeCoords), 
+          obj(dog, quadTop, init_x0, constraints.posConst, constraints.edgePtConst),
           newtonKKT(p.merit_p),
-          dogGuess(dog, p.align_procrustes),
-					angleConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.folding_angle),
-					curveConstraintsBuilder(dog.getV(), dog.getEdgeStitching(), p.curve_timestep),
-          geoConstraintsBuilder(dog.getV(), get_second_dog_row(dog), p.curve_timestep) {
-
+          dogGuess(dog, p.align_procrustes) {
+    // Empty on purpose
 }
 
-void DogSolver::update_positional_constraints() {
-	// TODO support curve constraints as well
-	if (p.deformationType == DIHEDRAL_FOLDING) {
-		state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
-	} else if (p.deformationType == CURVE_DEFORMATION) {
-		// update curve constrained folds
-		SurfaceCurve surfaceCurve;
-    if (state->dog.has_creases()) {
-      state->curveConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
-    } else {
-      state->geoConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
-    }
-		edgePoints = surfaceCurve.edgePoints;
-	}
-	
+DogSolver::Constraints::Constraints(const Dog& dog, const QuadTopology& quadTop,
+      Eigen::VectorXi& b, Eigen::VectorXd& bc, 
+      std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
+                    dogConst(quadTop),
+                    stitchingConstraints(quadTop, dog.getEdgeStitching()),
+                    posConst(b,bc),
+                    edgePtConst(edgePoints, edgeCoords),
+                    compConst({&dogConst, &stitchingConstraints}) /*the positional/edge constraints are soft and go into the objective*/ {
+    // Empty on purpose
 }
 
-std::vector<int> get_second_dog_row(Dog& dog) {
-  std::vector<int> curve_i; int v_n = dog.getV().rows();
-  for (int i = sqrt(v_n); i < 2*sqrt(v_n); i++) {curve_i.push_back(i);}
-  return curve_i;
+DogSolver::Objectives::Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0,
+          PositionalConstraints& posConst,
+          EdgePointConstraints& edgePtConst) : 
+        bending(quadTop), isoObj(quadTop, init_x0), /*laplacianSimilarity(dog,init_x0),*/
+        pointsPosSoftConstraints(posConst),
+        edgePosSoftConstraints(edgePtConst),
+        compObj(
+          {&obj.bending, &obj.isoObj, &obj.pointsPosSoftConstraints, &obj.edgePosSoftConstraints},
+          {p.bending_weight,p.isometry_weight. p.soft_pos_weight, p.soft_pos_weight})
+        //compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight})
+          {
+    // Empty on purpose
 }
 
-void DogSolver::single_optimization() {
+void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
 	if (!state) return; // No optimizer
 
   cout << "guessing!" << endl;
-  //if (state->dog.has_creases()) {
-    PositionalConstraints posConst(b,bc);
-    StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
-    EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
-
-    state->dogGuess.guess(state->dog, posConst, stitchingConstraints, edgePtConst);
-  //}
+  dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
 
 	cout << "running a single optimization routine" << endl;
-	Eigen::VectorXd x0(state->dog.getV_vector()), x(x0);
-
-  //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
-  CompositeObjective compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
-  
-  if (edgeCoords.rows()) {
-    EdgePointConstraints edgePtConst(edgePoints, edgeCoords);
-    QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-    compObj.add_objective(&edgePosConst,p.const_obj_penalty,true);
-  }
+	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight. p.soft_pos_weight, p.soft_pos_weight});
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {
+      /*
       CompositeObjective compObj2;
       compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
       compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
@@ -81,22 +73,15 @@ void DogSolver::single_optimization() {
       for (int i = 0; i < p.penalty_repetitions  ; i++) {
         CompositeObjective compObj3(compObj2);
         QuadraticConstraintsSumObjective dogConstSoft(state->constraints.dogConst);
-        compObj3.add_objective(&dogConstSoft,penalty*p.const_obj_penalty,true);
+        compObj3.add_objective(&dogConstSoft,penalty,true);
         state->newton.solve(x0, compObj3, x); 
         penalty*=2;
       }
+      */
       break;
     }
     case SOLVE_NEWTON_FLOW: {
-      //EqualDiagObjective eqDiag(state->quadTop);
-      //compObj.add_objective(&eqDiag,p.diag_length_weight);
-      CompositeObjective compObj2;
-      compObj2.add_objective_permanent(state->obj.bending,p.bending_weight,true);
-      compObj2.add_objective_permanent(state->obj.isoObj,p.isometry_weight,true);
-      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-      compObj2.add_objective_permanent(edgePosConst,p.const_obj_penalty,true);
-
-      state->newtonKKT.solve_constrained(x0, compObj2, state->constraints.compConst, x);
+      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
       break;
     }
     case SOLVE_NONE: {
@@ -104,18 +89,8 @@ void DogSolver::single_optimization() {
       break;
     }
   }
-  state->dog.update_V_vector(x);
+  dog.update_V_vector(x);
   
-  constraints_deviation = state->constraints.compConst.Vals(x).squaredNorm();
-  objective = compObj.obj(x);
-}
-
-void DogSolver::init_from_new_dog(Dog& dog, const QuadTopology& quadTop) {
-  auto init_x0 = dog.getV_vector();
-	init_solver_state(dog,quadTop, init_x0);
-}
-
-void DogSolver::init_solver_state(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0) {
-	if (state) delete state;
-	state = new DogSolver::State(dog,quadTop,p, init_x0);
+  constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
+  objective = obj.compObj.obj(x);
 }

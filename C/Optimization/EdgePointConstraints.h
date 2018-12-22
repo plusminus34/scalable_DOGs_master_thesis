@@ -52,6 +52,7 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
+	void update_coords(Eigen::MatrixXd edgePointCoords) {mat2_to_vec(edgePointCoords, bc);}
 	std::vector<EdgePoint> getEdgePoints() const {return edgePoints;}
 	Eigen::VectorXd getEdgePointConstraints() const {return bc;}
 
