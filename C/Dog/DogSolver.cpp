@@ -1,10 +1,8 @@
 #include "DogSolver.h"
 
-#include "Objectives/StitchingConstraints.h"
 #include "Objectives/EqualDiagObjective.h"
 
 #include "../Optimization/CompositeObjective.h"
-#include "../Optimization/CompositeConstraints.h"
 #include "../Optimization/PositionalConstraints.h"
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
@@ -15,7 +13,7 @@ using namespace std;
 
 std::vector<int> get_second_dog_row(Dog& dog);
 DogSolver::State::State(Dog& dog, const QuadTopology& quadTop, const DogSolver::Params& p, const Eigen::VectorXd& init_x0) 
-					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0), constraints(quadTop),
+					: dog(dog), quadTop(quadTop), init_x0(init_x0), p(p), obj(dog, quadTop, init_x0), constraints(dog, quadTop),
 					flowProject(dog, 1., 1,p.max_lbfgs_routines, p.penalty_repetitions),
           lbfsgSolver(p.max_lbfgs_routines),
           newtonKKT(p.merit_p),
@@ -66,9 +64,8 @@ void DogSolver::single_optimization() {
 
   	// Constraints
 
-  CompositeConstraints compConst;
-  compConst.add_constraints_permanent(&state->constraints.dogConst);
-
+  //compConst.add_constraints_permanent(&state->constraints.dogConst);
+/*
   if (state->dog.has_creases()) {
     StitchingConstraints stitchingConstraints(state->quadTop,state->dog.getEdgeStitching());
     compConst.add_constraints(&stitchingConstraints);
@@ -81,8 +78,8 @@ void DogSolver::single_optimization() {
 
       FoldingAngleConstraints
     }
-    */
-  }
+    
+  }*/
 
   //CompositeObjective compObj({&bending, &isoObj,&constObjBesidesPos}, {bending_weight,isometry_weight,const_obj_penalty});
   CompositeObjective compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight});
@@ -129,7 +126,7 @@ void DogSolver::single_optimization() {
       QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
       compObj2.add_objective_permanent(edgePosConst,p.const_obj_penalty,true);
 
-      state->newtonKKT.solve_constrained(x0, compObj2, compConst, x);
+      state->newtonKKT.solve_constrained(x0, compObj2, state->constraints.compConst, x);
       break;
     }
     case SOLVE_NONE: {
@@ -139,7 +136,7 @@ void DogSolver::single_optimization() {
   }
   state->dog.update_V_vector(x);
   
-  constraints_deviation = compConst.Vals(x).squaredNorm();
+  constraints_deviation = state->constraints.compConst.Vals(x).squaredNorm();
   objective = compObj.obj(x);
 }
 

@@ -12,7 +12,7 @@ public:
 
 	CompositeConstraints(const std::vector<Constraints*>& constraints_i) {
 		constraints.resize(constraints_i.size());
-		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i]->clone();
+		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i];
 		const_n = 0; 
 		for (auto cnst: constraints) {const_n+=cnst->getConstNum(); ijv_size += cnst->get_IJV_size();}
 		IJV.resize(ijv_size);

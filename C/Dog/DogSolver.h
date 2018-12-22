@@ -15,6 +15,9 @@
 #include "Objectives/HEnergy.h"
 #include "Objectives/LaplacianSimilarity.h"
 
+#include "Objectives/StitchingConstraints.h"
+#include "../Optimization/CompositeConstraints.h"
+
 #include "../Optimization/Solvers/LBFGS.h"
 
 
@@ -68,8 +71,14 @@ public:
 	};
 
 	struct Constraints {
-		Constraints(const QuadTopology& quadTop) : dogConst(quadTop) {}
+		Constraints(const Dog& dog, const QuadTopology& quadTop) : 
+										dogConst(quadTop),
+										stitchingConstraints(quadTop, dog.getEdgeStitching()),
+										compConst({&dogConst, &stitchingConstraints}) {}
 		DogConstraints dogConst;
+		StitchingConstraints stitchingConstraints;
+		CompositeConstraints compConst;
+		
 	};
 
 	DogSolver::Params p;
