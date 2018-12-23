@@ -16,11 +16,13 @@ private:
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 
-	void build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
-                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n,
-                                     std::vector<Eigen::Triplet<double> >& kkt_IJV);
+	void build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n);
 
 	const double& merit_p;
+
+	std::vector<Eigen::Triplet<double> > kkt_IJV; Eigen::VectorXi cached_ijv_data;
+	Eigen::SparseMatrix<double> A;
 
 	PardisoSolver m_solver;
 

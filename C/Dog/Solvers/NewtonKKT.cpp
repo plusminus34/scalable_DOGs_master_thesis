@@ -19,16 +19,22 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian
-    auto hessian = f.hessian(x); 
+    //auto hessian = f.hessian(x); 
+    auto hessian_ijv = f.update_and_get_hessian_ijv(x);
     auto hessian_time = timer.getElapsedTime()-t;
 
     // Get Jacobian
     t = timer.getElapsedTime();
-    auto jacobian = constraints.Jacobian(x);
+    //auto jacobian = constraints.Jacobian(x);
+    auto jacobian_ijv = constraints.update_and_get_jacobian_ijv(x);
     auto jacobian_time = timer.getElapsedTime()-t;
 
     t = timer.getElapsedTime();
-    Eigen::SparseMatrix<double> A; build_kkt_system(hessian,jacobian,A);
+    //Eigen::SparseMatrix<double> A; build_kkt_system(hessian,jacobian,A);
+    int var_n = x.rows(); int const_n = constraints.getConstNum();
+    build_kkt_system_from_ijv(hessian_ijv, var_n,
+                        jacobian_ijv, const_n);
+
     auto kkt_time = timer.getElapsedTime()-t;  
 
     t = timer.getElapsedTime();
@@ -61,7 +67,6 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     
     //m_solver.factorize();
 
-    Eigen::VectorXd zeroV(jacobian.rows()); zeroV.setZero();
     Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
     Eigen::VectorXd g_const; igl::cat(1, g, constraints_deviation, g_const);
     //g_const = -1*g_const;
@@ -106,14 +111,15 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     return new_e;
 }
 
-void NewtonKKT::build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
-                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n,
-                                     std::vector<Eigen::Triplet<double> >& kkt_IJV) {
+void NewtonKKT::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n) {
     // build an IJV which contains the hessian, diag matrix along the hessian, jacobian, jacobian transpose,
     //  and diagonal matrix along the J to make sure the whole diagonal is nnz (needed for Pardiso solver)
-    int kkt_size = hessian_IJV.size() + 2*jacobian_IJV.size() + var_n + const_n;
-    // TODO preallocate
-    kkt_IJV.resize(kkt_size); int ijv_idx = 0;
+    int ijv_idx = 0;
+    if (kkt_IJV.size() == 0) {
+        int kkt_size = hessian_IJV.size() + 2*jacobian_IJV.size() + var_n + const_n;
+        kkt_IJV.resize(kkt_size); int ijv_idx = 0;
+    }
 
     // add -hessian-id*eps_id
     double eps = 1e-8;
@@ -130,6 +136,13 @@ void NewtonKKT::build_kkt_system_ijv(const std::vector<Eigen::Triplet<double> >&
     }
     // add zeros along var_n+i,var_n_i
     for (int i = var_n; i < var_n+const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
+
+    if ( A.rows() == 0) {
+      A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);
+      igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
+    } else {
+      igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
+    }
 }
 void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
                         const Eigen::SparseMatrix<double>& J, Eigen::SparseMatrix<double>& KKT) {
