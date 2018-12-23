@@ -15,7 +15,7 @@ public:
 
 	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
-	void update_positional_constraints();
+	void update_positional_constraints(bool update_solver = true);
 
 	double folding_angle = 0;
 	double curve_timestep = 0;

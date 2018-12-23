@@ -12,13 +12,13 @@ void DeformationController::init_from_new_dog(Dog& dog, const QuadTopology& quad
 	if (geoConstraintsBuilder) delete geoConstraintsBuilder;
 	geoConstraintsBuilder = new CurveInterpolationConstraintsBuilder(dog.getV(), 
 															get_second_dog_row(dog), curve_timestep);
-	update_positional_constraints();
+	bool update_solver = false; update_positional_constraints(update_solver);
 
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,quadTop,init_x0, p, b, bc, edgePoints, edgeCoords);
 }
 
-void DeformationController::update_positional_constraints() {
+void DeformationController::update_positional_constraints(bool update_solver) {
 	//if (p.deformationType == DIHEDRAL_FOLDING) {
 	//	state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
 	//} else if 
@@ -36,7 +36,7 @@ void DeformationController::update_positional_constraints() {
 	edgePoints = surfaceCurve.edgePoints;
 	//}	
 
-	dogSolver->update_edge_coords(edgeCoords);
+	if (update_solver) dogSolver->update_edge_coords(edgeCoords);
 }
 
 std::vector<int> get_second_dog_row(Dog& dog) {

@@ -47,15 +47,13 @@ public:
     return cachedH;
   }
  protected:
-   std::vector<Eigen::Triplet<double> > IJV;
+   std::vector<Eigen::Triplet<double> > IJV; Eigen::VectorXi cached_ijv_data;
    Eigen::SparseMatrix<double> cachedH;
  private:
 
   
   // return 0 sparse matrix if not implemented
   virtual void updateHessianIJV(const Eigen::VectorXd& x) { /*empty on purpose */ } 
-
-  Eigen::VectorXi cached_ijv_data;
 
   void finiteGradient(const Eigen::VectorXd &x, Eigen::VectorXd &grad, int accuracy = 1) const;
 };

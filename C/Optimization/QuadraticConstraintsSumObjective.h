@@ -16,7 +16,12 @@
 class QuadraticConstraintsSumObjective : public Objective {
   
 public:
-	QuadraticConstraintsSumObjective(Constraints& constraints): cnst(&constraints) {};
+	QuadraticConstraintsSumObjective(Constraints& constraints, const Eigen::VectorXd& x0): cnst(&constraints) {
+		// Need to set some IJV (in some size)
+		updateHessianIJV(x0);
+		cachedH =  Eigen::SparseMatrix<double>(x0.rows(),x0.rows());
+		igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
+	};
 	virtual QuadraticConstraintsSumObjective* clone() const {return new QuadraticConstraintsSumObjective(*this);}
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst->Vals(x).squaredNorm();
@@ -34,6 +39,7 @@ private:
 		// Or preallocate the IJV (second time)
 		auto J = cnst->Jacobian(x);
 		cachedH = 2*J.transpose()*J;
+		// TODO don't reallocate, use to_triplets that writes directly
 		IJV = to_triplets(cachedH);
 	}
 

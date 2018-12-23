@@ -32,11 +32,16 @@ DogSolver::Objectives::Objectives(const Dog& dog, const QuadTopology& quadTop, c
           EdgePointConstraints& edgePtConst,
           const DogSolver::Params& p) : 
         bending(quadTop), isoObj(quadTop, init_x0), /*laplacianSimilarity(dog,init_x0),*/
-        pointsPosSoftConstraints(posConst),
-        edgePosSoftConstraints(edgePtConst),
+        pointsPosSoftConstraints(posConst, init_x0),
+        edgePosSoftConstraints(edgePtConst, init_x0),
+        /*
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints},
           {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight})
+          */
+        compObj(
+          {&bending, &isoObj},
+          {p.bending_weight,p.isometry_weight})
         //compObj({&state->obj.bending, &state->obj.isoObj, &state->obj.laplacianSimilarity}, {p.bending_weight,p.isometry_weight,p.laplacian_similarity_weight})
           {
     // Empty on purpose
@@ -48,7 +53,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight});
+  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight});
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {
