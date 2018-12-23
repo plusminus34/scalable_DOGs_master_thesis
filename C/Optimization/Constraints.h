@@ -19,7 +19,7 @@ public:
 		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
 	};
 
-	int get_IJV_size() {return IJV.size();}
+	int get_IJV_size() const {return IJV.size();}
 
 	double deviation(const Eigen::VectorXd& x) const {return Vals(x).squaredNorm();}
 

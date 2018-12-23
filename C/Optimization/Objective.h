@@ -34,11 +34,7 @@ public:
     return v;
   }
 
- protected:
-   std::vector<Eigen::Triplet<double> > IJV;
-   Eigen::SparseMatrix<double> cachedH;
- private:
-  // builds the hessian from an IJV
+    // builds the hessian from an IJV
   virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
     //Eigen::SparseMatrix<double> H(x.rows(),x.rows());
     updateHessianIJV(x);
@@ -50,6 +46,11 @@ public:
     }
     return cachedH;
   }
+ protected:
+   std::vector<Eigen::Triplet<double> > IJV;
+   Eigen::SparseMatrix<double> cachedH;
+ private:
+
   
   // return 0 sparse matrix if not implemented
   virtual void updateHessianIJV(const Eigen::VectorXd& x) { /*empty on purpose */ } 

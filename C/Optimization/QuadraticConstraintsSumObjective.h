@@ -11,11 +11,12 @@
 #include "Constraints.h"
 #include "Objective.h"
 
-// No hessian at the moment (see https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm for a matrix notation of the hessian)
+// Not a complete hessian at the moment (see https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm for a matrix notation of the hessian)
+// The hessian here only takes into account the first derivative from the constraint itself, and is of the form 2*Jt*J
 class QuadraticConstraintsSumObjective : public Objective {
   
 public:
-	QuadraticConstraintsSumObjective(const Constraints& constraints): cnst(constraints) {};
+	QuadraticConstraintsSumObjective(Constraints& constraints): cnst(&constraints) {};
 	virtual QuadraticConstraintsSumObjective* clone() const {return new QuadraticConstraintsSumObjective(*this);}
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst->Vals(x).squaredNorm();
@@ -26,19 +27,8 @@ public:
 		return 2*cnst->Jacobian(x).transpose()*cnst->Vals(x);
 	}
 
-//std::vector<Eigen::Triplet<double>> to_triplets(Eigen::SparseMatrix<double> & M)
-	// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
-	virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
-		igl::Timer timer; auto init_time = timer.getElapsedTime();
-		// The constraints are linear so the hessian is just simple 2*J'*J
-		// (Here it's even simpler as just 2*(diagonals with one at constrained indices) but this is simpler to write)
-		auto J = cnst->Jacobian(x);
-		cachedH = 2*J.transpose()*J;
-		double H_time = timer.getElapsedTime()-init_time;
-		return cachedH;
-	}
-
 private:
+	// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
 	virtual void updateHessianIJV(const Eigen::VectorXd& x) {
 		// Could write it directly maybe, or have an eddificent A*A' at least..
 		// Or preallocate the IJV (second time)

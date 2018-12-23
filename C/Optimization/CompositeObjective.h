@@ -11,7 +11,7 @@ public:
 		objectives.resize(objectives_i.size());
 		for (int i = 0; i < objectives.size(); i++) {
 			objectives[i] = objectives_i[i]->clone();
-			ijv_size += objectives[i]->get_IJV_size();
+			ijv_size += objectives[i]->get_hessian_IJV_size();
 		}
 		IJV.resize(ijv_size);
 	}
@@ -22,14 +22,14 @@ public:
 	void add_objective(Objective* e, double w = 1.) {
 		objectives.push_back(e->clone()); 
 		weights.push_back(w);
-		ijv_size += e->get_IJV_size();
+		ijv_size += e->get_hessian_IJV_size();
 		IJV.resize(ijv_size);
 	}
 
 	void add_objective_permanent(Objective& e, double w = 1.) {
 		objectives.push_back(&e); 
 		weights.push_back(w);
-		ijv_size += e.get_IJV_size();
+		ijv_size += e.get_hessian_IJV_size();
 		IJV.resize(ijv_size);
 	}
 
@@ -51,8 +51,8 @@ private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x) {
 		int ijv_idx = 0;
 		for (int i = 0; i < objectives.size(); i++) {
-			const std::vector<Eigen::Triplet<double> >& obj_IJV = obj->update_and_get_hessian_ijv(x);
-			for (auto val : obj_IJV) {IJV[ijv_idx++] = weights[i]*val;}
+			const std::vector<Eigen::Triplet<double> >& obj_IJV = objectives[i]->update_and_get_hessian_ijv(x);
+			for (auto val : obj_IJV) {IJV[ijv_idx++] = Eigen::Triplet<double>(val.row(),val.col(),weights[i]*val.value());}
 		}
 	}
 

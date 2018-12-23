@@ -2,6 +2,12 @@
 
 #include "Dog.h"
 
+#include "../Optimization/CompositeConstraints.h"
+#include "../Optimization/CompositeObjective.h"
+#include "../Optimization/EdgePointConstraints.h"
+#include "../Optimization/PositionalConstraints.h"
+#include "../Optimization/QuadraticConstraintsSumObjective.h"
+
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGGuess.h"
@@ -13,29 +19,18 @@
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/HEnergy.h"
 #include "Objectives/LaplacianSimilarity.h"
-
 #include "Objectives/StitchingConstraints.h"
-#include "../Optimization/CompositeConstraints.h"
 
 
 class DogSolver {
 public:
-	DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
-		Eigen::VectorXi& b, Eigen::VectorXd& bc,
-		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
-	
-	void single_iteration(double& constraints_deviation, double& objective);
-	void update_edge_coords(Eigen::MatrixXd& edgeCoords& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords)}
-	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc)}
-	
 	enum SolverType {
 		SOLVE_NONE = 0,
 		SOLVE_NEWTON_PENALTY = 1,
 		SOLVE_NEWTON_FLOW = 2
 	};
-
 	struct Params {
-		DeformationController::SolverType solverType = SOLVE_NEWTON_FLOW;
+		DogSolver::SolverType solverType = SOLVE_NEWTON_FLOW;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
@@ -46,6 +41,14 @@ public:
 		bool align_procrustes = false;
 	};
 
+	DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
+		Eigen::VectorXi& b, Eigen::VectorXd& bc,
+		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+	
+	void single_iteration(double& constraints_deviation, double& objective);
+	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
+	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
+	
 	struct Constraints {
 		Constraints(const Dog& dog, const QuadTopology& quadTop,
 			Eigen::VectorXi& b, Eigen::VectorXd& bc,
@@ -60,7 +63,9 @@ public:
 
 	struct Objectives {
 	  Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0,
-	  			EdgePointConstraints& edgePtConst);
+	  			PositionalConstraints& posConst,
+	  			EdgePointConstraints& edgePtConst,
+	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
@@ -76,12 +81,13 @@ private:
 
 	// Optimization parameters
 	Eigen::VectorXd init_x0;
-	DogSolver::Objectives obj;
+	// The constraints needs to be defined before the objectives, as some of hte objective are dependent on constraints
 	DogSolver::Constraints constraints;
+	DogSolver::Objectives obj;
 	const DogSolver::Params& p;
 
 	// Solvers
+	DOGGuess dogGuess;
 	Newton newton;
 	NewtonKKT newtonKKT;
-	DOGGuess dogGuess;
 };

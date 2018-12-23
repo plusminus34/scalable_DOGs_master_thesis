@@ -2,12 +2,16 @@
 
 std::vector<int> get_second_dog_row(Dog& dog);
 
+void DeformationController::single_optimization() {
+	if (dogSolver) dogSolver->single_iteration(constraints_deviation, objective);
+}
+
 void DeformationController::init_from_new_dog(Dog& dog, const QuadTopology& quadTop) {
 	auto init_x0 = dog.getV_vector();
 
 	if (geoConstraintsBuilder) delete geoConstraintsBuilder;
 	geoConstraintsBuilder = new CurveInterpolationConstraintsBuilder(dog.getV(), 
-															get_second_dog_row(dog), p.curve_timestep);
+															get_second_dog_row(dog), curve_timestep);
 	update_positional_constraints();
 
 	if (dogSolver) delete dogSolver;
@@ -32,7 +36,7 @@ void DeformationController::update_positional_constraints() {
 	edgePoints = surfaceCurve.edgePoints;
 	//}	
 
-	dogSolver.update_edge_coords(edgeCoords);
+	dogSolver->update_edge_coords(edgeCoords);
 }
 
 std::vector<int> get_second_dog_row(Dog& dog) {

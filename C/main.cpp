@@ -66,8 +66,7 @@ void run_optimization() {
   
   if (curve_timestep_diff) {
     //if (dogSolver.p.curve_timestep < 0.2) {dogSolver.p.curve_timestep += curve_timestep_diff;}
-    if (deformationController.p.curve_timestep > 1) return;
-    deformationController.p.curve_timestep += curve_timestep_diff;
+    if (deformationController.curve_timestep < 1) deformationController.curve_timestep += curve_timestep_diff;
     deformationController.update_positional_constraints();
   }
   deformationController.single_optimization();
@@ -80,7 +79,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'F':
-    dogSolver.single_optimization();
+    deformationController.single_optimization();
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   }
@@ -203,14 +202,14 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      ImGui::Combo("Deformation type", (int *)(&deformationController.p.deformationType), "Dihedral Folding\0Curve\0\0");
+      ImGui::Combo("Deformation type", (int *)(&deformationController.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Solver type", (int *)(&deformationController.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &deformationController.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &deformationController.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Laplacian Similarity", &deformationController.p.laplacian_similarity_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &deformationController.p.soft_pos_weight, 0, 0, "%.4f");
-      if (ImGui::InputDouble("Fold angle", &deformationController.p.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      if (ImGui::InputDouble("Curve timestep", &deformationController.p.curve_timestep, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      //if (ImGui::InputDouble("Fold angle", &deformationController.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      if (ImGui::InputDouble("Curve timestep", &deformationController.curve_timestep, 0, 0, "%.4f") ) deformationController.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputDouble("Merit penalty", &deformationController.p.merit_p);
       ImGui::InputInt("Penalty repetitions", &deformationController.p.penalty_repetitions);
