@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
 
   viewer.core.is_animating = true;
-  viewer.core.animation_max_fps = 30.;
+  viewer.core.animation_max_fps = 30;
 
   viewer.data().show_lines = false;
   viewer.launch();
