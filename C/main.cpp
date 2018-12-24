@@ -20,9 +20,6 @@ ModelViewer modelViewer(state, deformationController);
 
 double curve_timestep_diff = 0;
 double timestep = 0;
-Curve* srcCurve = NULL; Curve* targetCurve = NULL;
-Eigen::MatrixXd targetCurveCoords;
-
 const int DEFAULT_GRID_RES = 21;
 
 void clear_all_and_set_default_params() {
@@ -91,43 +88,6 @@ bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   return false;
 }
 
-void draw_curve(igl::opengl::glfw::Viewer& viewer, Eigen::MatrixXd curveCoords, Eigen::RowVector3d color) {
-  Eigen::MatrixXd E1(curveCoords.rows()-1,3),E2(curveCoords.rows()-1,3);
-  for (int i = 0; i <curveCoords.rows()-1; i++ ) {E1.row(i) = curveCoords.row(i); E2.row(i) = curveCoords.row(i+1);}
-  //viewer.data().add_points(intCurveCoords,Eigen::RowVector3d(0,0,1));
-  cout << "E1.rows() = " << E1.rows() << endl;
-  viewer.data().add_edges(E1,E2,color);
-}
-
-bool callback_pre_draw_curve(igl::opengl::glfw::Viewer& viewer) {
-  viewer.data().clear();
-  if (is_optimizing) {if (timestep < 1) timestep += 0.01;}
-  // interpolate src curve and draw curve with timestep
-
-  Eigen::Matrix3d frame; frame.setIdentity(); Eigen::RowVector3d t; t.setZero();
-
-  Curve targetCur(targetCurveCoords);
-  
-  std::cout << "first curve " << endl;
-  targetCur.print_geometric_represenation(); 
-  std::cout << "second curve " << endl;
-  targetCurve->print_geometric_represenation();
-
-  //for (auto targetCur.length)
-  //int x; cout << "check " << endl; cin >> x;
-
-  Curve intCurve(*srcCurve,targetCur, timestep);
-  std::cout << "int curve " << endl;
-  intCurve.print_geometric_represenation();
-  Eigen::MatrixXd intCurveCoords = intCurve.getCoords(t,frame);
-
-  draw_curve(viewer, targetCurveCoords, Eigen::RowVector3d(1,0,0));
-  draw_curve(viewer, intCurveCoords, Eigen::RowVector3d(0,0,0));
-  
-  // draw curve
-  return false;
-}
-
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     cout << "Usage: dog_editor input_path" << endl << "\t with input_path pointing to a mesh, svg, or a workspace" << endl;
@@ -145,31 +105,6 @@ int main(int argc, char *argv[]) {
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
     state.load_from_workspace(input_path);
-
-  } else if (boost::iequals(basename, "curve")) { 
-    std::cout << "checking curve inteprolation!" << std::endl;
-    // Plot the mesh
-    igl::opengl::glfw::Viewer viewer;
-
-    int pts_n = 20;
-    std:vector<double> len,curvature1,torsion1, curvature2,torsion2;
-    for (int i = 0; i < pts_n-1; i++) len.push_back(1);
-    for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.2);}
-    //for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(0.05*((pts_n-3)/2.-i));}
-    //for (int i = 0; i < pts_n-2; i++) {curvature1.push_back(0); curvature2.push_back(0.05*((pts_n-2)/2.-i));}
-    for (int i = 0; i < pts_n-3; i++) {torsion1.push_back(0); torsion2.push_back(curvature2[i]);}
-    
-    srcCurve = new Curve(len,curvature1, torsion1);
-    targetCurve = new Curve(len,curvature2,torsion2);//Curve targetCurve(len,curvature2, torsion2);
-
-    Eigen::Matrix3d frame; frame.setIdentity(); Eigen::RowVector3d t; t.setZero();
-    targetCurveCoords = targetCurve->getCoords(t,frame);
-
-    viewer.callback_key_down = callback_key_down;
-    viewer.callback_pre_draw = callback_pre_draw_curve; // calls at each frame
-    viewer.core.is_animating = true;
-    viewer.core.animation_max_fps = 30.;
-    viewer.launch();
 
   } else if (boost::iequals(basename, "planar")) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
