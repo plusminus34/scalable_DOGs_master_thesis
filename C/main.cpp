@@ -8,7 +8,6 @@
 #include <igl/pathinfo.h>
 
 #include "Dog/Dog.h"
-#include "Dog/DogSolver.h"
 #include "ModelState.h"
 #include "ModelViewer.h"
 

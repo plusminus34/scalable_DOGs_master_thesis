@@ -1,4 +1,4 @@
-#include "DogSolver.h"
+#include "Dog/DogSolver.h"
 
 class DeformationController {
 public:

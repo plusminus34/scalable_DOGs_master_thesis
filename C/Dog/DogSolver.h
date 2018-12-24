@@ -7,12 +7,14 @@
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/PositionalConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
+#include "../Optimization/QuadraticConstraintsSumObjective.h"
+
+#include "../Optimization/Solvers/Newton.h"
+#include "../Optimization/Solvers/NewtonKKT.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGGuess.h"
-#include "Solvers/Newton.h"
-#include "Solvers/NewtonKKT.h"
 
 #include "Objectives/DogConstraints.h"
 #include "Objectives/IsometryObjective.h"
