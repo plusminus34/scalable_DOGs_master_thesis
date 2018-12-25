@@ -86,6 +86,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     deformationController.single_optimization();
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
+  case 'C':
+    deformationController.reset_constraints();
+    break;
   case 'E':
     exit(1);
     break;

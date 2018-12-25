@@ -22,6 +22,7 @@ public:
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
 	void update_positional_constraints(bool update_solver = true);
 	void render_positional_constraints() const {return editor->render_positional_constraints();}
+	void reset_constraints() {editor->clearHandles(); b.resize(0);bc.resize(0); reset_dog_solver();}
 
 	double folding_angle = 0;
 	double curve_timestep = 0;

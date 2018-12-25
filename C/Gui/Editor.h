@@ -19,6 +19,7 @@ public:
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
 	void render_positional_constraints() const;
+	void clearHandles();
 
 	Eigen::VectorXi& b; Eigen::VectorXd& bc;
 	bool new_constraints = false;

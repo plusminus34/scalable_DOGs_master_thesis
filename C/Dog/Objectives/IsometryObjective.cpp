@@ -41,7 +41,6 @@ double IsometryObjective::obj(const Eigen::VectorXd& x) const {
   		double t4 = p0_z-pxf_z;
   		double t5 = -l0+t2*t2+t3*t3+t4*t4;
   		e += t5*t5;
-
 		h_cnt++;
   }
   // TODO: maybe add corners (or 4 vertices boundaries for cuts)
