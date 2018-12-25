@@ -8,10 +8,13 @@
 
 using namespace std;
 
-Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, const Eigen::MatrixXi &F_tri) : 
-				viewer(viewer), V(V), F(F_tri), lasso(viewer,V,F), translation(0,0,0) {}
+Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, const Eigen::MatrixXi &F_tri,
+				Eigen::VectorXi& b, Eigen::VectorXd& bc,
+				const MouseMode& mouse_mode, const SelectMode& select_mode) : 
+				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
+				translation(0,0,0) {}
 
-bool Editor::callback_mouse_down(int button, int modifier) {
+bool Editor::callback_mouse_down() {
 	
 	down_mouse_x = viewer.current_mouse_x;
 	down_mouse_y = viewer.current_mouse_y;
@@ -68,7 +71,7 @@ bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
 	return false;
 }
 
-bool Editor::callback_mouse_up(int button, int modifier) {
+bool Editor::callback_mouse_up() {
 	if (!deforming)
 		return false;
 	deforming = false;

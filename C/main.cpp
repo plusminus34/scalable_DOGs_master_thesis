@@ -22,8 +22,8 @@ double curve_timestep_diff = 0;
 double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
 
-void clear_all_and_set_default_params() {
-  deformationController.init_from_new_dog(state.dog, state.quadTop);
+void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
+  deformationController.init_from_new_dog(viewer, state.dog, state.quadTop);
 }
 
 void save_workspace() {
@@ -33,27 +33,27 @@ void save_workspace() {
   state.save_to_workspace(filename);
 }
 
-void load_svg() {
+void load_svg(igl::opengl::glfw::Viewer& viewer) {
   std::string filename = igl::file_dialog_open();
   if (filename.empty())
     return;
   int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
   state.init_from_svg(filename, x_res, y_res);
-  clear_all_and_set_default_params();
+  clear_all_and_set_default_params(viewer);
   modelViewer.viewMode = ViewModeCreases;
 }
 
-void load_workspace(const std::string& path) {
+void load_workspace(igl::opengl::glfw::Viewer& viewer, const std::string& path) {
   cout << "loading workspace" << endl;
   state.load_from_workspace(path);
-  clear_all_and_set_default_params();
+  clear_all_and_set_default_params(viewer);
 }
 
-void load_workspace() {
+void load_workspace(igl::opengl::glfw::Viewer& viewer) {
   std::string filename = igl::file_dialog_open();
   if (filename.empty())
     return;
-  load_workspace(filename);
+  load_workspace(viewer, filename);
 }
 
 void run_optimization() {
@@ -79,6 +79,19 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   }
+  return false;
+}
+
+bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
+  if (modelViewer.viewMode == ViewModeMesh) return deformationController.callback_mouse_down();
+  return false;
+}
+bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
+  if (modelViewer.viewMode == ViewModeMesh) return  deformationController.callback_mouse_move(mouse_x, mouse_y);
+  return false;
+}
+bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
+  if (modelViewer.viewMode == ViewModeMesh) return  deformationController.callback_mouse_up();
   return false;
 }
 
@@ -133,10 +146,12 @@ int main(int argc, char *argv[]) {
 
       // Expose an enumeration type
       ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0\0");
-      if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg();
-      if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace();
+      if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
+      if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      ImGui::Combo("Deformation type", (int *)(&deformationController.deformationType), "Dihedral Folding\0Curve\0\0");
+      //ImGui::Combo("Deformation type", (int *)(&deformationController.deformationType), "Dihedral Folding\0Curve\0\0");
+      ImGui::Combo("Mouse mode", (int *)(&deformationController.mouse_mode), "Select\0Translate\0None\0\0");
+      ImGui::Combo("Select mode", (int *)(&deformationController.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
       ImGui::Combo("Solver type", (int *)(&deformationController.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &deformationController.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &deformationController.p.isometry_weight, 0, 0, "%.4f");
@@ -155,15 +170,17 @@ int main(int argc, char *argv[]) {
 
       ImGui::End();
   };
-  clear_all_and_set_default_params();
+  clear_all_and_set_default_params(viewer);
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 
   viewer.callback_key_down = callback_key_down;
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
-
   viewer.core.is_animating = true;
   viewer.core.animation_max_fps = 30;
+  viewer.callback_mouse_down = callback_mouse_down;
+  viewer.callback_mouse_move = callback_mouse_move;
+  viewer.callback_mouse_up = callback_mouse_up;
 
   viewer.data().show_lines = false;
   viewer.launch();

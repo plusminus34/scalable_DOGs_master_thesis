@@ -5,19 +5,22 @@
 
 class Editor {
 public:
-	Editor(igl::opengl::glfw::Viewer& viewer,
-		  const Eigen::MatrixXd &V,
-         const Eigen::MatrixXi &F_tri);
-
 	enum MouseMode { SELECT, TRANSLATE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
 	enum SelectMode {VertexPicker, PathPicker, CurvePicker};
 
-	bool callback_mouse_down(int button, int modifier);
-	bool callback_mouse_move(int mouse_x, int mouse_y);
-	bool callback_mouse_up(int button, int modifier);
+	Editor(igl::opengl::glfw::Viewer& viewer,
+		  const Eigen::MatrixXd &V,
+         const Eigen::MatrixXi &F_tri,
+         Eigen::VectorXi& b, Eigen::VectorXd& bc, // positional constraints
+         const Editor::MouseMode& mouse_mode,
+         const Editor::SelectMode& select_mode);
 
-	MouseMode mouse_mode = NONE;
-	SelectMode select_mode = VertexPicker;
+	bool callback_mouse_down();
+	bool callback_mouse_move(int mouse_x, int mouse_y);
+	bool callback_mouse_up();
+
+	Eigen::VectorXi& b; Eigen::VectorXd& bc;
+
 private:
 	void applySelection();
 	void onNewHandleID();
@@ -30,9 +33,10 @@ private:
 	const Eigen::MatrixXd &V;
     const Eigen::MatrixXi &F;
 	Lasso lasso;
+	const Editor::MouseMode& mouse_mode;
+	const Editor::SelectMode& select_mode;
 
 	Eigen::Vector3f translation;
-	Eigen::VectorXi b; Eigen::VectorXd bc;
 
 	//list of currently selected vertices
 	Eigen::VectorXi selected_v;//(0,1);
