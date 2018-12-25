@@ -76,9 +76,18 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case ' ':
     is_optimizing = !is_optimizing;
     break;
+  case 'S':
+    deformationController.mouse_mode = Editor::SELECT;
+    break;
+  case 'D':
+    deformationController.mouse_mode = Editor::TRANSLATE;
+    break;
   case 'F':
     deformationController.single_optimization();
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+    break;
+  case 'E':
+    exit(1);
     break;
   }
   return false;

@@ -88,6 +88,7 @@ bool Editor::callback_mouse_up() {
 		
 		lasso.reinit();
 		compute_handle_centroids();
+		get_new_handle_locations();
 		
 		return true;
 	}

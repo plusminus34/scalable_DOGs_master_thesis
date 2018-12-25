@@ -18,6 +18,10 @@ public:
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd constrained_pts_coords; igl::slice(x,b,1, constrained_pts_coords);
+		if ((bc-constrained_pts_coords).norm() > 1e-9) {
+			std::cout << "Vals: constrained_pts_coords = " << constrained_pts_coords << std::endl;
+			std::cout << "Vals: bc = " << bc << std::endl;
+		}
 		// A vector of x(b)-bc for the constraints x(b)-bc = 0
 		return constrained_pts_coords-bc;
 	}
