@@ -13,7 +13,7 @@
 
 using namespace std;
 
-bool is_optimizing = false;
+bool is_optimizing = true;
 ModelState state;
 DeformationController deformationController;
 ModelViewer modelViewer(state, deformationController);
@@ -110,7 +110,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  run_optimization();
+  if (deformationController.has_constraints() && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
