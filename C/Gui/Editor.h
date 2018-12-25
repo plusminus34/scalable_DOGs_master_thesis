@@ -12,9 +12,12 @@ public:
 	enum MouseMode { SELECT, TRANSLATE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
 	enum SelectMode {VertexPicker, PathPicker, CurvePicker};
 
+	bool callback_mouse_down(int button, int modifier);
+	bool callback_mouse_move(int mouse_x, int mouse_y);
+	bool callback_mouse_up(int button, int modifier);
+
 	MouseMode mouse_mode = NONE;
 	SelectMode select_mode = VertexPicker;
-	bool callback_mouse_down(int button, int modifier);
 private:
 	void applySelection();
 	void onNewHandleID();

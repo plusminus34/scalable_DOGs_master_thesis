@@ -42,6 +42,49 @@ bool Editor::callback_mouse_down(int button, int modifier) {
 	return deforming;
 }
 
+bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
+	if (!deforming)
+		return false;
+	/*
+	if (mouse_mode == SELECT) {
+		if (select_mode == C_Picker) {
+			lasso.strokeAddCurve(mouse_x, mouse_y);
+			return true;
+		}
+	}
+	*/
+	if (mouse_mode == TRANSLATE) {
+		if( mouse_mode == TRANSLATE) {
+			//cout << "Translating"<<endl;
+			translation = computeTranslation(mouse_x, down_mouse_x, mouse_y, down_mouse_y,
+						handle_centroids.row(moving_handle));
+		} 
+		get_new_handle_locations();
+		down_mouse_x = mouse_x;
+		down_mouse_y = mouse_y;
+		return true;
+		
+	}
+	return false;
+}
+
+bool Editor::callback_mouse_up(int button, int modifier) {
+	if (!deforming)
+		return false;
+	deforming = false;
+	
+	if (mouse_mode == TRANSLATE) {
+		translation.setZero();
+		moving_handle = -1;
+		
+		lasso.reinit();
+		compute_handle_centroids();
+		
+		return true;
+	}
+	return false;
+};
+
 void Editor::applySelection() {
 	int index = handle_id.maxCoeff()+1;
 	for (int i =0; i < selected_v.rows(); ++i)
