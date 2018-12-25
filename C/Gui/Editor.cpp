@@ -12,7 +12,9 @@ Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, cons
 				Eigen::VectorXi& b, Eigen::VectorXd& bc,
 				const MouseMode& mouse_mode, const SelectMode& select_mode) : 
 				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
-				translation(0,0,0) {}
+				translation(0,0,0) {
+	handle_id.setConstant(V.rows(), 1, -1);
+}
 
 bool Editor::callback_mouse_down() {
 	
@@ -90,8 +92,7 @@ bool Editor::callback_mouse_up() {
 
 void Editor::applySelection() {
 	int index = handle_id.maxCoeff()+1;
-	for (int i =0; i < selected_v.rows(); ++i)
-	{
+	for (int i =0; i < selected_v.rows(); ++i) {
 		const int selected_vertex = selected_v[i];
 		cout << "Selected V  " << selected_vertex << " at location " << V.row(selected_vertex) << endl;
 		if (handle_id[selected_vertex] == -1)
@@ -114,7 +115,6 @@ void Editor::onNewHandleID() {
 	for (long vi = 0; vi<V.rows(); ++vi)
 		if(handle_id[vi] >=0)
 			handle_vertices[count++] = vi;
-	
 	compute_handle_centroids();
 
 	// update handle_vertices_fixed_pos
@@ -123,7 +123,7 @@ void Editor::onNewHandleID() {
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 
 	// b contains normal constraints + z-up/down constraints for folding
-	b.resize(3*handle_vertices.rows());
+	b.resize(3*handle_vertices.rows()); bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
 		b(3*i) = handle_vertices(i); bc(3*i) = handle_vertex_positions(i,0);
 		b(3*i+1) = handle_vertices(i) + v_num; bc(3*i+1) = handle_vertex_positions(i,1);
