@@ -14,6 +14,7 @@ Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, cons
 				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
 				translation(0,0,0) {
 	handle_id.setConstant(V.rows(), 1, -1);
+	oldV = V;
 }
 
 bool Editor::callback_mouse_down() {
@@ -39,6 +40,7 @@ bool Editor::callback_mouse_down() {
 			if(vi>=0 && handle_id[vi]>=0)  {//if a region was found, mark it for translation/rotation {
 				moving_handle = handle_id[vi];
 				current_handle = moving_handle;
+				oldV = V;//.copy();
 				get_new_handle_locations();
 				//compute_grad_constraints();
 				deforming = true;
@@ -63,6 +65,7 @@ bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
 			//cout << "Translating"<<endl;
 			translation = computeTranslation(mouse_x, down_mouse_x, mouse_y, down_mouse_y,
 						handle_centroids.row(moving_handle));
+			std::cout << "translation = " << translation << std::endl;
 		} 
 		get_new_handle_locations();
 		down_mouse_x = mouse_x;
@@ -81,6 +84,7 @@ bool Editor::callback_mouse_up() {
 	if (mouse_mode == TRANSLATE) {
 		translation.setZero();
 		moving_handle = -1;
+		oldV = V;
 		
 		lasso.reinit();
 		compute_handle_centroids();
@@ -139,13 +143,14 @@ void Editor::get_new_handle_locations() {
 	int count = 0;
 	for (long vi = 0; vi<V.rows(); ++vi)
 		if(handle_id[vi] >=0) {
-			Eigen::RowVector3f goalPosition = V.row(vi).cast<float>();
+			//Eigen::RowVector3f goalPosition = V.row(vi).cast<float>();
+			Eigen::RowVector3f goalPosition = oldV.row(vi).cast<float>();
 			//Eigen::RowVector3f goalPosition = oldV.row(vi).cast<float>();
 			if (handle_id[vi] == moving_handle){
 				if( mouse_mode == TRANSLATE) goalPosition+=translation;
 			}
 			handle_vertex_positions.row(count++) = goalPosition.cast<double>();
-			//D.oldV.row(vi) = goalPosition.cast<double>();;
+			oldV.row(vi) = goalPosition.cast<double>();;
 		}
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 	bc.resize(b.rows());

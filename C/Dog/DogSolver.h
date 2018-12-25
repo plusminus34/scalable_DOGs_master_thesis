@@ -50,6 +50,9 @@ public:
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
+
+	Dog& getDog(){return dog;}
+	const QuadTopology& getQuadTop(){return quadTop;}
 	
 	struct Constraints {
 		Constraints(const Dog& dog, const QuadTopology& quadTop,

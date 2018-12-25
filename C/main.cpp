@@ -57,6 +57,7 @@ void load_workspace(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void run_optimization() {
+  /*
   if (!is_optimizing)
     return;
   
@@ -65,6 +66,7 @@ void run_optimization() {
     if (deformationController.curve_timestep < 1) deformationController.curve_timestep += curve_timestep_diff;
     deformationController.update_positional_constraints();
   }
+  */
   deformationController.single_optimization();
 }
 

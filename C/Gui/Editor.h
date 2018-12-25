@@ -32,7 +32,7 @@ private:
 	Eigen::Vector4f computeRotation(int mouse_x, int from_x, int mouse_y, int from_y, Eigen::RowVector3d pt3D);
 
 	igl::opengl::glfw::Viewer& viewer;
-	const Eigen::MatrixXd &V;
+	const Eigen::MatrixXd &V; Eigen::MatrixXd oldV;
     const Eigen::MatrixXi &F;
 	Lasso lasso;
 	const Editor::MouseMode& mouse_mode;
