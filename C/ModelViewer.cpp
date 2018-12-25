@@ -83,10 +83,6 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 		E1.row(i) << constrained_pts_coords_vec(i),constrained_pts_coords_vec(pts_num+i),constrained_pts_coords_vec(2*pts_num+i);
 		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
-	if ((bc-constrained_pts_coords_vec).norm() > 1e-9) {
-		std::cout << "constrained_pts_coords_vec = " << constrained_pts_coords_vec << std::endl;
-		std::cout << "with bc = " << bc << std::endl;
-	}
 	
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 	deformationController.render_positional_constraints();

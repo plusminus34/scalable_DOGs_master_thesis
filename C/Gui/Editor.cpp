@@ -65,7 +65,6 @@ bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
 			//cout << "Translating"<<endl;
 			translation = computeTranslation(mouse_x, down_mouse_x, mouse_y, down_mouse_y,
 						handle_centroids.row(moving_handle));
-			std::cout << "translation = " << translation << std::endl;
 		} 
 		get_new_handle_locations();
 		down_mouse_x = mouse_x;
@@ -130,9 +129,9 @@ void Editor::onNewHandleID() {
 	// b contains normal constraints + z-up/down constraints for folding
 	b.resize(3*handle_vertices.rows()); bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
-		b(3*i) = handle_vertices(i); bc(3*i) = handle_vertex_positions(i,0);
-		b(3*i+1) = handle_vertices(i) + v_num; bc(3*i+1) = handle_vertex_positions(i,1);
-		b(3*i+2) = handle_vertices(i) + 2*v_num; bc(3*i+2) = handle_vertex_positions(i,2);
+		b(i) = handle_vertices(i); bc(i) = handle_vertex_positions(i,0);
+		b(const_v_num+i) = handle_vertices(i) + v_num; bc(const_v_num+i) = handle_vertex_positions(i,1);
+		b(2*const_v_num+i) = handle_vertices(i) + 2*v_num; bc(2*const_v_num+i) = handle_vertex_positions(i,2);
 	}
 	//solver.setConst(D.b);
 	//Direction direction; direction.x = direction.y = direction.z = 0;
@@ -156,9 +155,9 @@ void Editor::get_new_handle_locations() {
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 	bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
-		bc(3*i) = handle_vertex_positions(i,0);
-		bc(3*i+1) = handle_vertex_positions(i,1);
-		bc(3*i+2) = handle_vertex_positions(i,2);
+		bc(i) = handle_vertex_positions(i,0);
+		bc(const_v_num+i) = handle_vertex_positions(i,1);
+		bc(2*const_v_num+i) = handle_vertex_positions(i,2);
 	}
 }
 
