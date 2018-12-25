@@ -132,6 +132,7 @@ void Editor::onNewHandleID() {
 	//solver.setConst(D.b);
 	//Direction direction; direction.x = direction.y = direction.z = 0;
 	//handle_directions.push_back(direction);
+	new_constraints = true;
 }
 
 void Editor::get_new_handle_locations() {
@@ -260,4 +261,18 @@ Eigen::Vector4f Editor::computeRotation(int mouse_x, int from_x,int mouse_y, int
 	igl::quat_mult(rotation.data(), drot.data(), out.data());
 	igl::quat_mult(drot_conj.data(), out.data(), rotation.data());
 	return rotation;
+}
+
+void Editor::render_positional_constraints() const {
+	Eigen::MatrixXd const_v;
+	Eigen::MatrixXd handle_colors(handle_vertex_positions.rows(),3);
+    for (int i = 0; i < handle_colors.rows(); i++) {
+      if (handle_id[handle_vertices[i]] == moving_handle) {
+        handle_colors.row(i) = Eigen::RowVector3d(220./255,0./255,102./255);
+      } else {
+        handle_colors.row(i) = Eigen::RowVector3d(30./255,80./255,255./255);
+      }
+    }
+    igl::slice(V, handle_vertices, 1, const_v);
+    viewer.data().add_points(const_v, handle_colors);
 }

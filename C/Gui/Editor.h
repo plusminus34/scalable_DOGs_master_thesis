@@ -18,8 +18,10 @@ public:
 	bool callback_mouse_down();
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
+	void render_positional_constraints() const;
 
 	Eigen::VectorXi& b; Eigen::VectorXd& bc;
+	bool new_constraints = false;
 
 private:
 	void applySelection();

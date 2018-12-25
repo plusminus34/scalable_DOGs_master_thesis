@@ -84,6 +84,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
+	deformationController.render_positional_constraints();
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
