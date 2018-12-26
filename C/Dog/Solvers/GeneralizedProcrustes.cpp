@@ -11,15 +11,29 @@ double GeneralizedProcrustes::solve(Dog& dog,
         int fixed_mesh_i) {
 
 	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
-	// align this mesh to edge point constraints
+	// align this mesh to point and edge point constraints
 	{
 		//std::cout << "aligning submesh " << fixed_mesh_i << " to edge point constraints" << std::endl;
 		Eigen::MatrixXd edgeCoords(EdgePoint::getPositionInMesh(edgePointConstraints.getEdgePoints(), dog.getV()));
 		Eigen::VectorXd bc_vec = edgePointConstraints.getEdgePointConstraints();
-		Eigen::MatrixXd bc; vec_to_mat2(bc_vec,bc);
+		Eigen::MatrixXd bc_edges; vec_to_mat2(bc_vec,bc_edges);
+
+		auto b_pts = posConst.getPositionIndices(); auto bc_pts_vec = posConst.getPositionVals();
+		Eigen::VectorXd pts_current_values_vec; igl::slice(dog.getV_vector(),b_pts,1, pts_current_values_vec);
+		Eigen::MatrixXd bc_pts; vec_to_mat2(bc_pts_vec, bc_pts);
+		Eigen::MatrixXd pts_current_values; vec_to_mat2(pts_current_values_vec,pts_current_values);
+
+		Eigen::MatrixXd cur_values(edgeCoords.rows() + pts_current_values.rows(),3); cur_values << edgeCoords,pts_current_values;
+		Eigen::MatrixXd bc(bc_edges.rows() + bc_pts.rows(),3); bc << bc_edges,bc_pts;
+
+		if (bc.rows() < 3) {
+			std::cout << "bc.rows() = " << bc.rows() << std::endl;
+			return 0;
+		}
 
 		Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
-		igl::procrustes(edgeCoords,bc,false,false,scale_dummy,R,t);
+		igl::procrustes(cur_values,bc,false,false,scale_dummy,R,t);
+		std::cout << "R = " << R << std::endl;
 		// go through mesh vertices and set them
 		int submesh_min_i, submesh_max_i; dog.get_submesh_min_max_i(fixed_mesh_i, submesh_min_i, submesh_max_i);
 		//std::cout << "R = " << R << " t = " << t << std::endl;
@@ -30,7 +44,7 @@ double GeneralizedProcrustes::solve(Dog& dog,
 		//bc = (bc*R).rowwise() + t.transpose();
 	}
 
-
+	/*
 	std::cout << "fixed_mesh_i = " << fixed_mesh_i << std::endl;
 
 	//procrustes_on_submesh(dog, fixed_mesh_i, submesh_positional_constraints_from_mesh_positional_constraints(dog, fixed_mesh_i, posConst));
@@ -72,6 +86,7 @@ double GeneralizedProcrustes::solve(Dog& dog,
 									 submeshEdgePtConst);
 		}
 	}
+	*/
 	return 0;
 }
 

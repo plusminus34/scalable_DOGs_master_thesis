@@ -36,6 +36,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
+	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 	if (state.dog.has_creases()) {
 		render_dog_stitching_curves(viewer, state.dog);
 	} else {
@@ -55,7 +56,6 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 
     Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
   	viewer.data().set_normals(VN);
-	viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {

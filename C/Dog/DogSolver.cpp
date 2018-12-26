@@ -13,7 +13,8 @@ DogSolver::DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorX
           obj(dog, quadTop, init_x0, constraints.posConst, constraints.edgePtConst,p),
           newtonKKT(p.merit_p),
           dogGuess(dog, p.align_procrustes) {
-    // Empty on purpose
+    
+    is_constrained = (b.rows() + edgePoints.size())>0;
 }
 
 DogSolver::Constraints::Constraints(const Dog& dog, const QuadTopology& quadTop,
@@ -43,8 +44,10 @@ DogSolver::Objectives::Objectives(const Dog& dog, const QuadTopology& quadTop, c
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
-  cout << "guessing!" << endl;
-  dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
+  if (is_constrained) {
+    cout << "guessing!" << endl;
+    dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
+  }
 
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);

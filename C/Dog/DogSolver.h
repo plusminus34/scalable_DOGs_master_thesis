@@ -83,6 +83,7 @@ public:
 private:
 	Dog& dog;
 	const QuadTopology& quadTop;
+	bool is_constrained;
 
 	// Optimization parameters
 	Eigen::VectorXd init_x0;
