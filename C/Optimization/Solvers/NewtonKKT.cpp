@@ -13,12 +13,15 @@ using namespace std;
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
 double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
-	double ret = one_iter(x0,f,constraints,x); int iter = 1;
+    auto prev_x = x0; double current_merit_p = merit_p;
+	double ret = one_iter(x0,f,constraints,x,current_merit_p); int iter = 1;
     double const_dev = constraints.Vals(x).norm();
+    if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
-        //std::cout << "const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
-        ret = one_iter(x,f,constraints,x);
+        std::cout << "const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
+        ret = one_iter(x,f,constraints,x,current_merit_p);
         const_dev = constraints.Vals(x).norm();
+        if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         iter++;
     }
     return ret;
@@ -76,7 +79,8 @@ void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
     KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
 }
 
-double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
+double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
+        double current_merit) {
     x = x0;
     int vnum = x.rows()/3;
     double new_e;
@@ -114,6 +118,8 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();
         m_solver.analyze_pattern();
+        //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
+        //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
         first_solve = false;
     } else {
         m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
@@ -147,7 +153,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     t = timer.getElapsedTime();
     double init_timestep = 1;
     //new_e = line_search(x,d,init_t,f);
-    new_e = exact_l2_merit_linesearch(x,d,init_timestep,f,constraints,merit_p);
+    new_e = exact_l2_merit_linesearch(x,d,init_timestep,f,constraints,current_merit);
     auto linesearch_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
 

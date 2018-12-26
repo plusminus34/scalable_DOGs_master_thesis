@@ -176,6 +176,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputDouble("Merit penalty", &deformationController.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &deformationController.p.infeasability_epsilon);
+      ImGui::InputDouble("Infeasability filter", &deformationController.p.infeasability_filter);
       ImGui::InputInt("Max Newton iterations", &deformationController.p.max_newton_iters);
       ImGui::InputInt("Penalty repetitions", &deformationController.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &deformationController.p.align_procrustes);

@@ -123,12 +123,7 @@ void IsometryObjective::updateHessianIJV(const Eigen::VectorXd& x) {
   			//	by setting l0 to 0.9-eps we even get positive ones. 
   			//. This means we need to make l0 smaller by the diff
   			const double eps = 1e-10;
-
-  			//std::cout << "cur_squared = " << cur_squared_l << " l0 before = " << l0;
   			l0 -= (l0-cur_squared_l+eps);
-  			//std::cout << " and after = " << l0 << std::endl;
-  			//auto diff = cur_squared_l-l0;
-  			//l0 += diff + eps;
   		}
 
 		double t2 = pxf_x*4.0;

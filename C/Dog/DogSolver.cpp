@@ -11,7 +11,7 @@ DogSolver::DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorX
           dog(dog), quadTop(quadTop), init_x0(init_x0), p(p),
           constraints(dog, quadTop, b, bc, edgePoints, edgeCoords), 
           obj(dog, quadTop, init_x0, constraints.posConst, constraints.edgePtConst,p),
-          newtonKKT(p.infeasability_epsilon, p.max_newton_iters, p.merit_p),
+          newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
     is_constrained = (b.rows() + edgePoints.size())>0;

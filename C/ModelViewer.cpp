@@ -111,6 +111,7 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
   //viewer.data.set_normals(VN);
   render_wireframe(viewer,VN,state.quadTop, false);
+  if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
 }
 
 void ModelViewer::center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF) {
