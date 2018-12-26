@@ -15,6 +15,8 @@ LaplacianSimilarity::LaplacianSimilarity(const Dog& dog, const Eigen::VectorXd& 
 	}
 	*/
 	lRef = L*x0;
+	cachedH = 2*L.transpose();
+	IJV = to_triplets(cachedH);
 }
 
 double LaplacianSimilarity::obj(const Eigen::VectorXd& x) const {
@@ -25,15 +27,15 @@ Eigen::VectorXd LaplacianSimilarity::grad(const Eigen::VectorXd& x) const {
 	Eigen::VectorXd lap_diff = L*x-lRef;
 	return 2*(L.transpose()*lap_diff);
 }
-/*
-virtual std::vector<Eigen::Triplet<double> > LaplacianSimilarity::hessianIJV(const Eigen::VectorXd& x) const {
-	return L_hessian_IJV;
-}
-*/
 
-/*
+// TODO: This completely ignores the hessian of the constraints! (works perfectly for linear constraints such as positions though)
+void LaplacianSimilarity::updateHessianIJV(const Eigen::VectorXd& x) {
+	// Could write it directly maybe, or have an eddificent A*A' at least..
+	// Or preallocate the IJV (second time)
+	IJV = to_triplets(cachedH);
+}
+
+
 const Eigen::SparseMatrix<double>& LaplacianSimilarity::hessian(const Eigen::VectorXd& x) {
-	cachedH = 2*L.transpose();
 	return cachedH;
 }
-*/

@@ -39,8 +39,9 @@ public:
 		double soft_pos_weight = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 1;
-
-		bool align_procrustes = false;
+		int max_newton_iters = 10;
+		double infeasability_epsilon = 1e-3;
+		bool align_procrustes = true;
 	};
 
 	DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
@@ -77,6 +78,7 @@ public:
 	  	//LaplacianSimilarity laplacianSimilarity;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
+      	LaplacianSimilarity laplacianSimilarity;
       	CompositeObjective compObj;
 	};
 

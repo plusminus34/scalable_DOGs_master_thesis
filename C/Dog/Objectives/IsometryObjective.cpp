@@ -119,9 +119,16 @@ void IsometryObjective::updateHessianIJV(const Eigen::VectorXd& x) {
   		double z_diff = p0_z-pxf_z;
   		double cur_squared_l = x_diff*x_diff+y_diff*y_diff+z_diff*z_diff;
   		if (cur_squared_l < l0) {
+  			// if l0 is 1 and we are now at 0.9, than by setting l0 to 0.9 we get 0 eigen values
+  			//	by setting l0 to 0.9-eps we even get positive ones. 
+  			//. This means we need to make l0 smaller by the diff
   			const double eps = 1e-10;
-  			auto diff = cur_squared_l-l0;
-  			l0 += diff + eps;
+
+  			//std::cout << "cur_squared = " << cur_squared_l << " l0 before = " << l0;
+  			l0 -= (l0-cur_squared_l+eps);
+  			//std::cout << " and after = " << l0 << std::endl;
+  			//auto diff = cur_squared_l-l0;
+  			//l0 += diff + eps;
   		}
 
 		double t2 = pxf_x*4.0;

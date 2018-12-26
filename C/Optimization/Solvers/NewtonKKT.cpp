@@ -13,7 +13,71 @@ using namespace std;
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
 double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
-	x = x0;
+	double ret = one_iter(x0,f,constraints,x); int iter = 1;
+    double const_dev = constraints.Vals(x).norm();
+    while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
+        //std::cout << "const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
+        ret = one_iter(x,f,constraints,x);
+        const_dev = constraints.Vals(x).norm();
+        iter++;
+    }
+    return ret;
+}
+
+void NewtonKKT::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
+                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n) {
+    // build an IJV which contains the hessian, diag matrix along the hessian, jacobian, jacobian transpose,
+    //  and diagonal matrix along the J to make sure the whole diagonal is nnz (needed for Pardiso solver)
+    int ijv_idx = 0;
+    if (kkt_IJV.size() == 0) {
+        int kkt_size = hessian_IJV.size() + 2*jacobian_IJV.size() + var_n + const_n;
+        kkt_IJV.resize(kkt_size); int ijv_idx = 0;
+    }
+
+    // add -hessian-id*eps_id
+    double eps = 1e-8;
+    for (int i = 0; i < hessian_IJV.size(); i++) {
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),-hessian_IJV[i].value());
+    }
+    for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
+
+    // Add both J and J transpose
+    for (int i = 0; i < jacobian_IJV.size(); i++) {
+        int row = jacobian_IJV[i].row(), col = jacobian_IJV[i].col(); double val = jacobian_IJV[i].value();
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n, val); // Jt columed offseted at var_n
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n, col, val); // J offseted in var_n
+    }
+    // add zeros along var_n+i,var_n_i
+    for (int i = var_n; i < var_n+const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
+
+    if ( A.rows() == 0) {
+      A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);
+      igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
+    } else {
+      igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
+    }
+}
+void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
+                        const Eigen::SparseMatrix<double>& J, Eigen::SparseMatrix<double>& KKT) {
+    Eigen::SparseMatrix<double> id (hessian.rows(),hessian.cols()); id.setIdentity();
+    auto eps_id = 1e-8*id;
+
+    Eigen::SparseMatrix<double> H = -hessian - eps_id;
+    
+    Eigen::SparseMatrix<double> Jt = J.transpose();
+
+    Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
+    Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
+    Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
+    igl::cat(1, H_jt, J_0, KKT);
+
+    //A.makeCompressed();
+    Eigen::SparseMatrix<double> id_KKT(KKT.rows(),KKT.rows()); id_KKT.setIdentity(); id_KKT = 0*id_KKT;
+    KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
+}
+
+double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
+    x = x0;
     int vnum = x.rows()/3;
     double new_e;
 
@@ -109,56 +173,4 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     old_e = f.obj(x);
     
     return new_e;
-}
-
-void NewtonKKT::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
-                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n) {
-    // build an IJV which contains the hessian, diag matrix along the hessian, jacobian, jacobian transpose,
-    //  and diagonal matrix along the J to make sure the whole diagonal is nnz (needed for Pardiso solver)
-    int ijv_idx = 0;
-    if (kkt_IJV.size() == 0) {
-        int kkt_size = hessian_IJV.size() + 2*jacobian_IJV.size() + var_n + const_n;
-        kkt_IJV.resize(kkt_size); int ijv_idx = 0;
-    }
-
-    // add -hessian-id*eps_id
-    double eps = 1e-8;
-    for (int i = 0; i < hessian_IJV.size(); i++) {
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),-hessian_IJV[i].value());
-    }
-    for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
-
-    // Add both J and J transpose
-    for (int i = 0; i < jacobian_IJV.size(); i++) {
-        int row = jacobian_IJV[i].row(), col = jacobian_IJV[i].col(); double val = jacobian_IJV[i].value();
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n, val); // Jt columed offseted at var_n
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n, col, val); // J offseted in var_n
-    }
-    // add zeros along var_n+i,var_n_i
-    for (int i = var_n; i < var_n+const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
-
-    if ( A.rows() == 0) {
-      A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);
-      igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
-    } else {
-      igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
-    }
-}
-void NewtonKKT::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
-                        const Eigen::SparseMatrix<double>& J, Eigen::SparseMatrix<double>& KKT) {
-    Eigen::SparseMatrix<double> id (hessian.rows(),hessian.cols()); id.setIdentity();
-    auto eps_id = 1e-8*id;
-
-    Eigen::SparseMatrix<double> H = -hessian - eps_id;
-    
-    Eigen::SparseMatrix<double> Jt = J.transpose();
-
-    Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
-    Eigen::SparseMatrix<double> zeroM(J.rows(),J.rows());
-    Eigen::SparseMatrix<double> J_0; igl::cat(2,J,zeroM,J_0);
-    igl::cat(1, H_jt, J_0, KKT);
-
-    //A.makeCompressed();
-    Eigen::SparseMatrix<double> id_KKT(KKT.rows(),KKT.rows()); id_KKT.setIdentity(); id_KKT = 0*id_KKT;
-    KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
 }

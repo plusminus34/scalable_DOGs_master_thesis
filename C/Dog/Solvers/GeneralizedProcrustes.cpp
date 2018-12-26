@@ -10,7 +10,7 @@ double GeneralizedProcrustes::solve(Dog& dog,
         const EdgePointConstraints& edgePointConstraints,
         int fixed_mesh_i) {
 
-	if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
+	// For now this works only for a single mesh (so procrustes on points + edge constraints)
 	// align this mesh to point and edge point constraints
 	{
 		//std::cout << "aligning submesh " << fixed_mesh_i << " to edge point constraints" << std::endl;
@@ -26,14 +26,14 @@ double GeneralizedProcrustes::solve(Dog& dog,
 		Eigen::MatrixXd cur_values(edgeCoords.rows() + pts_current_values.rows(),3); cur_values << edgeCoords,pts_current_values;
 		Eigen::MatrixXd bc(bc_edges.rows() + bc_pts.rows(),3); bc << bc_edges,bc_pts;
 
-		if (bc.rows() < 3) {
-			std::cout << "bc.rows() = " << bc.rows() << std::endl;
-			return 0;
-		}
 
 		Eigen::MatrixXd R; Eigen::VectorXd t; double scale_dummy;
 		igl::procrustes(cur_values,bc,false,false,scale_dummy,R,t);
-		std::cout << "R = " << R << std::endl;
+		// This is a bit wrong but it seems unstable otherwise
+		if ((bc.rows() == 2) || (bc-cur_values).norm() < 1e-10) R.setIdentity();
+		// One way to fix it is to add another 3rd point to fix (so we'll get a better solution)
+		dog.getVMutable() = (dog.getV() * R).rowwise() + t.transpose();
+		/*
 		// go through mesh vertices and set them
 		int submesh_min_i, submesh_max_i; dog.get_submesh_min_max_i(fixed_mesh_i, submesh_min_i, submesh_max_i);
 		//std::cout << "R = " << R << " t = " << t << std::endl;
@@ -41,8 +41,10 @@ double GeneralizedProcrustes::solve(Dog& dog,
 			// Todo check if we need Rt or R here..c
 			dog.getVMutable().row(i) = (dog.getVMutable().row(i)*R)+t.transpose();
 		}
+		*/
 		//bc = (bc*R).rowwise() + t.transpose();
 	}
+	//if (fixed_mesh_i == -1) fixed_mesh_i = get_best_aligned_submesh(dog,posConst);
 
 	/*
 	std::cout << "fixed_mesh_i = " << fixed_mesh_i << std::endl;

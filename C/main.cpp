@@ -175,6 +175,8 @@ int main(int argc, char *argv[]) {
       if (ImGui::InputDouble("Curve timestep", &deformationController.curve_timestep, 0, 0, "%.4f") ) deformationController.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
       ImGui::InputDouble("Merit penalty", &deformationController.p.merit_p);
+      ImGui::InputDouble("Infeasability epsilon", &deformationController.p.infeasability_epsilon);
+      ImGui::InputInt("Max Newton iterations", &deformationController.p.max_newton_iters);
       ImGui::InputInt("Penalty repetitions", &deformationController.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &deformationController.p.align_procrustes);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);

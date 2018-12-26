@@ -11,7 +11,7 @@ DogSolver::DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorX
           dog(dog), quadTop(quadTop), init_x0(init_x0), p(p),
           constraints(dog, quadTop, b, bc, edgePoints, edgeCoords), 
           obj(dog, quadTop, init_x0, constraints.posConst, constraints.edgePtConst,p),
-          newtonKKT(p.merit_p),
+          newtonKKT(p.infeasability_epsilon, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
     is_constrained = (b.rows() + edgePoints.size())>0;
@@ -32,13 +32,13 @@ DogSolver::Objectives::Objectives(const Dog& dog, const QuadTopology& quadTop, c
           PositionalConstraints& posConst,
           EdgePointConstraints& edgePtConst,
           const DogSolver::Params& p) : 
-        bending(quadTop), isoObj(quadTop, init_x0), /*laplacianSimilarity(dog,init_x0),*/
+        bending(quadTop), isoObj(quadTop, init_x0), laplacianSimilarity(dog,init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
         
         compObj(
-          {&bending, &isoObj, &pointsPosSoftConstraints},// &edgePosSoftConstraints},
-          {p.bending_weight,p.isometry_weight, p.soft_pos_weight})//, p.soft_pos_weight})
+          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints},
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight})
           {
     // Empty on purpose
 }
@@ -51,7 +51,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight});//, p.soft_pos_weight});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight});
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {
