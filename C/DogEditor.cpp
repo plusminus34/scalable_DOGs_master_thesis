@@ -1,12 +1,12 @@
-#include "DeformationController.h"
+#include "DogEditor.h"
 
 std::vector<int> get_second_dog_row(Dog& dog);
 
-void DeformationController::single_optimization() {
+void DogEditor::single_optimization() {
 	if (dogSolver) dogSolver->single_iteration(constraints_deviation, objective);
 }
 
-void DeformationController::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog, const QuadTopology& quadTop) {
+void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog, const QuadTopology& quadTop) {
 	viewer = &viewer_i;
 	auto init_x0 = dog.getV_vector();
 
@@ -20,7 +20,7 @@ void DeformationController::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_
 	editor = new Editor(*viewer,dog.getV(), dog.getFrendering(), b, bc, mouse_mode, select_mode);
 }
 
-void DeformationController::reset_dog_solver() {
+void DogEditor::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	auto init_x0 = dog.getV_vector();
 	const QuadTopology& quadTop = dogSolver->getQuadTop();
@@ -28,7 +28,7 @@ void DeformationController::reset_dog_solver() {
 	dogSolver = new DogSolver(dog,quadTop,init_x0, p, b, bc, edgePoints, edgeCoords);
 }
 
-void DeformationController::update_positional_constraints(bool update_solver) {
+void DogEditor::update_positional_constraints(bool update_solver) {
 	//if (p.deformationType == DIHEDRAL_FOLDING) {
 	//	state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
 	//} else if 
@@ -55,7 +55,7 @@ std::vector<int> get_second_dog_row(Dog& dog) {
   return curve_i;
 }
 
-bool DeformationController::callback_mouse_down() {
+bool DogEditor::callback_mouse_down() {
 	auto ret = editor->callback_mouse_down();
 	if (editor->new_constraints) {
 		reset_dog_solver();
@@ -63,7 +63,7 @@ bool DeformationController::callback_mouse_down() {
 	}
 	return ret;
 }
-bool DeformationController::callback_mouse_move(int mouse_x, int mouse_y) {
+bool DogEditor::callback_mouse_move(int mouse_x, int mouse_y) {
 	auto ret = editor->callback_mouse_move(mouse_x, mouse_y);
 	if (bc.rows()) dogSolver->update_point_coords(bc);
 	return ret;

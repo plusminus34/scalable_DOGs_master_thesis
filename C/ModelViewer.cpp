@@ -7,8 +7,8 @@
 using namespace std;
 
 
-ModelViewer::ModelViewer(const ModelState& modelState, const DeformationController& deformationController) : 
-									state(modelState), deformationController(deformationController) {
+ModelViewer::ModelViewer(const ModelState& modelState, const DogEditor& dogEditor) : 
+									state(modelState), dogEditor(dogEditor) {
 	viewMode = ViewModeMesh; 
 	prevMode = viewMode;
 	first_rendering = true;
@@ -26,8 +26,8 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 
 	if (viewMode == ViewModeMesh) {
 		render_mesh_and_wireframe(viewer);
-	} else if (viewMode == ViewModeCreases) {
-		render_crease_pattern(viewer);
+	} else if (viewMode == CreasesSVGReader) {
+		render_crease_pattern_svg_reader(viewer);
 	} else if (viewMode == ViewModeGauss) {
 		render_gauss_map(viewer);
 	}
@@ -58,7 +58,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
   	viewer.data().set_normals(VN);
 }
 
-void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
+void ModelViewer::render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& viewer) {
 	if (state.dog.has_creases()) {
 		viewer.data().set_mesh(state.creasesVisualization.V_arr, state.creasesVisualization.F_arr);
 		viewer.data().set_face_based(true);
@@ -74,7 +74,7 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewer) {
 	Eigen::VectorXd x(state.dog.getV_vector());
-	Eigen::VectorXi b; Eigen::VectorXd bc; deformationController.get_positional_constraints(b,bc);
+	Eigen::VectorXi b; Eigen::VectorXd bc; dogEditor.get_positional_constraints(b,bc);
 	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,b,1, constrained_pts_coords_vec);
 
 	int pts_num = b.size()/3;
@@ -85,12 +85,12 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	}
 	
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
-	deformationController.render_positional_constraints();
+	dogEditor.render_positional_constraints();
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
-	deformationController.get_edge_point_constraints(edgePoints, edgeCoords);
+	dogEditor.get_edge_point_constraints(edgePoints, edgeCoords);
 	if (!edgePoints.size()) return;
 	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, state.dog.getV());
 	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));

@@ -15,15 +15,15 @@ using namespace std;
 
 bool is_optimizing = true;
 ModelState state;
-DeformationController deformationController;
-ModelViewer modelViewer(state, deformationController);
+DogEditor dogEditor;
+ModelViewer modelViewer(state, dogEditor);
 
 double curve_timestep_diff = 0;
 double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  deformationController.init_from_new_dog(viewer, state.dog, state.quadTop);
+  dogEditor.init_from_new_dog(viewer, state.dog, state.quadTop);
 }
 
 void save_workspace() {
@@ -63,11 +63,11 @@ void run_optimization() {
   
   if (curve_timestep_diff) {
     //if (dogSolver.p.curve_timestep < 0.2) {dogSolver.p.curve_timestep += curve_timestep_diff;}
-    if (deformationController.curve_timestep < 1) deformationController.curve_timestep += curve_timestep_diff;
-    deformationController.update_positional_constraints();
+    if (dogEditor.curve_timestep < 1) dogEditor.curve_timestep += curve_timestep_diff;
+    dogEditor.update_positional_constraints();
   }
   */
-  deformationController.single_optimization();
+  dogEditor.single_optimization();
 }
 
 bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
@@ -77,17 +77,17 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'S':
-    deformationController.mouse_mode = Editor::SELECT;
+    dogEditor.mouse_mode = Editor::SELECT;
     break;
   case 'D':
-    deformationController.mouse_mode = Editor::TRANSLATE;
+    dogEditor.mouse_mode = Editor::TRANSLATE;
     break;
   case 'F':
-    deformationController.single_optimization();
+    dogEditor.single_optimization();
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   case 'C':
-    deformationController.reset_constraints();
+    dogEditor.reset_constraints();
     break;
   case 'E':
     exit(1);
@@ -97,20 +97,20 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return deformationController.callback_mouse_down();
+  if (modelViewer.viewMode == ViewModeMesh) return dogEditor.callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if (modelViewer.viewMode == ViewModeMesh) return  deformationController.callback_mouse_move(mouse_x, mouse_y);
+  if (modelViewer.viewMode == ViewModeMesh) return  dogEditor.callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return  deformationController.callback_mouse_up();
+  if (modelViewer.viewMode == ViewModeMesh) return  dogEditor.callback_mouse_up();
   return false;
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if (deformationController.has_constraints() && is_optimizing) run_optimization();
+  if (dogEditor.has_constraints() && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
     if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
     state.init_from_svg(input_path, x_res, y_res);
-    modelViewer.viewMode = ViewModeCreases;
+    modelViewer.viewMode = CreasesSVGReader;
 
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
@@ -159,31 +159,32 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      //ImGui::Combo("Deformation type", (int *)(&deformationController.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Mouse mode", (int *)(&deformationController.mouse_mode), "Select\0Translate\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&deformationController.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
-      ImGui::Combo("Solver type", (int *)(&deformationController.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
-      ImGui::InputDouble("Bending", &deformationController.p.bending_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Isometry", &deformationController.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Laplacian Similarity", &deformationController.p.laplacian_similarity_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Soft constraints", &deformationController.p.soft_pos_weight, 0, 0, "%.4f");
-      //if (ImGui::InputDouble("Fold angle", &deformationController.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      if (ImGui::InputDouble("Curve timestep", &deformationController.curve_timestep, 0, 0, "%.4f") ) deformationController.update_positional_constraints();
+      //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
+      ImGui::Combo("Mouse mode", (int *)(&dogEditor.mouse_mode), "Select\0Translate\0None\0\0");
+      ImGui::Combo("Select mode", (int *)(&dogEditor.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
+      ImGui::Combo("Solver type", (int *)(&dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
+      ImGui::InputDouble("Bending", &dogEditor.p.bending_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Isometry", &dogEditor.p.isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Laplacian Similarity", &dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Soft constraints", &dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
+      //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
+      if (ImGui::InputDouble("Curve timestep", &dogEditor.curve_timestep, 0, 0, "%.4f") ) dogEditor.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
-      ImGui::InputDouble("Merit penalty", &deformationController.p.merit_p);
-      ImGui::InputDouble("Infeasability epsilon", &deformationController.p.infeasability_epsilon);
-      ImGui::InputDouble("Infeasability filter", &deformationController.p.infeasability_filter);
-      ImGui::InputInt("Max Newton iterations", &deformationController.p.max_newton_iters);
-      ImGui::InputInt("Penalty repetitions", &deformationController.p.penalty_repetitions);
-      ImGui::Checkbox("Align Procrustes", &deformationController.p.align_procrustes);
+      ImGui::InputDouble("Merit penalty", &dogEditor.p.merit_p);
+      ImGui::InputDouble("Infeasability epsilon", &dogEditor.p.infeasability_epsilon);
+      ImGui::InputDouble("Infeasability filter", &dogEditor.p.infeasability_filter);
+      ImGui::InputInt("Max Newton iterations", &dogEditor.p.max_newton_iters);
+      ImGui::InputInt("Penalty repetitions", &dogEditor.p.penalty_repetitions);
+      ImGui::Checkbox("Align Procrustes", &dogEditor.p.align_procrustes);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
+      ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
-      ImGui::InputDouble("Constraints deviation", &deformationController.constraints_deviation);
-      ImGui::InputDouble("objective", &deformationController.objective);
+      ImGui::InputDouble("Constraints deviation", &dogEditor.constraints_deviation);
+      ImGui::InputDouble("objective", &dogEditor.objective);
 
       ImGui::End();
   };

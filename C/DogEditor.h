@@ -1,9 +1,9 @@
 #include "Dog/DogSolver.h"
 #include "Gui/Editor.h"
 
-class DeformationController {
+class DogEditor {
 public:
-	DeformationController(): geoConstraintsBuilder(NULL), dogSolver(NULL) {}
+	DogEditor(): geoConstraintsBuilder(NULL), dogSolver(NULL) {}
 	void single_optimization();
 	void init_from_new_dog(igl::opengl::glfw::Viewer& viewer, Dog& dog, const QuadTopology& quadTop);
 
@@ -12,7 +12,7 @@ public:
 		CURVE_DEFORMATION = 1
 	};
 
-	DeformationController::DeformationType deformationType = CURVE_DEFORMATION;
+	DogEditor::DeformationType deformationType = CURVE_DEFORMATION;
 
 	bool callback_mouse_down();
 	bool callback_mouse_move(int mouse_x, int mouse_y);
@@ -33,6 +33,7 @@ public:
 	double objective;
 	Editor::MouseMode mouse_mode = Editor::NONE;
 	Editor::SelectMode select_mode = Editor::VertexPicker;
+	int edited_mesh = 0; // 0 means the entire mesh, i means the i-1 connectec component submesh
 
 private:
 	void reset_dog_solver();
