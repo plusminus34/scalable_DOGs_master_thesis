@@ -5,7 +5,7 @@ class DogEditor {
 public:
 	DogEditor(): geoConstraintsBuilder(NULL), dogSolver(NULL) {}
 	void single_optimization();
-	void init_from_new_dog(igl::opengl::glfw::Viewer& viewer, Dog& dog, const QuadTopology& quadTop);
+	void init_from_new_dog(igl::opengl::glfw::Viewer& viewer, Dog& dog);
 
 	enum DeformationType {
 		DIHEDRAL_FOLDING = 0,

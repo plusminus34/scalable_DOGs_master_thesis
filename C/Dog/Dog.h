@@ -53,6 +53,7 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
 	const Eigen::MatrixXi& getFrendering() const {return F_ren;}
@@ -73,6 +74,7 @@ private:
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
 

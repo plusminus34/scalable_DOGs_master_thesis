@@ -24,7 +24,6 @@ struct CreasesVisualization : public igl::Serializable {
 
 struct ModelState : public igl::Serializable {
 	Dog dog;
-	QuadTopology quadTop;
 	CreasesVisualization creasesVisualization;
 
 	void init_from_mesh(const std::string& mesh_path);
@@ -35,7 +34,6 @@ struct ModelState : public igl::Serializable {
 
 	void InitSerialization() {
       Add(dog,std::string("_dog"));
-      Add(quadTop,std::string("_quadTop"));
       Add(creasesVisualization,std::string("_creasesVisualization"));
     }
 private:

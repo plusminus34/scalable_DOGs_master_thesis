@@ -23,7 +23,7 @@ double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  dogEditor.init_from_new_dog(viewer, state.dog, state.quadTop);
+  dogEditor.init_from_new_dog(viewer, state.dog);
 }
 
 void save_workspace() {

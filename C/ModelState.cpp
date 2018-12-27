@@ -24,7 +24,7 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 }
 
 void ModelState::setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-	quad_topology(V,F,quadTop);
+	QuadTopology quadTop; quad_topology(V,F,quadTop);
 
 	// Scale the mesh so that the entire x curve will be of length 20
 	const double edge_l = (V.row(quadTop.bnd_loop[1]) - V.row(quadTop.bnd_loop[0])).norm();
@@ -53,8 +53,6 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 
 	CreasePattern creasePattern(bbox, polylines, x_res, y_res);
 	dog = dog_from_crease_pattern(creasePattern);
-	
-	quad_topology(dog.getV(),dog.getF(),quadTop);
 
   	creasePattern.get_visualization_mesh_and_edges(creasesVisualization.V_arr, creasesVisualization.F_arr, 
 											creasesVisualization.faceColors,creasesVisualization.edge_pts1, creasesVisualization.edge_pts2);
@@ -66,6 +64,7 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
   	Eigen::MatrixXd meshE2; igl::slice(creaseVMesh,meshE_i.col(1),1, creasesVisualization.meshE2);
 
 	// scale the mesh
+	const QuadTopology& quadTop = dog.getQuadTopology();
 	const double edge_l = (dog.getV().row(quadTop.bnd_loop[1]) - dog.getV().row(quadTop.bnd_loop[0])).norm();
 	auto scaledV = dog.getV()*1./edge_l;
 	dog.update_V(scaledV);

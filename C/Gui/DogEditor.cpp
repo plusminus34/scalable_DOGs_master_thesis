@@ -6,7 +6,7 @@ void DogEditor::single_optimization() {
 	if (dogSolver) dogSolver->single_iteration(constraints_deviation, objective);
 }
 
-void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog, const QuadTopology& quadTop) {
+void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog) {
 	viewer = &viewer_i;
 	auto init_x0 = dog.getV_vector();
 
@@ -15,7 +15,7 @@ void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog,
 															get_second_dog_row(dog), curve_timestep);
 	bool update_solver = false; //update_positional_constraints(update_solver);
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,quadTop,init_x0, p, b, bc, edgePoints, edgeCoords);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords);
 	if (editor) delete editor;
 	editor = new Editor(*viewer,dog.getV(), dog.getFrendering(), b, bc, mouse_mode, select_mode);
 }
@@ -23,9 +23,8 @@ void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog,
 void DogEditor::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	auto init_x0 = dog.getV_vector();
-	const QuadTopology& quadTop = dogSolver->getQuadTop();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,quadTop,init_x0, p, b, bc, edgePoints, edgeCoords);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords);
 }
 
 void DogEditor::update_positional_constraints(bool update_solver) {

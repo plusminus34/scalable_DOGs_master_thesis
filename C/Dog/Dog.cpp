@@ -16,17 +16,19 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 		for (int subm_vi = min_idx; subm_vi <= max_idx; subm_vi++) vi_to_submesh[subm_vi] = sub_i;
 		min_idx += submesh_vn;
 	}
+	quad_topology(V,F,quadTop);
 }
 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(V), F_ren(Fsqr_to_F(F)) {
 	submesh_min_max_i.push_back(std::pair<int,int>(0,V.rows()-1)); // only 1 component
 	vi_to_submesh.assign(V.rows(),0);
+	quad_topology(V,F,quadTop);
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),V_ren(d.V_ren), F_ren(d.F_ren),
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren),
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						submesh_min_max_i(d.submesh_min_max_i), vi_to_submesh(d.vi_to_submesh) {
-	// empty
+	// empty on purpose
 }
 
 void Dog::update_rendering_v() {

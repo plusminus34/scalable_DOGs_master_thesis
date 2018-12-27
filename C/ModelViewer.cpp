@@ -40,7 +40,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (state.dog.has_creases()) {
 		render_dog_stitching_curves(viewer, state.dog);
 	} else {
-		render_wireframe(viewer, state.dog.getV(), state.quadTop);
+		render_wireframe(viewer, state.dog.getV(), state.dog.getQuadTopology());
 	}
 	if (render_pos_const) {
 		render_positional_constraints(viewer);
@@ -110,7 +110,7 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   // TODO support curved folds by looking at normal map of each one separately
   Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
   //viewer.data.set_normals(VN);
-  render_wireframe(viewer,VN,state.quadTop, false);
+  render_wireframe(viewer,VN,state.dog.getQuadTopology(), false);
   if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
 }
 

@@ -45,7 +45,7 @@ public:
 		bool align_procrustes = true;
 	};
 
-	DogSolver(Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
+	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
 	
@@ -54,11 +54,9 @@ public:
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
 
 	Dog& getDog(){return dog;}
-	const QuadTopology& getQuadTop(){return quadTop;}
 	
 	struct Constraints {
-		Constraints(const Dog& dog, const QuadTopology& quadTop,
-			Eigen::VectorXi& b, Eigen::VectorXd& bc,
+		Constraints(const Dog& dog, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
 
 		DogConstraints dogConst;
@@ -69,7 +67,7 @@ public:
 	};
 
 	struct Objectives {
-	  Objectives(const Dog& dog, const QuadTopology& quadTop, const Eigen::VectorXd& init_x0,
+	  Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
 	  			const DogSolver::Params& p);
@@ -85,7 +83,6 @@ public:
 
 private:
 	Dog& dog;
-	const QuadTopology& quadTop;
 	bool is_constrained;
 
 	// Optimization parameters
