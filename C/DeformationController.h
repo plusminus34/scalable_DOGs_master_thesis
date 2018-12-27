@@ -8,12 +8,19 @@
 // Every change to this one should create a new DogEditor on that mesh. 
 class DeformationController {
 public:
-	DeformationController(igl::opengl::glfw::Viewer& viewer) : viewer(viewer) {}
-	void single_optimization();
-	void init_from_new_dog(igl::opengl::glfw::Viewer& viewer, Dog& dog, const QuadTopology& quadTop);
+	void init_from_new_dog(igl::opengl::glfw::Viewer& viewer, Dog& dog);
+	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
 
-	int edited_mesh = 0; // 0 means the entire mesh, i means the i-1 connected component submesh	
+	// pass it on to the editor
+	void single_optimization();
+	// if needed: change activeDog and update the editor accordingly
+	void update_edited_mesh(int edited_submesh);
 
 private:
-	void reset_editor();
+	igl::opengl::glfw::Viewer* viewer;
+	DogEditor dogEditor;
+	Dog* globalDog;
+	Dog* activeDog;
+
+	int edited_submesh = 0; // 0 means the entire mesh, i means the i-1 connected component submesh	
 };
