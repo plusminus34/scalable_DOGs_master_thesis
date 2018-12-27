@@ -207,10 +207,6 @@ void PlanarArrangement::get_faces_adjacency_list(std::vector<std::vector<int>>& 
 			face_idx++;
 		}
 			
-	}	
-	for (int i = 0; i < A.size(); i++) {
-		std::cout << "Submesh " << i << " with neighbours: ";
-		for (auto n:A[i]) std::cout << n << ", "; std::cout << std::endl;
 	}
 }
 

@@ -34,7 +34,6 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	std::vector< std::vector<int> > submesh_adjacency;
 	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
-	int wait; std::cin >> wait;
 
 	return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submesh_adjacency);
 }
