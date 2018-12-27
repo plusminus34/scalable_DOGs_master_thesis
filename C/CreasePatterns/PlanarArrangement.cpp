@@ -147,6 +147,73 @@ void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) co
 	}
 }
 
+void PlanarArrangement::get_faces_adjacency_list(std::vector<std::vector<int>>& A) const {
+	A.clear();
+	std::map<Arrangement_2::Face_const_iterator, int> face_to_id;
+	// First number each face
+	Arrangement_2::Face_const_iterator fit; int cnt = 0;
+	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+		if (!fit->is_unbounded()) {
+			face_to_id[fit] = cnt; cnt++;
+		}
+	}
+	A.resize(cnt);
+
+	int face_idx = 0;
+	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+		if (!fit->is_unbounded()) {
+			//face_to_id[fit] = cnt; cnt++;
+			//std::cout << "face idx = " << face_idx << " and map value is " << face_to_id[fit] << std::endl;
+
+
+			// Go through all of the vertices in the face, and add their neighbouring faces
+			typename Arrangement_2::Ccb_halfedge_const_circulator circ = fit->outer_ccb();
+			typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+
+			/*
+			// This includes faces sharing a vertex
+			do {
+				auto v_handle = curr->source();
+
+				Arrangement_2::Halfedge_around_vertex_const_circulator first_v_edge, curr_v_edge;
+				first_v_edge = curr_v_edge = v_handle->incident_halfedges();
+				//std::cout << "The neighbors of the vertex (" << v->point() << ") are:";
+				do {
+					// Note that the current halfedge is directed from u to v:
+					//int f1 = face_to_id[curr_v_edge->face()], f2 = face_to_id[curr_v_edge->twin()->face()];
+					Arrangement_2::Face_const_iterator f1 = curr_v_edge->face(); Arrangement_2::Face_const_iterator f2 = curr_v_edge->twin()->face();
+
+					if ((!f1->is_unbounded()) && (face_to_id[f1] != face_idx) ) A[face_idx].push_back(face_to_id[f1]);
+					if ((!f2->is_unbounded()) && (face_to_id[f2] != face_idx) ) A[face_idx].push_back(face_to_id[f2]);
+					//std::cout << "Connected to " << f1 << " and " << f2 << std::endl;
+				} while (++curr_v_edge != first_v_edge);
+				curr++;
+			} while (curr != circ);
+			*/
+
+			do {
+				auto nb_face = curr->twin()->face();
+				if (!nb_face->is_unbounded()) {
+					int nb = face_to_id[curr->twin()->face()];
+					A[face_idx].push_back(nb);
+				}
+				curr++;
+			} while (curr != circ);
+			
+			// remove duplicates
+			std::sort(A[face_idx].begin(), A[face_idx].end());
+    		auto last = std::unique(A[face_idx].begin(), A[face_idx].end());
+    		A[face_idx].erase(last, A[face_idx].end()); 
+			face_idx++;
+		}
+			
+	}	
+	for (int i = 0; i < A.size(); i++) {
+		std::cout << "Submesh " << i << " with neighbours: ";
+		for (auto n:A[i]) std::cout << n << ", "; std::cout << std::endl;
+	}
+}
+
 void PlanarArrangement::get_visualization_edges(Eigen::MatrixXd& bnd_pts1, Eigen::MatrixXd& bnd_pts2) {
 	/*
   std::vector<std::vector<Point_2>> all_faces_pts; 

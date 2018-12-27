@@ -32,7 +32,11 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<int> submeshVSize(submeshVList.size());
 	for (int i = 0; i < submeshVList.size(); i++) {submeshVSize[i] = submeshVList[i].rows();}
 
-	return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize);
+	std::vector< std::vector<int> > submesh_adjacency;
+	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
+	int wait; std::cin >> wait;
+
+	return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submesh_adjacency);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 

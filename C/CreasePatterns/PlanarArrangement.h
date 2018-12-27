@@ -21,6 +21,7 @@ public:
 
   void get_faces_pts(std::vector<std::vector<Point_2>>& pts) const;
   void get_faces_polygons(std::vector<Polygon_2>& polygons) const;
+  void get_faces_adjacency_list(std::vector<std::vector<int>>& A) const;
 
 
   // true if it exists, false otherwise

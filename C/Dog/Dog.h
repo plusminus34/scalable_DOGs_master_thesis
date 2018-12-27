@@ -31,7 +31,7 @@ struct DogEdgeStitching  : public igl::Serializable {
 class Dog : public igl::Serializable {
 public:
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren,
-		std::vector<int> submeshVSize);
+		std::vector<int> submeshVSize, const std::vector< std::vector<int> >& submesh_adjacency);
 	Dog(const Dog& dog);
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 	Dog(){/*Needed for deserilization*/};
@@ -77,6 +77,7 @@ private:
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
+	std::vector< std::vector<int> > submesh_adjacency;
 	DogEdgeStitching edgeStitching;
 	std::vector<std::pair<int,int>> submesh_min_max_i;
 	std::vector<int> vi_to_submesh;

@@ -3,8 +3,9 @@
 #include <igl/boundary_loop.h>
 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
-		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize) : 
-				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren) {
+		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize,
+		const std::vector< std::vector<int> >& submesh_adjacency) :
+				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submesh_adjacency(submesh_adjacency) {
 
 	// set mesh_min_max_i;
 	vi_to_submesh.resize(V.rows());
