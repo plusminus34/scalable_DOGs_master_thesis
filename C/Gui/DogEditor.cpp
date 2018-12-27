@@ -2,12 +2,16 @@
 
 std::vector<int> get_second_dog_row(Dog& dog);
 
+DogEditor::~DogEditor() {
+	if (dogSolver) delete dogSolver;
+	if (editor) delete editor;
+}
+
 void DogEditor::single_optimization() {
 	if (dogSolver) dogSolver->single_iteration(constraints_deviation, objective);
 }
 
-void DogEditor::init_from_new_dog(igl::opengl::glfw::Viewer& viewer_i, Dog& dog) {
-	viewer = &viewer_i;
+void DogEditor::init_from_new_dog(Dog& dog) {
 	auto init_x0 = dog.getV_vector();
 
 	if (geoConstraintsBuilder) delete geoConstraintsBuilder;

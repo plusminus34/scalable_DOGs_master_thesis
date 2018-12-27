@@ -23,7 +23,7 @@ double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  dogEditor.init_from_new_dog(viewer, state.dog);
+  dogEditor.init_from_new_dog(state.dog);
 }
 
 void save_workspace() {
@@ -141,8 +141,9 @@ int main(int argc, char *argv[]) {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
   }
-  // Plot the mesh
+  // Set up viewer
   igl::opengl::glfw::Viewer viewer;
+  dogEditor.init_viewer(viewer);
   // Attach a menu plugin
   igl::opengl::glfw::imgui::ImGuiMenu menu;
   viewer.plugins.push_back(&menu);
