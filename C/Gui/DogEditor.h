@@ -1,5 +1,5 @@
-#include "Dog/DogSolver.h"
-#include "Gui/Editor.h"
+#include "../Dog/DogSolver.h"
+#include "Editor.h"
 
 class DogEditor {
 public:
@@ -33,7 +33,6 @@ public:
 	double objective;
 	Editor::MouseMode mouse_mode = Editor::NONE;
 	Editor::SelectMode select_mode = Editor::VertexPicker;
-	int edited_mesh = 0; // 0 means the entire mesh, i means the i-1 connectec component submesh
 
 private:
 	void reset_dog_solver();

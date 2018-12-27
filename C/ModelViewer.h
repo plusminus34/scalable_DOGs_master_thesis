@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ModelState.h"
-#include "DogEditor.h"
+#include "Gui/DogEditor.h"
 #include <igl/opengl/glfw/Viewer.h>
 
 enum ViewMode {

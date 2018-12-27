@@ -23,7 +23,8 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(
 	vi_to_submesh.assign(V.rows(),0);
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),edgeStitching(d.edgeStitching),V_ren(d.V_ren), F_ren(d.F_ren),
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),V_ren(d.V_ren), F_ren(d.F_ren),
+						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						submesh_min_max_i(d.submesh_min_max_i), vi_to_submesh(d.vi_to_submesh) {
 	// empty
 }

@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Penalty repetitions", &dogEditor.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &dogEditor.p.align_procrustes);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
-      ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
+      //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
       ImGui::InputDouble("Constraints deviation", &dogEditor.constraints_deviation);
       ImGui::InputDouble("objective", &dogEditor.objective);
