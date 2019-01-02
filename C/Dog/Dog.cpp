@@ -40,6 +40,10 @@ Dog* Dog::get_submesh(int submesh_i) {
 	int submesh_f_min_i, submesh_f_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_f_min_i, submesh_f_max_i, false);
 	Eigen::MatrixXi submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
+	// substract submesh_f_min_i from all F faces
+	for (int i = 0; i < submeshF.rows(); i++) {submeshF.row(i).array() -= submesh_v_min_i;}
+
+
 	Dog* submeshDog = new Dog(submeshV, submeshF);
 	return submeshDog;
 }

@@ -24,6 +24,8 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 		editedSubmeshI = newEditedSubmeshI;
 		editedSubmesh = globalDog->get_submesh(editedSubmeshI);
 		std::cout << "editedSubmesh->getV().rows() = " << editedSubmesh->getV().rows() << std::endl;
+		std::cout << "editedSubmesh->getF().rows() = " << editedSubmesh->getF().rows() << std::endl;
 		dogEditor.init_from_new_dog(*editedSubmesh);
+		std::cout << "alive?" << std::endl;
 	}
 }
