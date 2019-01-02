@@ -24,6 +24,8 @@ public:
 	DogEditor dogEditor;
 
 private:
+	void process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh);
+
 	igl::opengl::glfw::Viewer* viewer;
 	Dog* globalDog;
 	Dog* editedSubmesh;
