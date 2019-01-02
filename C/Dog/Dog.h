@@ -31,7 +31,7 @@ struct DogEdgeStitching  : public igl::Serializable {
 class Dog : public igl::Serializable {
 public:
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren,
-		std::vector<int> submeshVSize, const std::vector< std::vector<int> >& submesh_adjacency);
+		std::vector<int> submeshVSize, std::vector<int> submeshFSize, const std::vector< std::vector<int> >& submesh_adjacency);
 	Dog(const Dog& dog);
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 	Dog(){/*Needed for deserilization*/};
@@ -43,9 +43,12 @@ public:
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
-	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i);
-	int get_submesh_n() const { return submesh_min_max_i.size();}
-	int get_submesh_i_size(int submesh_i) const {return 1+submesh_min_max_i[submesh_i].second-submesh_min_max_i[submesh_i].first;}
+	//Dog* get_submesh(int submesh_i);
+
+	// If true, gives the min/max in terms of submesh vertices, otherwise faces
+	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices = true);
+	int get_submesh_n() const { return submeshVSize.size();}
+	int get_submesh_i_size(int submesh_i) const {return submeshVSize[submesh_i];}
 	int v_to_submesh_idx(int v) const {return vi_to_submesh[v];}
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
@@ -79,9 +82,9 @@ private:
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
+	std::vector<int> submeshVSize; std::vector<int> submeshFSize;
 	std::vector< std::vector<int> > submesh_adjacency;
 	DogEdgeStitching edgeStitching;
-	std::vector<std::pair<int,int>> submesh_min_max_i;
 	std::vector<int> vi_to_submesh;
 };
 

@@ -29,13 +29,16 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, edgeStitching, V_ren);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, constrained_pts_non_unique);
 
-	std::vector<int> submeshVSize(submeshVList.size());
-	for (int i = 0; i < submeshVList.size(); i++) {submeshVSize[i] = submeshVList[i].rows();}
+	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
+	for (int i = 0; i < submeshVList.size(); i++) {
+		submeshVSize[i] = submeshVList[i].rows();
+		submeshFSize[i] = submeshFList[i].rows();
+	}
 
 	std::vector< std::vector<int> > submesh_adjacency;
 	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
 
-	return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submesh_adjacency);
+	return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submeshFSize, submesh_adjacency);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
