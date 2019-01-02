@@ -8,6 +8,7 @@
 #include <igl/pathinfo.h>
 
 #include "Dog/Dog.h"
+#include "DeformationController.h"
 #include "ModelState.h"
 #include "ModelViewer.h"
 
@@ -15,15 +16,17 @@ using namespace std;
 
 bool is_optimizing = true;
 ModelState state;
-DogEditor dogEditor;
-ModelViewer modelViewer(state, dogEditor);
+DeformationController DC;
+//DogEditor dogEditor;
+ModelViewer modelViewer(state, DC);
 
 double curve_timestep_diff = 0;
 double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
+int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh 
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  dogEditor.init_from_new_dog(state.dog);
+  DC.init_from_new_dog(state.dog);
 }
 
 void save_workspace() {
@@ -67,7 +70,7 @@ void run_optimization() {
     dogEditor.update_positional_constraints();
   }
   */
-  dogEditor.single_optimization();
+  DC.single_optimization();
 }
 
 bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
@@ -77,17 +80,17 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'S':
-    dogEditor.mouse_mode = Editor::SELECT;
+    DC.dogEditor.mouse_mode = Editor::SELECT;
     break;
   case 'D':
-    dogEditor.mouse_mode = Editor::TRANSLATE;
+    DC.dogEditor.mouse_mode = Editor::TRANSLATE;
     break;
   case 'F':
-    dogEditor.single_optimization();
+    DC.single_optimization();
     viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   case 'C':
-    dogEditor.reset_constraints();
+    DC.dogEditor.reset_constraints();
     break;
   case 'E':
     exit(1);
@@ -97,20 +100,20 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return dogEditor.callback_mouse_down();
+  if (modelViewer.viewMode == ViewModeMesh) return DC.dogEditor.callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if (modelViewer.viewMode == ViewModeMesh) return  dogEditor.callback_mouse_move(mouse_x, mouse_y);
+  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor.callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return  dogEditor.callback_mouse_up();
+  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor.callback_mouse_up();
   return false;
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if (dogEditor.has_constraints() && is_optimizing) run_optimization();
+  if (DC.dogEditor.has_constraints() && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
@@ -143,7 +146,7 @@ int main(int argc, char *argv[]) {
   }
   // Set up viewer
   igl::opengl::glfw::Viewer viewer;
-  dogEditor.init_viewer(viewer);
+  DC.init_viewer(viewer);
   // Attach a menu plugin
   igl::opengl::glfw::imgui::ImGuiMenu menu;
   viewer.plugins.push_back(&menu);
@@ -153,7 +156,7 @@ int main(int argc, char *argv[]) {
   {
     // Define next window position + size
     ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(210, 500), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(210, 650), ImGuiSetCond_FirstUseEver);
     ImGui::Begin(
         "DOG", nullptr,
         ImGuiWindowFlags_NoSavedSettings
@@ -165,27 +168,28 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Mouse mode", (int *)(&dogEditor.mouse_mode), "Select\0Translate\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&dogEditor.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
-      ImGui::Combo("Solver type", (int *)(&dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
-      ImGui::InputDouble("Bending", &dogEditor.p.bending_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Isometry", &dogEditor.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Laplacian Similarity", &dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Soft constraints", &dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
+      ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0None\0\0");
+      ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
+      ImGui::Combo("Solver type", (int *)(&DC.dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
+      if (ImGui::InputInt("Edited submesh", &editedSubmeshI) ) DC.update_edited_mesh(editedSubmeshI);
+      ImGui::InputDouble("Bending", &DC.dogEditor.p.bending_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Isometry", &DC.dogEditor.p.isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Laplacian Similarity", &DC.dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Soft constraints", &DC.dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      if (ImGui::InputDouble("Curve timestep", &dogEditor.curve_timestep, 0, 0, "%.4f") ) dogEditor.update_positional_constraints();
+      if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
       ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
-      ImGui::InputDouble("Merit penalty", &dogEditor.p.merit_p);
-      ImGui::InputDouble("Infeasability epsilon", &dogEditor.p.infeasability_epsilon);
-      ImGui::InputDouble("Infeasability filter", &dogEditor.p.infeasability_filter);
-      ImGui::InputInt("Max Newton iterations", &dogEditor.p.max_newton_iters);
-      ImGui::InputInt("Penalty repetitions", &dogEditor.p.penalty_repetitions);
-      ImGui::Checkbox("Align Procrustes", &dogEditor.p.align_procrustes);
+      ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
+      ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
+      ImGui::InputDouble("Infeasability filter", &DC.dogEditor.p.infeasability_filter);
+      ImGui::InputInt("Max Newton iterations", &DC.dogEditor.p.max_newton_iters);
+      ImGui::InputInt("Penalty repetitions", &DC.dogEditor.p.penalty_repetitions);
+      ImGui::Checkbox("Align Procrustes", &DC.dogEditor.p.align_procrustes);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
-      ImGui::InputDouble("Constraints deviation", &dogEditor.constraints_deviation);
-      ImGui::InputDouble("objective", &dogEditor.objective);
+      ImGui::InputDouble("Constraints deviation", &DC.dogEditor.constraints_deviation);
+      ImGui::InputDouble("objective", &DC.dogEditor.objective);
 
       ImGui::End();
   };

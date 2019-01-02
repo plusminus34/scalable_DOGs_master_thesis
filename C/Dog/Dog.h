@@ -43,7 +43,7 @@ public:
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 
-	//Dog* get_submesh(int submesh_i);
+	Dog* get_submesh(int submesh_i);
 
 	// If true, gives the min/max in terms of submesh vertices, otherwise faces
 	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices = true);

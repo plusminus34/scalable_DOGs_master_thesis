@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../Dog/DogSolver.h"
 #include "Editor.h"
 

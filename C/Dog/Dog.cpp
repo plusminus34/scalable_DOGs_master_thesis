@@ -29,15 +29,20 @@ Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(
 						vi_to_submesh(d.vi_to_submesh) {
 	// empty on purpose
 }
-/*
+
 Dog* Dog::get_submesh(int submesh_i) {
 	if (submesh_i >= get_submesh_n()) return NULL;
-	//auto submeshV = get_submesh_V(submesh_i);
-	//auto submeshF = get_submesh_F(submesh_i);	
+	int submesh_v_min_i, submesh_v_max_i;
+	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
+	Eigen::MatrixXd submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
+
+	int submesh_f_min_i, submesh_f_max_i;
+	get_submesh_min_max_i(submesh_i, submesh_f_min_i, submesh_f_max_i, false);
+	Eigen::MatrixXi submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,3);
 
 	Dog* submeshDog = new Dog(submeshV, submeshF);
 	return submeshDog;
-}*/
+}
 
 void Dog::update_rendering_v() {
 	V_ren_from_V_and_const(V,edgeStitching,V_ren);

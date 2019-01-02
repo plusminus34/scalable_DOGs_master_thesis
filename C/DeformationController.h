@@ -1,5 +1,6 @@
-#include "Gui/DogEditor.h"
+#pragma once
 
+#include "Gui/DogEditor.h"
 
 // The DOG structure should be constant (so should have a global DOG)
 // Then there should be some pointer to an "active DOG"
@@ -15,12 +16,13 @@ public:
 	// pass it on to the editor
 	void single_optimization() {return dogEditor.single_optimization();}
 	// if needed: change activeDog and update the editor accordingly
-	void update_edited_mesh(int newEditedSumeshI);
+	void update_edited_mesh(int newEditedSubmeshI);
+
+	DogEditor dogEditor;
 
 private:
 	igl::opengl::glfw::Viewer* viewer;
-	DogEditor dogEditor;
 	Dog* globalDog;
 	Dog* editedSubmesh;
-	int editedSubmeshI = 0; // 0 means the entire mesh, i means the i-1 connected component submesh	
+	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
 };
