@@ -14,6 +14,7 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 	if (newEditedSubmeshI == editedSubmeshI) return; // no change
 	// -1 means the global mesh
 	if (newEditedSubmeshI == -1) {
+		editedSubmeshI = -1;
 		editedSubmesh = globalDog;
 		return;
 	}

@@ -55,7 +55,6 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 	int submesh_i = DC.getEditedSubmeshI();
-	std::cout << "submesh_i = "<< submesh_i << std::endl;
 	Dog flattenedDog(state.dog);
 	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
 	if ( (submesh_i >= 0) && (submesh_i < state.dog.get_submesh_n()) ) {
@@ -67,7 +66,6 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 		}
 		flattenedDog.update_Vren();
 	}
-	//render_mesh(viewer, flattenedDog.getVrendering(), flattenedDog.getFrendering());
 	render_wireframe_boundary(viewer, flattenedDog.getV(), flattenedDog.getQuadTopology(), Eigen::RowVector3d(0.7, 0.7, 0.7));
 	render_dog_stitching_constraints(viewer, flattenedDog, Eigen::RowVector3d(0, 0, 0.6));
 	render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));

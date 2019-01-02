@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
     if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
     state.init_from_svg(input_path, x_res, y_res);
-    modelViewer.viewMode = CreasesSVGReader;
+    modelViewer.viewMode = ViewModeCreases;
 
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
