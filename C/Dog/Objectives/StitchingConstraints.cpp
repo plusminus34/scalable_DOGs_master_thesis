@@ -20,9 +20,9 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 		Edge e1 = eS.edge_const_1[i]; Edge e2 = eS.edge_const_2[i];
 		double e1_c = eS.edge_coordinates[i]; double e2_c = 1-e1_c;
 
-		constVals(const_cnt) = 0.5*(e1_c*x(e1.v1+0)+e2_c*x(e1.v2+0)-e1_c*x(e2.v1+0)-e2_c*x(e2.v2+0));
-		constVals(const_cnt+1) = 0.5*(e1_c*x(e1.v1+1*vnum)+e2_c*x(e1.v2+1*vnum)-e1_c*x(e2.v1+1*vnum)-e2_c*x(e2.v2+1*vnum));
-		constVals(const_cnt+2) = 0.5*(e1_c*x(e1.v1+2*vnum)+e2_c*x(e1.v2+2*vnum)-e1_c*x(e2.v1+2*vnum)-e2_c*x(e2.v2+2*vnum));
+		constVals(const_cnt) = e1_c*x(e1.v1+0)+e2_c*x(e1.v2+0)-e1_c*x(e2.v1+0)-e2_c*x(e2.v2+0);
+		constVals(const_cnt+1) = e1_c*x(e1.v1+1*vnum)+e2_c*x(e1.v2+1*vnum)-e1_c*x(e2.v1+1*vnum)-e2_c*x(e2.v2+1*vnum);
+		constVals(const_cnt+2) = e1_c*x(e1.v1+2*vnum)+e2_c*x(e1.v2+2*vnum)-e1_c*x(e2.v1+2*vnum)-e2_c*x(e2.v2+2*vnum);
 
 		const_cnt+=3;
   }
