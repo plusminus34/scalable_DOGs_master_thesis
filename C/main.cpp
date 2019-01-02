@@ -87,7 +87,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'F':
     DC.propagate_submesh_constraints();
-    //viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+    editedSubmeshI = -1;
     break;
   case 'C':
     DC.dogEditor.reset_constraints();

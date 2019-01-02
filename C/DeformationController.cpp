@@ -51,7 +51,9 @@ void DeformationController::propagate_submesh_constraints() {
 			if (!passed_on_submesh[cur_submesh]) Q.push(adjacency_list[cur_submesh][i]);
 		}
 	}
-
+	editedSubmeshI = -1;
+	editedSubmesh = globalDog;
+	dogEditor.init_from_new_dog(*editedSubmesh);
 }
 
 void DeformationController::process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh) {
