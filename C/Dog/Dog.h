@@ -42,6 +42,8 @@ public:
 	void update_Vren() {update_rendering_v();}
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
+	void update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV);
+	std::vector<std::vector <int> > get_submesh_adjacency() {return submesh_adjacency;}
 
 	Dog* get_submesh(int submesh_i);
 

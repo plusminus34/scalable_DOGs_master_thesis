@@ -48,6 +48,12 @@ Dog* Dog::get_submesh(int submesh_i) {
 	return submeshDog;
 }
 
+void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
+	int submesh_v_min_i, submesh_v_max_i;
+	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
+	for (int i = 0; i < submeshV.rows(); i++) {V.row(submesh_v_min_i + i) = submeshV.row(i);}
+}
+
 void Dog::update_rendering_v() {
 	V_ren_from_V_and_const(V,edgeStitching,V_ren);
 }
