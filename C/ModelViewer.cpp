@@ -26,11 +26,13 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 
 	if (viewMode == ViewModeMesh) {
 		render_mesh_and_wireframe(viewer);
-	} else if (viewMode == CreasesSVGReader) {
-		render_crease_pattern_svg_reader(viewer);
+	} else if (viewMode == ViewModeCreases) {
+		render_crease_pattern(viewer);
 	} else if (viewMode == ViewModeGauss) {
 		render_gauss_map(viewer);
-	}
+	} else if (viewMode == CreasesSVGReader) {
+		render_crease_pattern_svg_reader(viewer);
+	} 
 
 	first_rendering = false;
 }
@@ -38,7 +40,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
-	if (state.dog.has_creases()) {
+	if ( state.dog.has_creases() && (DC.getEditedSubmeshI() >=0) ) {
 		render_dog_stitching_curves(viewer, state.dog);
 	} else {
 		render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
@@ -47,15 +49,47 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
 	}
+	render_mesh(viewer, dog->getVrendering(), dog->getFrendering());
+}
 
-	viewer.data().set_mesh(dog->getVrendering(), dog->getFrendering());
+void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
+	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
+	int submesh_i = DC.getEditedSubmeshI();
+	// Check if we should render just a single global mesh
+	if ( ( state.dog.get_submesh_n() == 1) || (submesh_i == -1 ) || (submesh_i >= state.dog.get_submesh_n()) ) {
+		if ( state.dog.has_creases()) {
+			render_dog_stitching_curves(viewer, state.dog);
+		}
+		render_mesh(viewer, state.dog.getVrendering(), state.dog.getFrendering());
+		return;
+	}
+	// Here we render a specific submesh
+	// TODO: first flatten the dog (only once, then store it as a crease pattern)
+	//		and get a flattened dog (maybe flattened V_ren, and then get the values back to the submesh?
+	// For now we just assume the user view us in an initial flattened configuration
+	Dog flattenedDog(state.dog);
+	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
+	if ( (submesh_i >= 0) && (submesh_i < state.dog.get_submesh_n()) ) {
+		int submesh_v_min_i, submesh_v_max_i;
+		flattenedDog.get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
+		Eigen::MatrixXd& flattenedDogV = flattenedDog.getVMutable(); double z_offset = 1;
+		for (int i = submesh_v_min_i; i <= submesh_v_max_i; i++) {
+			flattenedDogV(i,2) += z_offset;
+		}
+	}
+	flattenedDog.update_Vren();
+	render_mesh(viewer, flattenedDog.getVrendering(), flattenedDog.getFrendering());
+}
+
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
+	viewer.data().set_mesh(V, F);
+
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
     Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
     Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
-
-    Eigen::MatrixXd VN; igl::per_vertex_normals(dog->getVrendering(),dog->getFrendering(),VN);
+    Eigen::MatrixXd VN; igl::per_vertex_normals(V,F,VN);
   	viewer.data().set_normals(VN);
 }
 

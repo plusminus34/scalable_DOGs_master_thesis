@@ -23,11 +23,14 @@ public:
 	bool render_pos_const;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
+	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& viewer);
 	void render_gauss_map(igl::opengl::glfw::Viewer& viewer);
 	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
 	void render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer);
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
+
+	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 
 	const ModelState& state;
 	const DeformationController& DC;

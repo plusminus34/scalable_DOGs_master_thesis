@@ -18,6 +18,7 @@ public:
 	// if needed: change activeDog and update the editor accordingly
 	void update_edited_mesh(int newEditedSubmeshI);
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
+	int getEditedSubmeshI() const {return editedSubmeshI;}
 
 	DogEditor dogEditor;
 
