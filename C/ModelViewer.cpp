@@ -55,18 +55,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 	int submesh_i = DC.getEditedSubmeshI();
-	// Check if we should render just a single global mesh
-	if ( ( state.dog.get_submesh_n() == 1) || (submesh_i == -1 ) || (submesh_i >= state.dog.get_submesh_n()) ) {
-		if ( state.dog.has_creases()) {
-			render_dog_stitching_curves(viewer, state.dog);
-		}
-		render_mesh(viewer, state.dog.getVrendering(), state.dog.getFrendering());
-		return;
-	}
-	// Here we render a specific submesh
-	// TODO: first flatten the dog (only once, then store it as a crease pattern)
-	//		and get a flattened dog (maybe flattened V_ren, and then get the values back to the submesh?
-	// For now we just assume the user view us in an initial flattened configuration
+	std::cout << "submesh_i = "<< submesh_i << std::endl;
 	Dog flattenedDog(state.dog);
 	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
 	if ( (submesh_i >= 0) && (submesh_i < state.dog.get_submesh_n()) ) {
@@ -76,9 +65,12 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 		for (int i = submesh_v_min_i; i <= submesh_v_max_i; i++) {
 			flattenedDogV(i,2) += z_offset;
 		}
+		flattenedDog.update_Vren();
 	}
-	flattenedDog.update_Vren();
-	render_mesh(viewer, flattenedDog.getVrendering(), flattenedDog.getFrendering());
+	//render_mesh(viewer, flattenedDog.getVrendering(), flattenedDog.getFrendering());
+	render_wireframe_boundary(viewer, flattenedDog.getV(), flattenedDog.getQuadTopology(), Eigen::RowVector3d(0.7, 0.7, 0.7));
+	render_dog_stitching_constraints(viewer, flattenedDog, Eigen::RowVector3d(0, 0, 0.6));
+	render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
 void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
