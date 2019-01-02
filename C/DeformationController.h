@@ -2,11 +2,8 @@
 
 #include "Gui/DogEditor.h"
 
-// The DOG structure should be constant (so should have a global DOG)
-// Then there should be some pointer to an "active DOG"
-// If the active dog is the global one, we just use the same one (everything should be updated on spot)
-//	If the active dog is a submesh, we operate on a copy, and allow the user to "merge" these in the GUI
-// Every change to this one should create a new DogEditor on that mesh. 
+// The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
+// The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
 	DeformationController() {globalDog = NULL; editedSubmesh = NULL;}
