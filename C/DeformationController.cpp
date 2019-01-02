@@ -16,11 +16,13 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 		editedSubmesh = globalDog;
 		return;
 	}
+	//if (globalDog->get_submesh_n() == 1) {return;} // There are no submeshes
 	// check submesh range
+	//std::cout << "newEditedSubmeshI = " << newEditedSubmeshI << " and globalDog->get_submesh_n() = " << globalDog->get_submesh_n() << std::endl;
 	if ( (newEditedSubmeshI >= globalDog->get_submesh_n()) || (newEditedSubmeshI < -1 ) ) return;
 
 	if (newEditedSubmeshI != editedSubmeshI) {
-		if (editedSubmesh) delete editedSubmesh;
+		if (editedSubmesh && (editedSubmesh!= globalDog)) delete editedSubmesh;
 		editedSubmeshI = newEditedSubmeshI;
 		editedSubmesh = globalDog->get_submesh(editedSubmeshI);
 		dogEditor.init_from_new_dog(*editedSubmesh);
