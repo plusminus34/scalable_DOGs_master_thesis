@@ -36,25 +36,26 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
-	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
+	const Dog* dog = DC.getEditedSubmesh();
+	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
 	if (state.dog.has_creases()) {
 		render_dog_stitching_curves(viewer, state.dog);
 	} else {
-		render_wireframe(viewer, state.dog.getV(), state.dog.getQuadTopology());
+		render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
 	}
 	if (render_pos_const) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
 	}
 
-	viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+	viewer.data().set_mesh(dog->getVrendering(), dog->getFrendering());
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
     Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
     Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
 
-    Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
+    Eigen::MatrixXd VN; igl::per_vertex_normals(dog->getVrendering(),dog->getFrendering(),VN);
   	viewer.data().set_normals(VN);
 }
 
@@ -73,7 +74,8 @@ void ModelViewer::render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& vi
 }
 
 void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewer) {
-	Eigen::VectorXd x(state.dog.getV_vector());
+	const Dog* dog = DC.getEditedSubmesh();
+	Eigen::VectorXd x(dog->getV_vector());
 	Eigen::VectorXi b; Eigen::VectorXd bc; DC.dogEditor.get_positional_constraints(b,bc);
 	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,b,1, constrained_pts_coords_vec);
 
@@ -89,14 +91,16 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
+	const Dog* dog = DC.getEditedSubmesh();
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	DC.dogEditor.get_edge_point_constraints(edgePoints, edgeCoords);
 	if (!edgePoints.size()) return;
-	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, state.dog.getV());
+	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, dog->getV());
 	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));
 }
 
 void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
+  const Dog* dog = DC.getEditedSubmesh();
   viewer.data().set_mesh(sphereV, sphereF);
   Eigen::Vector3d diffuse; diffuse << 0.98,0.98,0.98;
   Eigen::Vector3d ambient; ambient << 0,0,0;//0.05*diffuse;
@@ -108,9 +112,9 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   //viewer.core.show_lines = false;
 
   // TODO support curved folds by looking at normal map of each one separately
-  Eigen::MatrixXd VN; igl::per_vertex_normals(state.dog.getVrendering(),state.dog.getFrendering(),VN);
+  Eigen::MatrixXd VN; igl::per_vertex_normals(dog->getVrendering(),dog->getFrendering(),VN);
   //viewer.data.set_normals(VN);
-  render_wireframe(viewer,VN,state.dog.getQuadTopology(), false);
+  render_wireframe(viewer,VN,dog->getQuadTopology(), false);
   if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
 }
 

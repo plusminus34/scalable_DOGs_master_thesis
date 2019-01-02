@@ -17,6 +17,7 @@ public:
 	void single_optimization() {return dogEditor.single_optimization();}
 	// if needed: change activeDog and update the editor accordingly
 	void update_edited_mesh(int newEditedSubmeshI);
+	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 
 	DogEditor dogEditor;
 
