@@ -86,8 +86,8 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     DC.dogEditor.mouse_mode = Editor::TRANSLATE;
     break;
   case 'F':
-    DC.single_optimization();
-    viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
+    DC.propagate_submesh_constraints();
+    //viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
     break;
   case 'C':
     DC.dogEditor.reset_constraints();

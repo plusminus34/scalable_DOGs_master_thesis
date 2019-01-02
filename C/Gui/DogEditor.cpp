@@ -23,6 +23,7 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	if (editor) delete editor;
 	editor = new Editor(*viewer,dog.getV(), dog.getFrendering(), b, bc, mouse_mode, select_mode);
 	b.resize(0); bc.resize(0);
+	std::cout << "new editor!" << std::endl;
 }
 
 void DogEditor::reset_dog_solver() {

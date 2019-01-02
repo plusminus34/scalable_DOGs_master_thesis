@@ -33,6 +33,7 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 void DeformationController::propagate_submesh_constraints() {
 	int submesh_n = globalDog->get_submesh_n();
 	if ( (editedSubmeshI < 0) || (editedSubmeshI >= submesh_n) ) return;
+	std::cout << "current submesh = " << editedSubmeshI << std::endl;
 
 	auto adjacency_list = globalDog->get_submesh_adjacency();
 	auto eS = globalDog->getEdgeStitching();
@@ -50,9 +51,11 @@ void DeformationController::propagate_submesh_constraints() {
 			if (!passed_on_submesh[cur_submesh]) Q.push(adjacency_list[cur_submesh][i]);
 		}
 	}
+
 }
 
 void DeformationController::process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh) {
+	std::cout << "processing submesh = " << submesh_i << std::endl;
 	auto submeshDog = globalDog->get_submesh(submesh_i);
 
 	// process submesh_i
@@ -84,9 +87,32 @@ void DeformationController::process_submesh(int submesh_i, const DogEdgeStitchin
 	Eigen::MatrixXd edgePointCoords(edgePointsCoordsList.size(),3); 
 	for (int edgePtRow = 0; edgePtRow < edgePointCoords.rows(); edgePtRow++) edgePointCoords.row(edgePtRow) = edgePointsCoordsList[edgePtRow];
 	EdgePointConstraints submeshEdgePtConst(edgePoints, edgePointCoords);
+	
+	// Use newton penalty optimization while gradually pushing both positional constraints and dog constraints
+	auto init_x0 = submeshDog->getV_vector();
+	SimplifiedBendingObjective bending(submeshDog->getQuadTopology()); IsometryObjective isoObj(submeshDog->getQuadTopology(), init_x0);
+	DogConstraints dogConst(submeshDog->getQuadTopology());
+	QuadraticConstraintsSumObjective dogConstSoft(dogConst, init_x0);
+	QuadraticConstraintsSumObjective edgePtSoft(submeshEdgePtConst, init_x0);
+	
+	Eigen::VectorXd x0(init_x0), x = x0;;
 
-	// Now use newton penalty optimization while gradually pushing both positional constraints and dog constraints
-
+	double infeasability_epsilon = 0.001, infeasability_filter = 0.1; int max_newton_iters = 1; double merit_p = 1;
+	double penalty = 1;
+	for (int i = 0; i < 10 ; i++) {
+		double dogConstWeight = penalty, posConstWeight = penalty;
+		CompositeObjective compObj({&bending,&isoObj,&dogConstSoft, &edgePtSoft},
+								  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, dogConstWeight, posConstWeight});
+		
+		NewtonKKT newtonSolver(infeasability_epsilon, infeasability_filter, max_newton_iters, merit_p);
+		EdgePointConstraints emptyConstraints;
+		for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,emptyConstraints, x);
+		
+		x0 = x;
+		penalty*=2;
+	}
+	// TODO clip positional edge point constraints somehow...
+	submeshDog->update_V_vector(x);
 	globalDog->update_submesh_V(submesh_i, submeshDog->getV());
 	delete submeshDog;
 }

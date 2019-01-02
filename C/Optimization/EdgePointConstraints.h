@@ -21,9 +21,17 @@ public:
 	virtual EdgePointConstraints* clone() const {return new EdgePointConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
+		/*
 		Eigen::VectorXd edgeCoords(EdgePoint::getPositionInMesh(edgePoints, x));
 		//std::cout << "edge stuff bc.rows() = " << bc.rows() << std::endl;
 		return edgeCoords-bc;
+		*/
+		int edge_points_n = edgePoints.size(); Eigen::VectorXd coords(3*edge_points_n);
+    	for (int i = 0; i < edge_points_n; i++) {
+        	auto vec = edgePoints[i].getPositionInMesh(x);
+        	coords(i) = vec(0); coords(edge_points_n+i) = vec(1); coords(2*edge_points_n+i) = vec(2);
+    	}
+    	return coords-bc;
 	}
 
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
