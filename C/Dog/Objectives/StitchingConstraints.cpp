@@ -5,7 +5,7 @@ using namespace std;
 StitchingConstraints::StitchingConstraints(const QuadTopology& quadTop,const DogEdgeStitching& edgeStitching) : quadTop(quadTop), 
 																					eS(edgeStitching) {
 	const_n= 3*edgeStitching.edge_coordinates.size();
-	IJV.resize(2*const_n);
+	IJV.resize(4*const_n);
 }
 Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 	// Edges should be exactly equal

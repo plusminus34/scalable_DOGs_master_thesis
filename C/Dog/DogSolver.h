@@ -42,7 +42,7 @@ public:
 		int max_newton_iters = 10;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
-		bool align_procrustes = true;
+		bool align_procrustes = false;
 	};
 
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,

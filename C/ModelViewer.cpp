@@ -40,7 +40,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
-	if ( state.dog.has_creases() && (DC.getEditedSubmeshI() >=0) ) {
+	if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 		render_dog_stitching_curves(viewer, state.dog);
 	} else {
 		render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
