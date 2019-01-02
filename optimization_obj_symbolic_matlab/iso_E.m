@@ -26,6 +26,6 @@ hess_6 = hess(1:7,1:7);
 ccode(hessian(E_all),'file','Iso_H');
 
 
-hess_eig = eig(hess);
+hess_eig = eig(hess_6);
 check = double(subs(hess_eig,[p_0,p_xf,l0],[0.1,0,0 ...
 1,0,0,1]))
