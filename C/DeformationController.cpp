@@ -10,7 +10,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 }
 
 void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
-	std::cout << "newEditedSubmeshI = " << newEditedSubmeshI << " globalDog->get_submesh_n() = " << globalDog->get_submesh_n() << std::endl;
+	if (globalDog->get_submesh_n() == 1) return; // Only 1 submesh (no folds)
 	if (newEditedSubmeshI == editedSubmeshI) return; // no change
 	// -1 means the global mesh
 	if (newEditedSubmeshI == -1) {
@@ -23,9 +23,6 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 		if (editedSubmesh && (editedSubmesh!= globalDog)) delete editedSubmesh;
 		editedSubmeshI = newEditedSubmeshI;
 		editedSubmesh = globalDog->get_submesh(editedSubmeshI);
-		std::cout << "editedSubmesh->getV().rows() = " << editedSubmesh->getV().rows() << std::endl;
-		std::cout << "editedSubmesh->getF().rows() = " << editedSubmesh->getF().rows() << std::endl;
 		dogEditor.init_from_new_dog(*editedSubmesh);
-		std::cout << "alive?" << std::endl;
 	}
 }
