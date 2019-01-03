@@ -134,7 +134,8 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   viewer.data().uniform_colors(ambient,diffuse,specular);
   //viewer.core.shininess = 0;
   
-  viewer.core.align_camera_center(sphereV, sphereF);
+  if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
+  //viewer.core.align_camera_center(sphereV, sphereF);
   //viewer.core.show_lines = false;
 
   // TODO support curved folds by looking at normal map of each one separately
