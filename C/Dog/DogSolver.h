@@ -6,6 +6,7 @@
 #include "../Optimization/CompositeObjective.h"
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/PositionalConstraints.h"
+#include "../Optimization/PointPairConstraints.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
 #include "../Optimization/QuadraticConstraintsSumObjective.h"
 
