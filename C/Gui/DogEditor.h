@@ -42,6 +42,8 @@ private:
 	void reset_dog_solver();
 
 	igl::opengl::glfw::Viewer* viewer;
+	Eigen::MatrixXi FTriangular; // The triangular faces of the dog (not dogFrendering)
+	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
 	// This needs to be reset when the DOG change, or when the soft positional constraints indices change
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	// This doesn't change when the values of the soft constraints change

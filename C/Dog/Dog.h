@@ -71,6 +71,7 @@ public:
 	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
+	Eigen::MatrixXi getFTriangular() const {return Fsqr_to_F(F);} // useful for the editor who needs a triangular mesh (still different then the rendering)
 	const Eigen::MatrixXi& getFrendering() const {return F_ren;}
 	const Eigen::MatrixXd& getVrendering() const {return V_ren;}
 

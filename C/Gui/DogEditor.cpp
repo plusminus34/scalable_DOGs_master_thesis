@@ -21,7 +21,8 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords);
 	if (editor) delete editor;
-	editor = new Editor(*viewer,dog.getV(), dog.getFrendering(), b, bc, mouse_mode, select_mode);
+	FTriangular = dog.getFTriangular();
+	editor = new Editor(*viewer,dog.getV(), FTriangular, b, bc, mouse_mode, select_mode);
 	b.resize(0); bc.resize(0);
 }
 
