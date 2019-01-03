@@ -9,14 +9,20 @@
 #include "../QuadMesh/Quad.h"
 
 struct DogEdgeStitching  : public igl::Serializable {
+	// Stores edge constraints (if an edge is duplicated n times, than this edge involves n-1 linearly independent constraints)
 	std::vector<Edge> edge_const_1, edge_const_2;
 	std::vector<double> edge_coordinates;
 
-	// The folds polylines
+	// A list of all the duplicated edge points (usually there are 2 edge points, but a vertex can have more)
+	std::vector<std::vector<EdgePoint>> multiplied_edges;
+	std::map<Edge, int> edge_to_duplicates; // A map between an edge and its index in multiplied_edges
+
+	// The folds polylines (holds an arbitrary edge point, and not all the duplicated)
 	std::vector<std::vector<EdgePoint>> stitched_curves;
 
 	// Use for cases when it's important to have a precise representation (usually it doesn't)
 	std::vector<CGAL::Exact_predicates_exact_constructions_kernel::FT> edge_coordinates_precise;
+
 
 	// For now we don't serialize the exact CGAL coordinates
 	void InitSerialization() {
