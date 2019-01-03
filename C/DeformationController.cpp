@@ -33,7 +33,6 @@ void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
 void DeformationController::propagate_submesh_constraints() {
 	int submesh_n = globalDog->get_submesh_n();
 	if ( (editedSubmeshI < 0) || (editedSubmeshI >= submesh_n) ) return;
-	std::cout << "current submesh = " << editedSubmeshI << std::endl;
 
 	auto adjacency_list = globalDog->get_submesh_adjacency();
 	auto eS = globalDog->getEdgeStitching();
@@ -45,7 +44,7 @@ void DeformationController::propagate_submesh_constraints() {
 	std::queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
 	while (!Q.empty()) {
 		int cur_submesh = Q.front(); Q.pop();
-		process_submesh(cur_submesh, eS, passed_on_submesh, edge_constraint_set, const_value);
+		deform_submesh_based_on_previous_submeshes(cur_submesh, eS, edge_constraint_set, const_value);
 
 		passed_on_submesh[cur_submesh] = true;
 		update_edge_constraints_from_submesh(cur_submesh, eS, edge_constraint_set, const_value);
@@ -75,10 +74,7 @@ void DeformationController::update_edge_constraints_from_submesh(int submesh_i, 
 				Eigen::RowVector3d const_pos = EdgePoint(edge1, t).getPositionInMesh(globalDog->getV());
 
 				// Go through all duplicated edges
-				std::cout << "mult_edge_const_start = " << mult_edge_const_start << std::endl;
-				std::cout << "mult_edges_num = " << mult_edges_num << std::endl;
 				for (int set_const_i = mult_edge_const_start; set_const_i < mult_edge_const_start+mult_edges_num; set_const_i++) {
-					std::cout << "set_const_i = " << set_const_i << std::endl; std::cout << "edge_constraint_set.size() = " << edge_constraint_set.size() << std::endl;
 					edge_constraint_set[set_const_i] = true;
 					const_value[set_const_i] = const_pos;
 				}
@@ -89,9 +85,9 @@ void DeformationController::update_edge_constraints_from_submesh(int submesh_i, 
 	}
 }
 
-void DeformationController::process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh,
-											const std::vector<bool>& edge_constraint_set, const std::vector<Eigen::RowVector3d>& const_value) {
-	std::cout << "processing submesh = " << submesh_i << std::endl;
+void DeformationController::deform_submesh_based_on_previous_submeshes(int submesh_i, const DogEdgeStitching& eS,
+					 const std::vector<bool>& edge_constraint_set, const std::vector<Eigen::RowVector3d>& const_value) {
+	//std::cout << "processing submesh = " << submesh_i << std::endl;
 	auto submeshDog = globalDog->get_submesh(submesh_i);
 
 	// process submesh_i
@@ -107,16 +103,20 @@ void DeformationController::process_submesh(int submesh_i, const DogEdgeStitchin
 			// This makes sure that if this constraint involves the current submesh then the source edge concerns the current submesh
 			if (globalDog->v_to_submesh_idx(edge_target.v1) == submesh_i) {std::swap(edge_src,edge_target);}
 
-			// Now we want to make sure this constraint does involve the submesh, and was already set by other submeshes
+			// Now we want to make sure this constraint does involve this submesh, and that it was already set by other submeshes
 			int src_submesh = globalDog->v_to_submesh_idx(edge_src.v1);
-			int target_submesh = globalDog->v_to_submesh_idx(edge_target.v1);
-			if ((src_submesh == submesh_i) && (passed_on_submesh[target_submesh]) ) {
+			if ((src_submesh == submesh_i) && (edge_constraint_set[edge_const_i]) ) {
 				// Add this as edge point constraints
 				// needs to change from global V index to local v index
 				Edge submeshEdge(edge_src); submeshEdge.v1 -= submesh_v_min_i; submeshEdge.v2 -= submesh_v_min_i;
 				edgePoints.push_back(EdgePoint(submeshEdge,t));
-				EdgePoint targetEdgePt(edge_target,t);
-				edgePointsCoordsList.push_back(targetEdgePt.getPositionInMesh(globalDog->getV()));
+				edgePointsCoordsList.push_back(const_value[edge_const_i]);
+
+				// At this point we need to skip the rest of the duplicated constraints that might involve edge_const_i
+				int mult_edge_index = eS.edge_to_duplicates.at(edge_src);
+				int mult_edge_const_start = eS.multiplied_edges_start[mult_edge_index]; 
+				int mult_edges_num = eS.multiplied_edges_num[mult_edge_index];
+				edge_const_i = mult_edge_const_start + mult_edges_num -1;
 			}
 	}
 	// Convert it to a matrix
