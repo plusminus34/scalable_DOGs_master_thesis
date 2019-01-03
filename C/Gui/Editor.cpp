@@ -32,8 +32,15 @@ bool Editor::callback_mouse_down() {
 				selected_v[0] = vi;
 				applySelection();
 			}
-		} else if (select_mode == PathPicker) {
-			// TODO
+		} else if (select_mode == PairPicker) {
+			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+			if (vi >=0) {
+				if (next_pair_first) {
+					pair_vertex_1 = vi; next_pair_first = false;
+				} else {
+					pair_vertex_2 = vi; next_pair_first = true;
+				}
+			}
 		}
 	} else if (mouse_mode == TRANSLATE) {
 			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
@@ -280,6 +287,18 @@ void Editor::render_positional_constraints() const {
     }
     igl::slice(V, handle_vertices, 1, const_v);
     viewer.data().add_points(const_v, handle_colors);
+}
+
+void Editor::render_selected_pairs() const {
+	Eigen::RowVector3d active_pair_color(0./255,160./255,0./255);
+	if (pair_vertex_1 != -1) {
+		Eigen::RowVector3d pt1 = V.row(pair_vertex_1);
+		viewer.data().add_points(pt1, active_pair_color);	
+	}
+	if (pair_vertex_2 != -1) {
+		Eigen::RowVector3d pt2 = V.row(pair_vertex_2);
+		viewer.data().add_points(pt2, active_pair_color);	
+	}	
 }
 
 void Editor::clearHandles() {

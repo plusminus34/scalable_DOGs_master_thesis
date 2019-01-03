@@ -6,7 +6,7 @@
 class Editor {
 public:
 	enum MouseMode { SELECT, TRANSLATE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
-	enum SelectMode {VertexPicker, PathPicker, CurvePicker};
+	enum SelectMode {VertexPicker, PairPicker, CurvePicker};
 
 	Editor(igl::opengl::glfw::Viewer& viewer,
 		  const Eigen::MatrixXd &V,
@@ -19,6 +19,7 @@ public:
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
 	void render_positional_constraints() const;
+	void render_selected_pairs() const;
 	void clearHandles();
 
 	Eigen::VectorXi& b; Eigen::VectorXd& bc;
@@ -54,6 +55,8 @@ private:
 
 	//index of handle being moved
 	int moving_handle = -1;
+
+	int pair_vertex_1 = -1; int pair_vertex_2 = -1; bool next_pair_first = true;
 
 	//centroids of handle regions, #H x1
 	Eigen::MatrixXd handle_centroids;//(0,3);

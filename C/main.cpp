@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Path picker\0Curve picker\0\0");
+      ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
       ImGui::Combo("Solver type", (int *)(&DC.dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       if (ImGui::InputInt("Edited submesh", &editedSubmeshI) ) DC.update_edited_mesh(editedSubmeshI);
       ImGui::InputDouble("Bending", &DC.dogEditor.p.bending_weight, 0, 0, "%.4f");

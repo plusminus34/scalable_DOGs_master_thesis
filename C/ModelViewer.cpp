@@ -49,6 +49,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (render_pos_const) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
+		DC.dogEditor.render_selected_pairs();
 	}
 	render_mesh(viewer, dog->getVrendering(), dog->getFrendering());
 }
