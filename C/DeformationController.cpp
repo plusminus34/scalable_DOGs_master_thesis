@@ -44,13 +44,15 @@ void DeformationController::propagate_submesh_constraints() {
 	std::queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
 	while (!Q.empty()) {
 		int cur_submesh = Q.front(); Q.pop();
+		//std::cout << "processing submesh " << cur_submesh << std::endl;
 		deform_submesh_based_on_previous_submeshes(cur_submesh, eS, edge_constraint_set, const_value);
+		update_edge_constraints_from_submesh(cur_submesh, eS, edge_constraint_set, const_value);
 
 		passed_on_submesh[cur_submesh] = true;
-		update_edge_constraints_from_submesh(cur_submesh, eS, edge_constraint_set, const_value);
 		// Add all submeshes that were not processed
 		for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) {
-			if (!passed_on_submesh[cur_submesh]) Q.push(adjacency_list[cur_submesh][i]);
+			int nb_submesh = adjacency_list[cur_submesh][i];
+			if (!passed_on_submesh[nb_submesh]) Q.push(nb_submesh);
 		}
 	}
 	editedSubmeshI = -1;
@@ -100,6 +102,8 @@ void DeformationController::deform_submesh_based_on_previous_submeshes(int subme
 	for (int edge_const_i = 0; edge_const_i < eS.edge_const_1.size(); edge_const_i++) {
 			double t = eS.edge_coordinates[edge_const_i]; Edge edge_src(eS.edge_const_1[edge_const_i]),edge_target(eS.edge_const_2[edge_const_i]);
 
+			std::cout << "const edge = " << edge_const_i << " ";
+
 			// This makes sure that if this constraint involves the current submesh then the source edge concerns the current submesh
 			if (globalDog->v_to_submesh_idx(edge_target.v1) == submesh_i) {std::swap(edge_src,edge_target);}
 
@@ -117,6 +121,10 @@ void DeformationController::deform_submesh_based_on_previous_submeshes(int subme
 				int mult_edge_const_start = eS.multiplied_edges_start[mult_edge_index]; 
 				int mult_edges_num = eS.multiplied_edges_num[mult_edge_index];
 				edge_const_i = mult_edge_const_start + mult_edges_num -1;
+
+				std::cout << "constraints is already set!" << std::endl;
+			} else {
+				std::cout << "constraint is noooooot set" << std::endl;
 			}
 	}
 	// Convert it to a matrix

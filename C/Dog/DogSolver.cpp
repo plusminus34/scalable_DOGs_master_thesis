@@ -43,7 +43,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst},
-          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, p.soft_pos_weight})
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight})
           {
     // Empty on purpose
 }
@@ -56,7 +56,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight});
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {
