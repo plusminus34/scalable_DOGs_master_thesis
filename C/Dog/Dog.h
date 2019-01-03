@@ -10,12 +10,14 @@
 
 struct DogEdgeStitching  : public igl::Serializable {
 	// Stores edge constraints (if an edge is duplicated n times, than this edge involves n-1 linearly independent constraints)
+	// The duplicated constraints always needs to be stored consecuitvely in this list
 	std::vector<Edge> edge_const_1, edge_const_2;
 	std::vector<double> edge_coordinates;
 
-	// A list of all the duplicated edge points (usually there are 2 edge points, but a vertex can have more)
-	std::vector<std::vector<EdgePoint>> multiplied_edges;
-	std::map<Edge, int> edge_to_duplicates; // A map between an edge and its index in multiplied_edges
+	// A list of all the duplicated edge point constraints size (usually there are 2 edge points, but a vertex can have more)
+	// The start is their starting offset in std:vector<Edge> and the num is the number of duplicated constraints
+	std::vector<int> multiplied_edges_start; std::vector<int> multiplied_edges_num;
+	std::map<Edge, int> edge_to_duplicates; // A map between an edge and its index in multiplied_edges_start/num
 
 	// The folds polylines (holds an arbitrary edge point, and not all the duplicated)
 	std::vector<std::vector<EdgePoint>> stitched_curves;

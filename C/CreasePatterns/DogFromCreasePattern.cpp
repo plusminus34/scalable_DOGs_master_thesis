@@ -127,12 +127,13 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		constrained_pts.insert(pts.begin(),pts.end());
 	}
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
-	int pt_const_i = 0;
+	int pt_const_i = 0; int edge_constraints_cnt = 0;
 	for (auto pt: constrained_pts) {
 
 		Number_type edge_t; std::vector<Edge> edge_v_indices;
 		pt_to_edge_coordiantes(pt, creasePattern, submeshVList, edge_v_indices, edge_t);
 
+		edgeStitching.multiplied_edges_start.push_back(edge_constraints_cnt);
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
 		double double_t = CGAL::to_double(edge_t);
 		for (int const_i = 0; const_i < edge_v_indices.size()-1; const_i++) {
@@ -141,14 +142,15 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			edgeStitching.edge_coordinates.push_back(double_t);
 			edgeStitching.edge_coordinates_precise.push_back(edge_t);
 			constrained_pts_non_unique.push_back(pt);
+			edge_constraints_cnt++;
 		}
+		// Save the number of duplicated edges
+		edgeStitching.multiplied_edges_num.push_back(edge_v_indices.size());
 		// Add all the duplicated edge points
-		std::vector<EdgePoint> const_mult_edges;
 		for (int dup_edge_i = 0; dup_edge_i < edge_v_indices.size(); dup_edge_i++) {
-			const_mult_edges.push_back(EdgePoint(edge_v_indices[dup_edge_i],double_t));
 			edgeStitching.edge_to_duplicates[edge_v_indices[dup_edge_i]] = pt_const_i;
 		}
-		edgeStitching.multiplied_edges.push_back(const_mult_edges);
+		
 		pt_const_i++;
 	}
 	
