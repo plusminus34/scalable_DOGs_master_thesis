@@ -13,8 +13,8 @@ void DogEditor::single_optimization() {
 
 void DogEditor::init_from_new_dog(Dog& dog) {
 	b.resize(0); bc.resize(0);
-	paired_vertices.resize(0);
-	
+	paired_vertices.clear();
+
 	auto init_x0 = dog.getV_vector();
 
 	if (geoConstraintsBuilder) delete geoConstraintsBuilder;

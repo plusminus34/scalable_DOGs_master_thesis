@@ -193,6 +193,7 @@ int main(int argc, char *argv[]) {
 
       ImGui::InputDouble("Constraints deviation", &DC.dogEditor.constraints_deviation);
       ImGui::InputDouble("objective", &DC.dogEditor.objective);
+      ImGui::Checkbox("Is optimizing?", &is_optimizing);
 
       ImGui::End();
   };

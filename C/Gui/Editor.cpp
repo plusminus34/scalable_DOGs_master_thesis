@@ -304,11 +304,11 @@ void Editor::render_positional_constraints() const {
     viewer.data().add_points(const_v, handle_colors);
 }
 void Editor::render_paired_constraints() const {
-	Eigen::MatrixXd E1(3*paired_vertices.size(),3),E2(3*paired_vertices.size(),3);
+	Eigen::MatrixXd E1(paired_vertices.size()/3,3),E2(paired_vertices.size()/3,3);
 	// The pair values are flattened
 	for (int i = 0; i < paired_vertices.size(); i+=3) {
-		E1.row(i) = V.row(paired_vertices[i].first);
-		E2.row(i) = V.row(paired_vertices[i].second);
+		E1.row(i/3) = V.row(paired_vertices[i].first);
+		E2.row(i/3) = V.row(paired_vertices[i].second);
 	}
 	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(128./255,128./255,128./255));
 }
@@ -331,4 +331,6 @@ void Editor::clearHandles() {
 	moving_handle = -1;
 	selected_v.resize(0,1);
 	current_handle = -1;
+	pair_vertex_1 = pair_vertex_2 = -1;
+	paired_vertices.clear();
 }
