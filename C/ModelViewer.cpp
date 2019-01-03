@@ -3,6 +3,7 @@
 #include "Gui/Rendering.h"
 #include <igl/slice.h>
 #include <igl/per_vertex_normals.h>
+#include <igl/per_corner_normals.h>
 
 using namespace std;
 
@@ -79,7 +80,8 @@ void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::Ma
     Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
-    Eigen::MatrixXd VN; igl::per_vertex_normals(V,F,VN);
+    //Eigen::MatrixXd VN; igl::per_vertex_normals(V,F,VN);
+    Eigen::MatrixXd VN; igl::per_corner_normals(V,F,20,VN);
   	viewer.data().set_normals(VN);
 }
 
