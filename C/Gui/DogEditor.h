@@ -26,7 +26,7 @@ public:
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
 	void update_positional_constraints(bool update_solver = true);
 	void render_positional_constraints() const {return editor->render_positional_constraints();}
-	void render_selected_pairs() const {return editor->render_selected_pairs();}
+	void render_pairs() const {editor->render_paired_constraints();editor->render_selected_pairs();}
 	void reset_constraints() {editor->clearHandles(); b.resize(0);bc.resize(0); reset_dog_solver();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
 
@@ -57,6 +57,6 @@ private:
 	// Positional constraints
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	// Point pair constraints
-	Eigen::VectorXi pair_b1,pair_b2;
+	std::vector<std::pair<int,int>> paired_vertices;
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 };

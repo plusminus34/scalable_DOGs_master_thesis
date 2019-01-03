@@ -9,9 +9,9 @@
 using namespace std;
 
 Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, const Eigen::MatrixXi &F_tri,
-				Eigen::VectorXi& b, Eigen::VectorXd& bc,
+				Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
 				const MouseMode& mouse_mode, const SelectMode& select_mode) : 
-				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
+				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), paired_vertices(paired_vertices), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
 				translation(0,0,0) {
 	handle_id.setConstant(V.rows(), 1, -1);
 	oldV = V;
@@ -52,6 +52,13 @@ bool Editor::callback_mouse_down() {
 				//compute_grad_constraints();
 				deforming = true;
 			}
+	} else if (mouse_mode == APPLY) {
+		if (select_mode == PairPicker) {
+			if ( (pair_vertex_1!=-1) && (pair_vertex_2!=-1) ){
+				paired_vertices.push_back(std::pair<int,int>(pair_vertex_1,pair_vertex_2));
+				pair_vertex_1 = pair_vertex_2 = -1;
+			}
+		}
 	}
 	return deforming;
 }
@@ -288,7 +295,14 @@ void Editor::render_positional_constraints() const {
     igl::slice(V, handle_vertices, 1, const_v);
     viewer.data().add_points(const_v, handle_colors);
 }
-
+void Editor::render_paired_constraints() const {
+	Eigen::MatrixXd E1(paired_vertices.size(),3),E2(paired_vertices.size(),3);
+	for (int i = 0; i < paired_vertices.size(); i++) {
+		E1.row(i) = V.row(paired_vertices[i].first);
+		E2.row(i) = V.row(paired_vertices[i].second);
+	}
+	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(128./255,128./255,128./255));
+}
 void Editor::render_selected_pairs() const {
 	Eigen::RowVector3d active_pair_color(0./255,160./255,0./255);
 	if (pair_vertex_1 != -1) {

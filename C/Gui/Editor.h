@@ -5,13 +5,14 @@
 
 class Editor {
 public:
-	enum MouseMode { SELECT, TRANSLATE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
+	enum MouseMode { SELECT, TRANSLATE, APPLY, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
 	enum SelectMode {VertexPicker, PairPicker, CurvePicker};
 
 	Editor(igl::opengl::glfw::Viewer& viewer,
 		  const Eigen::MatrixXd &V,
          const Eigen::MatrixXi &F_tri,
          Eigen::VectorXi& b, Eigen::VectorXd& bc, // positional constraints
+         std::vector<std::pair<int,int>>& paired_vertices,
          const Editor::MouseMode& mouse_mode,
          const Editor::SelectMode& select_mode);
 
@@ -19,10 +20,12 @@ public:
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
 	void render_positional_constraints() const;
+	void render_paired_constraints() const;
 	void render_selected_pairs() const;
 	void clearHandles();
 
 	Eigen::VectorXi& b; Eigen::VectorXd& bc;
+	std::vector<std::pair<int,int>>& paired_vertices;
 	bool new_constraints = false;
 
 private:

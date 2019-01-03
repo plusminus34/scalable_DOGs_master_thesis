@@ -22,8 +22,9 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords);
 	if (editor) delete editor;
 	FTriangular = dog.getFTriangular();
-	editor = new Editor(*viewer,dog.getV(), FTriangular, b, bc, mouse_mode, select_mode);
 	b.resize(0); bc.resize(0);
+	paired_vertices.resize(0);
+	editor = new Editor(*viewer,dog.getV(), FTriangular, b, bc, paired_vertices, mouse_mode, select_mode);
 }
 
 void DogEditor::reset_dog_solver() {
