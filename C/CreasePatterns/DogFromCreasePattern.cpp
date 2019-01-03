@@ -145,7 +145,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			edge_constraints_cnt++;
 		}
 		// Save the number of duplicated edges
-		edgeStitching.multiplied_edges_num.push_back(edge_v_indices.size());
+		edgeStitching.multiplied_edges_num.push_back(edge_v_indices.size()-1);
 		// Add all the duplicated edge points
 		for (int dup_edge_i = 0; dup_edge_i < edge_v_indices.size(); dup_edge_i++) {
 			edgeStitching.edge_to_duplicates[edge_v_indices[dup_edge_i]] = pt_const_i;

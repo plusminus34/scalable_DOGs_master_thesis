@@ -37,15 +37,18 @@ void DeformationController::propagate_submesh_constraints() {
 
 	auto adjacency_list = globalDog->get_submesh_adjacency();
 	auto eS = globalDog->getEdgeStitching();
+	std::vector<bool> edge_constraint_set(eS.edge_const_1.size(),false); std::vector<Eigen::RowVector3d> const_value(eS.edge_const_1.size());
 
 	std::vector<bool> passed_on_submesh(submesh_n, false);
 	passed_on_submesh[editedSubmeshI] = true; globalDog->update_submesh_V(editedSubmeshI, editedSubmesh->getV());
+	update_edge_constraints_from_submesh(editedSubmeshI, eS, edge_constraint_set, const_value);
 	std::queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
 	while (!Q.empty()) {
 		int cur_submesh = Q.front(); Q.pop();
-		process_submesh(cur_submesh, eS, passed_on_submesh);
+		process_submesh(cur_submesh, eS, passed_on_submesh, edge_constraint_set, const_value);
 
 		passed_on_submesh[cur_submesh] = true;
+		update_edge_constraints_from_submesh(cur_submesh, eS, edge_constraint_set, const_value);
 		// Add all submeshes that were not processed
 		for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) {
 			if (!passed_on_submesh[cur_submesh]) Q.push(adjacency_list[cur_submesh][i]);
@@ -56,7 +59,38 @@ void DeformationController::propagate_submesh_constraints() {
 	dogEditor.init_from_new_dog(*editedSubmesh);
 }
 
-void DeformationController::process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh) {
+void DeformationController::update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
+									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value) {
+	for (int const_i = 0; const_i < eS.edge_const_1.size(); const_i++) {
+		if (!edge_constraint_set[const_i]) {
+			double t = eS.edge_coordinates[const_i]; Edge edge1(eS.edge_const_1[const_i]),edge2(eS.edge_const_2[const_i]);
+			// Make sure that the constraint submesh edge, if exists, is at edge1
+			if (globalDog->v_to_submesh_idx(edge2.v1) == submesh_i) {std::swap(edge1,edge2);}
+			// Check if this constraint involves this submesh
+			if ( (globalDog->v_to_submesh_idx(edge1.v1) == submesh_i) ) {
+				// This constraint involves this submesh. Get all duplicated edges
+				int mult_edge_index = eS.edge_to_duplicates.at(edge1);
+				int mult_edge_const_start = eS.multiplied_edges_start[mult_edge_index]; 
+				int mult_edges_num = eS.multiplied_edges_num[mult_edge_index];
+				Eigen::RowVector3d const_pos = EdgePoint(edge1, t).getPositionInMesh(globalDog->getV());
+
+				// Go through all duplicated edges
+				std::cout << "mult_edge_const_start = " << mult_edge_const_start << std::endl;
+				std::cout << "mult_edges_num = " << mult_edges_num << std::endl;
+				for (int set_const_i = mult_edge_const_start; set_const_i < mult_edge_const_start+mult_edges_num; set_const_i++) {
+					std::cout << "set_const_i = " << set_const_i << std::endl; std::cout << "edge_constraint_set.size() = " << edge_constraint_set.size() << std::endl;
+					edge_constraint_set[set_const_i] = true;
+					const_value[set_const_i] = const_pos;
+				}
+				// set the loop index to the end of the duplicated edges, so that it will process new edges constraints
+				const_i = mult_edge_const_start + mult_edges_num -1;
+			}
+		}
+	}
+}
+
+void DeformationController::process_submesh(int submesh_i, const DogEdgeStitching& eS, const std::vector<bool>& passed_on_submesh,
+											const std::vector<bool>& edge_constraint_set, const std::vector<Eigen::RowVector3d>& const_value) {
 	std::cout << "processing submesh = " << submesh_i << std::endl;
 	auto submeshDog = globalDog->get_submesh(submesh_i);
 
