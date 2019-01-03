@@ -48,7 +48,8 @@ public:
 
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
-		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+		std::vector<std::pair<int,int>>& pairs);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -58,12 +59,14 @@ public:
 	
 	struct Constraints {
 		Constraints(const Dog& dog, Eigen::VectorXi& b, Eigen::VectorXd& bc,
-			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+			std::vector<std::pair<int,int>>& pairs);
 
 		DogConstraints dogConst;
 		StitchingConstraints stitchingConstraints;
 		PositionalConstraints posConst;
 		EdgePointConstraints edgePtConst;
+		PointPairConstraints ptPairConst;
 		CompositeConstraints compConst;
 	};
 
@@ -71,6 +74,7 @@ public:
 	  Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
+	  			PointPairConstraints& ptPairConst,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -78,6 +82,7 @@ public:
 	  	//LaplacianSimilarity laplacianSimilarity;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
+      	QuadraticConstraintsSumObjective ptPairSoftConst;
       	LaplacianSimilarity laplacianSimilarity;
       	CompositeObjective compObj;
 	};

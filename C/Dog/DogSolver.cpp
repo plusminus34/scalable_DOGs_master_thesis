@@ -6,11 +6,12 @@ using namespace std;
 DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, 
         const DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
-        std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
+        std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+        std::vector<std::pair<int,int>>& pairs) : 
 
           dog(dog), init_x0(init_x0), p(p),
-          constraints(dog, b, bc, edgePoints, edgeCoords), 
-          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,p),
+          constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
+          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
@@ -19,11 +20,13 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
 
 DogSolver::Constraints::Constraints(const Dog& dog,
       Eigen::VectorXi& b, Eigen::VectorXd& bc, 
-      std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
+      std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+      std::vector<std::pair<int,int>>& pairs) : 
                     dogConst(dog.getQuadTopology()),
                     stitchingConstraints(dog.getQuadTopology(), dog.getEdgeStitching()),
                     posConst(b,bc),
                     edgePtConst(edgePoints, edgeCoords),
+                    ptPairConst(pairs),
                     compConst({&dogConst, &stitchingConstraints}) /*the positional/edge constraints are soft and go into the objective*/ {
     // Empty on purpose
 }
@@ -31,14 +34,16 @@ DogSolver::Constraints::Constraints(const Dog& dog,
 DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
           PositionalConstraints& posConst,
           EdgePointConstraints& edgePtConst,
+          PointPairConstraints& ptPairConst,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology()), isoObj(dog.getQuadTopology(), init_x0), laplacianSimilarity(dog,init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
+        ptPairSoftConst(ptPairConst, init_x0),
         
         compObj(
-          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints},
-          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight})
+          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst},
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.01*p.soft_pos_weight})
           {
     // Empty on purpose
 }

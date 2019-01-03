@@ -54,9 +54,17 @@ bool Editor::callback_mouse_down() {
 			}
 	} else if (mouse_mode == APPLY) {
 		if (select_mode == PairPicker) {
+			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 			if ( (pair_vertex_1!=-1) && (pair_vertex_2!=-1) ){
-				paired_vertices.push_back(std::pair<int,int>(pair_vertex_1,pair_vertex_2));
-				pair_vertex_1 = pair_vertex_2 = -1;
+				if ((vi == pair_vertex_1) || (vi == pair_vertex_2)) {
+					int vnum = V.rows();
+					for (int i = 0; i < 3; i++) {
+						paired_vertices.push_back(std::pair<int,int>(i*vnum+pair_vertex_1,i*vnum+pair_vertex_2));	
+					}
+					
+					pair_vertex_1 = pair_vertex_2 = -1;
+					new_constraints = true;
+				}
 			}
 		}
 	}
@@ -296,8 +304,9 @@ void Editor::render_positional_constraints() const {
     viewer.data().add_points(const_v, handle_colors);
 }
 void Editor::render_paired_constraints() const {
-	Eigen::MatrixXd E1(paired_vertices.size(),3),E2(paired_vertices.size(),3);
-	for (int i = 0; i < paired_vertices.size(); i++) {
+	Eigen::MatrixXd E1(3*paired_vertices.size(),3),E2(3*paired_vertices.size(),3);
+	// The pair values are flattened
+	for (int i = 0; i < paired_vertices.size(); i+=3) {
 		E1.row(i) = V.row(paired_vertices[i].first);
 		E2.row(i) = V.row(paired_vertices[i].second);
 	}
