@@ -15,7 +15,7 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	b.resize(0); bc.resize(0);
 	paired_vertices.clear();
 
-	auto init_x0 = dog.getV_vector();
+	init_x0 = dog.getV_vector();
 
 	if (geoConstraintsBuilder) delete geoConstraintsBuilder;
 	geoConstraintsBuilder = new CurveInterpolationConstraintsBuilder(dog.getV(), 
@@ -30,7 +30,6 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 std::vector<std::pair<int,int>> paired_vertices;
 void DogEditor::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
-	auto init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
 }

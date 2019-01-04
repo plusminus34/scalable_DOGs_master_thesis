@@ -36,7 +36,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           EdgePointConstraints& edgePtConst,
           PointPairConstraints& ptPairConst,
           const DogSolver::Params& p) : 
-        bending(dog.getQuadTopology()), isoObj(dog.getQuadTopology(), init_x0), laplacianSimilarity(dog,init_x0),
+        bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0), laplacianSimilarity(dog,init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
         ptPairSoftConst(ptPairConst, init_x0),
@@ -57,6 +57,12 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight});
+
+  /*
+  std::cout << "current objective = " << obj.compObj.obj(x0) << std::endl; int wait; std::cin >> wait;
+  std::cout <<"obj.bending.obj(x0) = " << obj.bending.obj(x0) << std::endl; std::cin >> wait;
+  std::cout <<"obj.isoObj.obj(x0) = " << obj.isoObj.obj(x0) << std::endl; std::cin >> wait;
+  */
 
   switch (p.solverType) {
     case SOLVE_NEWTON_PENALTY: {

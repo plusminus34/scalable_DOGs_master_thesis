@@ -51,6 +51,8 @@ private:
 	CurveInterpolationConstraintsBuilder* geoConstraintsBuilder;
 	DogSolver* dogSolver;
 	Editor* editor;
+
+	Eigen::VectorXd init_x0;
 	//FoldingAnglePositionalConstraintsBuilder angleConstraintsBuilder;
 	//CurveInterpolationConstraintsBuilder curveConstraintsBuilder;
 

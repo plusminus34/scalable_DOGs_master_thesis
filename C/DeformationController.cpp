@@ -127,7 +127,7 @@ void DeformationController::deform_submesh_based_on_previous_submeshes(int subme
 	
 	// Use newton penalty optimization while gradually pushing both positional constraints and dog constraints
 	auto init_x0 = submeshDog->getV_vector();
-	SimplifiedBendingObjective bending(submeshDog->getQuadTopology()); IsometryObjective isoObj(submeshDog->getQuadTopology(), init_x0);
+	SimplifiedBendingObjective bending(submeshDog->getQuadTopology(), init_x0); IsometryObjective isoObj(submeshDog->getQuadTopology(), init_x0);
 	DogConstraints dogConst(submeshDog->getQuadTopology());
 	QuadraticConstraintsSumObjective dogConstSoft(dogConst, init_x0);
 	QuadraticConstraintsSumObjective edgePtSoft(submeshEdgePtConst, init_x0);
