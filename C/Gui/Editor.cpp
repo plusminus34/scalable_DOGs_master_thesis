@@ -24,7 +24,9 @@ bool Editor::callback_mouse_down() {
 	
 	if (mouse_mode == SELECT) {
 		if (select_mode == CurvePicker) {
-			// TODO
+			if (lasso.strokeAddCurve(viewer.current_mouse_x, viewer.current_mouse_y) >=0) {
+				action_started = true;
+			}
 		} else if (select_mode == VertexPicker) {
 			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 			if (vi >=0) {
@@ -50,7 +52,7 @@ bool Editor::callback_mouse_down() {
 				oldV = V;//.copy();
 				get_new_handle_locations();
 				//compute_grad_constraints();
-				deforming = true;
+				action_started = true;
 			}
 	} else if (mouse_mode == APPLY) {
 		if (select_mode == PairPicker) {
@@ -68,20 +70,20 @@ bool Editor::callback_mouse_down() {
 			}
 		}
 	}
-	return deforming;
+	return action_started;
 }
 
 bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
-	if (!deforming)
+	if (!action_started)
 		return false;
-	/*
+	
 	if (mouse_mode == SELECT) {
-		if (select_mode == C_Picker) {
+		if (select_mode == CurvePicker) {
 			lasso.strokeAddCurve(mouse_x, mouse_y);
 			return true;
 		}
 	}
-	*/
+	
 	if (mouse_mode == TRANSLATE) {
 		if( mouse_mode == TRANSLATE) {
 			//cout << "Translating"<<endl;
@@ -98,9 +100,9 @@ bool Editor::callback_mouse_move(int mouse_x, int mouse_y) {
 }
 
 bool Editor::callback_mouse_up() {
-	if (!deforming)
+	if (!action_started)
 		return false;
-	deforming = false;
+	action_started = false;
 	
 	if (mouse_mode == TRANSLATE) {
 		translation.setZero();
@@ -111,6 +113,15 @@ bool Editor::callback_mouse_up() {
 		compute_handle_centroids();
 		get_new_handle_locations();
 		
+		return true;
+	}
+
+	if (mouse_mode == SELECT) {
+		if (select_mode == CurvePicker) {
+			lasso.strokeFinishCurve(spline_pt_number);
+			//lasso->strokeFinishCurve(D.const_edges, D.edge_coordinates);
+			//lasso->strokeFacesSqr.clear();
+		}
 		return true;
 	}
 	return false;

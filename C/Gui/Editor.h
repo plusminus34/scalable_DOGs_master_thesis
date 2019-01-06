@@ -65,5 +65,7 @@ private:
 	Eigen::MatrixXd handle_centroids;//(0,3);
 	int down_mouse_x = -1, down_mouse_y = -1;
 
-	bool deforming = false;
+	int spline_pt_number = 4;
+
+	bool action_started = false;
 };
