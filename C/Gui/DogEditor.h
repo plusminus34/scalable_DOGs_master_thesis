@@ -27,7 +27,7 @@ public:
 	void update_positional_constraints(bool update_solver = true);
 	void render_positional_constraints() const {return editor->render_positional_constraints();}
 	void render_pairs() const {editor->render_paired_constraints();editor->render_selected_pairs();}
-	void reset_constraints() {editor->clearHandles(); b.resize(0);bc.resize(0); reset_dog_solver();}
+	void reset_constraints() {b.resize(0);bc.resize(0); paired_vertices.clear(); edgePoints.clear(); edgeCoords.resize(0,3); editor->clearHandles(); reset_dog_solver();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
 
 	void add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc);

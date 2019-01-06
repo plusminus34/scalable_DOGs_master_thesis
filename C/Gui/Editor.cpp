@@ -341,6 +341,7 @@ void Editor::clearHandles() {
 	handle_id.setConstant(V.rows(),1,-1);
 	handle_vertex_positions.setZero(0,3);
 	handle_vertices.resize(0);handle_vertices.setZero(0);
+
 	moving_handle = -1;
 	selected_v.resize(0,1);
 	current_handle = -1;

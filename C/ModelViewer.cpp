@@ -105,7 +105,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	Eigen::VectorXd x(dog->getV_vector());
 	Eigen::VectorXi b; Eigen::VectorXd bc; DC.dogEditor.get_positional_constraints(b,bc);
 	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,b,1, constrained_pts_coords_vec);
-
+/*
 	int pts_num = b.size()/3;
 	Eigen::MatrixXd E1(pts_num,3),E2(pts_num,3);
 	for (int i = 0; i < pts_num; i++) {
@@ -114,6 +114,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	}
 	
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
+	*/
 	DC.dogEditor.render_positional_constraints();
 }
 
