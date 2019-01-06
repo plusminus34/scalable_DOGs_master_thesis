@@ -32,6 +32,8 @@ public:
 
 	void add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc);
 	void add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords);
+	void add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices);
+	void add_pair_vertices_constraints(int v1, int v2);
 
 	double folding_angle = 0;
 	double curve_timestep = 0;

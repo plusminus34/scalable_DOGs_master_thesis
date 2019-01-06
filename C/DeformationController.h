@@ -26,7 +26,7 @@ private:
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);
 	void deform_submesh_based_on_previous_submeshes(int submesh_i, const DogEdgeStitching& eS, 
 		 const std::vector<bool>& edge_constraint_set, const std::vector<Eigen::RowVector3d>& const_value);
-	Edge find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx);
+	EdgePoint find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx);
 
 	igl::opengl::glfw::Viewer* viewer;
 	Dog* globalDog;

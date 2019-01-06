@@ -14,15 +14,20 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 
 void DeformationController::setup_fold_constraints() {
 	cout << "Setting up fold constraints!" << endl;
+	int vnum = globalDog->getV().rows();
 	// Find an edge on a polyline (choose the one with the most equal distance from both sides?)
 
 	// For now only handle the case of 1-crease
 	int fold_curve_idx = 0; 
-	Edge e = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
+	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
+	cout << "Found edge with t = " << edgePoint.t << endl;
+	int v1,v2; globalDog->get_2_inner_vertices_from_edge(edgePoint.edge,v1,v2);
+	std::cout << "inner v1 = " << v1 << " inner_v2 = " << v2 << std::endl;
+	dogEditor.add_pair_vertices_constraints(v1,v2); dogEditor.add_pair_vertices_constraints(vnum+v1,vnum+v2); dogEditor.add_pair_vertices_constraints(2*vnum+v1,2*vnum+v2);
 }
 
 // t = 0.5 in the edge constraint means it is equally spaced
-Edge DeformationController::find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx) {
+EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx) {
 	auto eS = globalDog->getEdgeStitching(); const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
 	int min_edge = 0; double min_dist_from_equal = abs(0.5-foldingCurve[0].t);
 	for (int ei = 1; ei < foldingCurve.size(); ei++) {
@@ -33,7 +38,7 @@ Edge DeformationController::find_most_equally_spaced_edge_on_fold_curve(int fold
 		}
 	}
 	
-	return foldingCurve[min_edge].edge;
+	return foldingCurve[min_edge];
 }
 
 void DeformationController::update_edited_mesh(int newEditedSubmeshI) {

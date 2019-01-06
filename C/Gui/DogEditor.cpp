@@ -70,6 +70,16 @@ void DogEditor::add_edge_point_constraints(const std::vector<EdgePoint>& new_edg
 	reset_dog_solver();
 }
 
+void DogEditor::add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices) {
+	paired_vertices.insert(paired_vertices.end(), new_pair_vertices.begin(), new_pair_vertices.end());
+	reset_dog_solver();
+}
+
+void DogEditor::add_pair_vertices_constraints(int v1, int v2) {
+	std::vector<std::pair<int,int>> new_pair_vertices{std::pair<int,int>(v1,v2)}; 
+	add_pair_vertices_constraints(new_pair_vertices);
+}
+
 std::vector<int> get_second_dog_row(Dog& dog) {
   std::vector<int> curve_i; int v_n = dog.getV().rows();
   for (int i = sqrt(v_n); i < 2*sqrt(v_n); i++) {curve_i.push_back(i);}

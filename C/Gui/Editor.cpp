@@ -322,6 +322,8 @@ void Editor::render_paired_constraints() const {
 		E2.row(i/3) = V.row(paired_vertices[i].second);
 	}
 	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(128./255,128./255,128./255));
+	viewer.data().add_points(E1, Eigen::RowVector3d(128./255,128./255,128./255));
+	viewer.data().add_points(E2, Eigen::RowVector3d(128./255,128./255,128./255));
 }
 void Editor::render_selected_pairs() const {
 	Eigen::RowVector3d active_pair_color(0./255,160./255,0./255);
