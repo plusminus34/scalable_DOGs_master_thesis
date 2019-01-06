@@ -57,7 +57,7 @@ struct EdgePoint {
   static Eigen::VectorXd getPositionInMesh(const std::vector<EdgePoint>& edgePoints, const Eigen::VectorXd& x) {
     int points_n = edgePoints.size(); Eigen::VectorXd coords(3*points_n);
     for (int i = 0; i < points_n; i++) {
-        auto vec = edgePoints[i].getPositionInMesh(x);
+        Eigen::RowVector3d vec = edgePoints[i].getPositionInMesh(x);
         coords(i) = vec(0); coords(points_n+i) = vec(1); coords(2*points_n+i) = vec(2);
     }
     return coords;

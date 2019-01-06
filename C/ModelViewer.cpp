@@ -124,6 +124,8 @@ void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& view
 	if (!edgePoints.size()) return;
 	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, dog->getV());
 	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));
+	viewer.data().add_points(currentCoords,Eigen::RowVector3d(1.,0,0));
+	viewer.data().add_points(edgeCoords,Eigen::RowVector3d(1.,0,0));
 }
 
 void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {

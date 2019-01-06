@@ -15,15 +15,21 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 void DeformationController::setup_fold_constraints() {
 	cout << "Setting up fold constraints!" << endl;
 	int vnum = globalDog->getV().rows();
-	// Find an edge on a polyline (choose the one with the most equal distance from both sides?)
 
 	// For now only handle the case of 1-crease
+
+	// Find an edge on a polyline (choose the one with the most equal distance from both sides)
 	int fold_curve_idx = 0; 
 	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
 	cout << "Found edge with t = " << edgePoint.t << endl;
 	int v1,v2; globalDog->get_2_inner_vertices_from_edge(edgePoint.edge,v1,v2);
 	std::cout << "inner v1 = " << v1 << " inner_v2 = " << v2 << std::endl;
-	dogEditor.add_pair_vertices_constraints(v1,v2); dogEditor.add_pair_vertices_constraints(vnum+v1,vnum+v2); dogEditor.add_pair_vertices_constraints(2*vnum+v1,2*vnum+v2);
+	// Add a pair-closeness-constraint between 2 inner vertices of different submeshes edge points
+	for (int i = 0; i < 3; i++) dogEditor.add_pair_vertices_constraint(i*vnum+v1,i*vnum+v2);
+	// Add an edge point constraint to an higher Z value
+	auto z_offset = 0.1;
+	Eigen::RowVector3d new_edge_pt_pos = edgePoint.getPositionInMesh(globalDog->getV()) + Eigen::RowVector3d(0,0,z_offset);
+	dogEditor.add_edge_point_constraint(edgePoint, new_edge_pt_pos);
 }
 
 // t = 0.5 in the edge constraint means it is equally spaced

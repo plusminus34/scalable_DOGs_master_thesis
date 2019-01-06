@@ -56,18 +56,28 @@ void DogEditor::update_positional_constraints(bool update_solver) {
 }
 
 void DogEditor::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
-	auto old_b = b; auto old_bc = bc;
+	Eigen::VectorXi old_b = b; Eigen::VectorXd old_bc = bc;
 	b.resize(old_b.rows()+new_b.rows()); bc.resize(b.rows());
-	b << old_b,new_b; bc << old_bc,new_bc;
+	if (old_b.rows()) {
+		b << old_b,new_b; bc << old_bc,new_bc;
+	} else {
+		b = new_b; bc = new_bc; // Eigen's concatenate crashes if one of them is empty
+	}
+	
 	reset_dog_solver();
 }
 
 void DogEditor::add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords) {
 	edgePoints.insert(edgePoints.end(), new_edgePoints.begin(), new_edgePoints.end());
-	auto old_edgeCoords = edgeCoords; edgeCoords.resize(old_edgeCoords.rows()+new_edgeCoords.rows(), old_edgeCoords.cols());
-	edgeCoords << old_edgeCoords, new_edgeCoords;
+	Eigen::MatrixXd old_edgeCoords = edgeCoords; edgeCoords.resize(old_edgeCoords.rows()+new_edgeCoords.rows(), old_edgeCoords.cols());
+	if (old_edgeCoords.rows()) edgeCoords << old_edgeCoords, new_edgeCoords; else edgeCoords = new_edgeCoords; // Eigen's concatenate crashes if one of them is empty
 
 	reset_dog_solver();
+}
+
+void DogEditor::add_edge_point_constraint(const EdgePoint& new_edgePoint, const Eigen::RowVector3d& new_edgeCoords) {
+	std::vector<EdgePoint> new_edgePoints = {new_edgePoint}; Eigen::MatrixXd newCoords(1,3); newCoords.row(0) = new_edgeCoords;
+	add_edge_point_constraints(new_edgePoints, newCoords);
 }
 
 void DogEditor::add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices) {
@@ -75,7 +85,7 @@ void DogEditor::add_pair_vertices_constraints(const std::vector<std::pair<int,in
 	reset_dog_solver();
 }
 
-void DogEditor::add_pair_vertices_constraints(int v1, int v2) {
+void DogEditor::add_pair_vertices_constraint(int v1, int v2) {
 	std::vector<std::pair<int,int>> new_pair_vertices{std::pair<int,int>(v1,v2)}; 
 	add_pair_vertices_constraints(new_pair_vertices);
 }
