@@ -22,12 +22,12 @@ public:
 		return vals;
 	}
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
-		int const_n = 0;
+		int const_n = 0; int ijv_cnt = 0;
 		for (int b_i = 0; b_i < pairs.size(); b_i++ ) {
 			int var_const_idx1 = pairs[b_i].first; int var_const_idx2 = pairs[b_i].second;
 			// Set the derivative at the 'var_const_idx' as d(x(val_idx)-value)/d(val_idx) = 1
-			IJV[b_i] = Eigen::Triplet<double>(const_n, var_const_idx1, 1);
-			IJV[b_i] = Eigen::Triplet<double>(const_n, var_const_idx2, -1);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_n, var_const_idx1, 1);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_n, var_const_idx2, -1);
 			const_n++;
 		}
 	}

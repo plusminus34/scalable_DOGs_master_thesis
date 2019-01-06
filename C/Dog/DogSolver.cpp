@@ -43,7 +43,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst},
-          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight})
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, p.soft_pos_weight})
           {
     // Empty on purpose
 }

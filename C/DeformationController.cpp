@@ -27,27 +27,34 @@ void DeformationController::setup_fold_constraints() {
 	// Add a pair-closeness-constraint between 2 inner vertices of different submeshes edge points
 	for (int i = 0; i < 3; i++) dogEditor.add_pair_vertices_constraint(i*vnum+v1,i*vnum+v2);
 	// Add an edge point constraint to an higher Z value
-	auto z_offset = 1;
+	auto z_offset = 0.1;
 	Eigen::RowVector3d new_edge_pt_pos = edgePoint.getPositionInMesh(globalDog->getV()) + Eigen::RowVector3d(0,0,z_offset);
 	dogEditor.add_edge_point_constraint(edgePoint, new_edge_pt_pos);
 
 	Eigen::VectorXi pos_const_i(2); Eigen::VectorXd pos_const(2);
 	pos_const_i << v1+2*vnum,v2+2*vnum; pos_const << 0,0;
 	dogEditor.add_positional_constraints(pos_const_i, pos_const);
+
+	auto eS = globalDog->getEdgeStitching();
+	for (; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
+		edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
+		globalDog->get_2_inner_vertices_from_edge(edgePoint.edge,v1,v2);
+		for (int i = 0; i < 3; i++) dogEditor.add_pair_vertices_constraint(i*vnum+v1,i*vnum+v2);
+	}
 }
 
 // t = 0.5 in the edge constraint means it is equally spaced
 EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx) {
 	auto eS = globalDog->getEdgeStitching(); const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
-	int min_edge = 0; double min_dist_from_equal = abs(0.5-foldingCurve[1].t);
-	for (int ei = 2; ei < foldingCurve.size()-1; ei++) {
+	int curve_v_n = foldingCurve.size();
+	int min_edge = floor(curve_v_n/7); double min_dist_from_equal = abs(0.5-foldingCurve[floor(curve_v_n/7)].t);
+	for (int ei = floor(curve_v_n/7)+1; ei < foldingCurve.size()-floor(curve_v_n/7); ei++) {
 		double dist_from_equal = abs(0.5-foldingCurve[ei].t);
 		if ( dist_from_equal < min_dist_from_equal) {
 			min_edge = ei;
 			min_dist_from_equal = dist_from_equal;
 		}
 	}
-	
 	return foldingCurve[min_edge];
 }
 
