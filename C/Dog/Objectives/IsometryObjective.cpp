@@ -95,8 +95,6 @@ Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) const {
 }
 
 void IsometryObjective::updateHessianIJV(const Eigen::VectorXd& x) {
-	Eigen::VectorXd grad;
-
   int vnum = x.rows()/3;
   int v_num = vnum;
   int h_cnt = 0;

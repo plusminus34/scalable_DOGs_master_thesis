@@ -22,6 +22,7 @@ struct DogEdgeStitching  : public igl::Serializable {
 	std::map<Edge, int> edge_to_duplicates; // A map between an edge and its index in multiplied_edges_start
 
 	// The folds polylines (holds an arbitrary edge point, and not all the duplicated)
+	// Can use any EdgePoint to map to other equal edges with edge_to_duplicates to get an index in multiplied_edges_start
 	std::vector<std::vector<EdgePoint>> stitched_curves;
 
 	// Use for cases when it's important to have a precise representation (usually it doesn't)
