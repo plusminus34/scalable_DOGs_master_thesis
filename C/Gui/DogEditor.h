@@ -30,6 +30,9 @@ public:
 	void reset_constraints() {editor->clearHandles(); b.resize(0);bc.resize(0); reset_dog_solver();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
 
+	void add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc);
+	void add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords);
+
 	double folding_angle = 0;
 	double curve_timestep = 0;
 

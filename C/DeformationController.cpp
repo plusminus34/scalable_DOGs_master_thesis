@@ -1,6 +1,7 @@
 #include "DeformationController.h"
 
 #include <queue>
+using namespace std;
 
 void DeformationController::init_from_new_dog(Dog& dog) {
 	if (globalDog) delete globalDog;
@@ -9,6 +10,30 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
 	dogEditor.init_from_new_dog(dog);
+}
+
+void DeformationController::setup_fold_constraints() {
+	cout << "Setting up fold constraints!" << endl;
+	// Find an edge on a polyline (choose the one with the most equal distance from both sides?)
+
+	// For now only handle the case of 1-crease
+	int fold_curve_idx = 0; 
+	Edge e = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
+}
+
+// t = 0.5 in the edge constraint means it is equally spaced
+Edge DeformationController::find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx) {
+	auto eS = globalDog->getEdgeStitching(); const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+	int min_edge = 0; double min_dist_from_equal = abs(0.5-foldingCurve[0].t);
+	for (int ei = 1; ei < foldingCurve.size(); ei++) {
+		double dist_from_equal = abs(0.5-foldingCurve[ei].t);
+		if ( dist_from_equal < min_dist_from_equal) {
+			min_edge = ei;
+			min_dist_from_equal = dist_from_equal;
+		}
+	}
+	
+	return foldingCurve[min_edge].edge;
 }
 
 void DeformationController::update_edited_mesh(int newEditedSubmeshI) {
@@ -35,12 +60,12 @@ void DeformationController::propagate_submesh_constraints() {
 
 	auto adjacency_list = globalDog->get_submesh_adjacency();
 	auto eS = globalDog->getEdgeStitching();
-	std::vector<bool> edge_constraint_set(eS.edge_const_1.size(),false); std::vector<Eigen::RowVector3d> const_value(eS.edge_const_1.size());
+	vector<bool> edge_constraint_set(eS.edge_const_1.size(),false); vector<Eigen::RowVector3d> const_value(eS.edge_const_1.size());
 
-	std::vector<bool> passed_on_submesh(submesh_n, false);
+	vector<bool> passed_on_submesh(submesh_n, false);
 	passed_on_submesh[editedSubmeshI] = true; globalDog->update_submesh_V(editedSubmeshI, editedSubmesh->getV());
 	update_edge_constraints_from_submesh(editedSubmeshI, eS, edge_constraint_set, const_value);
-	std::queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
+	queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
 	while (!Q.empty()) {
 		int cur_submesh = Q.front(); Q.pop();
 		//std::cout << "processing submesh " << cur_submesh << std::endl;

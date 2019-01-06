@@ -43,7 +43,7 @@ void load_svg(igl::opengl::glfw::Viewer& viewer) {
   int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
   state.init_from_svg(filename, x_res, y_res);
   clear_all_and_set_default_params(viewer);
-  modelViewer.viewMode = ViewModeCreases;
+  //modelViewer.viewMode = ViewModeCreases;
 }
 
 void load_workspace(igl::opengl::glfw::Viewer& viewer, const std::string& path) {
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
     if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
     state.init_from_svg(input_path, x_res, y_res);
-    modelViewer.viewMode = ViewModeCreases;
+    //modelViewer.viewMode = ViewModeCreases;
 
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
@@ -170,6 +170,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
+      if (ImGui::Button("Setup fold constraints", ImVec2(-1,0))) {DC.setup_fold_constraints();is_optimizing = false;}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");

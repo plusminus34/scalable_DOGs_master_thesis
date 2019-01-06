@@ -27,7 +27,7 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	FTriangular = dog.getFTriangular();
 	editor = new Editor(*viewer,dog.getV(), FTriangular, b, bc, paired_vertices, mouse_mode, select_mode);
 }
-std::vector<std::pair<int,int>> paired_vertices;
+
 void DogEditor::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
@@ -53,6 +53,21 @@ void DogEditor::update_positional_constraints(bool update_solver) {
 	//}	
 
 	if (update_solver) dogSolver->update_edge_coords(edgeCoords);
+}
+
+void DogEditor::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
+	auto old_b = b; auto old_bc = bc;
+	b.resize(old_b.rows()+new_b.rows()); bc.resize(b.rows());
+	b << old_b,new_b; bc << old_bc,new_bc;
+	reset_dog_solver();
+}
+
+void DogEditor::add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords) {
+	edgePoints.insert(edgePoints.end(), new_edgePoints.begin(), new_edgePoints.end());
+	auto old_edgeCoords = edgeCoords; edgeCoords.resize(old_edgeCoords.rows()+new_edgeCoords.rows(), old_edgeCoords.cols());
+	edgeCoords << old_edgeCoords, new_edgeCoords;
+
+	reset_dog_solver();
 }
 
 std::vector<int> get_second_dog_row(Dog& dog) {
