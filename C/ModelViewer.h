@@ -21,6 +21,7 @@ public:
 	ViewMode prevMode;
 	ViewMode viewMode;
 	bool render_pos_const;
+	bool render_curved_folding_properties = false;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
@@ -29,6 +30,8 @@ private:
 	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
 	void render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer);
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
+
+	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 
 	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 

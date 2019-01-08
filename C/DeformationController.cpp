@@ -35,12 +35,14 @@ void DeformationController::setup_fold_constraints() {
 	pos_const_i << v1+2*vnum,v2+2*vnum; pos_const << 0,0;
 	dogEditor.add_positional_constraints(pos_const_i, pos_const);
 
+	/*
 	auto eS = globalDog->getEdgeStitching();
 	for (; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
 		edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx);
 		globalDog->get_2_inner_vertices_from_edge(edgePoint.edge,v1,v2);
 		for (int i = 0; i < 3; i++) dogEditor.add_pair_vertices_constraint(i*vnum+v1,i*vnum+v2);
 	}
+	*/
 }
 
 // t = 0.5 in the edge constraint means it is equally spaced

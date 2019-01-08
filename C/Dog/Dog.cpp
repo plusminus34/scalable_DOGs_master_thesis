@@ -59,8 +59,8 @@ void Dog::update_rendering_v() {
 	V_ren_from_V_and_const(V,edgeStitching,V_ren);
 }
 
-void Dog::get_2_inner_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out) {
-	int mult_edge_start = edgeStitching.multiplied_edges_start[edgeStitching.edge_to_duplicates[edge]];
+void Dog::get_2_inner_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out) const {
+	int mult_edge_start = edgeStitching.multiplied_edges_start[edgeStitching.edge_to_duplicates.at(edge)];
 	Edge e1 = edgeStitching.edge_const_1[mult_edge_start], e2 = edgeStitching.edge_const_2[mult_edge_start];
 	if (!quadTop.is_bnd_v[e1.v1]) v1_out = e1.v1; else v1_out = e1.v2;
 	if (!quadTop.is_bnd_v[e2.v1]) v2_out = e2.v1; else v2_out = e2.v2;

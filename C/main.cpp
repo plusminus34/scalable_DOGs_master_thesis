@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Max Newton iterations", &DC.dogEditor.p.max_newton_iters);
       ImGui::InputInt("Penalty repetitions", &DC.dogEditor.p.penalty_repetitions);
       ImGui::Checkbox("Align Procrustes", &DC.dogEditor.p.align_procrustes);
+      ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
