@@ -56,6 +56,7 @@ file(GLOB SRC_DOG
 file(GLOB SRC_CREASE_PATTERNS CreasePatterns/*.cpp)
 file(GLOB SRC_GUI Gui/*.cpp)
 file(GLOB SRC_GEOMETRY_PRIMITIVES GeometryPrimitives/*.cpp)
+file(GLOB SRC_FOLDING Folding/*.cpp)
 #file(GLOB IFOPT_SRC ifopt_core/src/*.cc)
 #file(GLOB IFOPT_IPOPT_SRC ifopt_ipopt/src/*.cc)
 
@@ -89,5 +90,5 @@ SET(CMAKE_EXE_LINKER_FLAGS  "-L/usr/local/opt/libomp/lib -I/usr/local/opt/libomp
 add_library(libomp SHARED IMPORTED)
 set_target_properties(libomp PROPERTIES IMPORTED_LOCATION "libomp.dylib")
 
-add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES})
+add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES} ${SRC_FOLDING})
 target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso600-MACOS-X86-64 libomp)
