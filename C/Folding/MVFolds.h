@@ -23,7 +23,9 @@ public:
 	void clear_folds() {folds.clear();}
 
 	void get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b, std::vector<EdgePoint>& edgePoints);
-	void get_folds_constraint_coords(const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords);
+	void get_folds_constraint_coords(std::vector<double>& folding_angles, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords);
+	// Same angle for all folds
+	void get_folds_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords);
 private:
 	std::vector<MountainValleyFold> folds;
 };

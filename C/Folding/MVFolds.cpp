@@ -62,23 +62,27 @@ void MVFoldingConstraintsBuilder::add_fold(const Dog& dog, int curve_idx, int ed
 	MountainValleyFold mvF(dog, curve_idx, edge_idx, is_mountain);
 	folds.push_back(mvF);
 }
-/*
-struct MountainValleyFold {
-	bool is_mountain;
-	EdgePoint ep, ep_b, ep_f;
-	int v1,v2; double len1, len2;
-	double curve_tangents_angle;
-};
 
-class MVFoldingConstraintsBuilder {
-public:
-	void add_fold(const Dog& dog, int curve_idx, int edge_idx, bool is_mountain);
-	int get_folds_num() {return folds.size();}
-	void clear_folds() {folds.clear();}
+void MVFoldingConstraintsBuilder::get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b, std::vector<EdgePoint>& edgePoints) {
+	int fold_n = folds.size(); b.resize(6*fold_n); edgePoints.resize(fold_n); // 2 vertices with 3 coordinates
+	for (int i = 0; i < folds.size(); i++) {
+		Eigen::VectorXi bFold; EdgePoint epFold; folds[i].get_constraint_indices(dog, bFold, epFold);
+		for (int j = 0; j < 6; j++) b(6*i+j) = bFold(j);
+		edgePoints[i] = epFold;
+	}
+}
 
-	void get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b, std::vector<EdgePoint>& edgePoints);
-	void get_folds_constraint_coords(const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords);
-private:
-	std::vector<MountainValleyFold> folds;
-};
-*/
+void MVFoldingConstraintsBuilder::get_folds_constraint_coords(std::vector<double>& folding_angles, const Dog& dog, Eigen::VectorXd& bc,
+																 Eigen::MatrixXd& edgeCoords) {
+	int fold_n = folds.size(); bc.resize(6*fold_n); edgeCoords.resize(fold_n,3); // 2 vertices with 3 coordinates
+	for (int i = 0; i < folds.size(); i++) {
+		Eigen::VectorXd bcFold; Eigen::MatrixXd edgeCoord; folds[i].get_constraint_coords(folding_angles[i], dog, bcFold, edgeCoord);
+		for (int j = 0; j < 6; j++) bc(6*i+j) = bcFold(j);
+		edgeCoords.row(i) = edgeCoord.row(0);
+	}
+}
+
+void MVFoldingConstraintsBuilder::get_folds_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords) {
+	std::vector<double> folding_angles(folds.size(), folding_angle);
+	get_folds_constraint_coords(folding_angles, dog, bc, edgeCoords);
+}
