@@ -2,8 +2,11 @@
 
 #include "../Dog/Dog.h"
 #include "../QuadMesh/Quad.h"
-//#include "../Optimization/Constraints.h"
 
+
+// is_mountain might need to be checked using the normal z or minus z at the beginning (or deviation from it)
+// It will probably be enough to check the orientation of txprincipal_n in the constructor
+// At that case if it is flipped just change the is_mountain to be opposite than the input (probably the easiest solution)
 struct MountainValleyFold {
 	MountainValleyFold(const Dog& dog, int curve_idx, int edge_idx, bool is_mountain);
 
