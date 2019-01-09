@@ -20,8 +20,6 @@ DeformationController DC;
 //DogEditor dogEditor;
 ModelViewer modelViewer(state, DC);
 
-double curve_timestep_diff = 0;
-double timestep = 0;
 const int DEFAULT_GRID_RES = 21;
 int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh 
 
@@ -60,16 +58,6 @@ void load_workspace(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void run_optimization() {
-  /*
-  if (!is_optimizing)
-    return;
-  
-  if (curve_timestep_diff) {
-    //if (dogSolver.p.curve_timestep < 0.2) {dogSolver.p.curve_timestep += curve_timestep_diff;}
-    if (dogEditor.curve_timestep < 1) dogEditor.curve_timestep += curve_timestep_diff;
-    dogEditor.update_positional_constraints();
-  }
-  */
   DC.single_optimization();
 }
 
@@ -181,8 +169,8 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Laplacian Similarity", &DC.dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
-      ImGui::InputDouble("Timestep diff", &curve_timestep_diff);
+      //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
+      if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {/*TODO*/};
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.dogEditor.p.infeasability_filter);

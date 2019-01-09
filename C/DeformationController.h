@@ -2,6 +2,8 @@
 
 #include "Gui/DogEditor.h"
 
+#include "Folding/MVFolds.h"
+
 // The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
@@ -13,8 +15,6 @@ public:
 	// pass it on to the editor
 	void single_optimization() {return dogEditor.single_optimization();}
 
-	void fold_dihedral_angle();
-
 	void setup_fold_constraints();
 	void propagate_submesh_constraints();
 	// if needed: change activeDog and update the editor accordingly
@@ -22,8 +22,10 @@ public:
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 
-	DogEditor dogEditor;
+	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
+	DogEditor dogEditor;
+	double fold_dihedral_angle = 0;
 private:
 	void update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);
@@ -35,4 +37,6 @@ private:
 	Dog* globalDog;
 	Dog* editedSubmesh;
 	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
+
+	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
 };
