@@ -15,6 +15,20 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 void DeformationController::setup_fold_constraints() {
 	cout << "Setting up fold constraints!" << endl;
 	int vnum = globalDog->getV().rows();
+	int fold_curve_idx = 0; int e_idx; 
+	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+
+	bool is_mountain = true;
+	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain);
+
+	// TODO set up the (initial) positional constraints
+	// TODO At every optimization step, update the coordinates with a new angle
+	// TODO make MVFoldingConstraints translate the dihedral angle to the rotation angle
+}
+
+void DeformationController::setup_fold_constraints_old() {
+	cout << "Setting up fold constraints!" << endl;
+	int vnum = globalDog->getV().rows();
 
 	// For now only handle the case of 1-crease
 

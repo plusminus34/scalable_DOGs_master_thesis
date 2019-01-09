@@ -16,6 +16,8 @@ public:
 	void single_optimization() {return dogEditor.single_optimization();}
 
 	void setup_fold_constraints();
+	
+	void setup_fold_constraints_old();
 	void propagate_submesh_constraints();
 	// if needed: change activeDog and update the editor accordingly
 	void update_edited_mesh(int newEditedSubmeshI);
