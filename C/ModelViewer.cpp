@@ -90,25 +90,27 @@ void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::Ma
 void ModelViewer::render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer) {
 	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
 	const Eigen::MatrixXd& V = state.dog.getV();
-	for (int i = 1; i < eS.stitched_curves[0].size()-1; i++) {
-		EdgePoint eP =  eS.stitched_curves[0][i], eP_f = eS.stitched_curves[0][i+1], eP_b = eS.stitched_curves[0][i-1];
-		Eigen::RowVector3d p0 = eP.getPositionInMesh(V), pf = eP_f.getPositionInMesh(V), pb = eP_b.getPositionInMesh(V);
-		Eigen::RowVector3d t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
-		Eigen::RowVector3d principal_n = ((pf-p0).normalized()+(pb-p0).normalized()).normalized();
-		viewer.data().add_edges(p0, p0+principal_n, Eigen::RowVector3d(1,0,0));
+	for (int j = 0; j < eS.stitched_curves.size(); j++) {
+		for (int i = 1; i < eS.stitched_curves[j].size()-1; i++) {
+			EdgePoint eP =  eS.stitched_curves[j][i], eP_f = eS.stitched_curves[j][i+1], eP_b = eS.stitched_curves[j][i-1];
+			Eigen::RowVector3d p0 = eP.getPositionInMesh(V), pf = eP_f.getPositionInMesh(V), pb = eP_b.getPositionInMesh(V);
+			Eigen::RowVector3d t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
+			Eigen::RowVector3d principal_n = ((pf-p0).normalized()+(pb-p0).normalized()).normalized();
+			viewer.data().add_edges(p0, p0+principal_n, Eigen::RowVector3d(1,0,0));
 
-		int v1,v2; state.dog.get_2_inner_vertices_from_edge(eP.edge,v1,v2);
-		Eigen::RowVector3d t1 = V.row(v1)-p0, t2 = V.row(v2)-p0;
-		// need to transpose when calling Eigen's cross product
-		Eigen::RowVector3d n1 = -1*(t.cross(t1)).normalized();
-		Eigen::RowVector3d n2 = -1*(t.cross(t2)).normalized();
-		viewer.data().add_edges(p0, p0+n1, Eigen::RowVector3d(0,1,0));
-		viewer.data().add_edges(p0, p0+n2, Eigen::RowVector3d(0,0,1));
+			int v1,v2; state.dog.get_2_inner_vertices_from_edge(eP.edge,v1,v2);
+			Eigen::RowVector3d t1 = V.row(v1)-p0, t2 = V.row(v2)-p0;
+			// need to transpose when calling Eigen's cross product
+			Eigen::RowVector3d n1 = -1*(t.cross(t1)).normalized();
+			Eigen::RowVector3d n2 = -1*(t.cross(t2)).normalized();
+			viewer.data().add_edges(p0, p0+n1, Eigen::RowVector3d(0,1,0));
+			viewer.data().add_edges(p0, p0+n2, Eigen::RowVector3d(0,0,1));
 
-		//std::cout << "cos angle t,n1 = " << t.dot(n1) << std::endl;
+			//std::cout << "cos angle t,n1 = " << t.dot(n1) << std::endl;
 
-		auto angle1 = acos(principal_n.dot(n1))*180.0 / M_PI, angle2 = acos(principal_n.dot(n2))*180.0 / M_PI;
-		std::cout << "angles at i = " << i << " are " << angle1 << ", " << angle2 << " with abs(diff) = " << abs(angle1-angle2) << std::endl;
+			auto angle1 = acos(principal_n.dot(n1))*180.0 / M_PI, angle2 = acos(principal_n.dot(n2))*180.0 / M_PI;
+			//std::cout << "angles at i = " << i << " are " << angle1 << ", " << angle2 << " with abs(diff) = " << abs(angle1-angle2) << std::endl;
+		}
 	}
 	cout << endl << endl;
 }

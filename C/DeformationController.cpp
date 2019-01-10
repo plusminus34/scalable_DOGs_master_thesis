@@ -35,14 +35,11 @@ void DeformationController::setup_fold_constraints() {
 	// Add another fold constraint
 	
 	fold_curve_idx = 1;
-	edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); is_mountain = false; keep_rigid_motion = false;
-	mvFoldingConstraintsBuilder.add_fold(*globalDog, 1, e_idx, is_mountain, keep_rigid_motion);
-
-
-	// TODO At every optimization step, update the coordinates with a new angle
+	edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); is_mountain = true; keep_rigid_motion = false;
+	//mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
+	
 	Eigen::VectorXi b; Eigen::VectorXd bc; std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	mvFoldingConstraintsBuilder.get_folds_constraint_indices(*globalDog, b, edgePoints);
-
 	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc, edgeCoords);
 
 	dogEditor.add_edge_point_constraints(edgePoints, edgeCoords);
