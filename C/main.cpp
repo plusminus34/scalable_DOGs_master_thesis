@@ -111,7 +111,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ((is_optimizing) && (is_folding) && (DC.fold_dihedral_angle < 1) ) DC.fold_dihedral_angle += dihedral_diff;
+  if ((is_optimizing) && (is_folding) && (DC.fold_dihedral_angle < M_PI/2) ) DC.fold_dihedral_angle += dihedral_diff;
   if (DC.dogEditor.has_constraints() && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
