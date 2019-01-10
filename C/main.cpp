@@ -84,7 +84,8 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     editedSubmeshI = -1;
     break;
   case 'C':
-    DC.dogEditor.reset_constraints();
+    DC.reset_constraints();
+    is_folding = false;
     break;
   case 'R':
     DC.single_optimization();
