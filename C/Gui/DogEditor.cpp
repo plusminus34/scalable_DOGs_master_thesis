@@ -34,27 +34,6 @@ void DogEditor::reset_dog_solver() {
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
 }
 
-void DogEditor::update_positional_constraints(bool update_solver) {
-	//if (p.deformationType == DIHEDRAL_FOLDING) {
-	//	state->angleConstraintsBuilder.get_positional_constraints(b,bc);	
-	//} else if 
-	//(p.deformationType == CURVE_DEFORMATION) {
-	// update curve constrained folds
-	SurfaceCurve surfaceCurve;
-	geoConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
-	/*
-	if (state->dog.has_creases()) {
-		curveConstraintsBuilder.get_curve_constraints(surfaceCurve, edgeCoords);
-	} else {
-		
-	}
-	*/
-	edgePoints = surfaceCurve.edgePoints;
-	//}	
-
-	if (update_solver) dogSolver->update_edge_coords(edgeCoords);
-}
-
 void DogEditor::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
 	Eigen::VectorXi old_b = b; Eigen::VectorXd old_bc = bc;
 	b.resize(old_b.rows()+new_b.rows()); bc.resize(b.rows());

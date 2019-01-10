@@ -12,18 +12,34 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	dogEditor.init_from_new_dog(dog);
 }
 
+void DeformationController::update_fold_constraints() {
+	Eigen::VectorXd bc;Eigen::MatrixXd edgeCoords;
+	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc, edgeCoords);
+	dogEditor.update_edge_coords(edgeCoords);
+	dogEditor.update_point_coords(bc);
+}
+void DeformationController::single_optimization() {
+	if (is_folding()) update_fold_constraints();
+	return dogEditor.single_optimization();
+}
+
 void DeformationController::setup_fold_constraints() {
 	cout << "Setting up fold constraints!" << endl;
 	int vnum = globalDog->getV().rows();
 	int fold_curve_idx = 0; int e_idx; 
 	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
 
-	bool is_mountain = true;
-	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain);
+	bool is_mountain = true; bool keep_rigid_motion = true;
+	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 
-	// TODO set up the (initial) positional constraints
 	// TODO At every optimization step, update the coordinates with a new angle
-	// TODO make MVFoldingConstraints translate the dihedral angle to the rotation angle
+	Eigen::VectorXi b; Eigen::VectorXd bc; std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+	mvFoldingConstraintsBuilder.get_folds_constraint_indices(*globalDog, b, edgePoints);
+
+	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc, edgeCoords);
+
+	dogEditor.add_edge_point_constraints(edgePoints, edgeCoords);
+	dogEditor.add_positional_constraints(b, bc);
 }
 
 void DeformationController::setup_fold_constraints_old() {

@@ -13,8 +13,9 @@ public:
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
 
 	// pass it on to the editor
-	void single_optimization() {return dogEditor.single_optimization();}
+	void single_optimization();
 
+	void update_fold_constraints();
 	void setup_fold_constraints();
 	
 	void setup_fold_constraints_old();

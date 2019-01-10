@@ -24,7 +24,6 @@ public:
 
 	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
-	void update_positional_constraints(bool update_solver = true);
 	void render_positional_constraints() const {return editor->render_positional_constraints();}
 	void render_pairs() const {editor->render_paired_constraints();editor->render_selected_pairs();}
 	void reset_constraints() {b.resize(0);bc.resize(0); paired_vertices.clear(); edgePoints.clear(); edgeCoords.resize(0,3); editor->clearHandles(); reset_dog_solver();}
@@ -35,6 +34,9 @@ public:
 	void add_edge_point_constraint(const EdgePoint& new_edgePoints, const Eigen::RowVector3d& new_edgeCoords);
 	void add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices);
 	void add_pair_vertices_constraint(int v1, int v2);
+
+	void update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {edgeCoords = edgeCoords_i; dogSolver->update_edge_coords(edgeCoords);}
+	void update_point_coords(Eigen::VectorXd& bc_i) {bc = bc_i; dogSolver->update_point_coords(bc);}
 
 	double folding_angle = 0;
 	double curve_timestep = 0;

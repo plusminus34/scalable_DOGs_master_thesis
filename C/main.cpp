@@ -15,6 +15,9 @@
 using namespace std;
 
 bool is_optimizing = true;
+bool is_folding = false;
+double dihedral_diff = 0.01;
+
 ModelState state;
 DeformationController DC;
 //DogEditor dogEditor;
@@ -83,6 +86,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'C':
     DC.dogEditor.reset_constraints();
     break;
+  case 'R':
+    DC.single_optimization();
+    break;
   case 'E':
     exit(1);
     break;
@@ -104,6 +110,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
+  if ((is_optimizing) && (is_folding) && (DC.fold_dihedral_angle < 1) ) DC.fold_dihedral_angle += dihedral_diff;
   if (DC.dogEditor.has_constraints() && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
@@ -158,7 +165,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      if (ImGui::Button("Setup fold constraints", ImVec2(-1,0))) {DC.setup_fold_constraints();is_optimizing = false;}
+      if (ImGui::Button("Setup fold constraints", ImVec2(-1,0))) {DC.setup_fold_constraints();is_optimizing = false; is_folding = true;}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
@@ -170,7 +177,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Soft constraints", &DC.dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
-      if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {/*TODO*/};
+      if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.dogEditor.p.infeasability_filter);
