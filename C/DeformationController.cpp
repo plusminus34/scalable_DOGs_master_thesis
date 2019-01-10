@@ -32,6 +32,11 @@ void DeformationController::setup_fold_constraints() {
 	bool is_mountain = true; bool keep_rigid_motion = true;
 	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 
+	// Add another fold constraint
+	fold_curve_idx = 1;
+	edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); keep_rigid_motion = false;
+	mvFoldingConstraintsBuilder.add_fold(*globalDog, 1, e_idx, is_mountain, keep_rigid_motion);
+
 	// TODO At every optimization step, update the coordinates with a new angle
 	Eigen::VectorXi b; Eigen::VectorXd bc; std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	mvFoldingConstraintsBuilder.get_folds_constraint_indices(*globalDog, b, edgePoints);

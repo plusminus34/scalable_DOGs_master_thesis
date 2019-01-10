@@ -56,14 +56,16 @@ void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& 
 	Eigen::RowVector3d p0;
 	Eigen::RowVector3d edge1,edge2; Eigen::RowVector3d t;
 	if (!keep_rigid_motion) {
-		Eigen::RowVector3d p0 = ep.getPositionInMesh(V), pf = ep_f.getPositionInMesh(V), pb = ep_b.getPositionInMesh(V);
-		Eigen::RowVector3d t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
+		p0 = ep.getPositionInMesh(V);
+		Eigen::RowVector3d pf = ep_f.getPositionInMesh(V), pb = ep_b.getPositionInMesh(V);
+		//std::cout << "p0 = " << p0 << " but orig_center = " << orig_center << std::endl;
+		t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
 		Eigen::RowVector3d principal_n = ((pf-p0).normalized()+(pb-p0).normalized()).normalized();
 
 		// First construct the unfolded t1 and t2 based on the frame t,n
 		Eigen::RowVector3d t1 = cos(curve_tangents_angle)*t + sin(curve_tangents_angle)*principal_n;
-		Eigen::RowVector3d edge1 = -1*len1*t1;
-		Eigen::RowVector3d edge2 = len2*t1; // opposite direction
+		edge1 = -len1*t1;
+		edge2 = len2*t1; // opposite direction
 	} else {
 		p0 = orig_center;
 		t = orig_t;
@@ -84,10 +86,6 @@ void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& 
 	Eigen::RowVector3d dest_pos2 = p0+edge2;
 
 	bc << dest_pos1(0),dest_pos2(0),dest_pos1(1),dest_pos2(1),dest_pos1(2),dest_pos2(2);
-
-	//std::cout << "(dest_pos1-p0).normalized().dot((dest_pos2-p0).normalized()) = " << (dest_pos1-p0).normalized().dot((dest_pos2-p0).normalized()) << std::endl;
-
-
 	edgeCoords.resize(1,3); edgeCoords.row(0) = p0;
 }
 
