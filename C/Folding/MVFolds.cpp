@@ -16,8 +16,16 @@ MountainValleyFold::MountainValleyFold(const Dog& dog, int curve_idx, int edge_i
 	len2 = (p0-V.row(v2)).norm();
 
 	Eigen::RowVector3d pf = ep_f.getPositionInMesh(V), pb = ep_b.getPositionInMesh(V);
+
 	Eigen::RowVector3d t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
 	Eigen::RowVector3d principal_n = ((pf-p0).normalized()+(pb-p0).normalized()).normalized();
+
+	auto surface_norm_dot_z = t.cross(principal_n).dot(Eigen::RowVector3d(0,0,1));
+	if ( surface_norm_dot_z < 0) {
+		// Swap the direction of the curve
+		std::swap(ep_b,ep_f);
+		t = -1*t;
+	}
 	// The angle the curve folds makes with the folded edge
 	auto norm_edge = (p0-V.row(v1))/len1;
 	// the angle should be in the base of the tangent and principal_n
@@ -32,7 +40,7 @@ MountainValleyFold::MountainValleyFold(const Dog& dog, int curve_idx, int edge_i
 	orig_t = t;
 	orig_edge1 = -len1*norm_edge;
 	orig_edge2 = len2*norm_edge;
-	std::cout << "orig_t = " << orig_t << std::endl;
+	//std::cout << "orig_t = " << orig_t << std::endl;
 }
 
 void MountainValleyFold::get_constraint_indices(const Dog& dog, Eigen::VectorXi& b, EdgePoint& edgePoint) {
