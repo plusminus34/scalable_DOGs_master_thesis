@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Soft constraints", &DC.dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
+      if (ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f") )
       if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
