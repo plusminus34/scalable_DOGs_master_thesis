@@ -3,7 +3,21 @@
 % Each edge point is defined by two vertices and a fixed parameter t
 
 
-% Edge points
+% Edge points (also need the first one since there is a fold between
+% v1,v2..)
+
+ep_0_v1_x = sym('ep_0_v1_x', 'real');
+ep_0_v1_y = sym('ep_0_v1_y', 'real');
+ep_0_v1_z= sym('ep_0_v1_z', 'real');
+ep_0_v1 = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z];
+
+ep_b_v2_x = sym('ep_b_v2_x', 'real');
+ep_b_v2_y = sym('ep_b_v2_y', 'real');
+ep_b_v2_z= sym('ep_b_v2_z', 'real');
+ep_b_v2 = [ep_b_v2_x,ep_b_v2_y,ep_b_v2_z];
+
+ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
+ep_0 = ep_0_v1*ep_0_t+(1-ep_0_t)*ep_b_v2;
 
 ep_b_v1_x = sym('ep_b_v1_x', 'real');
 ep_b_v1_y = sym('ep_b_v1_y', 'real');
@@ -29,9 +43,6 @@ v2_x = sym('v2_x', 'real');
 v2_y = sym('v2_y', 'real');
 v2_z = sym('v2_z', 'real');
 v2 = [v2_x,v2_y,v2_z];
-
-ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
-ep_0 = v1*ep_0_t+(1-ep_0_t)*v2;
 
 ep_f_v1_x = sym('ep_f_v1_x', 'real');
 ep_f_v1_y = sym('ep_f_v1_y', 'real');
@@ -60,7 +71,7 @@ E = simplify(curve_fold_const.^2);
 % list of variables and their order (the 't' variables are seen as
 % fixed parameters and we should  not calculate theirgradient/hessian
 % entrires)
-vars = [ ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z]
+vars = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z, ep_0_v2_x,ep_0_v2_y,ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z];
 
 ccode(E ,'file','curved_fold_obj_binormal_E');
 ccode(gradient(E,vars),'file','curved_fold_obj_binormal_G');
@@ -71,10 +82,8 @@ ccode(gradient(E,vars),'file','curved_fold_obj_binormal_G');
 % without an hessian
 H = hessian(E,vars);
 
-subH = subs(H,[ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t]  ...
-    ,[-1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0,  0.5,0.4,0.5 ]);
-
-subH2 = subs(H,[ ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t] ,[ -1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0.1,  0.5,0.4,0.5 ]);
+subH = subs(H,[ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x,ep_0_v2_y,ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t]  ...
+    ,[0,0,0, 0,1,0,-1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0,  0.5,0.4,0.5 ]);
 
 B_fixed_x = sym('B_fixed_x', 'real');
 B_fixed_y = sym('B_fixed_y', 'real');
