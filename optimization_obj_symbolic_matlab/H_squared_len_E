@@ -1,0 +1,7 @@
+  t2 = len_ex_b*p0_x+len_ex_f*p0_x-len_ex_b*pxb_x-len_ex_f*pxf_x;
+  t3 = len_ex_b*p0_y+len_ex_f*p0_y-len_ex_b*pxb_y-len_ex_f*pxf_y;
+  t4 = len_ex_b*p0_z+len_ex_f*p0_z-len_ex_b*pxb_z-len_ex_f*pxf_z;
+  t5 = len_ey_b*p0_x+len_ey_f*p0_x-len_ey_b*pyb_x-len_ey_f*pyf_x;
+  t6 = len_ey_b*p0_y+len_ey_f*p0_y-len_ey_b*pyb_y-len_ey_f*pyf_y;
+  t7 = len_ey_b*p0_z+len_ey_f*p0_z-len_ey_b*pyb_z-len_ey_f*pyf_z;
+  t0 = t2*t2+t3*t3+t4*t4+t5*t5+t6*t6+t7*t7;

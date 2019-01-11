@@ -1,0 +1,4 @@
+  t2 = p0_x-pyf_x;
+  t3 = p0_y-pyf_y;
+  t4 = p0_z-pyf_z;
+  t0 = -t2*(p0_x-pxb_x)-t3*(p0_y-pxb_y)-t4*(p0_z-pxb_z)+t2*(p0_x-pxf_x)+t3*(p0_y-pxf_y)+t4*(p0_z-pxf_z);

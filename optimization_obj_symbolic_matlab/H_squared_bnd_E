@@ -1,0 +1,4 @@
+  t2 = p0_x*-2.0+pxb_x+pxf_x;
+  t3 = p0_y*-2.0+pxb_y+pxf_y;
+  t4 = p0_z*-2.0+pxb_z+pxf_z;
+  t0 = t2*t2+t3*t3+t4*t4;
