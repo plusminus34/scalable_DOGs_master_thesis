@@ -23,6 +23,8 @@
 #include "Objectives/LaplacianSimilarity.h"
 #include "Objectives/StitchingConstraints.h"
 
+#include "../Folding/CurvedFoldingBiasObjective.h"
+
 
 class DogSolver {
 public:

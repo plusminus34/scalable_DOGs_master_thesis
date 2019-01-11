@@ -89,7 +89,6 @@ double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) const {
 	e += t2*t2+t3*t3+t4*t4;
 
   }
-  // TODO: maybe add corners (or 4 vertices boundaries for cuts)
   return e;
 }
 

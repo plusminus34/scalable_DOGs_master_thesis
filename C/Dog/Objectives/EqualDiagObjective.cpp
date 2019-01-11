@@ -60,7 +60,6 @@ double EqualDiagObjective::obj(const Eigen::VectorXd& x) const {
     double t8 = t2*t2+t3*t3+t4*t4-t5*t5-t6*t6-t7*t7;
 	e += t8*t8;
   }
-  // TODO: maybe add corners (or 4 vertices boundaries for cuts)
   return e;
 }
 
