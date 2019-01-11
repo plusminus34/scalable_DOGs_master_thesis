@@ -94,4 +94,11 @@ subH_simp = subs(H_simp,[ ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x, ep_0_v2_y,
 % Last way: Fix ep_0 instead of v1,v2. In that case we again let the other
 % parts move (the hessian should be the same?). 
 % In any case place B = B_fixed + linear_approx
+
+
+% Another idea, fix the tangent, and just use the principle normal (as a
+% fixed linear combination of the edges). Maybe this makes sense as the
+% act of folding the tangent itself is the rotation axis?
+% Other idea, somehow fix the angle between the tangent and the principle
+% normal or tangent and edges
 taylor(B, vars_without_v1_v2, 'Order', 2)

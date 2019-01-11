@@ -14,7 +14,6 @@
 #include "../Optimization/Solvers/NewtonKKT.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
-#include "Objectives/FoldingAnglePositionalConstraintsBuilder.h"
 #include "Solvers/DOGGuess.h"
 
 #include "Objectives/DogConstraints.h"
