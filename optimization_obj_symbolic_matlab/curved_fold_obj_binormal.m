@@ -11,13 +11,13 @@ ep_0_v1_y = sym('ep_0_v1_y', 'real');
 ep_0_v1_z= sym('ep_0_v1_z', 'real');
 ep_0_v1 = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z];
 
-ep_b_v2_x = sym('ep_b_v2_x', 'real');
-ep_b_v2_y = sym('ep_b_v2_y', 'real');
-ep_b_v2_z= sym('ep_b_v2_z', 'real');
-ep_b_v2 = [ep_b_v2_x,ep_b_v2_y,ep_b_v2_z];
+ep_0_v2_x = sym('ep_0_v2_x', 'real');
+ep_0_v2_y = sym('ep_0_v2_y', 'real');
+ep_0_v2_z= sym('ep_0_v2_z', 'real');
+ep_0_v2 = [ep_0_v2_x,ep_0_v2_y,ep_0_v2_z];
 
 ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
-ep_0 = ep_0_v1*ep_0_t+(1-ep_0_t)*ep_b_v2;
+ep_0 = ep_0_v1*ep_0_t+(1-ep_0_t)*ep_0_v2;
 
 ep_b_v1_x = sym('ep_b_v1_x', 'real');
 ep_b_v1_y = sym('ep_b_v1_y', 'real');
