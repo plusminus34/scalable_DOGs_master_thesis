@@ -5,7 +5,6 @@ double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {
 	int vnum = x.rows()/3;
 
 	int h_cnt = 0;
-	//for (int fold_i = 0; fold_i < curvedFoldBiases.size; fold_i++) {
 	for (auto curvedFold : curvedFoldBiases) {
 		int ep_0_v1_i(curvedFold.ep_0.edge.v1), ep_0_v2_i(curvedFold.ep_0.edge.v2); const double ep_0_t(curvedFold.ep_0.t);
 		int ep_b_v1_i(curvedFold.ep_b.edge.v1), ep_b_v2_i(curvedFold.ep_b.edge.v2); const double ep_b_t(curvedFold.ep_b.t);
@@ -194,3 +193,144 @@ Eigen::VectorXd CurvedFoldingBiasObjective::grad(const Eigen::VectorXd& x) const
   }
   return grad;
 }
+
+void CurvedFoldingBiasObjective::updateHessianIJV(const Eigen::VectorXd& x) {
+  int vnum = x.rows()/3;
+  int v_num = vnum;
+  int h_cnt = 0;
+
+  int ijv_cnt = 0;
+  #pragma clang loop vectorize(enable)
+	 for (auto curvedFold : curvedFoldBiases) {
+		int ep_0_v1_i(curvedFold.ep_0.edge.v1), ep_0_v2_i(curvedFold.ep_0.edge.v2); const double ep_0_t(curvedFold.ep_0.t);
+		int ep_b_v1_i(curvedFold.ep_b.edge.v1), ep_b_v2_i(curvedFold.ep_b.edge.v2); const double ep_b_t(curvedFold.ep_b.t);
+		int ep_f_v1_i(curvedFold.ep_f.edge.v1), ep_f_v2_i(curvedFold.ep_f.edge.v2); const double ep_f_t(curvedFold.ep_f.t);
+		int v1_i(curvedFold.v1),v2_i(curvedFold.v2);
+
+		const double ep_0_v1_x(x(ep_0_v1_i)); const double ep_0_v1_y(x(ep_0_v1_i+1*vnum)); const double ep_0_v1_z(x(ep_0_v1_i+2*vnum));
+		const double ep_0_v2_x(x(ep_0_v2_i)); const double ep_0_v2_y(x(ep_0_v2_i+1*vnum)); const double ep_0_v2_z(x(ep_0_v2_i+2*vnum));
+		const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
+		const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
+		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
+		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
+
+		const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+		const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+
+		// Get the fixed binormal
+		double B_fixed_x,B_fixed_y,B_fixed_z;
+		{
+			double t2 = ep_0_t-1.0;
+			double t3 = ep_0_t*ep_0_v1_z;
+			double t4 = ep_b_t-1.0;
+			double t5 = ep_0_t*ep_0_v1_y;
+			double t6 = ep_f_t-1.0;
+			double t7 = ep_f_v2_z*t6;
+			double t9 = ep_0_v2_z*t2;
+			double t8 = t3+t7-t9-ep_f_t*ep_f_v1_z;
+			double t10 = ep_b_v2_z*t4;
+			double t11 = ep_0_t*ep_0_v1_x;
+			double t12 = ep_b_v2_x*t4;
+			double t18 = ep_0_v2_x*t2;
+			double t13 = t11+t12-t18-ep_b_t*ep_b_v1_x;
+			double t14 = ep_f_v2_y*t6;
+			double t16 = ep_0_v2_y*t2;
+			double t15 = t5+t14-t16-ep_f_t*ep_f_v1_y;
+			double t17 = ep_b_v2_y*t4;
+			double t19 = ep_f_v2_x*t6;
+
+			B_fixed_x = -t8*(t5+t17-ep_b_t*ep_b_v1_y-ep_0_v2_y*t2)+t15*(t3+t10-ep_b_t*ep_b_v1_z-ep_0_v2_z*t2);
+  			B_fixed_y = t8*t13-(t3-t9+t10-ep_b_t*ep_b_v1_z)*(t11+t19-ep_f_t*ep_f_v1_x-ep_0_v2_x*t2);
+  			B_fixed_z = -t13*t15+(t5-t16+t17-ep_b_t*ep_b_v1_y)*(t11-t18+t19-ep_f_t*ep_f_v1_x);
+		}
+
+		double t2 = B_fixed_x*B_fixed_x;
+		double t3 = t2*2.0;
+		double t4 = B_fixed_x*B_fixed_y*2.0;
+		double t5 = B_fixed_x*B_fixed_z*2.0;
+		double t6 = B_fixed_y*B_fixed_y;
+		double t7 = t6*2.0;
+		double t8 = B_fixed_y*B_fixed_z*2.0;
+		double t9 = B_fixed_z*B_fixed_z;
+		double t10 = t9*2.0;
+
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i, t3);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i+v_num, t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i+2*v_num, t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i, -t3);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i+v_num, -t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i+2*v_num, -t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i, t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i+v_num, t7);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i+2*v_num, t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i, -t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i+v_num, -t7);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i+2*v_num, -t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i, t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i+v_num, t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i+2*v_num, t10);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i, -t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i+v_num, -t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i+2*v_num, -t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i, -t3);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i+v_num, -t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i+2*v_num, -t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i, t3);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i+v_num, t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i+2*v_num, t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i, -t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i+v_num, -t7);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i+2*v_num, -t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i, t4);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i+v_num, t7);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i+2*v_num, t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i, -t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+v_num, -t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+2*v_num, -t10);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i, t5);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i+v_num, t8);
+		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+2*v_num, t10);
+
+      h_cnt++;
+  }
+}
+
+/*
+Hessian
+A0[ v1_x][ v1_x] = t3; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i, t3);
+  A0[ v1_x][ v1_y] = t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i+v_num, t4);
+  A0[ v1_x][ v1_z] = t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v1_i+2*v_num, t5);
+  A0[ v1_x][ v2_x] = -t3; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i, -t3);
+  A0[ v1_x][ v2_y] = -t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i+v_num, -t4);
+  A0[ v1_x][ v2_z] = -t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i,v2_i+2*v_num, -t5);
+  A0[ v1_y][ v1_x] = t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i, t4);
+  A0[ v1_y][ v1_y] = t7; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i+v_num, t7);
+  A0[ v1_y][ v1_z] = t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v1_i+2*v_num, t8);
+  A0[ v1_y][ v2_x] = -t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i, -t4);
+  A0[ v1_y][ v2_y] = -t7; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i+v_num, -t7);
+  A0[ v1_y][ v2_z] = -t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+v_num,v2_i+2*v_num, -t8);
+  A0[ v1_z][ v1_x] = t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i, t5);
+  A0[ v1_z][ v1_y] = t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i+v_num, t8);
+  A0[ v1_z][ v1_z] = t10; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v1_i+2*v_num, t10);
+  A0[ v1_z][ v2_x] = -t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i, -t5);
+  A0[ v1_z][ v2_y] = -t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i+v_num, -t8);
+  A0[ v1_z][ v2_z] = -t10; IJV[ijv_cnt++] = Eigen::Triplet<double>(v1_i+2*v_num,v2_i+2*v_num, -t5);
+  A0[ v2_x][ v1_x] = -t3; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i, -t3);
+  A0[ v2_x][ v1_y] = -t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i+v_num, -t4);
+  A0[ v2_x][ v1_z] = -t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v1_i+2*v_num, -t5);
+  A0[ v2_x][ v2_x] = t3; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i, t3);
+  A0[ v2_x][ v2_y] = t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i+v_num, t4);
+  A0[ v2_x][ v2_z] = t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i,v2_i+2*v_num, t5);
+  A0[ v2_y][ v1_x] = -t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i, -t4);
+  A0[ v2_y][ v1_y] = -t7; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i+v_num, -t7);
+  A0[ v2_y][ v1_z] = -t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v1_i+2*v_num, -t8);
+  A0[ v2_y][ v2_x] = t4; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i, t4);
+  A0[ v2_y][ v2_y] = t7; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i+v_num, t7);
+  A0[ v2_y][ v2_z] = t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+v_num,v2_i+2*v_num, t8);
+  A0[ v2_z][ v1_x] = -t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i, -t5);
+  A0[ v2_z][ v1_y] = -t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+v_num, -t8);
+  A0[ v2_z][ v1_z] = -t10; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+2*v_num, -t10);
+  A0[ v2_z][ v2_x] = t5; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i, t5);
+  A0[ v2_z][ v2_y] = t8; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i+v_num, t8);
+  A0[ v2_z][ v2_z] = t10; IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+2*v_num, t10);
+*/

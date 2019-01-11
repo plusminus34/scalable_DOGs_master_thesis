@@ -18,7 +18,7 @@ public:
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
 
 private:
-	virtual void updateHessianIJV(const Eigen::VectorXd& x) {}; // For now no hessian
+	virtual void updateHessianIJV(const Eigen::VectorXd& x);
 	
 	const Dog& dog;
 	std::vector<CurvedFoldBias> curvedFoldBiases;

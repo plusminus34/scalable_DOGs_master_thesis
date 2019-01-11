@@ -64,6 +64,8 @@ e2 = ep_0-v2;
 % curve binormal vec, not normalized because it's the same from both sides
 B = simplify(cross(ep_0-ep_b,ep_f-ep_0));
 
+ccode(B,'file','curved_fold_obj_binormal_B_fixed');
+
 % We want <e1,B> = - <e2,B> or <e1,B>+<e2,B> = 0
 curve_fold_const = simplify(dot(e1,B) + dot(e2,B));
 
@@ -91,6 +93,7 @@ B_fixed_z= sym('B_fixed_z', 'real');
 B_fixed = [B_fixed_x,B_fixed_y,B_fixed_z];
 E_simplified = simplify((dot(e1,B_fixed)+dot(e2,B_fixed)).^2);
 H_simp = hessian(E_simplified,vars);
+ccode(H_simp,'file','curved_fold_obj_binormal_H_simp');
 subH_simp = subs(H_simp,[ ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x, ep_0_v2_y, ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t] ,[0,0,0,0,1,0, -1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0.1,  0.5,0.4,0.5 ]);
 
 % Another way to simplify: Find a linear approximation of B
