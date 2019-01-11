@@ -12,63 +12,46 @@ double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {
 		int ep_f_v1_i(curvedFold.ep_f.edge.v1), ep_f_v2_i(curvedFold.ep_f.edge.v2); const double ep_f_t(curvedFold.ep_f.t);
 		int v1_i(curvedFold.v1),v2_i(curvedFold.v2);
 
-
 		const double ep_0_v1_x(x(ep_0_v1_i)); const double ep_0_v1_y(x(ep_0_v1_i+1*vnum)); const double ep_0_v1_z(x(ep_0_v1_i+2*vnum));
-		/*
-		const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
-		const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
-		
-  		*/
-  		//e += t5*t5;
+		const double ep_0_v2_x(x(ep_0_v2_i)); const double ep_0_v2_y(x(ep_0_v2_i+1*vnum)); const double ep_0_v2_z(x(ep_0_v2_i+2*vnum));
+		const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
+		const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
+		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
+		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
+
+		const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+		const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+
+		double t2 = ep_0_t-1.0;
+		double t3 = ep_0_t*ep_0_v1_y;
+		double t4 = ep_b_t-1.0;
+		double t5 = ep_0_t*ep_0_v1_x;
+		double t6 = ep_f_t-1.0;
+		double t7 = ep_b_v2_x*t4;
+		double t13 = ep_b_v2_x*t2;
+		double t17 = ep_b_t*ep_b_v1_x;
+		double t8 = t5+t7-t13-t17;
+		double t9 = ep_f_v2_y*t6;
+		double t11 = ep_b_v2_y*t2;
+		double t26 = ep_f_t*ep_f_v1_y;
+		double t10 = t3+t9-t11-t26;
+		double t12 = ep_b_v2_y*t4;
+		double t14 = ep_f_v2_x*t6;
+		double t15 = ep_b_v2_z*t2;
+		double t16 = t8*t10;
+		double t23 = ep_f_t*ep_f_v1_x;
+		double t18 = t5-t13+t14-t23;
+		double t19 = ep_f_t*ep_f_v1_z;
+		double t21 = ep_0_t*ep_0_v1_z;
+		double t25 = ep_f_v2_z*t6;
+		double t20 = t15+t19-t21-t25;
+		double t22 = ep_b_t*ep_b_v1_z;
+		double t27 = ep_b_t*ep_b_v1_y;
+		double t24 = t3-t11+t12-t27;
+		double t28 = t10*(t15-t21+t22-ep_b_v2_z*t4);
+		double t29 = t28-t20*t24;
+		double t30 = (t18*(t15-t21+t22-ep_b_v2_z*t4)-t8*t20)*(-t3+t11+v2_y)+(t16-(t3+t12-ep_b_t*ep_b_v1_y-ep_b_v2_y*t2)*(t5+t14-ep_f_t*ep_f_v1_x-ep_b_v2_x*t2))*(t15+v1_z-ep_0_t*ep_0_v1_z)+(t8*t20-t18*(t15+t22-ep_0_t*ep_0_v1_z-ep_b_v2_z*t4))*(-t3+t11+v1_y)-(t16-t18*t24)*(t15+v2_z-ep_0_t*ep_0_v1_z)+t29*(-t5+t13+v1_x)-t29*(-t5+t13+v2_x);
+		e += t30*t30;
   }
   return e;
 }
-
-/*
-ep_0_v1_x = sym('ep_0_v1_x', 'real');
-ep_0_v1_y = sym('ep_0_v1_y', 'real');
-ep_0_v1_z= sym('ep_0_v1_z', 'real');
-ep_0_v1 = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z];
-
-ep_b_v2_x = sym('ep_b_v2_x', 'real');
-ep_b_v2_y = sym('ep_b_v2_y', 'real');
-ep_b_v2_z= sym('ep_b_v2_z', 'real');
-ep_b_v2 = [ep_b_v2_x,ep_b_v2_y,ep_b_v2_z];
-
-ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
-ep_0 = ep_0_v1*ep_0_t+(1-ep_0_t)*ep_b_v2;
-
-ep_b_v1_x = sym('ep_b_v1_x', 'real');
-ep_b_v1_y = sym('ep_b_v1_y', 'real');
-ep_b_v1_z= sym('ep_b_v1_z', 'real');
-ep_b_v1 = [ep_b_v1_x,ep_b_v1_y,ep_b_v1_z];
-
-ep_b_v2_x = sym('ep_b_v2_x', 'real');
-ep_b_v2_y = sym('ep_b_v2_y', 'real');
-ep_b_v2_z= sym('ep_b_v2_z', 'real');
-ep_b_v2 = [ep_b_v2_x,ep_b_v2_y,ep_b_v2_z];
-
-ep_b_t = sym('ep_b_t', 'real'); assume(ep_b_t > 0);
-
-ep_b = ep_b_v1*ep_b_t+(1-ep_b_t)*ep_b_v2;
-
-% Folded points
-v1_x = sym('v1_x', 'real');
-v1_y = sym('v1_y', 'real');
-v1_z = sym('v1_z', 'real');
-v1 = [v1_x,v1_y,v1_z];
-
-v2_x = sym('v2_x', 'real');
-v2_y = sym('v2_y', 'real');
-v2_z = sym('v2_z', 'real');
-v2 = [v2_x,v2_y,v2_z];
-
-ep_f_v1_x = sym('ep_f_v1_x', 'real');
-ep_f_v1_y = sym('ep_f_v1_y', 'real');
-ep_f_v1_z= sym('ep_f_v1_z', 'real');
-ep_f_v1 = [ep_f_v1_x,ep_f_v1_y,ep_f_v1_z];
-
-ep_f_v2_x = sym('ep_f_v2_x', 'real');
-ep_f_v2_y = sym('ep_f_v2_y', 'real');
-ep_f_v2_z= sym('ep_f_v2_z', 'real');
-*/
