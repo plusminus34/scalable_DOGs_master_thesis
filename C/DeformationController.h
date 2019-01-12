@@ -3,12 +3,13 @@
 #include "Gui/DogEditor.h"
 
 #include "Folding/MVFolds.h"
+#include "Folding/CurvedFoldingBiasObjective.h"
 
 // The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
-	DeformationController() {globalDog = NULL; editedSubmesh = NULL;}
+	DeformationController() : dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
 
@@ -29,6 +30,7 @@ public:
 
 	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
+	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
 	DogEditor dogEditor;
 	double fold_dihedral_angle = 0;
 private:

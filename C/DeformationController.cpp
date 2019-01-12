@@ -34,8 +34,8 @@ void DeformationController::setup_fold_constraints() {
 
 	// Add another fold constraint
 	
-	fold_curve_idx = 1;
-	edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); is_mountain = true; keep_rigid_motion = false;
+	//fold_curve_idx = 1;
+	//edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); is_mountain = true; keep_rigid_motion = false;
 	//mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 	
 	Eigen::VectorXi b; Eigen::VectorXd bc; std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
