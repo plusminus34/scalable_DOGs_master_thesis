@@ -65,6 +65,7 @@ double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {
 		e += t30*t30;
 
   }
+  std::cout << "curved fold bias e = " << e << std::endl;
   return e;
 }
 
@@ -207,6 +208,7 @@ Eigen::VectorXd CurvedFoldingBiasObjective::grad(const Eigen::VectorXd& x) const
 }
 
 void CurvedFoldingBiasObjective::updateHessianIJV(const Eigen::VectorXd& x) {
+
   int vnum = x.rows()/3;
   int v_num = vnum;
   int h_cnt = 0;
@@ -302,8 +304,6 @@ void CurvedFoldingBiasObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i, t5);
 		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v2_i+v_num, t8);
 		IJV[ijv_cnt++] = Eigen::Triplet<double>(v2_i+2*v_num,v1_i+2*v_num, t10);
-
-      h_cnt++;
   }
 }
 

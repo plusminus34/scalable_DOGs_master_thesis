@@ -33,8 +33,14 @@ void DeformationController::setup_fold_constraints() {
 	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 
 	// Add another fold constraint
+	fold_curve_idx = 1;
+	CurvedFoldBias curvedFoldBias; curvedFoldBias.ep_0 = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+	auto eS = globalDog->getEdgeStitching(); const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+	curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+	globalDog->get_2_inner_vertices_from_edge(curvedFoldBias.ep_0.edge,curvedFoldBias.v1,curvedFoldBias.v2);
+	curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);
 	
-	//fold_curve_idx = 1;
+	//mvFoldingConstraintsBuilder
 	//edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); is_mountain = true; keep_rigid_motion = false;
 	//mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 	
