@@ -1,8 +1,15 @@
 #include "CurvedFoldingBiasObjective.h"
 
-CurvedFoldingBiasObjective::CurvedFoldingBiasObjective(const Dog& dog, std::vector<CurvedFoldBias>& curvedFoldBiases)
-				 : dog(dog), curvedFoldBiases(curvedFoldBiases) {
+void CurvedFoldingBiasObjective::reset_folds() {
+	curvedFoldBiases.clear();
+	IJV.resize(0);
+	is_H_cached = false;	
+}
+
+void CurvedFoldingBiasObjective::add_fold_bias(const CurvedFoldBias& foldBias) {
+	curvedFoldBiases.push_back(foldBias);
 	IJV.resize(curvedFoldBiases.size()*36);
+	is_H_cached = false; // recompute H caching next time
 }
 
 double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {

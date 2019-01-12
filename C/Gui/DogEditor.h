@@ -5,7 +5,8 @@
 
 class DogEditor {
 public:
-	DogEditor(): geoConstraintsBuilder(NULL), dogSolver(NULL) {}
+	DogEditor(CurvedFoldingBiasObjective& curvedFoldingBiasObjective): 
+		curvedFoldingBiasObjective(curvedFoldingBiasObjective), geoConstraintsBuilder(NULL), dogSolver(NULL) {}
 	~DogEditor();
 	void single_optimization();
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
@@ -57,6 +58,7 @@ private:
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	// This doesn't change when the values of the soft constraints change
 	CurveInterpolationConstraintsBuilder* geoConstraintsBuilder;
+	CurvedFoldingBiasObjective& curvedFoldingBiasObjective;
 	DogSolver* dogSolver;
 	Editor* editor;
 

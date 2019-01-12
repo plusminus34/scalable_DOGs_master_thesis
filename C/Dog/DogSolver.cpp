@@ -7,11 +7,12 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         const DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-        std::vector<std::pair<int,int>>& pairs) : 
+        std::vector<std::pair<int,int>>& pairs,
+        CurvedFoldingBiasObjective& curvedFoldingBiasObj) :
 
           dog(dog), init_x0(init_x0), p(p),
           constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
-          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,p),
+          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,curvedFoldingBiasObj, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
@@ -35,11 +36,13 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           PositionalConstraints& posConst,
           EdgePointConstraints& edgePtConst,
           PointPairConstraints& ptPairConst,
+          CurvedFoldingBiasObjective& curvedFoldingBiasObj,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0), laplacianSimilarity(dog,init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
         ptPairSoftConst(ptPairConst, init_x0),
+        curvedFoldingBiasObj(curvedFoldingBiasObj),
         
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst},

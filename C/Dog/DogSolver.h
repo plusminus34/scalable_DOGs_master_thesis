@@ -50,7 +50,8 @@ public:
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-		std::vector<std::pair<int,int>>& pairs);
+		std::vector<std::pair<int,int>>& pairs,
+		CurvedFoldingBiasObjective& curvedFoldingBiasObj);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -76,6 +77,7 @@ public:
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
 	  			PointPairConstraints& ptPairConst,
+	  			CurvedFoldingBiasObjective& curvedFoldingBiasObj,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -85,6 +87,7 @@ public:
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	LaplacianSimilarity laplacianSimilarity;
+      	CurvedFoldingBiasObjective& curvedFoldingBiasObj;
       	CompositeObjective compObj;
 	};
 

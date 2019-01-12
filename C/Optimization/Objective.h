@@ -38,9 +38,10 @@ public:
   virtual const Eigen::SparseMatrix<double>& hessian(const Eigen::VectorXd& x) {
     //Eigen::SparseMatrix<double> H(x.rows(),x.rows());
     updateHessianIJV(x);
-    if ( cachedH.rows() == 0) {
+    if (!is_H_cached) {
       cachedH =  Eigen::SparseMatrix<double>(x.rows(),x.rows());
       igl::sparse_cached_precompute(IJV, cached_ijv_data, cachedH);
+      is_H_cached = true;
     } else {
       igl::sparse_cached(IJV, cached_ijv_data, cachedH);
     }
@@ -49,6 +50,7 @@ public:
  protected:
    std::vector<Eigen::Triplet<double> > IJV; Eigen::VectorXi cached_ijv_data;
    Eigen::SparseMatrix<double> cachedH;
+   bool is_H_cached = false;
  private:
 
   

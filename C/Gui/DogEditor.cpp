@@ -22,7 +22,7 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 															get_second_dog_row(dog), curve_timestep);
 	bool update_solver = false; //update_positional_constraints(update_solver);
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices, curvedFoldingBiasObjective);
 	if (editor) delete editor;
 	FTriangular = dog.getFTriangular();
 	editor = new Editor(*viewer,dog.getV(), FTriangular, b, bc, paired_vertices, mouse_mode, select_mode);
@@ -31,7 +31,7 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 void DogEditor::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices, curvedFoldingBiasObjective);
 }
 
 void DogEditor::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
