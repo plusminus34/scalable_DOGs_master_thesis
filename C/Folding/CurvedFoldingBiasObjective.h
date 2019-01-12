@@ -11,7 +11,7 @@ struct CurvedFoldBias {
 // comparing to squared length
 class CurvedFoldingBiasObjective: public Objective {
 public:
-	CurvedFoldingBiasObjective(const Dog& dog, std::vector<CurvedFoldBias>& curvedFoldBiases) : dog(dog), curvedFoldBiases(curvedFoldBiases) {}
+	CurvedFoldingBiasObjective(const Dog& dog, std::vector<CurvedFoldBias>& curvedFoldBiases);
 	virtual CurvedFoldingBiasObjective* clone() const {return new CurvedFoldingBiasObjective(*this);}
 	
 	virtual double obj(const Eigen::VectorXd& x) const;

@@ -1,5 +1,10 @@
 #include "CurvedFoldingBiasObjective.h"
 
+CurvedFoldingBiasObjective::CurvedFoldingBiasObjective(const Dog& dog, std::vector<CurvedFoldBias>& curvedFoldBiases)
+				 : dog(dog), curvedFoldBiases(curvedFoldBiases) {
+	IJV.resize(curvedFoldBiases.size()*36);
+}
+
 double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {
 	double e = 0;
 	int vnum = x.rows()/3;
