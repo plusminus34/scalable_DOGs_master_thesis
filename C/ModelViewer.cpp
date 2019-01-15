@@ -146,6 +146,10 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	DC.dogEditor.render_positional_constraints();
 }
 
+void ModelViewer::render_MV_constraints(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
+	
+}
+
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
