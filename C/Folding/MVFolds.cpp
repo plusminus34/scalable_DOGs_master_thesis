@@ -74,6 +74,7 @@ void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& 
 	}
 
 	double alpha = dihedral_angle_to_tangent_rotation_angle(*this, folding_angle); if (!is_mountain) alpha = -alpha;
+	std::cout << "folding_angle = " << folding_angle << " alpha = " << alpha << std::endl;
 	//double alpha = folding_angle; if (!is_mountain) alpha = -alpha;
 	Eigen::RowVector3d center(0,0,0);
 

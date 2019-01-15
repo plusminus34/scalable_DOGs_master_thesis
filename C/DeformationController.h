@@ -26,7 +26,7 @@ public:
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 
-	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); dogEditor.reset_constraints();}
+	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); dogEditor.reset_constraints(); curvedFoldingBiasObjective.reset_folds();}
 
 	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
