@@ -50,6 +50,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (render_pos_const) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
+		render_MV_constraints(viewer);
 		DC.dogEditor.render_pairs();
 	}
 	render_mesh(viewer, dog->getVrendering(), dog->getFrendering());
@@ -146,11 +147,22 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	DC.dogEditor.render_positional_constraints();
 }
 
-void ModelViewer::render_MV_constraints(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
+void ModelViewer::render_MV_constraints(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	Eigen::VectorXi b; std::vector<EdgePoint> edgePoints;
+	Eigen::VectorXd bc; Eigen::MatrixXd edgeCoords;
 	DC.mvFoldingConstraintsBuilder.get_folds_constraint_indices(*dog, b, edgePoints);
+	DC.mvFoldingConstraintsBuilder.get_folds_constraint_coords(DC.fold_dihedral_angle, *dog, bc, edgeCoords);
 
+	// Now b has 2 points, twice, and edge coords has 2 edge coords twice
+	// We want to plot the edges from edge coords to the points
+	int mv_c_n = edgeCoords.rows();
+	for (int i = 0; i < edgeCoords.rows(); i++) {
+		Eigen::RowVector3d pt1; pt1 << bc(2*i),bc(2*i+2*mv_c_n),bc(2*i+4*mv_c_n);
+		Eigen::RowVector3d pt2; pt2 << bc(2*i+1),bc(2*i+1+2*mv_c_n),bc(2*i+1+4*mv_c_n);
+		viewer.data().add_edges(edgeCoords.row(i),pt1,Eigen::RowVector3d(1.,0,0));
+		viewer.data().add_edges(edgeCoords.row(i),pt2,Eigen::RowVector3d(1.,0,0));
+	}
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
