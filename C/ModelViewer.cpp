@@ -147,7 +147,10 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 }
 
 void ModelViewer::render_MV_constraints(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-	
+	const Dog* dog = DC.getEditedSubmesh();
+	Eigen::VectorXi b; std::vector<EdgePoint> edgePoints;
+	DC.mvFoldingConstraintsBuilder.get_folds_constraint_indices(*dog, b, edgePoints);
+
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {

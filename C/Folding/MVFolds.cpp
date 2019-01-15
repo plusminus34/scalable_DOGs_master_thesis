@@ -43,14 +43,14 @@ MountainValleyFold::MountainValleyFold(const Dog& dog, int curve_idx, int edge_i
 	//std::cout << "orig_t = " << orig_t << std::endl;
 }
 
-void MountainValleyFold::get_constraint_indices(const Dog& dog, Eigen::VectorXi& b, EdgePoint& edgePoint) {
+void MountainValleyFold::get_constraint_indices(const Dog& dog, Eigen::VectorXi& b, EdgePoint& edgePoint) const {
 	// Constraint the 2 vertices  along the curve and fix as the edge point itself
 	int vnum = dog.getV().rows();
 	b.resize(6); b << v1,v2,v1+vnum,v2+vnum,v1+2*vnum,v2+2*vnum;
 	edgePoint = ep;
 }
 
-void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords) {
+void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords) const {
 	const Eigen::MatrixXd& V = dog.getV();
 	bc.resize(6);
 	Eigen::RowVector3d p0;
@@ -90,7 +90,7 @@ void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& 
 	edgeCoords.resize(1,3); edgeCoords.row(0) = p0;
 }
 
-double MountainValleyFold::dihedral_angle_to_tangent_rotation_angle(MountainValleyFold& mvFold, double dihedral_angle) {
+double MountainValleyFold::dihedral_angle_to_tangent_rotation_angle(const MountainValleyFold& mvFold, double dihedral_angle) {
 	// We rotate both tangents, so we need half
 	return 0.5*acos(pow(cos(mvFold.curve_tangents_angle),2) + pow(sin(mvFold.curve_tangents_angle),2)*cos(dihedral_angle));
 }
@@ -100,7 +100,7 @@ void MVFoldingConstraintsBuilder::add_fold(const Dog& dog, int curve_idx, int ed
 	folds.push_back(mvF);
 }
 
-void MVFoldingConstraintsBuilder::get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b, std::vector<EdgePoint>& edgePoints) {
+void MVFoldingConstraintsBuilder::get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b, std::vector<EdgePoint>& edgePoints) const {
 	int fold_n = folds.size(); b.resize(6*fold_n); edgePoints.resize(fold_n); // 2 vertices with 3 coordinates
 	for (int i = 0; i < folds.size(); i++) {
 		Eigen::VectorXi bFold; EdgePoint epFold; folds[i].get_constraint_indices(dog, bFold, epFold);
@@ -116,7 +116,7 @@ void MVFoldingConstraintsBuilder::get_folds_constraint_indices(const Dog& dog, E
 }
 
 void MVFoldingConstraintsBuilder::get_folds_constraint_coords(std::vector<double>& folding_angles, const Dog& dog, Eigen::VectorXd& bc,
-																 Eigen::MatrixXd& edgeCoords) {
+																 Eigen::MatrixXd& edgeCoords) const {
 	int fold_n = folds.size(); bc.resize(6*fold_n); edgeCoords.resize(fold_n,3); // 2 vertices with 3 coordinates
 	for (int i = 0; i < folds.size(); i++) {
 		Eigen::VectorXd bcFold; Eigen::MatrixXd edgeCoord; folds[i].get_constraint_coords(folding_angles[i], dog, bcFold, edgeCoord);
@@ -131,7 +131,7 @@ void MVFoldingConstraintsBuilder::get_folds_constraint_coords(std::vector<double
 	}
 }
 
-void MVFoldingConstraintsBuilder::get_folds_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords) {
+void MVFoldingConstraintsBuilder::get_folds_constraint_coords(double folding_angle, const Dog& dog, Eigen::VectorXd& bc, Eigen::MatrixXd& edgeCoords) const {
 	std::vector<double> folding_angles(folds.size(), folding_angle);
 	get_folds_constraint_coords(folding_angles, dog, bc, edgeCoords);
 }

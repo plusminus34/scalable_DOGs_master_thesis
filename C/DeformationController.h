@@ -37,6 +37,7 @@ public:
 
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
+	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
 	DogEditor dogEditor;
 	double fold_dihedral_angle = 0;
 	double curve_timestep = 0;
@@ -52,6 +53,5 @@ private:
 	Dog* editedSubmesh;
 	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
 
-	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 };
