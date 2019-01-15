@@ -9,15 +9,18 @@
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
-	DeformationController() : dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL;}
+	DeformationController() : dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL; curveConstraintsBuilder = NULL;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
 
 	// pass it on to the editor
 	void single_optimization();
 
-	void update_fold_constraints();
 	void setup_fold_constraints();
+	void update_fold_constraints();
+	
+	void setup_curve_constraints();
+	void update_edge_curve_constraints();
 	
 	void setup_fold_constraints_old();
 	void propagate_submesh_constraints();
@@ -30,9 +33,13 @@ public:
 
 	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
+
+
+	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
 	DogEditor dogEditor;
 	double fold_dihedral_angle = 0;
+	double curve_timestep = 0;
 private:
 	void update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);
@@ -46,4 +53,5 @@ private:
 	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
 
 	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
+	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 };

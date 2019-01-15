@@ -6,7 +6,7 @@
 class DogEditor {
 public:
 	DogEditor(CurvedFoldingBiasObjective& curvedFoldingBiasObjective): 
-		curvedFoldingBiasObjective(curvedFoldingBiasObjective), geoConstraintsBuilder(NULL), dogSolver(NULL) {}
+		curvedFoldingBiasObjective(curvedFoldingBiasObjective), dogSolver(NULL) {}
 	~DogEditor();
 	void single_optimization();
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
@@ -39,7 +39,6 @@ public:
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {edgeCoords = edgeCoords_i; dogSolver->update_edge_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc_i) {bc = bc_i; dogSolver->update_point_coords(bc);}
 
-	double folding_angle = 0;
 	double curve_timestep = 0;
 
 	DogSolver::Params p;
@@ -57,7 +56,6 @@ private:
 	// This needs to be reset when the DOG change, or when the soft positional constraints indices change
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	// This doesn't change when the values of the soft constraints change
-	CurveInterpolationConstraintsBuilder* geoConstraintsBuilder;
 	CurvedFoldingBiasObjective& curvedFoldingBiasObjective;
 	DogSolver* dogSolver;
 	Editor* editor;

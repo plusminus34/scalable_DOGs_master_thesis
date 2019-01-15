@@ -16,10 +16,6 @@ void DogEditor::init_from_new_dog(Dog& dog) {
 	paired_vertices.clear();
 
 	init_x0 = dog.getV_vector();
-
-	if (geoConstraintsBuilder) delete geoConstraintsBuilder;
-	geoConstraintsBuilder = new CurveInterpolationConstraintsBuilder(dog.getV(), 
-															get_second_dog_row(dog), curve_timestep);
 	bool update_solver = false; //update_positional_constraints(update_solver);
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices, curvedFoldingBiasObjective);

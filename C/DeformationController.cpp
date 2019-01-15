@@ -10,6 +10,10 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
 	dogEditor.init_from_new_dog(dog);
+
+	if (curveConstraintsBuilder) delete curveConstraintsBuilder;
+	curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(dog.getV(), 
+															dog.getEdgeStitching(), curve_timestep);
 }
 
 void DeformationController::update_fold_constraints() {
@@ -20,7 +24,21 @@ void DeformationController::update_fold_constraints() {
 }
 void DeformationController::single_optimization() {
 	if (is_folding()) update_fold_constraints();
+	if (is_curve_constraint) update_edge_curve_constraints();
 	return dogEditor.single_optimization();
+}
+
+void DeformationController::setup_curve_constraints() {
+	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
+	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
+	is_curve_constraint = true;
+	dogEditor.add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
+}
+
+void DeformationController::update_edge_curve_constraints() {
+	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
+	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
+	dogEditor.update_edge_coords(edgeCoords);
 }
 
 void DeformationController::setup_fold_constraints() {
