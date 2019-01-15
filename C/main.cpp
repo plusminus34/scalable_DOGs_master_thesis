@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
   {
     // Define next window position + size
     ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(210, 650), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(210, 700), ImGuiSetCond_FirstUseEver);
     ImGui::Begin(
         "DOG", nullptr,
         ImGuiWindowFlags_NoSavedSettings
