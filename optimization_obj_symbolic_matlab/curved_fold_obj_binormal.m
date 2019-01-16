@@ -58,8 +58,8 @@ ep_f_t = sym('ep_f_t', 'real'); assume(ep_f_t > 0);
 ep_f = ep_f_v1*ep_f_t+(1-ep_f_t)*ep_f_v2;
 
 % Edge from edge points to folded points (such that they are at the same direction when unfolded) 
-e1 = v1-ep_0;
-e2 = ep_0-v2;
+e1 = v1-ep_0; % length  t
+e2 = ep_0-v2; % length 1-t
 
 % curve binormal vec, not normalized because it's the same from both sides
 B = simplify(cross(ep_0-ep_b,ep_f-ep_0));
