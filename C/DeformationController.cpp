@@ -41,7 +41,25 @@ void DeformationController::update_edge_curve_constraints() {
 }
 
 void DeformationController::setup_reflection_fold_constraints() {
-	
+	cout << "Setting up fold constraints!" << endl;
+
+	// Setting up on M/V fold
+	int vnum = globalDog->getV().rows();
+	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
+	int fold_curve_idx = 0; int e_idx; 
+	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+	e_idx=curves[0].size()/2;
+
+	bool is_mountain = true; bool keep_rigid_motion = true;
+	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
+
+	int submesh_n = globalDog->get_submesh_n(); int curves_n = curves.size();
+	vector<bool> passed_on_submesh(submesh_n, false); vector<bool> passed_on_curves(curves_n, false);
+	// TODO:
+	// 1) Mark one of the 2 submeshes as "passed"
+	// 2) Go through all the neighbouring submeshes and for every one go through all of the stitched curves
+	// 3) Handle these stitched curves, then mark the relevant mesh as "passed", and same for the curves
+	// 4) Continue with new submeshes and their neighbour curves
 }
 
 void DeformationController::setup_fold_constraints() {

@@ -3,6 +3,7 @@
 #include "Gui/DogEditor.h"
 
 #include "Folding/MVFolds.h"
+#include "Folding/ReflectionFolds.h"
 #include "Folding/CurvedFoldingBiasObjective.h"
 
 // The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
