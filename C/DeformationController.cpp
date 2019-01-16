@@ -13,8 +13,23 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 }
 
 void DeformationController::update_fold_constraints() {
-	Eigen::VectorXd bc;Eigen::MatrixXd edgeCoords;
-	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc, edgeCoords);
+	Eigen::VectorXd bc_MV; Eigen::MatrixXd edgeCoords;
+	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc_MV, edgeCoords);
+	Eigen::VectorXd bc_ref;
+	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
+
+	Eigen::VectorXd bc(bc_MV.rows()+bc_ref.rows());
+	int cnt = 0;
+	for (int coord_i = 0; coord_i < 3; coord_i++) {
+		for (int i = 0; i < b_MV.rows()/3; i++) {
+			bc(cnt) = bc_MV(coord_i*bc_MV.rows()/3+i);
+			cnt++;
+		}
+		for (int i = 0; i < bc_ref.rows()/3; i++) {
+			bc(cnt) = bc_ref(coord_i*bc_ref.rows()/3+i);
+			cnt++;
+		}
+	}
 	dogEditor.update_edge_coords(edgeCoords);
 	dogEditor.update_point_coords(bc);
 }
@@ -116,7 +131,6 @@ void DeformationController::setup_reflection_fold_constraints() {
 		}
 	}
 	dogEditor.add_edge_point_constraints(edgePoints, edgeCoords);
-	//exit(1);
 	dogEditor.add_positional_constraints(b, bc);
 }
 
