@@ -36,8 +36,6 @@ public:
 
 	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
-
-
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
 	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
@@ -52,6 +50,8 @@ private:
 	void deform_submesh_based_on_previous_submeshes(int submesh_i, const DogEdgeStitching& eS, 
 		 const std::vector<bool>& edge_constraint_set, const std::vector<Eigen::RowVector3d>& const_value);
 	EdgePoint find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx, int& edge_index);
+
+	std::vector< std::vector<int> > submeshes_to_curves(const Dog& dog);
 
 	igl::opengl::glfw::Viewer* viewer;
 	Dog* globalDog;

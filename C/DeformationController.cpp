@@ -56,6 +56,7 @@ void DeformationController::setup_reflection_fold_constraints() {
 	int submesh_n = globalDog->get_submesh_n(); int curves_n = curves.size();
 	vector<bool> passed_on_submesh(submesh_n, false); vector<bool> passed_on_curves(curves_n, false);
 	// TODO:
+	// 0) Implement a method called submesh to curves. Goes through every curve points, then get some edge points and get all submeshes related to it
 	// 1) Mark one of the 2 submeshes as "passed"
 	// 2) Go through all the neighbouring submeshes and for every one go through all of the stitched curves
 	// 3) Handle these stitched curves, then mark the relevant mesh as "passed", and same for the curves
@@ -297,4 +298,35 @@ void DeformationController::deform_submesh_based_on_previous_submeshes(int subme
 	submeshDog->update_V_vector(x);
 	globalDog->update_submesh_V(submesh_i, submeshDog->getV());
 	delete submeshDog;
+}
+
+std::vector< std::vector<int> > DeformationController::submeshes_to_curves(const Dog& dog) {
+	auto eS = dog.getEdgeStitching(); auto curves = eS.stitched_curves; int curves_n = curves.size();
+	int submesh_n = dog.get_submesh_n();
+	std::vector< std::vector<int> > submeshes_to_curves(submesh_n);
+
+	for (int ci = 0; ci < curves_n; ci++) {
+		for (auto ep: curves[ci]) {
+			// find all edge points there
+			auto edge = ep.edge;
+			int mult_edge_index = eS.edge_to_duplicates.at(edge);
+			int mult_edge_const_start = eS.multiplied_edges_start[mult_edge_index]; 
+			int mult_edges_num = eS.multiplied_edges_num[mult_edge_index];
+
+			// Go through all duplicated edges
+			for (int set_const_i = mult_edge_const_start; set_const_i < mult_edge_const_start+mult_edges_num; set_const_i++) {
+				auto edge1 = eS.edge_const_1[set_const_i], edge2 = eS.edge_const_2[set_const_i];
+
+				submeshes_to_curves[dog.v_to_submesh_idx[edge1.v1]].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx[edge1.v2]].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx[edge2.v1]].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx[edge2.v2]].push_back(ci);
+			}
+		}
+	}
+	for (int subi = 0; subi < submesh_n; subi++) {
+		// TODO make vector unique
+	}
+
+	return submeshes_to_curves;
 }
