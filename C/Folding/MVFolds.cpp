@@ -91,6 +91,7 @@ void MountainValleyFold::get_constraint_coords(double folding_angle, const Dog& 
 }
 
 double MountainValleyFold::dihedral_angle_to_tangent_rotation_angle(const MountainValleyFold& mvFold, double dihedral_angle) {
+	if (dihedral_angle == 0) return 0;
 	// We rotate both tangents, so we need half
 	return 0.5*acos(pow(cos(mvFold.curve_tangents_angle),2) + pow(sin(mvFold.curve_tangents_angle),2)*cos(dihedral_angle));
 }

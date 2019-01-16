@@ -55,12 +55,69 @@ void DeformationController::setup_reflection_fold_constraints() {
 
 	int submesh_n = globalDog->get_submesh_n(); int curves_n = curves.size();
 	vector<bool> passed_on_submesh(submesh_n, false); vector<bool> passed_on_curves(curves_n, false);
+	passed_on_curves[0] = true;
 	// TODO:
-	// 0) Implement a method called submesh to curves. Goes through every curve points, then get some edge points and get all submeshes related to it
+	// 0) Implement a method called submesh to curves. Goes through every curve points, then get some edge points and get all submeshes related to it - Done
+	auto subm_to_curves = submeshes_to_curves(*globalDog);
 	// 1) Mark one of the 2 submeshes as "passed"
-	// 2) Go through all the neighbouring submeshes and for every one go through all of the stitched curves
-	// 3) Handle these stitched curves, then mark the relevant mesh as "passed", and same for the curves
-	// 4) Continue with new submeshes and their neighbour curves
+	int sub1_v,sub2_v; globalDog->get_2_inner_vertices_from_edge(curves[0][e_idx].edge,sub1_v,sub2_v);
+	int submesh1 =  globalDog->v_to_submesh_idx(sub1_v); int submesh2 =  globalDog->v_to_submesh_idx(sub2_v); 
+	passed_on_submesh[submesh1] = true; passed_on_submesh[submesh2] = true; 
+	int cur_submesh = submesh1;
+	//passed_on_submesh[globalDog->v_to_submesh_idx(curves[0][e_idx].edge.v2)] = true;
+	std::cout << "Passed on sub mesh " << cur_submesh << std::endl;
+	auto adjacency_list = globalDog->get_submesh_adjacency();
+
+	// 2) Go through all the neighbouring submeshes
+	//queue<int> Q; for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) Q.push(adjacency_list[cur_submesh][i]);
+	queue<int> Q; Q.push(submesh1); Q.push(submesh2);
+	while (!Q.empty()) {
+		cur_submesh = Q.front(); Q.pop();
+		//std::cout << "cur submesh = " << cur_submesh << std::endl;
+		// Go through all of the stitched curves around the submesh
+		for (auto c_i: subm_to_curves[cur_submesh]) {
+			// 3) Handle the stitched curves connected to the submesh if they were not passed on, then mark the relevant mesh as "passed", and same for the curves
+			if (!passed_on_curves[c_i]) {
+				int e_idx = curves[c_i].size()/2;
+				//std::cout << "Curve " << c_i << " with submesh " << cur_submesh << std::endl;
+				refFoldingConstrainsBuilder.add_fold(*globalDog, c_i, e_idx, passed_on_submesh);
+				passed_on_curves[c_i] = true;
+			}
+		}
+
+		passed_on_submesh[cur_submesh] = true;
+		// Add all submeshes that were not processed
+		for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) {
+			int nb_submesh = adjacency_list[cur_submesh][i];
+			if (!passed_on_submesh[nb_submesh]) Q.push(nb_submesh);
+		}
+	}
+
+	Eigen::VectorXi b_MV; Eigen::VectorXd bc_MV; std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+	mvFoldingConstraintsBuilder.get_folds_constraint_indices(*globalDog, b_MV, edgePoints);
+	mvFoldingConstraintsBuilder.get_folds_constraint_coords(fold_dihedral_angle, *globalDog, bc_MV, edgeCoords);
+
+	Eigen::VectorXi b_ref; Eigen::VectorXd bc_ref;
+	refFoldingConstrainsBuilder.get_folds_constraint_indices(*globalDog, b_ref);
+	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
+
+	Eigen::VectorXi b(b_MV.rows()+b_ref.rows()); Eigen::VectorXd bc(b_MV.rows()+b_ref.rows());
+	int cnt = 0;
+	for (int coord_i = 0; coord_i < 3; coord_i++) {
+		for (int i = 0; i < b_MV.rows()/3; i++) {
+			b(cnt) = b_MV(coord_i*b_MV.rows()/3+i);
+			bc(cnt) = bc_MV(coord_i*b_MV.rows()/3+i);
+			cnt++;
+		}
+		for (int i = 0; i < b_ref.rows()/3; i++) {
+			b(cnt) = b_ref(coord_i*b_ref.rows()/3+i);
+			bc(cnt) = bc_ref(coord_i*b_ref.rows()/3+i);
+			cnt++;
+		}
+	}
+	dogEditor.add_edge_point_constraints(edgePoints, edgeCoords);
+	//exit(1);
+	dogEditor.add_positional_constraints(b, bc);
 }
 
 void DeformationController::setup_fold_constraints() {
@@ -317,15 +374,18 @@ std::vector< std::vector<int> > DeformationController::submeshes_to_curves(const
 			for (int set_const_i = mult_edge_const_start; set_const_i < mult_edge_const_start+mult_edges_num; set_const_i++) {
 				auto edge1 = eS.edge_const_1[set_const_i], edge2 = eS.edge_const_2[set_const_i];
 
-				submeshes_to_curves[dog.v_to_submesh_idx[edge1.v1]].push_back(ci);
-				submeshes_to_curves[dog.v_to_submesh_idx[edge1.v2]].push_back(ci);
-				submeshes_to_curves[dog.v_to_submesh_idx[edge2.v1]].push_back(ci);
-				submeshes_to_curves[dog.v_to_submesh_idx[edge2.v2]].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx(edge1.v1)].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx(edge1.v2)].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx(edge2.v1)].push_back(ci);
+				submeshes_to_curves[dog.v_to_submesh_idx(edge2.v2)].push_back(ci);
 			}
 		}
 	}
+	// Make the lists unique
 	for (int subi = 0; subi < submesh_n; subi++) {
-		// TODO make vector unique
+		set<int> s(submeshes_to_curves[subi].begin(), submeshes_to_curves[subi].end() );
+		submeshes_to_curves[subi].clear();
+		submeshes_to_curves[subi].assign( s.begin(), s.end() );
 	}
 
 	return submeshes_to_curves;

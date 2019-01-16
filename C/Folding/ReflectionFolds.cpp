@@ -8,7 +8,15 @@ ReflectionFold::ReflectionFold(const Dog& dog, int curve_idx, int edge_idx, std:
 	ep = foldingCurve[edge_idx]; ep_b = foldingCurve[edge_idx-1]; ep_f = foldingCurve[edge_idx+1];
 	dog.get_2_inner_vertices_from_edge(ep.edge,v1,v2);
 
-	if (!submeshes_set[dog.v_to_submesh_idx(v1)]) {std::swap(v1,v2);}
+	if (!submeshes_set[dog.v_to_submesh_idx(v1)]) {
+		if (!submeshes_set[dog.v_to_submesh_idx(v2)]) {
+			std::cout << "Should not get here! Got to vertices of 2 submeshes we didn't pass on" << std::endl;
+			std::cout << "dog.v_to_submesh_idx(v1) = " << dog.v_to_submesh_idx(v1) << std::endl;
+			std::cout << "dog.v_to_submesh_idx(v2) = " << dog.v_to_submesh_idx(v2) << std::endl;
+			exit(1);
+		}
+		std::swap(v1,v2);
+	}
 
 	Eigen::RowVector3d p0 = ep.getPositionInMesh(V);
 	len2 = (p0-V.row(v2)).norm();
@@ -38,6 +46,7 @@ void ReflectionFold::get_constraint_coords(const Dog& dog, Eigen::VectorXd& bc, 
 	Eigen::RowVector3d edge_dir = (p0-V.row(v1)).normalized();
 	edge_dir = edge_dir- 2*edge_dir.dot(B)*B;
 	Eigen::RowVector3d dest_pos = p0+len2*edge_dir;
+
 	
 	bc << dest_pos(0),dest_pos(1),dest_pos(2);
 }
