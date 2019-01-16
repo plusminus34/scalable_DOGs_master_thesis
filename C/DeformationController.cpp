@@ -40,6 +40,10 @@ void DeformationController::update_edge_curve_constraints() {
 	dogEditor.update_edge_coords(edgeCoords);
 }
 
+void DeformationController::setup_reflection_fold_constraints() {
+	
+}
+
 void DeformationController::setup_fold_constraints() {
 	cout << "Setting up fold constraints!" << endl;
 	int vnum = globalDog->getV().rows();

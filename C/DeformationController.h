@@ -17,6 +17,7 @@ public:
 	void single_optimization();
 
 	void setup_fold_constraints();
+	void setup_reflection_fold_constraints();
 	void update_fold_constraints();
 	
 	void setup_curve_constraints();
@@ -29,7 +30,8 @@ public:
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 
-	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); dogEditor.reset_constraints(); curvedFoldingBiasObjective.reset_folds(); is_curve_constraint = false;}
+	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); refFoldingConstrainsBuilder.clear_folds();
+				dogEditor.reset_constraints(); curvedFoldingBiasObjective.reset_folds(); is_curve_constraint = false;}
 
 	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
 
@@ -38,6 +40,8 @@ public:
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
 	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
+	ReflectionFoldConstraintsBuilder refFoldingConstrainsBuilder;
+
 	DogEditor dogEditor;
 	double fold_dihedral_angle = 0;
 	double curve_timestep = 0;
