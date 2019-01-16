@@ -21,7 +21,7 @@ void DeformationController::update_fold_constraints() {
 	Eigen::VectorXd bc(bc_MV.rows()+bc_ref.rows());
 	int cnt = 0;
 	for (int coord_i = 0; coord_i < 3; coord_i++) {
-		for (int i = 0; i < b_MV.rows()/3; i++) {
+		for (int i = 0; i < bc_MV.rows()/3; i++) {
 			bc(cnt) = bc_MV(coord_i*bc_MV.rows()/3+i);
 			cnt++;
 		}

@@ -51,6 +51,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
 		//render_MV_constraints(viewer);
+		render_reflection_constraints(viewer);
 		DC.dogEditor.render_pairs();
 	}
 	render_mesh(viewer, dog->getVrendering(), dog->getFrendering());
@@ -164,6 +165,30 @@ void ModelViewer::render_MV_constraints(igl::opengl::glfw::Viewer& viewer) {
 		viewer.data().add_edges(edgeCoords.row(i),pt1,Eigen::RowVector3d(1.,0,0));
 		viewer.data().add_edges(edgeCoords.row(i),pt2,Eigen::RowVector3d(1.,0,0));
 	}
+}
+
+void ModelViewer::render_reflection_constraints(igl::opengl::glfw::Viewer& viewer) {
+	const Eigen::MatrixXd& V = state.dog.getV();
+	//for (int i = 0; i < DC.refFoldingConstrainsBuilder.folds.size(); i++) {
+	for (auto fold : DC.refFoldingConstrainsBuilder.folds) {
+		Eigen::RowVector3d p0 = fold.ep.getPositionInMesh(V), pf = fold.ep_f.getPositionInMesh(V), pb = fold.ep_b.getPositionInMesh(V);
+		Eigen::RowVector3d t = ((pf-p0).normalized()-(pb-p0).normalized()).normalized();
+		Eigen::RowVector3d principal_n = ((pf-p0).normalized()+(pb-p0).normalized()).normalized();
+		
+		auto right_down = p0 + t - principal_n;
+		auto right_up = p0 + t + principal_n;
+		auto left_up = p0 - t + principal_n;
+		auto left_down = p0 - t - principal_n;
+
+		viewer.data().add_edges(right_down,right_up,Eigen::RowVector3d(0,0,0));
+		viewer.data().add_edges(right_up,left_up,Eigen::RowVector3d(0,0,0));
+		viewer.data().add_edges(left_up,left_down,Eigen::RowVector3d(0,0,0));
+		viewer.data().add_edges(left_down,right_down,Eigen::RowVector3d(0,0,0));
+		viewer.data().add_edges(right_up,left_down,Eigen::RowVector3d(0,0,0));
+		viewer.data().add_edges(right_down,left_up,Eigen::RowVector3d(0,0,0));
+	}
+	//EdgePoint ep, ep_b, ep_f;
+	//int v1,v2; double len2;
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {

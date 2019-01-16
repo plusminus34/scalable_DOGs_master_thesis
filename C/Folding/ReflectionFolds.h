@@ -24,6 +24,6 @@ public:
 
 	void get_folds_constraint_indices(const Dog& dog, Eigen::VectorXi& b) const;
 	void get_folds_constraint_coords(const Dog& dog, Eigen::VectorXd& bc) const;
-private:
+
 	std::vector<ReflectionFold> folds;
 };

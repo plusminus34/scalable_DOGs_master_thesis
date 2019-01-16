@@ -44,6 +44,7 @@ void ReflectionFold::get_constraint_coords(const Dog& dog, Eigen::VectorXd& bc, 
 
 	// Reflect the edge direction through the oscullating plane
 	Eigen::RowVector3d edge_dir = (p0-V.row(v1)).normalized();
+	std::cout << "edge_dir.dot(B) = " << edge_dir.dot(B) << std::endl;
 	edge_dir = edge_dir- 2*edge_dir.dot(B)*B;
 	Eigen::RowVector3d dest_pos = p0+len2*edge_dir;
 
