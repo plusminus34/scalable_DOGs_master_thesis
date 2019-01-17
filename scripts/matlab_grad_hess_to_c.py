@@ -30,30 +30,30 @@ fold_bias_var_dict['[23]'] = 'w2_i+2*vnum'
 
 
 grad_str = """
-  A0[0][0] = t48*(ep_b_t*t6*t10-ep_b_t*t9*t15+ep_b_t*t6*t26-ep_b_t*t9*t31)*-2.0;
-  A0[1][0] = t48*(ep_b_t*t10*t30-ep_b_t*t9*t39-ep_b_t*t9*t40+ep_b_t*t26*t30)*2.0;
-  A0[2][0] = t48*(ep_b_t*t6*t39-ep_b_t*t15*t30+ep_b_t*t6*t40-ep_b_t*t30*t31)*2.0;
-  A0[3][0] = t48*(t6*t10*t13-t9*t13*t15+t6*t13*t26-t9*t13*t31)*2.0;
-  A0[4][0] = t48*(t10*t13*t30-t9*t13*t39-t9*t13*t40+t13*t26*t30)*-2.0;
-  A0[5][0] = t48*(t6*t13*t39-t13*t15*t30+t6*t13*t40-t13*t30*t31)*-2.0;
-  A0[6][0] = (ep_f_t*t10*t23-ep_f_t*t15*t25+ep_f_t*t23*t26-ep_f_t*t25*t31)*(t43+t45+t46+t47-t49-t50)*2.0;
-  A0[7][0] = t48*(ep_f_t*t10*t17+ep_f_t*t17*t26-ep_f_t*t25*t39-ep_f_t*t25*t40)*-2.0;
-  A0[8][0] = (ep_f_t*t15*t17+ep_f_t*t17*t31-ep_f_t*t23*t39-ep_f_t*t23*t40)*(t43+t45+t46+t47-t49-t50)*2.0;
-  A0[9][0] = t48*(t2*t10*t23-t2*t15*t25+t2*t23*t26-t2*t25*t31)*-2.0;
-  A0[10][0] = (t2*t10*t17+t2*t17*t26-t2*t25*t39-t2*t25*t40)*(t43+t45+t46+t47-t49-t50)*2.0;
-  A0[11][0] = t48*(t2*t15*t17+t2*t17*t31-t2*t23*t39-t2*t23*t40)*-2.0;
-  A0[12][0] = (t43+t45+t46+t47-t49-t50)*(t36-t44+t10*t52+t26*t52-t15*(t53-ep_0_t*t25)-t31*(t53-ep_0_t*t25))*2.0;
-  A0[13][0] = (t43+t45+t46+t47-t49-t50)*(t32-t42+t10*t55+t26*t55+t39*(t53-ep_0_t*t25)+t40*(t53-ep_0_t*t25))*2.0;
-  A0[14][0] = t48*(t28-t41+t15*t55+t31*t55+t39*t52+t40*t52)*-2.0;
-  A0[15][0] = t48*(t36-t44+t10*t59-t15*t61+t26*t59-t31*t61)*-2.0;
-  A0[16][0] = t48*(t32-t42+t10*t64+t26*t64+t39*t61+t40*t61)*-2.0;
-  A0[17][0] = (t28-t41+t15*t64+t31*t64+t39*(t58-t66)+t40*(t58-t66))*(t43+t45+t46+t47-t49-t50)*2.0;
-  A0[18][0] = t71;
-  A0[19][0] = t35*t70*-2.0;
-  A0[20][0] = t72;
-  A0[21][0] = -t71;
-  A0[22][0] = t35*t70*2.0;
-  A0[23][0] = -t72;
+  A0[0][0] = t56*(alpha*t58*(ep_b_t*t15*t36-ep_b_t*t22*t35)+alpha*t60*(ep_b_t*t15*t47-ep_b_t*t22*t46))*2.0;
+  A0[1][0] = t56*(alpha*t58*(ep_b_t*t15*t40-ep_b_t*t20*t35)+alpha*t60*(ep_b_t*t15*t49-ep_b_t*t20*t46))*-2.0;
+  A0[2][0] = t56*(alpha*t58*(ep_b_t*t20*t36-ep_b_t*t22*t40)+alpha*t60*(ep_b_t*t20*t47-ep_b_t*t22*t49))*-2.0;
+  A0[3][0] = t56*(alpha*t58*(t3*t15*t36-t3*t22*t35)+alpha*t60*(t3*t15*t47-t3*t22*t46))*-2.0;
+  A0[4][0] = t56*(alpha*t58*(t3*t15*t40-t3*t20*t35)+alpha*t60*(t3*t15*t49-t3*t20*t46))*2.0;
+  A0[5][0] = t56*(alpha*t58*(t3*t20*t36-t3*t22*t40)+alpha*t60*(t3*t20*t47-t3*t22*t49))*2.0;
+  A0[6][0] = t56*(alpha*t58*(ep_f_t*t13*t35-ep_f_t*t21*t36)+alpha*t60*(ep_f_t*t13*t46-ep_f_t*t21*t47))*2.0;
+  A0[7][0] = t56*(alpha*t58*(ep_f_t*t8*t35-ep_f_t*t21*t40)+alpha*t60*(ep_f_t*t8*t46-ep_f_t*t21*t49))*-2.0;
+  A0[8][0] = t56*(alpha*t58*(ep_f_t*t8*t36-ep_f_t*t13*t40)+alpha*t60*(ep_f_t*t8*t47-ep_f_t*t13*t49))*2.0;
+  A0[9][0] = t56*(alpha*t58*(t5*t13*t35-t5*t21*t36)+alpha*t60*(t5*t13*t46-t5*t21*t47))*-2.0;
+  A0[10][0] = t56*(alpha*t58*(t5*t8*t35-t5*t21*t40)+alpha*t60*(t5*t8*t46-t5*t21*t49))*2.0;
+  A0[11][0] = t56*(alpha*t58*(t5*t8*t36-t5*t13*t40)+alpha*t60*(t5*t8*t47-t5*t13*t49))*-2.0;
+  A0[12][0] = t56*(alpha*t60*(t46*t62+t47*t64)+alpha*t58*(t33-t41+t35*t62+t36*t64))*-2.0;
+  A0[13][0] = t56*(alpha*t60*(t46*t67+t49*(t63-t65))+alpha*t58*(t30-t39+t35*t67+t40*(t63-t65)))*2.0;
+  A0[14][0] = t56*(alpha*t60*(t49*t62-t47*t67)-alpha*t58*(t25-t37-t40*t62+t36*t67))*2.0;
+  A0[15][0] = t56*(alpha*t60*(t46*t71+t47*t75)+alpha*t58*(t33-t41+t35*t71+t36*t75))*2.0;
+  A0[16][0] = t56*(alpha*t60*(t46*t74+t49*t75)+alpha*t58*(t30-t39+t35*t74+t40*t75))*-2.0;
+  A0[17][0] = t56*(alpha*t60*(t49*t71-t47*t74)-alpha*t58*(t25-t37+t36*t74-t40*t71))*-2.0;
+  A0[18][0] = alpha*t34*t56*t60*-2.0;
+  A0[19][0] = t79;
+  A0[20][0] = alpha*t28*t56*t60*-2.0;
+  A0[21][0] = alpha*t34*t56*t60*2.0;
+  A0[22][0] = -t79;
+  A0[23][0] = alpha*t28*t56*t60*2.0;
 """
 
 def matlab_grad_to_c_code(var_dict, str):
@@ -386,8 +386,8 @@ def double_me(s):
 				i+=1
 	return code
 
-#print matlab_grad_to_c_code(fold_bias_var_dict, grad_str)
-print matlab_hess_to_c_code(fold_bias_var_dict, hessian_str)
+print matlab_grad_to_c_code(fold_bias_var_dict, grad_str)
+#print matlab_hess_to_c_code(fold_bias_var_dict, hessian_str)
 #print double_me(double_me_str)
 #print matlab_cross_grad_to_c_code(grad_str)
 #print matlab_cross_hessian_to_c_code(hessian_str)

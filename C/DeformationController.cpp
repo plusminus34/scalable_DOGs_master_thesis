@@ -137,6 +137,7 @@ void DeformationController::setup_reflection_fold_constraints() {
 void DeformationController::get_curve_fold_bias_obj() {
 	bool dbg = true;
 	CurvedFoldingBiasObjective tmpCurveFoldBiasObj(dbg);
+	double alpha = 0.1; CurvedFoldingBiasSignObjective tmpCurveSignBiasSignObj(alpha,dbg);
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
@@ -151,9 +152,12 @@ void DeformationController::get_curve_fold_bias_obj() {
 		curvedFoldBias.edge_t = edge_pt.t;
 		globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
 		tmpCurveFoldBiasObj.add_fold_bias(curvedFoldBias);
+		tmpCurveSignBiasSignObj.add_fold_bias(curvedFoldBias);
 	}
 	double curve_fold_bias_obj = tmpCurveFoldBiasObj.obj(globalDog->getV_vector());
 	std::cout << "Curve fold bias obj = " << curve_fold_bias_obj << std::endl;
+	double curve_fold_bias_sign_obj = tmpCurveSignBiasSignObj.obj(globalDog->getV_vector());
+	std::cout << "Curve fold bias sign obj approx = " << curve_fold_bias_sign_obj << std::endl;
 }
 
 void DeformationController::setup_fold_bias() {
