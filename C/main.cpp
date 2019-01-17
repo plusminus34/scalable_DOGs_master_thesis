@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
   {
     // Define next window position + size
     ImGui::SetNextWindowPos(ImVec2(180.f * menu.menu_scaling(), 10), ImGuiSetCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(210, 700), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(210, 800), ImGuiSetCond_FirstUseEver);
     ImGui::Begin(
         "DOG", nullptr,
         ImGuiWindowFlags_NoSavedSettings
@@ -173,6 +173,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       if (ImGui::Button("Setup fold constraints", ImVec2(-1,0))) {DC.setup_fold_constraints();is_optimizing = false; is_folding = true;}
       if (ImGui::Button("Setup reflection fold constraints", ImVec2(-1,0))) {DC.setup_reflection_fold_constraints();is_optimizing = false; is_folding = true;}
+      if (ImGui::Button("Setup fold bias", ImVec2(-1,0))) {DC.setup_fold_bias();is_optimizing = false; is_folding = true;}
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
@@ -186,6 +187,7 @@ int main(int argc, char *argv[]) {
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
       ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
+      ImGui::InputDouble("Curve step size", &curve_timestep_diff, 0, 0, "%.4f");
       if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       if (ImGui::InputDouble("Curve timestep", &DC.curve_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);

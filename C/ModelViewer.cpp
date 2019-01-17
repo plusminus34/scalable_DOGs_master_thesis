@@ -145,7 +145,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	}
 	
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
-	viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
+	//viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
 	DC.dogEditor.render_positional_constraints();
 }
 

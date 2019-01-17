@@ -19,6 +19,7 @@ public:
 
 	void setup_fold_constraints();
 	void setup_reflection_fold_constraints();
+	void setup_fold_bias();	
 	void update_fold_constraints();
 	
 	void setup_curve_constraints();
@@ -34,7 +35,7 @@ public:
 	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); refFoldingConstrainsBuilder.clear_folds();
 				dogEditor.reset_constraints(); curvedFoldingBiasObjective.reset_folds(); is_curve_constraint = false;}
 
-	bool is_folding() {return mvFoldingConstraintsBuilder.get_folds_num() > 0;}
+	bool is_folding() {return (mvFoldingConstraintsBuilder.get_folds_num() > 0) || (refFoldingConstrainsBuilder.get_folds_num() > 0);}
 
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;

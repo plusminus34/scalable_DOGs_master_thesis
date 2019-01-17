@@ -71,7 +71,7 @@ void DeformationController::setup_reflection_fold_constraints() {
 	int submesh_n = globalDog->get_submesh_n(); int curves_n = curves.size();
 	vector<bool> passed_on_submesh(submesh_n, false); vector<bool> passed_on_curves(curves_n, false);
 	passed_on_curves[0] = true;
-	// TODO:
+	
 	// 0) Implement a method called submesh to curves. Goes through every curve points, then get some edge points and get all submeshes related to it - Done
 	auto subm_to_curves = submeshes_to_curves(*globalDog);
 	// 1) Mark one of the 2 submeshes as "passed"
@@ -132,6 +132,78 @@ void DeformationController::setup_reflection_fold_constraints() {
 	}
 	dogEditor.add_edge_point_constraints(edgePoints, edgeCoords);
 	dogEditor.add_positional_constraints(b, bc);
+}
+
+void DeformationController::setup_fold_bias() {
+	/*
+	CurvedFoldBias curvedFoldBias;
+	auto eS = globalDog->getEdgeStitching();
+	
+	
+	for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+		//curvedFoldBias.ep_0 = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+
+		int e_idx = foldingCurve.size()/2;
+		curvedFoldBias.ep_0 = foldingCurve[e_idx]; curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+		globalDog->get_2_inner_vertices_from_edge(curvedFoldBias.ep_0.edge,curvedFoldBias.v1,curvedFoldBias.v2);
+		std::cout << "adding fold bias for fold_curve = " << fold_curve_idx << std::endl;
+		curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);
+	}
+	Eigen::VectorXi b; Eigen::VectorXd bc;
+	dogEditor.add_positional_constraints(b, bc);
+	*/
+	int vnum = globalDog->getV().rows();
+	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
+	int e_idx;
+	int submesh_n = globalDog->get_submesh_n(); int curves_n = curves.size();
+	vector<bool> passed_on_submesh(submesh_n, false); vector<bool> passed_on_curves(curves_n, false);
+	
+	
+	// 0) Implement a method called submesh to curves. Goes through every curve points, then get some edge points and get all submeshes related to it - Done
+	auto subm_to_curves = submeshes_to_curves(*globalDog);
+	// 1) Mark one of the 2 submeshes as "passed"
+	int sub1_v,sub2_v; globalDog->get_2_inner_vertices_from_edge(curves[0][e_idx].edge,sub1_v,sub2_v);
+	int submesh1 =  globalDog->v_to_submesh_idx(sub1_v); int submesh2 =  globalDog->v_to_submesh_idx(sub2_v); 
+	passed_on_submesh[submesh1] = true; passed_on_submesh[submesh2] = false; 
+	int cur_submesh = submesh1;
+	//passed_on_submesh[globalDog->v_to_submesh_idx(curves[0][e_idx].edge.v2)] = true;
+	std::cout << "Passed on sub mesh " << cur_submesh << std::endl;
+	auto adjacency_list = globalDog->get_submesh_adjacency();
+
+	// 2) Go through all the neighbouring submeshes
+	//queue<int> Q; for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) Q.push(adjacency_list[cur_submesh][i]);
+	queue<int> Q; Q.push(submesh2);
+	while (!Q.empty()) {
+		cur_submesh = Q.front(); Q.pop();
+		//std::cout << "cur submesh = " << cur_submesh << std::endl;
+		// Go through all of the stitched curves around the submesh
+		for (auto c_i: subm_to_curves[cur_submesh]) {
+			// 3) Handle the stitched curves connected to the submesh if they were not passed on, then mark the relevant mesh as "passed", and same for the curves
+			if (!passed_on_curves[c_i]) {
+				int e_idx = curves[c_i].size()/2;
+				//std::cout << "Curve " << c_i << " with submesh " << cur_submesh << std::endl;
+				refFoldingConstrainsBuilder.add_fold(*globalDog, c_i, e_idx, passed_on_submesh);
+				passed_on_curves[c_i] = true;
+			}
+			passed_on_submesh[cur_submesh] = true;
+		}
+
+		
+		// Add all submeshes that were not processed
+		for (int i = 0; i < adjacency_list[cur_submesh].size(); i++) {
+			int nb_submesh = adjacency_list[cur_submesh][i];
+			if (!passed_on_submesh[nb_submesh]) Q.push(nb_submesh);
+		}
+	}
+
+	Eigen::VectorXi b_ref; Eigen::VectorXd bc_ref;
+	refFoldingConstrainsBuilder.get_folds_constraint_indices(*globalDog, b_ref);
+	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
+
+	dogEditor.add_positional_constraints(b_ref, bc_ref);
+
+
 }
 
 void DeformationController::setup_fold_constraints() {
