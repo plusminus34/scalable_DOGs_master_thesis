@@ -41,6 +41,7 @@ public:
 
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
+	//CurvedFoldingBiasSignObjective curvedFoldingBiasObjective;
 	MVFoldingConstraintsBuilder mvFoldingConstraintsBuilder;
 	ReflectionFoldConstraintsBuilder refFoldingConstrainsBuilder;
 
