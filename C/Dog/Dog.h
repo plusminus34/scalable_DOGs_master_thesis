@@ -76,6 +76,7 @@ public:
 	const Eigen::MatrixXi& getFrendering() const {return F_ren;}
 	const Eigen::MatrixXd& getVrendering() const {return V_ren;}
 
+	void get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out);
 	void get_2_inner_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out) const;
 
 	static void V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitching& edgeStitching, Eigen::MatrixXd& V_ren);

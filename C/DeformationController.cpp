@@ -134,25 +134,49 @@ void DeformationController::setup_reflection_fold_constraints() {
 	dogEditor.add_positional_constraints(b, bc);
 }
 
+void DeformationController::get_curve_fold_bias_obj() {
+	bool dbg = true;
+	CurvedFoldingBiasObjective tmpCurveFoldBiasObj(dbg);
+	CurvedFoldBias curvedFoldBias;
+	auto eS = globalDog->getEdgeStitching();
+	
+	int e_idx;	
+	for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+		auto edge_pt = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); // currently not used
+
+		e_idx = foldingCurve.size()/2;
+		edge_pt = foldingCurve[e_idx];
+		curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+		curvedFoldBias.edge_t = edge_pt.t;
+		globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
+		tmpCurveFoldBiasObj.add_fold_bias(curvedFoldBias);
+	}
+	double curve_fold_bias_obj = tmpCurveFoldBiasObj.obj(globalDog->getV_vector());
+	std::cout << "Curve fold bias obj = " << curve_fold_bias_obj << std::endl;
+}
+
 void DeformationController::setup_fold_bias() {
 	/*
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
-	
+	int e_idx;	
 	for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
-		//curvedFoldBias.ep_0 = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+		auto edge_pt = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); // currently not used
 
-		int e_idx = foldingCurve.size()/2;
-		curvedFoldBias.ep_0 = foldingCurve[e_idx]; curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
-		globalDog->get_2_inner_vertices_from_edge(curvedFoldBias.ep_0.edge,curvedFoldBias.v1,curvedFoldBias.v2);
-		std::cout << "adding fold bias for fold_curve = " << fold_curve_idx << std::endl;
+		e_idx = foldingCurve.size()/2;
+		edge_pt = foldingCurve[e_idx];
+		curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+		curvedFoldBias.edge_t = edge_pt.t;
+		globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
 		curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);
 	}
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	dogEditor.add_positional_constraints(b, bc);
 	*/
+	
 	int vnum = globalDog->getV().rows();
 	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
 	int e_idx;
@@ -224,15 +248,16 @@ void DeformationController::setup_fold_constraints() {
 	if (eS.stitched_curves.size() > 1 ){
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
 		for (fold_curve_idx = 1; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
-			curvedFoldBias.ep_0 = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
+			auto edge_pt = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); // currently not used
 
-			
 			e_idx = foldingCurve.size()/2;
-			curvedFoldBias.ep_0 = foldingCurve[e_idx]; curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
-			globalDog->get_2_inner_vertices_from_edge(curvedFoldBias.ep_0.edge,curvedFoldBias.v1,curvedFoldBias.v2);
+			edge_pt = foldingCurve[e_idx];
+			curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+			curvedFoldBias.edge_t = edge_pt.t;
+			globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
 			curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);
 
-			edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); keep_rigid_motion = false;
+			//edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); keep_rigid_motion = false;
 			//mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 
 			//is_mountain = !is_mountain;

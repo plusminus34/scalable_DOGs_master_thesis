@@ -31,6 +31,7 @@ public:
 	void update_edited_mesh(int newEditedSubmeshI);
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
+	void get_curve_fold_bias_obj();
 
 	void reset_constraints() {mvFoldingConstraintsBuilder.clear_folds(); refFoldingConstrainsBuilder.clear_folds();
 				dogEditor.reset_constraints(); curvedFoldingBiasObjective.reset_folds(); is_curve_constraint = false;}

@@ -8,7 +8,7 @@ void CurvedFoldingBiasObjective::reset_folds() {
 
 void CurvedFoldingBiasObjective::add_fold_bias(const CurvedFoldBias& foldBias) {
 	curvedFoldBiases.push_back(foldBias);
-	IJV.resize(curvedFoldBiases.size()*36);
+	IJV.resize(curvedFoldBiases.size()*144);
 	is_H_cached = false; // recompute H caching next time
 }
 
@@ -68,9 +68,45 @@ double CurvedFoldingBiasObjective::obj(const Eigen::VectorXd& x) const {
 		e += t32*t32;
 
 
+		if (dbg) {
+			{
+				/// TODO remove me
+				double t2 = ep_0_t-1.0;
+				double t3 = ep_b_t-1.0;
+				double t4 = t2*v2_z;
+				double t5 = ep_f_t-1.0;
+				double t6 = t2*v2_y;
+				double t7 = ep_f_t*ep_f_v1_z;
+				double t10 = ep_0_t*v1_z;
+				double t8 = t4+t7-t10-ep_f_v2_z*t5;
+				double t9 = ep_b_t*ep_b_v1_z;
+				double t11 = t2*v2_x;
+				double t12 = ep_b_t*ep_b_v1_x;
+				double t19 = ep_0_t*v1_x;
+				double t13 = t11+t12-t19-ep_b_v2_x*t3;
+				double t14 = ep_f_t*ep_f_v1_y;
+				double t17 = ep_0_t*v1_y;
+				double t15 = t6+t14-t17-ep_f_v2_y*t5;
+				double t16 = ep_b_t*ep_b_v1_y;
+				double t18 = ep_f_t*ep_f_v1_x;
+
+				double B_fixed_x = -t8*(t6+t16-ep_b_v2_y*t3-ep_0_t*v1_y)+t15*(t4+t9-ep_b_v2_z*t3-ep_0_t*v1_z);
+				double B_fixed_y = t8*t13-(t4+t9-t10-ep_b_v2_z*t3)*(t11+t18-ep_f_v2_x*t5-ep_0_t*v1_x);
+				double B_fixed_z = (t6+t16-t17-ep_b_v2_y*t3)*(t11+t18-t19-ep_f_v2_x*t5)-t13*t15;
+
+				Eigen::RowVector3d B; B<< B_fixed_x,B_fixed_y,B_fixed_z;
+				std::cout << "B = " << B << std::endl;
+				Eigen::RowVector3d e1; e1 << v1_x-v2_x,v1_y-v2_y,v1_z-v2_z;
+				Eigen::RowVector3d e2; e2 << w1_x-w2_x,w1_y-w2_y,w1_z-w2_z;
+				std::cout << "e1.dot(B) = " << e1.dot(B) << std::endl;
+				std::cout << "e2.dot(B) = " << e2.dot(B) << std::endl;
+
+				std::cout << "pow(e1.dot(B)+e2.dot(B),2) = " << pow(e1.dot(B)+e2.dot(B),2) << " but t32*t32 = " << t32*t32 << std::endl;
+			}
+		}
+		
 
   }
-  std::cout << "curved fold bias e = " << e << std::endl;
   return e;
 }
 

@@ -5,7 +5,7 @@
 
 struct CurvedFoldBias {
 	EdgePoint ep_b, ep_f;
-	// assume v1,w1 refers to the "vertices duplicated from the same vertex" (meaning flattened have the same coordinate) and so does w1,w2
+	// Assumes v1,w1 refers to the "vertices duplicated from the same vertex" such that the edge point ep_0 = edge_t*v1+(1-edge_t)*v2 = edge_t*w1+(1-edge_t)*w2
 	int v1,v2; int w1,w2;
 	double edge_t;
 };
@@ -13,6 +13,7 @@ struct CurvedFoldBias {
 // comparing to squared length
 class CurvedFoldingBiasObjective: public Objective {
 public:
+	CurvedFoldingBiasObjective(bool dbg = false) : dbg(dbg);
 	void add_fold_bias(const CurvedFoldBias& foldBias);
 	void reset_folds();
 	
@@ -24,4 +25,6 @@ public:
 private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
 	std::vector<CurvedFoldBias> curvedFoldBiases;
+
+	bool dbg;
 };

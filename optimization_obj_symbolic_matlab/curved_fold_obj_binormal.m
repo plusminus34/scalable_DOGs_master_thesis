@@ -57,7 +57,7 @@ ep_f = ep_f_v1*ep_f_t+(1-ep_f_t)*ep_f_v2;
 ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
 ep_0 = v1*ep_0_t+(1-ep_0_t)*v2;
 
-% If there's an isometry theseshould be around the same length
+% If there's an isometry energy these should be around the same length
 e1 = v1-v2;
 e2 = w1-w2;
 
