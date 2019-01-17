@@ -13,7 +13,7 @@ struct CurvedFoldBias {
 // comparing to squared length
 class CurvedFoldingBiasObjective: public Objective {
 public:
-	CurvedFoldingBiasObjective(bool dbg = false) : dbg(dbg);
+	CurvedFoldingBiasObjective(bool dbg = false) : dbg(dbg) {}
 	void add_fold_bias(const CurvedFoldBias& foldBias);
 	void reset_folds();
 	
