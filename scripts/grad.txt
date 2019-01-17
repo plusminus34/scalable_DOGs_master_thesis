@@ -1,0 +1,26 @@
+
+  grad(ep_b_v1_i) += t48*(ep_b_t*t6*t10-ep_b_t*t9*t15+ep_b_t*t6*t26-ep_b_t*t9*t31)*-2.0;
+  grad(ep_b_v1_i+vnum) += t48*(ep_b_t*t10*t30-ep_b_t*t9*t39-ep_b_t*t9*t40+ep_b_t*t26*t30)*2.0;
+  grad(ep_b_v1_i+2*vnum) += t48*(ep_b_t*t6*t39-ep_b_t*t15*t30+ep_b_t*t6*t40-ep_b_t*t30*t31)*2.0;
+  grad(ep_b_v2_i) += t48*(t6*t10*t13-t9*t13*t15+t6*t13*t26-t9*t13*t31)*2.0;
+  grad(ep_b_v2_i+vnum) += t48*(t10*t13*t30-t9*t13*t39-t9*t13*t40+t13*t26*t30)*-2.0;
+  grad(ep_b_v2_i+2*vnum) += t48*(t6*t13*t39-t13*t15*t30+t6*t13*t40-t13*t30*t31)*-2.0;
+  grad(ep_f_v1_i) += (ep_f_t*t10*t23-ep_f_t*t15*t25+ep_f_t*t23*t26-ep_f_t*t25*t31)*(t43+t45+t46+t47-t49-t50)*2.0;
+  grad(ep_f_v1_i+vnum) += t48*(ep_f_t*t10*t17+ep_f_t*t17*t26-ep_f_t*t25*t39-ep_f_t*t25*t40)*-2.0;
+  grad(ep_f_v1_i+2*vnum) += (ep_f_t*t15*t17+ep_f_t*t17*t31-ep_f_t*t23*t39-ep_f_t*t23*t40)*(t43+t45+t46+t47-t49-t50)*2.0;
+  grad(ep_f_v2_i) += t48*(t2*t10*t23-t2*t15*t25+t2*t23*t26-t2*t25*t31)*-2.0;
+  grad(ep_f_v2_i+vnum) += (t2*t10*t17+t2*t17*t26-t2*t25*t39-t2*t25*t40)*(t43+t45+t46+t47-t49-t50)*2.0;
+  grad(ep_f_v2_i+2*vnum) += t48*(t2*t15*t17+t2*t17*t31-t2*t23*t39-t2*t23*t40)*-2.0;
+  grad(v1_i) += (t43+t45+t46+t47-t49-t50)*(t36-t44+t10*t52+t26*t52-t15*(t53-ep_0_t*t25)-t31*(t53-ep_0_t*t25))*2.0;
+  grad(v1_i+vnum) += (t43+t45+t46+t47-t49-t50)*(t32-t42+t10*t55+t26*t55+t39*(t53-ep_0_t*t25)+t40*(t53-ep_0_t*t25))*2.0;
+  grad(v1_i+2*vnum) += t48*(t28-t41+t15*t55+t31*t55+t39*t52+t40*t52)*-2.0;
+  grad(v2_i) += t48*(t36-t44+t10*t59-t15*t61+t26*t59-t31*t61)*-2.0;
+  grad(v2_i+vnum) += t48*(t32-t42+t10*t64+t26*t64+t39*t61+t40*t61)*-2.0;
+  grad(v2_i+2*vnum) += (t28-t41+t15*t64+t31*t64+t39*(t58-t66)+t40*(t58-t66))*(t43+t45+t46+t47-t49-t50)*2.0;
+  grad(w1_i) += t71;
+  grad(w1_i+vnum) += t35*t70*-2.0;
+  grad(w1_i+2*vnum) += t72;
+  grad(w2_i) += -t71;
+  grad(w2_i+vnum) += t35*t70*2.0;
+  grad(w2_i+2*vnum) += -t72;
+
