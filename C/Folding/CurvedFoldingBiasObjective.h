@@ -13,9 +13,10 @@ struct CurvedFoldBias {
 // comparing to squared length
 class CurvedFoldingBiasObjective: public Objective {
 public:
-	CurvedFoldingBiasObjective(bool dbg = false) : dbg(dbg) {}
+	CurvedFoldingBiasObjective(bool sign = false, double alpha = 100, bool dbg = false) : sign(sign), alpha(alpha), dbg(dbg) {}
 	void add_fold_bias(const CurvedFoldBias& foldBias);
 	void reset_folds();
+	void set_use_sign(bool i_sign) {sign = i_sign;}
 	
 	virtual CurvedFoldingBiasObjective* clone() const {return new CurvedFoldingBiasObjective(*this);}
 	
@@ -26,5 +27,15 @@ private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
 	std::vector<CurvedFoldBias> curvedFoldBiases;
 
+	virtual double obj_l2(const Eigen::VectorXd& x) const;
+	virtual Eigen::VectorXd grad_l2(const Eigen::VectorXd& x) const;
+	virtual void updateHessianIJV_l2(const Eigen::VectorXd& x);
+
+	virtual double obj_sign(const Eigen::VectorXd& x) const;
+	virtual Eigen::VectorXd grad_sign(const Eigen::VectorXd& x) const;
+	virtual void updateHessianIJV_sign(const Eigen::VectorXd& x);
+
+	bool sign;
+	double alpha;
 	bool dbg;
 };
