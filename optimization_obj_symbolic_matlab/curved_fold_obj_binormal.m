@@ -83,16 +83,21 @@ ccode(gradient(E,vars),'file','curved_fold_obj_binormal_G');
 % Not clear how to simplify the hessian for now... so maybe now stay
 % without an hessian
 H = hessian(E,vars);
+ccode(H,'file','curved_fold_obj_binormal_H');
 
 %subH = subs(H,[ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x,ep_0_v2_y,ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t]  ...
 %    ,[0,0,0, 0,1,0,-1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0,  0.5,0.4,0.5 ]);
 
-B_fixed_x = sym('B_fixed_x', 'real');
-B_fixed_y = sym('B_fixed_y', 'real');
-B_fixed_z= sym('B_fixed_z', 'real');
-B_fixed = [B_fixed_x,B_fixed_y,B_fixed_z];
-E_simplified = simplify((dot(e1,B_fixed)+dot(e2,B_fixed)).^2);
+
+x0 = sym('x0',size(vars));
+%B_fixed_x = sym('B_fixed_x', 'real');
+%B_fixed_y = sym('B_fixed_y', 'real');
+%B_fixed_z= sym('B_fixed_z', 'real');
+%B_fixed = [B_fixed_x,B_fixed_y,B_fixed_z];
+B_fixed = taylor(B,vars,'ExpansionPoint',x0,'Order',1);
+E_simplified = simplify((dot(e1+e2,B_fixed)).^2);
 H_simp = hessian(E_simplified,vars);
+H_simp = subs(H_simp, x0,vars);
 ccode(H_simp,'file','curved_fold_obj_binormal_H_simp');
 %subH_simp = subs(H_simp,[ ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x, ep_0_v2_y, ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t] ,[0,0,0,0,1,0, -1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0.1,  0.5,0.4,0.5 ]);
 
