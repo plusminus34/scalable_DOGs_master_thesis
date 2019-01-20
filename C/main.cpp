@@ -191,6 +191,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Curve step size", &curve_timestep_diff, 0, 0, "%.4f");
       if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       if (ImGui::InputDouble("Curve timestep", &DC.curve_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
+      ImGui::InputDouble("Sign opt alpha", &DC.sign_opt_alpha, 0, 0, "%.4f");
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.dogEditor.p.infeasability_filter);

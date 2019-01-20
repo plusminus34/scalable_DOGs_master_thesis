@@ -10,7 +10,7 @@
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
-	DeformationController() : curvedFoldingBiasObjective(false,10,true),dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL; curveConstraintsBuilder = NULL;}
+	DeformationController() : curvedFoldingBiasObjective(sign_opt_alpha,false,true),dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL; curveConstraintsBuilder = NULL;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
 
@@ -47,6 +47,7 @@ public:
 	DogEditor dogEditor;
 	double fold_dihedral_angle = 0;
 	double curve_timestep = 0;
+	double sign_opt_alpha = 10;
 private:
 	void update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);

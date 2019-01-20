@@ -13,7 +13,7 @@ struct CurvedFoldBias {
 // comparing to squared length
 class CurvedFoldingBiasObjective: public Objective {
 public:
-	CurvedFoldingBiasObjective(bool sign = false, double alpha = 100, bool dbg = false) : sign(sign), alpha(alpha), dbg(dbg) {}
+	CurvedFoldingBiasObjective(const double& alpha, bool sign = false, bool dbg = false) : alpha(alpha), sign(sign), dbg(dbg) {}
 	void add_fold_bias(const CurvedFoldBias& foldBias);
 	void reset_folds();
 	void set_use_sign(bool i_sign) {sign = i_sign;}
@@ -36,6 +36,6 @@ private:
 	virtual void updateHessianIJV_sign(const Eigen::VectorXd& x);
 
 	bool sign;
-	double alpha;
+	const double& alpha;
 	bool dbg;
 };
