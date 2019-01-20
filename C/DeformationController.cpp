@@ -161,7 +161,7 @@ void DeformationController::get_curve_fold_bias_obj() {
 }
 
 void DeformationController::setup_fold_bias() {
-	/*
+	
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
@@ -171,16 +171,18 @@ void DeformationController::setup_fold_bias() {
 		auto edge_pt = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx); // currently not used
 
 		e_idx = foldingCurve.size()/2;
-		edge_pt = foldingCurve[e_idx];
-		curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
-		curvedFoldBias.edge_t = edge_pt.t;
-		globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
-		curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);
+		//for (e_idx = foldingCurve.size()/2-5; e_idx < foldingCurve.size()/2+5; e_idx++) {
+			edge_pt = foldingCurve[e_idx];
+			curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+			curvedFoldBias.edge_t = edge_pt.t;
+			globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
+			curvedFoldingBiasObjective.add_fold_bias(curvedFoldBias);	
+		//}
 	}
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	dogEditor.add_positional_constraints(b, bc);
-	*/
 	
+	/*
 	int vnum = globalDog->getV().rows();
 	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
 	int e_idx;
@@ -230,8 +232,7 @@ void DeformationController::setup_fold_bias() {
 	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
 
 	dogEditor.add_positional_constraints(b_ref, bc_ref);
-
-
+	*/
 }
 
 void DeformationController::setup_fold_constraints() {

@@ -85,6 +85,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     int vnum = x.rows()/3;
     double new_e;
 
+    std::cout << "here"<<std::endl;
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian
     //auto hessian = f.hessian(x); 
@@ -145,6 +146,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //cout << "solving!" << endl;
     //res = solver.solve(g_const);
     m_solver.solve(g_const,res);
+    std::cout << "solved" << std::endl;
     
     for (int d_i = 0; d_i < g.rows(); d_i++) {
         d[d_i] = res[d_i];

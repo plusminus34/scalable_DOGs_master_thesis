@@ -39,6 +39,7 @@ public:
 		double isometry_weight = 0.1;
 		double laplacian_similarity_weight = 0;
 		double soft_pos_weight = 1;
+		double fold_bias_weight = 100;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
 		int max_newton_iters = 10;
