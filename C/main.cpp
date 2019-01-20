@@ -94,6 +94,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'R':
     DC.single_optimization();
     break;
+  case 'P':
+    DC.init_curved_fold_from_given_mesh();
+    break;
   case 'E':
     exit(1);
     break;

@@ -10,7 +10,7 @@
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
-	DeformationController() : curvedFoldingBiasObjective(sign_opt_alpha,true,true),dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL; curveConstraintsBuilder = NULL;}
+	DeformationController() : curvedFoldingBiasObjective(sign_opt_alpha,false,true),dogEditor(curvedFoldingBiasObjective) {globalDog = NULL; editedSubmesh = NULL; curveConstraintsBuilder = NULL;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
 
@@ -24,6 +24,9 @@ public:
 	
 	void setup_curve_constraints();
 	void update_edge_curve_constraints();
+
+	void init_curved_fold_from_given_mesh();
+	void optimize_curved_fold_initialization();
 	
 	void setup_fold_constraints_old();
 	void propagate_submesh_constraints();
@@ -48,6 +51,9 @@ public:
 	double fold_dihedral_angle = 0;
 	double curve_timestep = 0;
 	double sign_opt_alpha = 10;
+	bool is_initializing_curved_fold = false;
+	double penalty_factor = 1;
+	bool stage_1 = true;
 private:
 	void update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);
