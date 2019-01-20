@@ -136,8 +136,8 @@ void DeformationController::setup_reflection_fold_constraints() {
 
 void DeformationController::get_curve_fold_bias_obj() {
 	bool dbg = true;
-	CurvedFoldingBiasObjective tmpCurveFoldBiasObj(false,100,dbg);
-	bool sign = true; double alpha = 1000; CurvedFoldingBiasObjective tmpCurveSignBiasSignObj(sign,alpha,dbg);
+	CurvedFoldingBiasObjective tmpCurveFoldBiasObj(sign_opt_alpha, false,dbg);
+	CurvedFoldingBiasObjective tmpCurveSignBiasSignObj(sign_opt_alpha,true,dbg);
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
