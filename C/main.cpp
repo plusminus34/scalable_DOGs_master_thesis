@@ -120,7 +120,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   if ((is_optimizing) && (is_folding) && (DC.fold_dihedral_angle < M_PI/2) ) DC.fold_dihedral_angle += dihedral_diff;
   if ((is_optimizing) && (is_curve_constrainted) && (DC.curve_timestep < 1)) DC.curve_timestep+=curve_timestep_diff;
-  if (DC.dogEditor.has_constraints() && is_optimizing) run_optimization();
+  if ( ((DC.is_initializing_curved_fold) || (DC.dogEditor.has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }

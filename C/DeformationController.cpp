@@ -60,10 +60,21 @@ void DeformationController::init_curved_fold_from_given_mesh() {
 	// 1) Flag the deformation controller for "initializing curved fold"
 	penalty_factor = 0.1;
 	is_initializing_curved_fold = true;
-	// 2) Setup the positional constraints for the first curved fold curve (position of given curve)
-	curve_timestep = 0; setup_curve_constraints();
+	// 2) Setup positional constraints
+	auto V = globalDog->getV();
+	int submesh_min_i, submesh_max_i; globalDog->get_submesh_min_max_i(0, submesh_min_i, submesh_max_i); int subm_size = submesh_max_i-submesh_min_i+1;
+	curve_init_b.resize(3*subm_size); curve_init_bc.resize(curve_init_b.rows());
+	int cnt = 0; 
+	for (int coord = 0; coord < 3; coord++) {
+		for (int i = submesh_min_i; i <= submesh_max_i; i++) {
+			curve_init_b(cnt) = coord*subm_size+i; curve_init_bc(cnt) = V(i,coord); 
+			cnt++;
+		}
+	}
 	// 3) Setup fold bias
 	setup_fold_bias();
+	// Setup reference
+	curved_init_x0 = globalDog->getV_vector();
 	// The rest is optimization, I think
 }
 
@@ -71,78 +82,49 @@ void DeformationController::optimize_curved_fold_initialization() {
 	// Optimize bending, isometry, positional constraints on 1 curve
 	// Subject to: Dog Constraints, Stitching Constraints, CurvedFoldingBiasObjective
 	std::cout << "here with penalty_factor = " << penalty_factor << std::endl;
+	auto eS = globalDog->getEdgeStitching();
+	auto quadTop = globalDog->getQuadTopology();
+
+	// Objectives (bending, isometry, positional constraints for submesh 0)
+	SimplifiedBendingObjective bending(quadTop, curved_init_x0); IsometryObjective isoObj(quadTop, curved_init_x0);
+	PositionalConstraints posConst(curve_init_b,curve_init_bc);
+	QuadraticConstraintsSumObjective posConstSoft(posConst, curved_init_x0);
+	
+	// Constraitns as penalized objectives (dog, stitching, and not here but also CurvedFoldingBiasObjective)
+	DogConstraints dogConst(quadTop);
+	StitchingConstraints stitchConst(quadTop, eS);
+	QuadraticConstraintsSumObjective dogConstSoft(dogConst, initcurved_init_x0_x0);
+	QuadraticConstraintsSumObjective stitchConstSoft(stitchConst, curved_init_x0);
+
+	Eigen::VectorXd x0(globalDog->getV_vector()), x = x0;;
+	double infeasability_epsilon = 0.001, infeasability_filter = 0.1; int max_newton_iters = 1; double merit_p = 1;
+
+	std::cout << "Before: DOG constraints deviation norm = " << dogConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
+	std::cout << "Before: Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
+	int wait;
 	if (stage_1) {
-
-
 		if (penalty_factor < 1e10) {
 			std::cout << "Optimizing curved fold!" << std::endl;
-			auto eS = globalDog->getEdgeStitching();
-			auto quadTop = globalDog->getQuadTopology();
-			auto init_x0 = globalDog->getV_vector();
-
-			// Objectives (bending, isometry, curve edge point constraints)
-			SimplifiedBendingObjective bending(quadTop, init_x0); IsometryObjective isoObj(quadTop, init_x0);
-			SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords; 
-			curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
-			dogEditor.add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
-			EdgePointConstraints edgePtConst(surfaceCurve.edgePoints, edgeCoords);
-			QuadraticConstraintsSumObjective edgePtObj(edgePtConst, init_x0);
+			double dogConstWeight = 1e10, stitching_const = 0.001, curved_fold_bias = penalty_factor;
+			CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
+									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, 0.01, dogConstWeight, stitching_const,curved_fold_bias});
 			
-			// Constraitns as penalized objectives (dog, stitching, and not here but also CurvedFoldingBiasObjective)
-			DogConstraints dogConst(quadTop);
-			StitchingConstraints stitchConst(quadTop, eS);
-			QuadraticConstraintsSumObjective dogConstSoft(dogConst, init_x0);
-			QuadraticConstraintsSumObjective stitchConstSoft(stitchConst, init_x0);
+			NewtonKKT newtonSolver(infeasability_epsilon, infeasability_filter, max_newton_iters, merit_p);
+			EdgePointConstraints emptyConstraints;
+			for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,emptyConstraints, x);
 			
-			Eigen::VectorXd x0(init_x0), x = x0;;
-
-			double infeasability_epsilon = 0.001, infeasability_filter = 0.1; int max_newton_iters = 1; double merit_p = 1;
-			for (int i = 0; i < 1 ; i++) {
-				double dogConstWeight = penalty_factor, stitching_const = 1e10, curved_fold_bias = 1e10;
-				dogConstWeight = 0;
-				CompositeObjective compObj({&bending,&isoObj, &edgePtObj, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
-										  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, dogEditor.p.soft_pos_weight, dogConstWeight, stitching_const,curved_fold_bias});
-				
-				NewtonKKT newtonSolver(infeasability_epsilon, infeasability_filter, max_newton_iters, merit_p);
-				EdgePointConstraints emptyConstraints;
-				for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,emptyConstraints, x);
-				
-				x0 = x;
-				penalty_factor *= 2;
-			}
+			x0 = x;
+			penalty_factor *= 2;
 			globalDog->update_V_vector(x);
 	 	} else {
 	 		stage_1 = false;
 	 		penalty_factor = 0.1;
-	 		std::cout << "Optimizing curved fold stage 2!" << std::endl;
-			int wait; cin >> wait;
+	 		std::cout << "Optimizing curved fold stage 2!" << std::endl << std::endl << std::endl;
 	 	}
 	} else {
 		if (penalty_factor < 1e10) {
-		auto eS = globalDog->getEdgeStitching();
-		auto quadTop = globalDog->getQuadTopology();
-		auto init_x0 = globalDog->getV_vector();
-
-		// Objectives (bending, isometry, curve edge point constraints)
-		SimplifiedBendingObjective bending(quadTop, init_x0); IsometryObjective isoObj(quadTop, init_x0);
-		SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords; 
-		curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
-		dogEditor.add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
-		EdgePointConstraints edgePtConst(surfaceCurve.edgePoints, edgeCoords);
-		QuadraticConstraintsSumObjective edgePtObj(edgePtConst, init_x0);
-		
-		// Constraitns as penalized objectives (dog, stitching, and not here but also CurvedFoldingBiasObjective)
-		DogConstraints dogConst(quadTop);
-		StitchingConstraints stitchConst(quadTop, eS);
-		QuadraticConstraintsSumObjective dogConstSoft(dogConst, init_x0);
-		QuadraticConstraintsSumObjective stitchConstSoft(stitchConst, init_x0);
-		
-		Eigen::VectorXd x0(init_x0), x = x0;;
-
-		double infeasability_epsilon = 0.001, infeasability_filter = 0.1; int max_newton_iters = 1; double merit_p = 1;
-		for (int i = 0; i < 1 ; i++) {
-			double dogConstWeight = penalty_factor, stitching_const = penalty_factor, curved_fold_bias = penalty_factor;
-			CompositeObjective compObj({&bending,&isoObj, &edgePtObj, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
+			double dogConstWeight = 1e10, stitching_const = penalty_factor, curved_fold_bias = 1e10;
+			CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
 									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, dogEditor.p.soft_pos_weight, dogConstWeight, stitching_const,curved_fold_bias});
 			
 			NewtonKKT newtonSolver(infeasability_epsilon, infeasability_filter, max_newton_iters, merit_p);
@@ -151,10 +133,12 @@ void DeformationController::optimize_curved_fold_initialization() {
 			
 			x0 = x;
 			penalty_factor *= 2;
-		}
-		globalDog->update_V_vector(x);
+			globalDog->update_V_vector(x);
 		}	
 	}
+	std::cout << "DOG constraints deviation norm = " << dogConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
+	std::cout << "Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
+	//cin >> wait;
 }
 
 void DeformationController::setup_reflection_fold_constraints() {

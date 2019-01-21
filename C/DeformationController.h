@@ -54,6 +54,8 @@ public:
 	bool is_initializing_curved_fold = false;
 	double penalty_factor = 1;
 	bool stage_1 = true;
+	Eigen::VectorXi curve_init_b; Eigen::VectorXd curve_init_bc;
+	Eigen::VectorXd curved_init_x0;
 private:
 	void update_edge_constraints_from_submesh(int submesh_i, const DogEdgeStitching& eS, 
 									std::vector<bool>& edge_constraint_set, std::vector<Eigen::RowVector3d>& const_value);
