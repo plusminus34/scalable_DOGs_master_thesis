@@ -176,7 +176,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //std::ofstream out_file(std::string("null_space.m"));
     //out_file << igl::matlab_format(Jt,"Jt");
     
-    old_e = f.obj(x);
+    //std::cout << "NewtonKKT: old_e = " << old_e << " new_e = " << new_e << std::endl;
     
     return new_e;
 }

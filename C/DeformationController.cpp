@@ -57,11 +57,11 @@ void DeformationController::update_edge_curve_constraints() {
 }
 
 void DeformationController::init_curved_fold_from_given_mesh() {
+	auto V = globalDog->getV();
 	// 1) Flag the deformation controller for "initializing curved fold"
 	penalty_factor = 0.1;
 	is_initializing_curved_fold = true;
 	// 2) Setup positional constraints
-	auto V = globalDog->getV();
 	int submesh_min_i, submesh_max_i; globalDog->get_submesh_min_max_i(0, submesh_min_i, submesh_max_i); int subm_size = submesh_max_i-submesh_min_i+1;
 	curve_init_b.resize(3*subm_size); curve_init_bc.resize(curve_init_b.rows());
 	int cnt = 0; 
@@ -71,12 +71,46 @@ void DeformationController::init_curved_fold_from_given_mesh() {
 			cnt++;
 		}
 	}
+	curved_init_x0 = globalDog->getV_vector();
+	flatten_all_submeshes_but_one();
+
 	// 3) Setup fold bias
 	setup_fold_bias();
-	// Setup reference
-	curved_init_x0 = globalDog->getV_vector();
-	// The rest is optimization, I think
+	// 4) Setup reference
 }
+
+void DeformationController::flatten_all_submeshes_but_one() {
+	// Flatten other pieces.. // TODO: do it in some other way, for instance parameterization
+	// Objectives (bending, isometry, positional constraints for submesh 0)
+
+	// for now do it for one mesh
+	int submesh_i = 1;
+	auto submeshDog = globalDog->get_submesh(submesh_i);
+
+	auto init_x0 = submeshDog->getV_vector();
+
+	auto V = submeshDog->getV();
+	auto eS = submeshDog->getEdgeStitching();
+	auto quadTop = submeshDog->getQuadTopology();
+	SimplifiedBendingObjective bending(quadTop, init_x0); IsometryObjective isoObj(quadTop, init_x0);
+	//PositionalConstraints posConst(curve_init_b,curve_init_bc);
+	Eigen::VectorXi b(3); Eigen::VectorXd bc(b.rows());
+	b << 0, V.rows(), 2*V.rows(); bc << V(0,0),V(0,1),V(0,2);
+	PositionalConstraints posConst(b,bc);
+	QuadraticConstraintsSumObjective posConstSoft(posConst, init_x0);
+	
+	DogConstraints dogConst(quadTop);
+	CompositeObjective compObj({&bending,&isoObj, &posConstSoft},
+									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, 1});
+	
+	NewtonKKT newtonSolver(dogEditor.p.infeasability_epsilon,dogEditor.p.infeasability_filter, dogEditor.p.max_newton_iters, dogEditor.p.merit_p);
+	std::cout << "flattening other submeshes" << std::endl;
+	Eigen::VectorXd x0(submeshDog->getV_vector()), x = x0;
+	for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,dogConst, x);
+	submeshDog->update_V_vector(x);
+	globalDog->update_submesh_V(submesh_i, submeshDog->getV());
+}
+
 
 void DeformationController::optimize_curved_fold_initialization() {
 	// Optimize bending, isometry, positional constraints on 1 curve
@@ -93,7 +127,7 @@ void DeformationController::optimize_curved_fold_initialization() {
 	// Constraitns as penalized objectives (dog, stitching, and not here but also CurvedFoldingBiasObjective)
 	DogConstraints dogConst(quadTop);
 	StitchingConstraints stitchConst(quadTop, eS);
-	QuadraticConstraintsSumObjective dogConstSoft(dogConst, initcurved_init_x0_x0);
+	QuadraticConstraintsSumObjective dogConstSoft(dogConst, curved_init_x0);
 	QuadraticConstraintsSumObjective stitchConstSoft(stitchConst, curved_init_x0);
 
 	Eigen::VectorXd x0(globalDog->getV_vector()), x = x0;;
@@ -105,7 +139,7 @@ void DeformationController::optimize_curved_fold_initialization() {
 	if (stage_1) {
 		if (penalty_factor < 1e10) {
 			std::cout << "Optimizing curved fold!" << std::endl;
-			double dogConstWeight = 1e10, stitching_const = 0.001, curved_fold_bias = penalty_factor;
+			double dogConstWeight = 1e10, stitching_const = 0.00001, curved_fold_bias = penalty_factor;
 			CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
 									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, 0.01, dogConstWeight, stitching_const,curved_fold_bias});
 			
@@ -137,7 +171,8 @@ void DeformationController::optimize_curved_fold_initialization() {
 		}	
 	}
 	std::cout << "DOG constraints deviation norm = " << dogConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
-	std::cout << "Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
+	std::cout << "Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl;
+	std::cout << "penalty = " << penalty_factor << std::endl;
 	//cin >> wait;
 }
 
