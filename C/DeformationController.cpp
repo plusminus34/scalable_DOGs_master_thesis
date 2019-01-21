@@ -130,20 +130,19 @@ void DeformationController::optimize_curved_fold_initialization() {
 	QuadraticConstraintsSumObjective dogConstSoft(dogConst, curved_init_x0);
 	QuadraticConstraintsSumObjective stitchConstSoft(stitchConst, curved_init_x0);
 
-	Eigen::VectorXd x0(globalDog->getV_vector()), x = x0;;
-	double infeasability_epsilon = 0.001, infeasability_filter = 0.1; int max_newton_iters = 1; double merit_p = 1;
+	Eigen::VectorXd x0(globalDog->getV_vector()), x = x0;
 
 	std::cout << "Before: DOG constraints deviation norm = " << dogConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
 	std::cout << "Before: Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
 	int wait;
-	if (stage_1) {
+	if (false) {
 		if (penalty_factor < 1e10) {
 			std::cout << "Optimizing curved fold!" << std::endl;
 			double dogConstWeight = 1e10, stitching_const = 0.00001, curved_fold_bias = penalty_factor;
 			CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
 									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, 0.01, dogConstWeight, stitching_const,curved_fold_bias});
 			
-			NewtonKKT newtonSolver(infeasability_epsilon, infeasability_filter, max_newton_iters, merit_p);
+			NewtonKKT newtonSolver(dogEditor.p.infeasability_epsilon,dogEditor.p.infeasability_filter, dogEditor.p.max_newton_iters, dogEditor.p.merit_p);
 			EdgePointConstraints emptyConstraints;
 			for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,emptyConstraints, x);
 			
@@ -156,8 +155,9 @@ void DeformationController::optimize_curved_fold_initialization() {
 	 		std::cout << "Optimizing curved fold stage 2!" << std::endl << std::endl << std::endl;
 	 	}
 	} else {
+		/*
 		if (penalty_factor < 1e10) {
-			double dogConstWeight = 1e10, stitching_const = penalty_factor, curved_fold_bias = 1e10;
+			double dogConstWeight = 1e10, stitching_const = penalty_factor, curved_fold_bias = penalty_factor;
 			CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &dogConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
 									  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, dogEditor.p.soft_pos_weight, dogConstWeight, stitching_const,curved_fold_bias});
 			
@@ -168,7 +168,19 @@ void DeformationController::optimize_curved_fold_initialization() {
 			x0 = x;
 			penalty_factor *= 2;
 			globalDog->update_V_vector(x);
-		}	
+		}
+		*/
+		double dogConstWeight = 1e10, stitching_const = penalty_factor, curved_fold_bias = penalty_factor;
+		CompositeObjective compObj({&bending,&isoObj, &posConstSoft, &stitchConstSoft, &curvedFoldingBiasObjective},
+								  {dogEditor.p.bending_weight, dogEditor.p.isometry_weight, 0.01, stitching_const,curved_fold_bias});
+		
+		NewtonKKT newtonSolver(dogEditor.p.infeasability_epsilon,dogEditor.p.infeasability_filter, dogEditor.p.max_newton_iters, dogEditor.p.merit_p);
+		EdgePointConstraints emptyConstraints;
+		for (int iter = 0; iter < 50; iter++) newtonSolver.solve_constrained(x, compObj,dogConst, x);
+		
+		x0 = x;
+		penalty_factor *= 2;
+		globalDog->update_V_vector(x);
 	}
 	std::cout << "DOG constraints deviation norm = " << dogConst.Vals(globalDog->getV_vector()).norm() << std::endl; 
 	std::cout << "Stitching constraints deviation norm = " << stitchConst.Vals(globalDog->getV_vector()).norm() << std::endl;
@@ -483,7 +495,7 @@ void DeformationController::propagate_submesh_constraints() {
 	queue<int> Q; for (int i = 0; i < adjacency_list[editedSubmeshI].size(); i++) Q.push(adjacency_list[editedSubmeshI][i]);
 	while (!Q.empty()) {
 		int cur_submesh = Q.front(); Q.pop();
-		//std::cout << "processing submesh " << cur_submesh << std::endl;
+		std::cout << "processing submesh " << cur_submesh << std::endl;
 		deform_submesh_based_on_previous_submeshes(cur_submesh, eS, edge_constraint_set, const_value);
 		update_edge_constraints_from_submesh(cur_submesh, eS, edge_constraint_set, const_value);
 
