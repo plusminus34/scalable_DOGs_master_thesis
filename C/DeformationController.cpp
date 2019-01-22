@@ -294,7 +294,7 @@ void DeformationController::get_curve_fold_bias_obj() {
 }
 
 void DeformationController::setup_fold_bias() {
-	
+	/*
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
@@ -314,8 +314,8 @@ void DeformationController::setup_fold_bias() {
 	}
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	dogEditor.add_positional_constraints(b, bc);
+	*/
 	
-	/*
 	int vnum = globalDog->getV().rows();
 	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
 	int e_idx;
@@ -365,7 +365,7 @@ void DeformationController::setup_fold_bias() {
 	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
 
 	dogEditor.add_positional_constraints(b_ref, bc_ref);
-	*/
+	
 }
 
 void DeformationController::setup_fold_constraints() {

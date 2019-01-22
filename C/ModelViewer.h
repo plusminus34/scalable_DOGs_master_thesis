@@ -35,7 +35,7 @@ private:
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 
-	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
+	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog);
 
 	const ModelState& state;
 	const DeformationController& DC;

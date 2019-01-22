@@ -54,7 +54,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_reflection_constraints(viewer);
 		DC.dogEditor.render_pairs();
 	}
-	render_mesh(viewer, dog->getVrendering(), dog->getFrendering());
+	render_mesh(viewer, *dog);
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
@@ -76,16 +76,27 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
-void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) {
-	viewer.data().set_mesh(V, F);
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
+	auto Vren = dog.getVrendering(); auto Fren = dog.getFrendering();
+	viewer.data().set_mesh(Vren, Fren);
 
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
     Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
     Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
-    //Eigen::MatrixXd VN; igl::per_vertex_normals(V,F,VN);
-    Eigen::MatrixXd VN; igl::per_corner_normals(V,F,20,VN);
+
+    Eigen::MatrixXd VN; //igl::per_vertex_normals(Vren,Fren,VN);
+    Eigen::MatrixXd corner_VN; igl::per_corner_normals(Vren,Fren,20,VN);
+    /*
+    // Set normals as corners on the folds
+    for (int i = 0; i < Vren.rows(); i++) {
+    	//std::cout << "i = " << i << " is_v_ren_vertex_fold(i) = " << dog.is_v_ren_vertex_fold(i) << std::endl;
+    	if (dog.is_v_ren_vertex_fold(i)) {
+    		VN.row(i) = corner_VN.row(i);
+    	}
+    }
+    */
   	viewer.data().set_normals(VN);
 }
 

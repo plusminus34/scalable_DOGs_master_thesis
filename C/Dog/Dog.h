@@ -80,6 +80,7 @@ public:
 	void get_2_inner_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out) const;
 
 	static void V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitching& edgeStitching, Eigen::MatrixXd& V_ren);
+	bool is_v_ren_vertex_fold(int v_idx) const {return v_idx >= V.rows();}
 
 	void InitSerialization() {
       Add(V,std::string("_V"));
