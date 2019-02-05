@@ -43,7 +43,9 @@ void EqSQP::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >
     for (int i = 0; i < hessian_IJV.size(); i++) {
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),-hessian_IJV[i].value());
     }
-    for (int i = 0; i < const_lambda_hessian.size(); i++) kkt_IJV[ijv_idx++] = const_lambda_hessian[i];
+    for (int i = 0; i < const_lambda_hessian.size(); i++) {
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(const_lambda_hessian[i].row(),const_lambda_hessian[i].col(),-const_lambda_hessian[i].value());
+    }
     for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 
     // Add both J and J transpose
