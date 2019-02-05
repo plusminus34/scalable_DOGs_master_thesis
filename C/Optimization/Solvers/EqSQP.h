@@ -19,9 +19,9 @@ private:
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 
-	void build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
-									const std::vector<Eigen::Triplet<double> >& const_lambda_hessian,
-                                     const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n);
+	void build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
+								   const std::vector<Eigen::Triplet<double> >& const_lambda_hessian, int var_n, 
+								   const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n);
 
 	const double& infeasability_epsilon; 
 	const double& infeasability_filter;

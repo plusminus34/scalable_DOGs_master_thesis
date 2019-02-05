@@ -12,6 +12,7 @@
 
 #include "../Optimization/Solvers/Newton.h"
 #include "../Optimization/Solvers/NewtonKKT.h"
+#include "../Optimization/Solvers/EqSQP.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Solvers/DOGGuess.h"
@@ -106,5 +107,5 @@ private:
 	// Solvers
 	DOGGuess dogGuess;
 	Newton newton;
-	NewtonKKT newtonKKT;
+	EqSQP newtonKKT;
 };

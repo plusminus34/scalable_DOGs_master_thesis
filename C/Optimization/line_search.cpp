@@ -2,7 +2,7 @@
 
 using namespace std;
 
-double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy) {
+double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, double cur_energy) {
 	double old_energy;
   if (cur_energy >= 0)
   {
@@ -46,7 +46,7 @@ double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_siz
 
 
 
-double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, const Constraints& constraints,
+double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, const Constraints& constraints,
 				const double& merit_penalty,
 				double cur_energy) {
 

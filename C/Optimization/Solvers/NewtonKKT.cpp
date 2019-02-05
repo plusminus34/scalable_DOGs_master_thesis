@@ -40,9 +40,9 @@ void NewtonKKT::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<doubl
     // add hessian+id*eps_id
     double eps = 1e-8;
     for (int i = 0; i < hessian_IJV.size(); i++) {
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),hessian_IJV[i].value());
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),-hessian_IJV[i].value());
     }
-    for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,eps);}
+    for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 
     // Add both J and J transpose
     for (int i = 0; i < jacobian_IJV.size(); i++) {
@@ -138,7 +138,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //m_solver.factorize();
 
     Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
-    Eigen::VectorXd g_const; igl::cat(1, neg_g, constraints_deviation, g_const);
+    Eigen::VectorXd g_const; igl::cat(1, g, constraints_deviation, g_const);
     //g_const = -1*g_const;
     
     Eigen::VectorXd res;

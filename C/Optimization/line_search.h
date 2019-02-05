@@ -3,9 +3,9 @@
 #include "Objective.h"
 #include "Constraints.h"
 
-double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, double cur_energy = -1);
+double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, double cur_energy = -1);
 
-double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double step_size, Objective& f, const Constraints& constraints,
+double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, const Constraints& constraints,
 				const double& merit_penalty,
 				double cur_energy = -1);
 
