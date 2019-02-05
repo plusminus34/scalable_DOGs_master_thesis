@@ -54,6 +54,7 @@ void DeformationController::update_edge_curve_constraints() {
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	dogEditor.update_edge_coords(edgeCoords);
+	is_folded();
 }
 
 void DeformationController::init_curved_fold_from_given_mesh() {
@@ -292,9 +293,34 @@ void DeformationController::get_curve_fold_bias_obj() {
 	double curve_fold_bias_sign_obj = tmpCurveSignBiasSignObj.obj(globalDog->getV_vector());
 	std::cout << "Curve fold bias sign obj approx = " << curve_fold_bias_sign_obj << std::endl;
 }
+bool DeformationController::is_folded() {
+	bool is_folded = true;
+	auto eS = globalDog->getEdgeStitching();
+	for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+
+		for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
+			double sign_op_alpha = 1e6; CurvedFoldingBiasObjective tmpCurveSignBiasSignObj(sign_op_alpha,true,false);
+			CurvedFoldBias curvedFoldBias;
+			curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+			auto edge_pt = foldingCurve[e_idx];
+			curvedFoldBias.edge_t = edge_pt.t;
+			globalDog->get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
+			tmpCurveSignBiasSignObj.add_fold_bias(curvedFoldBias);
+			double curve_fold_bias_sign_obj = tmpCurveSignBiasSignObj.obj(globalDog->getV_vector());
+			std::cout << "curve = " << fold_curve_idx << " idx = " << e_idx << " is_folded = " << (curve_fold_bias_sign_obj <= 1e-3) << std::endl;
+			if (curve_fold_bias_sign_obj> 1e-3) {
+				is_folded = false;
+				break;
+			}
+		}
+	}
+	std::cout << "is_folded = " << is_folded << std::endl;
+	return is_folded;
+}
 
 void DeformationController::setup_fold_bias() {
-	/*
+	
 	CurvedFoldBias curvedFoldBias;
 	auto eS = globalDog->getEdgeStitching();
 	
@@ -314,8 +340,9 @@ void DeformationController::setup_fold_bias() {
 	}
 	Eigen::VectorXi b; Eigen::VectorXd bc;
 	dogEditor.add_positional_constraints(b, bc);
-	*/
 	
+	
+	/*
 	int vnum = globalDog->getV().rows();
 	auto eS = globalDog->getEdgeStitching(); auto curves = eS.stitched_curves;
 	int e_idx;
@@ -365,7 +392,7 @@ void DeformationController::setup_fold_bias() {
 	refFoldingConstrainsBuilder.get_folds_constraint_coords(*globalDog, bc_ref);
 
 	dogEditor.add_positional_constraints(b_ref, bc_ref);
-	
+	*/
 }
 
 void DeformationController::setup_fold_constraints() {

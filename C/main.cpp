@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Setup reflection fold constraints", ImVec2(-1,0))) {DC.setup_reflection_fold_constraints();is_optimizing = false; is_folding = true;}
       if (ImGui::Button("Setup fold bias", ImVec2(-1,0))) {DC.setup_fold_bias();is_optimizing = false; is_folding = true;}
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
-      if (ImGui::Button("Check fold constraints bias", ImVec2(-1,0))) {DC.get_curve_fold_bias_obj();}
+      if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");

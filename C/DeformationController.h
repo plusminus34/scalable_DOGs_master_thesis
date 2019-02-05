@@ -42,6 +42,8 @@ public:
 
 	bool is_folding() {return (mvFoldingConstraintsBuilder.get_folds_num() > 0) || (refFoldingConstrainsBuilder.get_folds_num() > 0);}
 
+	bool is_folded();
+
 	bool is_curve_constraint = false;
 	CurvedFoldingBiasObjective curvedFoldingBiasObjective;
 	//CurvedFoldingBiasSignObjective curvedFoldingBiasObjective;
