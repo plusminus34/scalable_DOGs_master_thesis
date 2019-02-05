@@ -32,9 +32,8 @@ public:
 		}
 	}
 	
-	// These are first order constraints and so the hessian is zero and there's no need in overriding the default zero hessian
-	virtual Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
-		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
+		// Linear constraints have zero second derivative. Empty on purpose
 	};
 
 	std::vector<std::pair<int,int>> pairs;

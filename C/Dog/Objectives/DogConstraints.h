@@ -11,7 +11,9 @@ public:
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x);
 
-	//Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const;
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda){
+		//TODO!
+	}
 private:
 	const bool offset_planar;
 	const QuadTopology& quadTop;

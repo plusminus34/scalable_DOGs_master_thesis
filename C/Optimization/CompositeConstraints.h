@@ -58,12 +58,19 @@ public:
 		}
 	}
 	
-	virtual Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
-		Eigen::SparseMatrix<double> lambdaHessian(x.rows(),x.rows());
-		for (auto cnst: constraints) lambdaHessian+=cnst->LambdaHessian(x,lambda);
-		return lambdaHessian;
-	};
-
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda){
+		int lambda_idx = 0;
+		// Each set of constraints has a different sub set of the lagrange multipliers
+		for (auto cnst: constraints) {
+			// Get the relevant lagrange multipliers for the subset of constraints
+			int lambda_size = cnst->getConstNum(); Eigen::VectorXd cnst_lambda(lambda_size);
+			for (int i = 0; i < lambda_size; i++) { cnst_lambda(i) = lambda(lambda_idx+i);}
+			// Update the lambda hessian ijv of this constraint
+			cnst->updateLambdaHessianIJV(x,cnst_lambda);
+			// set the next abse index for the lagrange multipliers
+			lambda_idx += lambda_size;
+		}
+	}
 private:
 	std::vector<Constraints*> constraints;
 	int ijv_size = 0;

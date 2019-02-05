@@ -14,10 +14,7 @@ public:
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const = 0;
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) = 0;
-	// By default returns a null matrix
-	virtual Eigen::SparseMatrix<double> LambdaHessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) const {
-		return Eigen::SparseMatrix<double>(x.rows(),x.rows());
-	};
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) = 0;
 
 	int get_IJV_size() const {return IJV.size();}
 
@@ -25,6 +22,9 @@ public:
 
 	const std::vector<Eigen::Triplet<double> >& update_and_get_jacobian_ijv(const Eigen::VectorXd& x) {
     	updateJacobianIJV(x); return IJV; 
+  	}
+  	const std::vector<Eigen::Triplet<double> >& update_and_get_lambda_hessian(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
+		updateLambdaHessianIJV(x,lambda); return lambda_hessian_IJV;
   	}
 
 	const std::vector<Eigen::Triplet<double>>& JacobianIJV() {return IJV;}
@@ -44,6 +44,7 @@ public:
 protected:
 	int const_n;
 	std::vector<Eigen::Triplet<double> > IJV;
+	std::vector<Eigen::Triplet<double> > lambda_hessian_IJV;
 private:	
 	Eigen::SparseMatrix<double> cachedJacobian;
 	Eigen::VectorXi cached_ijv_data;
