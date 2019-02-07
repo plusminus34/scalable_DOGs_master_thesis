@@ -1,11 +1,12 @@
 % We have 3 edge points (for oscullating plane) and 2 normal points to
 % check their angle with their binormals
 % Each edge point is defined by two vertices and a fixed parameter t
-
-
-% Edge points (also need the first one since there is a fold between
-% v1,v2..)
-
+% The central edge point is p0
+% We then need one "inner point" on the fold, v1.
+% This function is the dot product of v1-p0 with the binormal B
+% So the condition that its positive means its a valley fold
+% To have a mountain constraint, flip the sign of the function
+% (value, gradient and hessian)
 ep_b_v1_x = sym('ep_b_v1_x', 'real');
 ep_b_v1_y = sym('ep_b_v1_y', 'real');
 ep_b_v1_z= sym('ep_b_v1_z', 'real');
@@ -21,90 +22,21 @@ ep_b_t = sym('ep_b_t', 'real'); assume(ep_b_t > 0);
 ep_b = ep_b_v1*ep_b_t+(1-ep_b_t)*ep_b_v2;
 
 % Folded points
-v1_x = sym('v1_x', 'real');
-v1_y = sym('v1_y', 'real');
-v1_z = sym('v1_z', 'real');
-v1 = [v1_x,v1_y,v1_z];
-
-v2_x = sym('v2_x', 'real');
-v2_y = sym('v2_y', 'real');
-v2_z = sym('v2_z', 'real');
-v2 = [v2_x,v2_y,v2_z];
-
-w1_x = sym('w1_x', 'real');
-w1_y = sym('w1_y', 'real');
-w1_z = sym('w1_z', 'real');
-w1 = [w1_x,w1_y,w1_z];
-
-w2_x = sym('w2_x', 'real');
-w2_y = sym('w2_y', 'real');
-w2_z = sym('w2_z', 'real');
-w2 = [w2_x,w2_y,w2_z];
-
-ep_f_v1_x = sym('ep_f_v1_x', 'real');
-ep_f_v1_y = sym('ep_f_v1_y', 'real');
-ep_f_v1_z= sym('ep_f_v1_z', 'real');
-ep_f_v1 = [ep_f_v1_x,ep_f_v1_y,ep_f_v1_z];
-
-ep_f_v2_x = sym('ep_f_v2_x', 'real');
-ep_f_v2_y = sym('ep_f_v2_y', 'real');
-ep_f_v2_z= sym('ep_f_v2_z', 'real');
-ep_f_v2 = [ep_f_v2_x,ep_f_v2_y,ep_f_v2_z];
-
-ep_f_t = sym('ep_f_t', 'real'); assume(ep_f_t > 0);
-ep_f = ep_f_v1*ep_f_t+(1-ep_f_t)*ep_f_v2;
-
-ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
-ep_0 = v1*ep_0_t+(1-ep_0_t)*v2;
+fold_v_x = sym('fold_v_x', 'real');
+fold_v_y = sym('fold_v_y', 'real');
+fold_v_z = sym('fold_v_z', 'real');
+fold_v = [fold_v_x,fold_v_y,fold_v_z];
 
 % If there's an isometry energy these should be around the same length
-e1 = v1-v2;
-e2 = w1-w2;
+edge = fold_v-ep_0;
 
 % curve binormal vec, not normalized because it's the same from both sides
 B = simplify(cross(ep_0-ep_b,ep_f-ep_0));
-const1 = dot(B,e1);
-const2 = dot(B,e2);
+const = dot(B,edge);
 
-vars = [ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z,w1_x, w1_y, w1_z, w2_x, w2_y, w2_z];
+vars = [ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, fold_v_x,fold_v_y,fold_v_z];
 
-consts = [const1,const2];
-ccode(consts ,'file','MV_folds_C');
-ccode(gradient(consts,vars),'file','MV_folds_H');
+ccode(const ,'file','V_fold_vals');
+ccode(gradient(const,vars),'file','V_fold_G');
 
-ccode(hessian(const1,vars),'file','MV_folds_H1');
-% get a linearized dot(e1,B)+dot(e2,B)
-
-% Not clear how to simplify the hessian for now... so maybe now stay
-% without an hessian
-H = hessian(consts,vars);
-
-%subH = subs(H,[ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x,ep_0_v2_y,ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t]  ...
-%    ,[0,0,0, 0,1,0,-1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0,  0.5,0.4,0.5 ]);
-
-x0 = sym('x0',size(vars));
-B_fixed = taylor(B,vars,'ExpansionPoint',x0,'Order',1);
-inside_parenthesis_linearized = taylor(tanh(alpha*(dot(e1,B_fixed))) +tanh(alpha*dot(e2,B_fixed)), vars, 'ExpansionPoint', x0, 'Order', 2);
-H_simp = hessian(inside_parenthesis_linearized.^2,vars);
-H_simp = subs(H_simp, x0,vars);
-ccode(H_simp,'file','curved_fold_obj_binormal_sign_H_simp');
-%subH_simp = subs(H_simp,[ ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x, ep_0_v2_y, ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x,ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, ep_0_t,ep_b_t,ep_f_t] ,[0,0,0,0,1,0, -1,0,0,-1,1,0, 1,0,0,1,1,0  0,0,0, 0,1,0.1,  0.5,0.4,0.5 ]);
-
-% Another way to simplify: Find a linear approximation of B
-% B has only quadratic coefficients, but we can fix only v1,v2 and at that
-% case B is linear in the other coefficient. We can then represent B = B0 +
-% linear coefficients
-% Which will give a PSD quadratic objective with some hessian that has more
-% information than just the 2 vertices.. (for instance states how the other
-% two vertices should move as well)
-% Last way: Fix ep_0 instead of v1,v2. In that case we again let the other
-% parts move (the hessian should be the same?). 
-% In any case place B = B_fixed + linear_approx
-
-
-% Another idea, fix the tangent, and just use the principle normal (as a
-% fixed linear combination of the edges). Maybe this makes sense as the
-% act of folding the tangent itself is the rotation axis?
-% Other idea, somehow fix the angle between the tangent and the principle
-% normal or tangent and edges
-taylor(B, vars_without_v1_v2, 'Order', 2)
+ccode(hessian(const,vars),'file','V_fold_H');
