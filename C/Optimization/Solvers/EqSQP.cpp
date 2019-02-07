@@ -44,7 +44,7 @@ void EqSQP::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(hessian_IJV[i].row(),hessian_IJV[i].col(),-hessian_IJV[i].value());
     }
     for (int i = 0; i < const_lambda_hessian.size(); i++) {
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(const_lambda_hessian[i].row(),const_lambda_hessian[i].col(),-const_lambda_hessian[i].value());
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(const_lambda_hessian[i].row(),const_lambda_hessian[i].col(),const_lambda_hessian[i].value());
     }
     for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 
@@ -167,7 +167,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //new_e = line_search(x,d,init_t,f);
     new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
     // update lagrange multipliers
-    lambda = lambda +step_size*lambda_d;
+    lambda = lambda + step_size*lambda_d;
     auto linesearch_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
 
