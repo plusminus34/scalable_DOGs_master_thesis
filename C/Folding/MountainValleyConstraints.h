@@ -11,9 +11,7 @@ public:
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const;
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x);
 
-	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
-		// TODO
-	};
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda);
 
 private:
 	const Dog& init_dog;

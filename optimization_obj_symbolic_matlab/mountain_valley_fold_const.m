@@ -56,6 +56,8 @@ folded_v_y = sym('folded_v_y', 'real');
 folded_v_z = sym('folded_v_z', 'real');
 folded_v = [folded_v_x,folded_v_y,folded_v_z];
 
+lambda = sym('lambda', 'real');
+
 % If there's an isometry energy these should be around the same length
 edge = folded_v-ep_0;
 
@@ -68,4 +70,4 @@ vars = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z,ep_0_v2_x,ep_0_v2_y,ep_0_v2_z,ep_b_v1_x, e
 ccode(const ,'file','V_fold_vals');
 ccode(gradient(const,vars),'file','V_fold_G');
 
-ccode(hessian(const,vars),'file','V_fold_H');
+ccode(lambda*hessian(const,vars),'file','V_fold_H');
