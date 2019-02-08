@@ -14,7 +14,18 @@ using namespace std;
                 //m_solver.iparm[20] = 1;
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
-
+    x = x0;
+    double mu = 1; double mu_sigma = 0.1; Eigen::VectorXd step_d;
+    while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
+        while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < tol) {
+            compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
+            double max_alpha = get_max_alpha(x,d);
+            double alpha = ineq_linesearch(x,d,max_alpha)
+            update_variables(x,d,alpha);
+        }
+        mu = mu*mu_sigma;
+    }
+    /*
     auto prev_x = x0; double current_merit_p = merit_p;
     double ret = compute_step_direction(x0,f,constraints,x,current_merit_p); int iter = 1;
     double const_dev = constraints.Vals(x).norm();
@@ -26,10 +37,24 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
         if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         iter++;
     }
-    return ret;
+    */
+    return obj.obj(x);
 }
 
+double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+        double mu) {
 
+    auto jacobian = eq_constraints.Jacobian(x);
+    auto jacobian_ineq = ineq_constraints.Jacobian(x);
+    auto g = obj.grad(x0)
+    double grad_error = (g-jacobian.transpose()*lambda-jacobian_ineq.transpose()*z).norm();
+
+    double sz_minus_m_error = 0;
+    for (int i = 0; i < s.rows(); i++) sz_minus_m_error += sqrt(pow(s(i)*z(i)-mu,2));
+    double eq_const_error = eq_constraints.Vals().norm();
+    double ineq_const_error = (ineq_constraints.Vals()-s).norm();
+    return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
+}
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
                                      const std::vector<Eigen::Triplet<double> >& const_lambda_hessian, int var_n,
                                      const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n,

@@ -18,9 +18,9 @@ public:
 private:
 	double homotopy_optimization(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& x, double current_merit);
-	double compute_step_direction(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
-		double mu, Eigen::VectorXd& x, double current_merit);
-	
+	void compute_step_direction(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+		double mu, Eigen::VectorXd& d, double current_merit);
+
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 
@@ -30,10 +30,15 @@ private:
 								   const std::vector<Eigen::Triplet<double> >& ineq_lambda_hessian,
 								   const std::vector<Eigen::Triplet<double> >& ineq_jacobian_ijv, int ineq_const_n);
 
+	double kkt_mu_error(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+		double mu, double tol);
+
 	const double& infeasability_epsilon; 
 	const double& infeasability_filter;
 	const int& max_newton_iters;
 	const double& merit_p;
+
+	double tol = 1e-6;
 
 	std::vector<Eigen::Triplet<double> > kkt_IJV; Eigen::VectorXi cached_ijv_data;
 	Eigen::SparseMatrix<double> A;
