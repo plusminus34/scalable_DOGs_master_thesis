@@ -16,8 +16,11 @@ public:
 			Constraints& ineq_constraints, Eigen::VectorXd& x) = 0;
 
 private:
-	double one_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+	double homotopy_optimization(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& x, double current_merit);
+	double compute_step_direction(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+		double mu, Eigen::VectorXd& x, double current_merit);
+	
 	void build_kkt_system(const Eigen::SparseMatrix<double>& hessian, const Eigen::SparseMatrix<double>& Jacobian,
 						Eigen::SparseMatrix<double>& KKT);
 

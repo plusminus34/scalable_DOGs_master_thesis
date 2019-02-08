@@ -16,12 +16,12 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
 
     auto prev_x = x0; double current_merit_p = merit_p;
-    double ret = one_iter(x0,f,constraints,x,current_merit_p); int iter = 1;
+    double ret = compute_step_direction(x0,f,constraints,x,current_merit_p); int iter = 1;
     double const_dev = constraints.Vals(x).norm();
     if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
         std::cout << "const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
-        ret = one_iter(x,f,constraints,x,current_merit_p);
+        ret = compute_step_direction(x,f,constraints,x,current_merit_p);
         const_dev = constraints.Vals(x).norm();
         if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         iter++;
@@ -40,6 +40,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     int ijv_idx = 0;
     if (kkt_IJV.size() == 0) {
         int kkt_size = hessian_IJV.size() + const_lambda_hessian.size() + 2*jacobian_IJV.size() + var_n + const_n;
+        kkt_size += ineq_lambda_hessian.size() + 2*ineq_jacobian_ijv.size() + s.size() + 2*z.size();
         kkt_IJV.resize(kkt_size); int ijv_idx = 0;
     }
 
@@ -50,6 +51,9 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     }
     for (int i = 0; i < const_lambda_hessian.size(); i++) {
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(const_lambda_hessian[i].row(),const_lambda_hessian[i].col(),const_lambda_hessian[i].value());
+    }
+    for (int i = 0; i < ineq_lambda_hessian.size(); i++) {
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(ineq_lambda_hessian[i].row(),ineq_lambda_hessian[i].col(),ineq_lambda_hessian[i].value());
     }
     for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 
@@ -89,7 +93,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system(const Eigen::SparseMatrix<doubl
     KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
 }
 
-double FeasibleIneqInteriorPoint::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints, 
+double FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x0, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints, 
         double mu, Eigen::VectorXd& x, double current_merit) {
     x = x0;
     int vnum = x.rows()/3;
