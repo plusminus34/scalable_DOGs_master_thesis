@@ -41,6 +41,30 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     return obj.obj(x);
 }
 
+double FeasibleIneqInteriorPoint::get_max_alpha(const Eigen::VectorXd& x, const Eigen::VectorXd& d) {
+    const thetha = 0.995;
+    double alpha = 1;
+    int s_base = x.rows()+lambda.rows();
+    int z_base = s_base + s.rows();
+    // fraction to the boundary rule (19.9 in Nocedal), make sure the s and z remain positive
+    for (int i = 0; i < s.rows(); i++) if (d(s_base+i) < 0) alpha = std::min(alpha, ((1-thetha)*s(i)-s(i))/d(s_base+i) );
+    for (int i = 0; i < z.rows(); i++) if (d(z_base+i) < 0) alpha = std::min(alpha, ((1-thetha)*z(i)-z(i))/d(z_base+i) );
+    return alpha;
+}
+
+void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen::VectorXd& d, Constraints& ineq_constraints,
+            double alpha) {
+
+    int lambda_base = x.rows();
+    int s_base = lambda_base+lambda.rows();
+    int z_base = s_base + s.rows();
+    for (int i = 0; i < x.rows(); i++) x(i) += alpha*d(i);
+    for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
+    //for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
+    s = ineq_constraints.Vals(); // instead of line search, so that the merit function will get infinite
+    for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
+}
+
 double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
         double mu) {
 
