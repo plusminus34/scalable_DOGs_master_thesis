@@ -13,7 +13,7 @@ public:
 			 max_newton_iters(max_newton_iters) ,merit_p(merit_p), m_solver(ai,aj,K) {m_solver.set_type(-2);}
 	// x0 is the initial guess, x is the result, the return value is the objective value
 	virtual double solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
-			Constraints& ineq_constraints, Eigen::VectorXd& x) = 0;
+			Constraints& ineq_constraints, Eigen::VectorXd& x);
 
 private:
 	double single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,

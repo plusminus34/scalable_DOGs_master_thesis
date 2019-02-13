@@ -14,6 +14,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
           constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
           obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,curvedFoldingBiasObj, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
+          interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
     is_constrained = (b.rows() + edgePoints.size())>0;

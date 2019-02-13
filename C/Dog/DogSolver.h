@@ -13,6 +13,7 @@
 #include "../Optimization/Solvers/Newton.h"
 #include "../Optimization/Solvers/NewtonKKT.h"
 #include "../Optimization/Solvers/EqSQP.h"
+#include "../Optimization/Solvers/FeasibleIneqInteriorPoint.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Solvers/DOGGuess.h"
@@ -108,4 +109,5 @@ private:
 	DOGGuess dogGuess;
 	Newton newton;
 	EqSQP newtonKKT;
+	FeasibleIneqInteriorPoint interiorPt;
 };
