@@ -25,7 +25,8 @@
 #include "Objectives/LaplacianSimilarity.h"
 #include "Objectives/StitchingConstraints.h"
 
-#include "../Folding/CurvedFoldingBiasObjective.h"
+//#include "../Folding/CurvedFoldingBiasObjective.h"
+#include "../Folding/MountainValleyConstraints.h"
 
 
 class DogSolver {
@@ -53,8 +54,8 @@ public:
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-		std::vector<std::pair<int,int>>& pairs,
-		CurvedFoldingBiasObjective& curvedFoldingBiasObj);
+		std::vector<std::pair<int,int>>& pairs
+		/*CurvedFoldingBiasObjective& curvedFoldingBiasObj*/);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -80,7 +81,7 @@ public:
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
 	  			PointPairConstraints& ptPairConst,
-	  			CurvedFoldingBiasObjective& curvedFoldingBiasObj,
+	  			//CurvedFoldingBiasObjective& curvedFoldingBiasObj,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -90,17 +91,18 @@ public:
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	LaplacianSimilarity laplacianSimilarity;
-      	CurvedFoldingBiasObjective& curvedFoldingBiasObj;
+      	//CurvedFoldingBiasObjective& curvedFoldingBiasObj;
       	CompositeObjective compObj;
 	};
 
 private:
 	Dog& dog;
 	bool is_constrained;
+	//MountainValleyConstraints mvFoldingConstraints;
 
 	// Optimization parameters
 	Eigen::VectorXd init_x0;
-	// The constraints needs to be defined before the objectives, as some of hte objective are dependent on constraints
+	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
 	DogSolver::Objectives obj;
 	const DogSolver::Params& p;

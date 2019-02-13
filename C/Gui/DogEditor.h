@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Dog/DogSolver.h"
+#include "../Folding/CurvedFoldingBiasObjective.h"
 #include "Editor.h"
 
 class DogEditor {

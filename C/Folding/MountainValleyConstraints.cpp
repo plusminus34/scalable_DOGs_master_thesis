@@ -2,11 +2,11 @@
 
 using namespace std;
 
-MountainValleyConstraints::MountainValleyConstraints(const Dog& dog,const DogEdgeStitching& edgeStitching, 
-																				  std::vector<bool> is_mountain) :
-																					init_dog(dog), eS(edgeStitching), is_mountain(is_mountain) {
+MountainValleyConstraints::MountainValleyConstraints(const Dog& dog, std::vector<bool> is_mountain) :
+																					dog(dog), eS(dog.getEdgeStitching()),
+																					is_mountain(is_mountain) {
     // TODO: different handling of vertices (maybe no consatraints there?)
-	const_n= 2*edgeStitching.edge_coordinates.size();
+	const_n= 2*eS.edge_coordinates.size();
 	IJV.resize(15*const_n);
 	lambda_hessian_IJV.resize(228*const_n);
 
@@ -18,7 +18,7 @@ MountainValleyConstraints::MountainValleyConstraints(const Dog& dog,const DogEdg
 		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
 			// get the 3 points
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-			auto ep_p = ep.getPositionInMesh(init_dog.getV()); auto ep_b_p = ep_b.getPositionInMesh(init_dog.getV()); auto ep_f_p = ep_f.getPositionInMesh(init_dog.getV());
+			auto ep_p = ep.getPositionInMesh(dog.getV()); auto ep_b_p = ep_b.getPositionInMesh(dog.getV()); auto ep_f_p = ep_f.getPositionInMesh(dog.getV());
 
 			Eigen::RowVector3d b = (ep_f_p-ep_p).cross(ep_p-ep_b_p).normalized();
 			Eigen::RowVector3d z_axis = Eigen::RowVector3d(0,0,1);
@@ -48,7 +48,7 @@ Eigen::VectorXd MountainValleyConstraints::Vals(const Eigen::VectorXd& x) const 
 				// Flip the edge direction
 				std::swap(ep_b,ep_f);
 			}
-			int fold_v_indices[2]; init_dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
 
 			int ep_0_v1_i(ep.edge.v1), ep_0_v2_i(ep.edge.v2); const double ep_0_t(ep.t);
 			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
@@ -110,7 +110,7 @@ void MountainValleyConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 				// Flip the edge direction
 				std::swap(ep_b,ep_f);
 			}
-			int fold_v_indices[2]; init_dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
 
 			int ep_0_v1_i(ep.edge.v1), ep_0_v2_i(ep.edge.v2); const double ep_0_t(ep.t);
 			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
@@ -228,7 +228,7 @@ void MountainValleyConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x,
 				// Flip the edge direction
 				std::swap(ep_b,ep_f);
 			}
-			int fold_v_indices[2]; init_dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
 
 			int ep_0_v1_i(ep.edge.v1), ep_0_v2_i(ep.edge.v2); const double ep_0_t(ep.t);
 			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
