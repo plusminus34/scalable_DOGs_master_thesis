@@ -12,6 +12,7 @@ using namespace std;
 
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
+    double current_merit_p = merit_p;
     x = x0;
     if (!is_feasible) {
         // check feasibility
@@ -69,7 +70,7 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
 }
 
 double FeasibleIneqInteriorPoint::get_max_alpha(const Eigen::VectorXd& x, const Eigen::VectorXd& d) {
-    const thetha = 0.995;
+    const double thetha = 0.995;
     double alpha = 1;
     int s_base = x.rows()+lambda.rows();
     int z_base = s_base + s.rows();
@@ -96,10 +97,9 @@ double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& x, double mu, Obje
         Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
     // Get the log of the inequalities
     auto ineq_log_vals = ineq_constraints.Vals(x);
-    for (int i = 0; i <ineq_vals.rows(); i++) {
-        ineq_log_vals(i) = log(max(0,ineq_log_vals(i)));
+    for (int i = 0; i < ineq_log_vals.rows(); i++) {
+        ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
     }
-
     return f.obj(x) -mu*ineq_log_vals.sum() + merit*eq_constraints.Vals(x).norm()+merit*(ineq_constraints.Vals(x)-s).norm();
 }
 
