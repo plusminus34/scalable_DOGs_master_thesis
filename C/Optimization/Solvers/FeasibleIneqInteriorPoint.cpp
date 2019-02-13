@@ -38,11 +38,11 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     
     double opt_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 );
     cout << "opt_error = " << opt_error << endl;
-    while ( opt_error < tol) {
+    while ( opt_error > tol) {
         std::cout << "mu = " << mu << std::endl;
         cin >> wait;
         double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
-        while ( current_kkt_mu_error < mu) { // tol_mu = mu as in Nocedal
+        while ( current_kkt_mu_error > mu) { // tol_mu = mu as in Nocedal
             std::cout << "current_kkt_mu_error = " << current_kkt_mu_error << " performing another iter" << std::endl;
             cin >> wait;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
