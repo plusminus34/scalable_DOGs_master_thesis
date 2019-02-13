@@ -62,9 +62,9 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
                                 double mu, Eigen::VectorXd& x, double current_merit) {
     Eigen::VectorXd step_d;
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
-    double alpha = get_max_alpha(x,d);
-    ineq_linesearch(x,d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
-    update_variables(x,d,alpha);
+    double alpha = get_max_alpha(x,step_d);
+    ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
+    update_variables(x,step_d,alpha);
     return alpha;
 }
 
@@ -88,7 +88,7 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     for (int i = 0; i < x.rows(); i++) x(i) += alpha*d(i);
     for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
     //for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
-    s = ineq_constraints.Vals(); // instead of line search, so that the merit function will get infinite
+    s = ineq_constraints.Vals(x); // instead of line search, so that the merit function will get infinite
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
 }
 
@@ -140,13 +140,13 @@ double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objecti
 
     auto jacobian = eq_constraints.Jacobian(x);
     auto jacobian_ineq = ineq_constraints.Jacobian(x);
-    auto g = obj.grad(x0)
+    auto g = obj.grad(x);
     double grad_error = (g-jacobian.transpose()*lambda-jacobian_ineq.transpose()*z).norm();
 
     double sz_minus_m_error = 0;
     for (int i = 0; i < s.rows(); i++) sz_minus_m_error += sqrt(pow(s(i)*z(i)-mu,2));
-    double eq_const_error = eq_constraints.Vals().norm();
-    double ineq_const_error = (ineq_constraints.Vals()-s).norm();
+    double eq_const_error = eq_constraints.Vals(x).norm();
+    double ineq_const_error = (ineq_constraints.Vals(x)-s).norm();
     return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
 }
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
@@ -203,7 +203,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
 
     // Add zeros along the rest of the diagonal
     // This is important since Pardiso requires the diagonal to be explicitly included in the matrix, even if it's zero
-    for (int i = var_n+s; i < var_n+s+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
+    for (int i = var_n+s_rows; i < var_n+s_rows+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
 
     if ( A.rows() == 0) {
       A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);

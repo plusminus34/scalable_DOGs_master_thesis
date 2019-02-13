@@ -33,7 +33,7 @@ private:
 								   const std::vector<Eigen::Triplet<double> >& ineq_jacobian_ijv, int ineq_const_n);
 
 	double kkt_mu_error(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
-		double mu, double tol);
+		double mu);
 
 	double get_max_alpha(const Eigen::VectorXd& x, const Eigen::VectorXd& d);
 	void update_variables(Eigen::VectorXd& x,const Eigen::VectorXd& d, Constraints& ineq_constraints, double alpha);
