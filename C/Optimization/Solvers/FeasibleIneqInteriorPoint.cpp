@@ -15,13 +15,16 @@ using namespace std;
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
     x = x0;
+    if (!is_feasible) {
+        // check feasibility
+        get_feasible_point(x0,obj,eq_constraints,ineq_constraints,x);
+        is_feasible = true; 
+    }
+
     double mu = 1; double mu_sigma = 0.1; Eigen::VectorXd step_d;
     while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
         while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < tol) {
-            compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
-            double max_alpha = get_max_alpha(x,d);
-            double alpha = ineq_linesearch(x,d,max_alpha)
-            update_variables(x,d,alpha);
+            single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
         }
         mu = mu*mu_sigma;
     }
@@ -39,6 +42,33 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     }
     */
     return obj.obj(x);
+}
+double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
+            Constraints& ineq_constraints, Eigen::VectorXd& x) {
+    const double MAX_FEASIBLE_ITER = 10;
+    double mu = 0.5; int iter = 0;
+    auto ineq_vals = ineq_constraints.Vals(x);
+    bool feasible = ineq_vals.minCoeff() > 0;
+    while ((!feasible) && iter < MAX_FEASIBLE_ITER) {
+        mu *=2; iter++;
+        cout << "Trying to find a feasible point: iter = " << iter << ", mu = " << mu << endl;
+        // Retain feasiblity, currently assume inequalities are 0 or very close to it
+        single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
+        ineq_vals = ineq_constraints.Vals(x);
+        feasible = ineq_vals.minCoeff() > 0;
+    }
+    if (feasible) cout << "Feasible!" << endl;
+    else cout << "Failure: could not reach feasible point!" << endl;
+}
+
+double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+        double mu, Eigen::VectorXd& x, double current_merit) {
+
+    compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
+    double max_alpha = get_max_alpha(x,d);
+    double alpha = ineq_linesearch(x,d,max_alpha)
+    update_variables(x,d,alpha);
+    return alpha;
 }
 
 double FeasibleIneqInteriorPoint::get_max_alpha(const Eigen::VectorXd& x, const Eigen::VectorXd& d) {

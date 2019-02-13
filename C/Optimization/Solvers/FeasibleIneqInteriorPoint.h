@@ -16,8 +16,10 @@ public:
 			Constraints& ineq_constraints, Eigen::VectorXd& x) = 0;
 
 private:
-	double homotopy_optimization(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
+	double single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& x, double current_merit);
+	double get_feasible_point(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
+            Constraints& ineq_constraints, Eigen::VectorXd& x);
 	void compute_step_direction(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& d, double current_merit);
 
@@ -48,6 +50,7 @@ private:
 
 	PardisoSolver m_solver;
 
+	bool is_feasible = false;
 	bool first_solve = true;
 	// lambda are the equalities multipliers, 's' are the slack variables and 'z' are their corresponding multipliers
 	Eigen::VectorXd lambda,s,z;
