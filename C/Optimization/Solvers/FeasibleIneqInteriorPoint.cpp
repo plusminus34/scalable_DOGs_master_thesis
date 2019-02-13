@@ -41,7 +41,7 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     */
     return obj.obj(x);
 }
-double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, double current_merit_p, Objective& obj, Constraints& eq_constraints,
+void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, double current_merit_p, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
     const double MAX_FEASIBLE_ITER = 10;
     double mu = 0.5; int iter = 0;
