@@ -189,10 +189,10 @@ double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objecti
     if (mu == 0) {
         if (ineq_constraints.Vals(x).minCoeff() < 0) {ineq_const_error = numeric_limits<double>::infinity();}
     }
-    std::cout << "\tgrad_error = " << grad_error << std::endl;
-    std::cout << "\tsz_minus_m_error = " << sz_minus_m_error << std::endl;
-    std::cout << "\teq_const_error = " << eq_const_error << std::endl;
-    std::cout << "\tineq_const_error = " << ineq_const_error << std::endl;
+    //std::cout << "\tgrad_error = " << grad_error << std::endl;
+    //std::cout << "\tsz_minus_m_error = " << sz_minus_m_error << std::endl;
+    //std::cout << "\teq_const_error = " << eq_const_error << std::endl;
+    //std::cout << "\tineq_const_error = " << ineq_const_error << std::endl;
     return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
 }
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
