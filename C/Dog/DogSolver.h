@@ -98,7 +98,7 @@ public:
 private:
 	Dog& dog;
 	bool is_constrained;
-	//MountainValleyConstraints mvFoldingConstraints;
+	MountainValleyConstraints mvFoldingConstraints;
 
 	// Optimization parameters
 	Eigen::VectorXd init_x0;

@@ -18,11 +18,17 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
         // check feasibility
         get_feasible_point(x,current_merit_p,obj,eq_constraints,ineq_constraints,x);
     }
-
+    cout << "Optimizing!" << endl;
+    int wait;
     double mu = 1; double mu_sigma = 0.1;
     while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
-        while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < mu) { // tol_mu = mu as in Nocedal
+        std::cout << "mu = " << mu << std::endl;
+        cin >> wait;
+        double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
+        while ( current_kkt_mu_error < mu) { // tol_mu = mu as in Nocedal
+            std::cout << "current_kkt_mu_error = " << current_kkt_mu_error << " performing another iter" << std::endl;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
+            current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         }
         mu = mu*mu_sigma;
     }
@@ -48,6 +54,8 @@ void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, do
     auto ineq_vals = ineq_constraints.Vals(x);
     is_feasible = ineq_vals.minCoeff() > 0;
     while ((!is_feasible) && iter < MAX_FEASIBLE_ITER) {
+        std::cout << "ineq_vals = " << ineq_vals << std::endl;
+        int wait; cin >> wait;
         mu *=2; iter++;
         cout << "Trying to find a feasible point: iter = " << iter << ", mu = " << mu << endl;
         // Retain feasiblity, currently assume inequalities are 0 or very close to it
@@ -55,6 +63,7 @@ void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, do
         ineq_vals = ineq_constraints.Vals(x);
         is_feasible = ineq_vals.minCoeff() > 0;
     }
+    std::cout << "Final ineq_vals = " << ineq_vals << std::endl;
     if (is_feasible) cout << "Feasible!" << endl;
     else cout << "Failure: could not reach feasible point!" << endl;
 }

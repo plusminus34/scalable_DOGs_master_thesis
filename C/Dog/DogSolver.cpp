@@ -10,7 +10,8 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         std::vector<std::pair<int,int>>& pairs
         /*CurvedFoldingBiasObjective& curvedFoldingBiasObj*/) :
 
-          dog(dog), //mvFoldingConstraints(dog, std::vector<bool>(dog.getEdgeStitching().stitched_curves.size(),true),
+          dog(dog),
+          mvFoldingConstraints(dog, std::vector<bool>(dog.getEdgeStitching().stitched_curves.size(),true)),
           init_x0(init_x0), p(p),
           constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
           obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,/*curvedFoldingBiasObj,*/ p),
@@ -90,7 +91,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       break;
     }
     case SOLVE_NEWTON_FLOW: {
-      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      //newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      interiorPt.solve_constrained(x0, obj.compObj, constraints.compConst, mvFoldingConstraints, x);
       break;
     }
     case SOLVE_NONE: {
