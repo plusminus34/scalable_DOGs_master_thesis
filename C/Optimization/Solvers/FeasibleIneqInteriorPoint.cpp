@@ -8,29 +8,48 @@
 #include "igl/cat.h"
 #include "igl/matlab_format.h"
 
+#include <limits>
+
 using namespace std;
 
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
     double current_merit_p = merit_p;
     x = x0;
+
+    double mu = 1; double mu_sigma = 0.1;
+    if (lambda.rows()!= eq_constraints.getConstNum()) {
+        lambda.resize(eq_constraints.getConstNum());
+        lambda.setZero();
+        // init ineq slacks 's'
+        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-6;
+        // init slacks multipliers 'z'
+        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
+    }
+
+    /*
     if (!is_feasible) {
         // check feasibility
         get_feasible_point(x,current_merit_p,obj,eq_constraints,ineq_constraints,x);
     }
+    */
     cout << "Optimizing!" << endl;
-    int wait;
-    double mu = 1; double mu_sigma = 0.1;
-    while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
+    int wait; cin >> wait;
+    
+    double opt_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 );
+    cout << "opt_error = " << opt_error << endl;
+    while ( opt_error < tol) {
         std::cout << "mu = " << mu << std::endl;
         cin >> wait;
         double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         while ( current_kkt_mu_error < mu) { // tol_mu = mu as in Nocedal
             std::cout << "current_kkt_mu_error = " << current_kkt_mu_error << " performing another iter" << std::endl;
+            cin >> wait;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
             current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         }
         mu = mu*mu_sigma;
+        opt_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 );
     }
     /*
     auto prev_x = x0; double current_merit_p = merit_p;
@@ -97,15 +116,16 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     int z_base = s_base + s.rows();
     for (int i = 0; i < x.rows(); i++) x(i) += alpha*d(i);
     for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
-    //for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
-    s = ineq_constraints.Vals(x); // instead of line search, so that the merit function will get infinite
+    for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
+    //s = ineq_constraints.Vals(x); // instead of line search, so that the merit function will get infinite
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
 }
 
 double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& x, double mu, Objective& f, 
         Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
     // Get the log of the inequalities
-    auto ineq_log_vals = ineq_constraints.Vals(x);
+    //auto ineq_log_vals = ineq_constraints.Vals(x);
+    auto ineq_log_vals = s;
     cout << "ineq_log_vals min coeff = " << ineq_log_vals.minCoeff() << endl;
     for (int i = 0; i < ineq_log_vals.rows(); i++) {
         ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
@@ -128,7 +148,7 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
     
     //cout << "cur_e = " << cur_e << endl;
     cout << "cur_e = " << cur_e << " old_energy = " << old_energy << endl;
-    cout << "cur_e >= old_energy = " << cur_e >= old_energy << endl;
+    cout << "cur_e >= old_energy = " << (cur_e >= old_energy) << endl;
     if (cur_e >= old_energy) {
       step_size /= 2;
       //cout << "step_size = " << step_size << endl;
@@ -161,6 +181,9 @@ double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objecti
     for (int i = 0; i < s.rows(); i++) sz_minus_m_error += sqrt(pow(s(i)*z(i)-mu,2));
     double eq_const_error = eq_constraints.Vals(x).norm();
     double ineq_const_error = (ineq_constraints.Vals(x)-s).norm();
+    if (mu == 0) {
+        if (ineq_constraints.Vals(x).minCoeff() < 0) {ineq_const_error = numeric_limits<double>::infinity();}
+    }
     return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
 }
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
@@ -251,14 +274,6 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     int vnum = x.rows()/3;
     double new_e;
 
-    if (lambda.rows()!= eq_constraints.getConstNum()) {
-        lambda.resize(eq_constraints.getConstNum());
-        lambda.setZero();
-        // init ineq slacks 's'
-        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-3;
-        // init slacks multipliers 'z'
-        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
-    }
     //std::cout << "lagrange multipliers norm = " << lambda.norm() << std::endl;
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
