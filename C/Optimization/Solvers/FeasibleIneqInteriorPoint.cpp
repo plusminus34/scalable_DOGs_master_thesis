@@ -213,13 +213,14 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     // Add zeros along the rest of the diagonal
     // This is important since Pardiso requires the diagonal to be explicitly included in the matrix, even if it's zero
     for (int i = var_n+s_rows; i < var_n+s_rows+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
-
+    cout << "here" << endl;
     if ( A.rows() == 0) {
-      A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);
+      A =  Eigen::SparseMatrix<double>(var_n+const_n+2*s_rows,var_n+const_n+2*s_rows);
       igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
     } else {
       igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
     }
+    cout << "there" << endl;
 }
 
 void FeasibleIneqInteriorPoint::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
@@ -243,6 +244,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system(const Eigen::SparseMatrix<doubl
 
 void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints, 
         double mu, Eigen::VectorXd& step_d, double current_merit) {
+    cout << "computing_step_direction" << std::endl;
     int vnum = x.rows()/3;
     double new_e;
 
@@ -272,6 +274,7 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     auto ineq_jacobian_ijv = ineq_constraints.update_and_get_jacobian_ijv(x);
     auto jacobian_time = timer.getElapsedTime()-t;
 
+    cout << "building kkt system" << endl;
     t = timer.getElapsedTime();
     //Eigen::SparseMatrix<double> A; build_kkt_system(hessian,jacobian,A);
     int var_n = x.rows(); int const_n = eq_constraints.getConstNum(); int ineq_const_n = ineq_constraints.getConstNum();
@@ -283,9 +286,6 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     t = timer.getElapsedTime();
 
     //energy->check_grad(x);
-    double old_e = f.obj(x);
-    Eigen::VectorXd g(f.grad(x));
-    Eigen::VectorXd d(g.rows()); Eigen::VectorXd lambda_d(lambda.rows());
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
@@ -312,7 +312,9 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     
     //m_solver.factorize();
 
+    cout << "building rhs" << endl;
     // build rhs as the negative of the rhs Nocedal 19.12
+    Eigen::VectorXd g = f.grad(x);
     Eigen::VectorXd rhs_upper = g-jacobian.transpose()*lambda-jacobian_ineq.transpose()*z;
     Eigen::VectorXd rhs_upper_below(s.rows()); for (int i = 0; i < s.rows(); i++) rhs_upper_below(i) = mu/s(i)-z(i);
     Eigen::VectorXd constraints_deviation = -1*eq_constraints.Vals(x);
@@ -320,7 +322,9 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     Eigen::VectorXd rhs(rhs_upper.rows()+rhs_upper_below.rows()+constraints_deviation.rows()+ineq_constraints_deviation.rows());
     rhs << rhs_upper,rhs_upper_below,constraints_deviation,ineq_constraints_deviation;
     
+    cout << "solving" << endl;
     m_solver.solve(rhs,step_d);
+    cout << "solved" << endl;
     //g_const = -1*g_const;
     
     //cout << "solving!" << endl;
