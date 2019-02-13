@@ -9,21 +9,18 @@
 #include "igl/matlab_format.h"
 
 using namespace std;
-//m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
-                //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
-                //m_solver.iparm[20] = 1;
+
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
     x = x0;
     if (!is_feasible) {
         // check feasibility
-        get_feasible_point(x0,obj,eq_constraints,ineq_constraints,x);
-        is_feasible = true; 
+        get_feasible_point(x,obj,eq_constraints,ineq_constraints,x);
     }
 
-    double mu = 1; double mu_sigma = 0.1; Eigen::VectorXd step_d;
+    double mu = 1; double mu_sigma = 0.1;
     while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
-        while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < tol) {
+        while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < mu) { // tol_mu = mu as in Nocedal
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
         }
         mu = mu*mu_sigma;
@@ -48,25 +45,25 @@ double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, 
     const double MAX_FEASIBLE_ITER = 10;
     double mu = 0.5; int iter = 0;
     auto ineq_vals = ineq_constraints.Vals(x);
-    bool feasible = ineq_vals.minCoeff() > 0;
-    while ((!feasible) && iter < MAX_FEASIBLE_ITER) {
+    is_feasible = ineq_vals.minCoeff() > 0;
+    while ((!is_feasible) && iter < MAX_FEASIBLE_ITER) {
         mu *=2; iter++;
         cout << "Trying to find a feasible point: iter = " << iter << ", mu = " << mu << endl;
         // Retain feasiblity, currently assume inequalities are 0 or very close to it
         single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
         ineq_vals = ineq_constraints.Vals(x);
-        feasible = ineq_vals.minCoeff() > 0;
+        is_feasible = ineq_vals.minCoeff() > 0;
     }
-    if (feasible) cout << "Feasible!" << endl;
+    if (is_feasible) cout << "Feasible!" << endl;
     else cout << "Failure: could not reach feasible point!" << endl;
 }
 
 double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
-        double mu, Eigen::VectorXd& x, double current_merit) {
-
+                                double mu, Eigen::VectorXd& x, double current_merit) {
+    Eigen::VectorXd step_d;
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
-    double max_alpha = get_max_alpha(x,d);
-    double alpha = ineq_linesearch(x,d,max_alpha)
+    double alpha = get_max_alpha(x,d);
+    ineq_linesearch(x,d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
     update_variables(x,d,alpha);
     return alpha;
 }
@@ -93,6 +90,49 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     //for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
     s = ineq_constraints.Vals(); // instead of line search, so that the merit function will get infinite
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
+}
+
+double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& x, double mu, Objective& f, 
+        Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
+    // Get the log of the inequalities
+    auto ineq_log_vals = ineq_constraints.Vals(x);
+    for (int i = 0; i <ineq_vals.rows(); i++) {
+        ineq_log_vals(i) = log(max(0,ineq_log_vals(i)));
+    }
+
+    return f.obj(x) -mu*ineq_log_vals.sum() + merit*eq_constraints.Vals(x).norm()+merit*(ineq_constraints.Vals(x)-s).norm();
+}
+
+double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, double mu, Objective& f, 
+        Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
+  double old_energy = merit_func(x, mu, f, eq_constraints, ineq_constraints, merit);
+  double new_energy = old_energy;
+  int cur_iter = 0; int MAX_STEP_SIZE_ITER = 22;
+
+  while (new_energy >= old_energy && cur_iter < MAX_STEP_SIZE_ITER)
+  {
+    Eigen::VectorXd new_x = x + step_size * d;
+
+    double cur_e = merit_func(new_x, mu, f, eq_constraints, ineq_constraints, merit);
+    
+    //cout << "cur_e = " << cur_e << endl;
+    if (cur_e >= old_energy) {
+      step_size /= 2;
+      //cout << "step_size = " << step_size << endl;
+    } else {
+      x = new_x;
+      new_energy = cur_e;
+    }
+    cur_iter++;
+  }
+  if (cur_iter < MAX_STEP_SIZE_ITER) {
+    //cout << "ls success!" << endl;
+  } else {
+    cout << "ls failure, is it a local minimum?" << endl;
+    return old_energy;
+  }
+  //cout << "step = " << step_size << endl;
+  return new_energy;
 }
 
 double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
