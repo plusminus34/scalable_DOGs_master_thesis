@@ -158,7 +158,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     //  and diagonal matrix along the J to make sure the whole diagonal is nnz (needed for Pardiso solver)
     int ijv_idx = 0;
     if (kkt_IJV.size() == 0) {
-        int kkt_size = hessian_IJV.size() + const_lambda_hessian.size() + 2*jacobian_IJV.size() + var_n + const_n;
+        int kkt_size = hessian_IJV.size() + const_lambda_hessian.size() + 2*jacobian_IJV.size() + var_n + const_n + ineq_const_n;
         kkt_size += ineq_lambda_hessian.size() + 2*ineq_jacobian_ijv.size() + s.size() + 2*z.size();
         kkt_IJV.resize(kkt_size); int ijv_idx = 0;
     }
@@ -177,13 +177,33 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 
     // Add both J and J transpose
+    int s_rows = s.rows();
     for (int i = 0; i < jacobian_IJV.size(); i++) {
         int row = jacobian_IJV[i].row(), col = jacobian_IJV[i].col(); double val = jacobian_IJV[i].value();
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n, val); // Jt columed offseted at var_n
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n, col, val); // J offseted in var_n
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n+s_rows, val); // Jt columed offseted at var_n + s_rows
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n+s_rows, col, val); // J offseted in var_n
     }
-    // add zeros along var_n+i,var_n_i
-    for (int i = var_n; i < var_n+const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
+    // Add inequalities jacobian and transpose
+    int lambda_rows = lambda.rows();
+    for (int i = 0; i < ineq_jacobian_ijv.size(); i++) {
+        int row = ineq_jacobian_ijv[i].row(), col = ineq_jacobian_ijv[i].col(); double val = jacobian_IJV[i].value();
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n+s_rows+lambda_rows, val); // Jt columed offseted at var_n + s_rows + lambda_rows
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n+s_rows+lambda_rows, col, val); // J offseted in var_n
+    }
+
+    // add diagonal matrix with S^-1Z
+    for (int i = 0; i < s.size(); i++) {
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(var_n+i,var_n+i, z(i)/s(i));
+    }
+    // add minus Identity at size z
+    for (int i = 0; i < s.size(); i++) {
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(var_n+i,var_n+s_rows+lambda_rows+i, -1);
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(var_n+s_rows+lambda_rows+i,var_n+i, -1);
+    }
+
+    // Add zeros along the rest of the diagonal
+    // This is important since Pardiso requires the diagonal to be explicitly included in the matrix, even if it's zero
+    for (int i = var_n+s; i < var_n+s+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
 
     if ( A.rows() == 0) {
       A =  Eigen::SparseMatrix<double>(var_n+const_n,var_n+const_n);
@@ -226,7 +246,7 @@ double FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& 
         // init slacks multipliers 'z'
         z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
     }
-    std::cout << "lagrange multipliers norm = " << lambda.norm() << std::endl;
+    //std::cout << "lagrange multipliers norm = " << lambda.norm() << std::endl;
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian
