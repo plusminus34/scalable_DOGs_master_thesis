@@ -17,7 +17,7 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     double current_merit_p = merit_p;
     x = x0;
 
-    double mu = 1; double mu_sigma = 0.1;
+    double mu = 100; double mu_sigma = 0.1;
     if (lambda.rows()!= eq_constraints.getConstNum()) {
         lambda.resize(eq_constraints.getConstNum());
         lambda.setZero();
@@ -43,11 +43,13 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
         cin >> wait;
         double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         while ( current_kkt_mu_error > mu) { // tol_mu = mu as in Nocedal
-            std::cout << "current_kkt_mu_error = " << current_kkt_mu_error << " performing another iter" << std::endl;
+            std::cout << "current_kkt_mu_error before = " << current_kkt_mu_error << " performing another iter" << std::endl;
             cin >> wait;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
             current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
+            std::cout << "current_kkt_mu_error after = " << current_kkt_mu_error << endl;
         }
+        exit(1);
         mu = mu*mu_sigma;
         opt_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 );
     }
