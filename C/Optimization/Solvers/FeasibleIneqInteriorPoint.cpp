@@ -22,7 +22,7 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
         lambda.resize(eq_constraints.getConstNum());
         lambda.setZero();
         // init ineq slacks 's'
-        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-6;
+        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-2;
         // init slacks multipliers 'z'
         z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
     }
@@ -92,6 +92,7 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
     Eigen::VectorXd step_d;
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
     double alpha = get_max_alpha(x,step_d);
+    std::cout << "max alpha = " << alpha << std::endl;
     ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
     if (alpha) update_variables(x,step_d,ineq_constraints, alpha);
     return alpha;
@@ -121,34 +122,36 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
 }
 
-double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& x, double mu, Objective& f, 
+double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& new_x, Eigen::VectorXd& new_s, double mu, Objective& f, 
         Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
     // Get the log of the inequalities
     //auto ineq_log_vals = ineq_constraints.Vals(x);
-    auto ineq_log_vals = s;
+    auto ineq_log_vals = new_s;
     cout << "ineq_log_vals min coeff = " << ineq_log_vals.minCoeff() << endl;
     for (int i = 0; i < ineq_log_vals.rows(); i++) {
         ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
     }
-    return f.obj(x) -mu*ineq_log_vals.sum() + merit*eq_constraints.Vals(x).norm()+merit*(ineq_constraints.Vals(x)-s).norm();
+    return f.obj(new_x) -mu*ineq_log_vals.sum() + merit*eq_constraints.Vals(new_x).norm()+merit*(ineq_constraints.Vals(new_x)-new_s).norm();
 }
 
 double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, double mu, Objective& f, 
         Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
-  double old_energy = merit_func(x, mu, f, eq_constraints, ineq_constraints, merit);
+  double old_energy = merit_func(x,s,mu, f, eq_constraints, ineq_constraints, merit);
   double new_energy = old_energy;
   int cur_iter = 0; int MAX_STEP_SIZE_ITER = 22;
 
+  int x_rows = x.rows();
   while (new_energy >= old_energy && cur_iter < MAX_STEP_SIZE_ITER)
   {
-    Eigen::VectorXd new_x = x + step_size * d;
+    Eigen::VectorXd new_x = x; Eigen::VectorXd new_s = s;
+    for (int i = 0; i < new_x.rows();i++) new_x(i) += step_size*d(i);
+    for (int i = 0; i < new_s.rows();i++) new_s(i) += step_size*d(x_rows+i);
 
     cout << "step size = " << step_size << endl;
-    double cur_e = merit_func(new_x, mu, f, eq_constraints, ineq_constraints, merit);
+    double cur_e = merit_func(new_x, new_s, mu, f, eq_constraints, ineq_constraints, merit);
     
     //cout << "cur_e = " << cur_e << endl;
     cout << "cur_e = " << cur_e << " old_energy = " << old_energy << endl;
-    cout << "cur_e >= old_energy = " << (cur_e >= old_energy) << endl;
     if (cur_e >= old_energy) {
       step_size /= 2;
       //cout << "step_size = " << step_size << endl;
@@ -210,6 +213,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     }
     for (int i = 0; i < ineq_lambda_hessian.size(); i++) {
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(ineq_lambda_hessian[i].row(),ineq_lambda_hessian[i].col(),ineq_lambda_hessian[i].value());
+        //kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(ineq_lambda_hessian[i].row(),ineq_lambda_hessian[i].col(),0);
     }
     for (int i = 0; i < var_n; i++) { kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,-eps);}
 

@@ -40,7 +40,7 @@ private:
 
 	double ineq_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, double mu, Objective& f, 
 		Constraints& eq_constraints, Constraints& ineq_constraints, double current_merit);
-	double merit_func(Eigen::VectorXd& x, double mu, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints,
+	double merit_func(Eigen::VectorXd& x,Eigen::VectorXd& new_s,double mu, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double current_merit);
 
 	const double& infeasability_epsilon; 
