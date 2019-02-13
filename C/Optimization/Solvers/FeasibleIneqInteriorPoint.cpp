@@ -54,10 +54,10 @@ void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, do
     auto ineq_vals = ineq_constraints.Vals(x);
     is_feasible = ineq_vals.minCoeff() > 0;
     while ((!is_feasible) && iter < MAX_FEASIBLE_ITER) {
-        std::cout << "ineq_vals = " << ineq_vals << std::endl;
-        int wait; cin >> wait;
-        mu *=2; iter++;
+        // updating mu also requires updating the multipliers
+        mu *=2; for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i); iter++;
         cout << "Trying to find a feasible point: iter = " << iter << ", mu = " << mu << endl;
+        int wait; cin >> wait;
         // Retain feasiblity, currently assume inequalities are 0 or very close to it
         single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
         ineq_vals = ineq_constraints.Vals(x);
@@ -74,7 +74,7 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
     double alpha = get_max_alpha(x,step_d);
     ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
-    update_variables(x,step_d,ineq_constraints, alpha);
+    if (alpha) update_variables(x,step_d,ineq_constraints, alpha);
     return alpha;
 }
 
@@ -106,6 +106,7 @@ double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& x, double mu, Obje
         Constraints& eq_constraints, Constraints& ineq_constraints, double merit) {
     // Get the log of the inequalities
     auto ineq_log_vals = ineq_constraints.Vals(x);
+    cout << "ineq_log_vals min coeff = " << ineq_log_vals.minCoeff() << endl;
     for (int i = 0; i < ineq_log_vals.rows(); i++) {
         ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
     }
@@ -122,9 +123,12 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
   {
     Eigen::VectorXd new_x = x + step_size * d;
 
+    cout << "step size = " << step_size << endl;
     double cur_e = merit_func(new_x, mu, f, eq_constraints, ineq_constraints, merit);
     
     //cout << "cur_e = " << cur_e << endl;
+    cout << "cur_e = " << cur_e << " old_energy = " << old_energy << endl;
+    cout << "cur_e >= old_energy = " << cur_e >= old_energy << endl;
     if (cur_e >= old_energy) {
       step_size /= 2;
       //cout << "step_size = " << step_size << endl;
@@ -138,6 +142,7 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
     //cout << "ls success!" << endl;
   } else {
     cout << "ls failure, is it a local minimum?" << endl;
+    step_size = 0;
     return old_energy;
   }
   //cout << "step = " << step_size << endl;
@@ -169,7 +174,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     if (kkt_IJV.size() == 0) {
         int kkt_size = hessian_IJV.size() + const_lambda_hessian.size() + 2*jacobian_IJV.size() + var_n + const_n + ineq_const_n;
         kkt_size += ineq_lambda_hessian.size() + 2*ineq_jacobian_ijv.size() + s.size() + 2*z.size();
-        kkt_IJV.resize(kkt_size); int ijv_idx = 0;
+        kkt_IJV.resize(kkt_size);
     }
 
     // add hessian+const_lambda_hessian+id*eps_id
@@ -213,14 +218,12 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     // Add zeros along the rest of the diagonal
     // This is important since Pardiso requires the diagonal to be explicitly included in the matrix, even if it's zero
     for (int i = var_n+s_rows; i < var_n+s_rows+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
-    cout << "here" << endl;
     if ( A.rows() == 0) {
       A =  Eigen::SparseMatrix<double>(var_n+const_n+2*s_rows,var_n+const_n+2*s_rows);
       igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
     } else {
       igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
     }
-    cout << "there" << endl;
 }
 
 void FeasibleIneqInteriorPoint::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
