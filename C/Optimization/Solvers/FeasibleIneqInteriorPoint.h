@@ -18,7 +18,7 @@ public:
 private:
 	double single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& x, double current_merit);
-	double get_feasible_point(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
+	double get_feasible_point(const Eigen::VectorXd& x0, double current_merit_p, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x);
 	void compute_step_direction(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
 		double mu, Eigen::VectorXd& d, double current_merit);

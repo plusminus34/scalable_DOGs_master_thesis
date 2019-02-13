@@ -16,13 +16,13 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     x = x0;
     if (!is_feasible) {
         // check feasibility
-        get_feasible_point(x,obj,eq_constraints,ineq_constraints,x);
+        get_feasible_point(x,current_merit_p,obj,eq_constraints,ineq_constraints,x);
     }
 
     double mu = 1; double mu_sigma = 0.1;
     while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 ) < tol) {
         while (kkt_mu_error(x,obj, eq_constraints, ineq_constraints, mu ) < mu) { // tol_mu = mu as in Nocedal
-            single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
+            single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
         }
         mu = mu*mu_sigma;
     }
@@ -41,7 +41,7 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     */
     return obj.obj(x);
 }
-double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
+double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, double current_merit_p, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
     const double MAX_FEASIBLE_ITER = 10;
     double mu = 0.5; int iter = 0;
@@ -51,7 +51,7 @@ double FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, 
         mu *=2; iter++;
         cout << "Trying to find a feasible point: iter = " << iter << ", mu = " << mu << endl;
         // Retain feasiblity, currently assume inequalities are 0 or very close to it
-        single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit);
+        single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
         ineq_vals = ineq_constraints.Vals(x);
         is_feasible = ineq_vals.minCoeff() > 0;
     }
@@ -65,7 +65,7 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
     double alpha = get_max_alpha(x,step_d);
     ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
-    update_variables(x,step_d,alpha);
+    update_variables(x,step_d,ineq_constraints, alpha);
     return alpha;
 }
 
@@ -232,9 +232,8 @@ void FeasibleIneqInteriorPoint::build_kkt_system(const Eigen::SparseMatrix<doubl
     KKT = KKT + id_KKT; // todo: stupid but Paradiso wants to add zeros explicitly
 }
 
-double FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x0, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints, 
-        double mu, Eigen::VectorXd& x, double current_merit) {
-    x = x0;
+void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x, Objective& f, Constraints& eq_constraints, Constraints& ineq_constraints, 
+        double mu, Eigen::VectorXd& step_d, double current_merit) {
     int vnum = x.rows()/3;
     double new_e;
 
@@ -304,16 +303,21 @@ double FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& 
     
     //m_solver.factorize();
 
-    Eigen::VectorXd constraints_deviation = -1*eq_constraints.Vals(x);
+    // build rhs as the negative of the rhs Nocedal 19.12
     Eigen::VectorXd rhs_upper = g-jacobian.transpose()*lambda-jacobian_ineq.transpose()*z;
-    Eigen::VectorXd g_const; igl::cat(1, rhs_upper, constraints_deviation, g_const);
+    Eigen::VectorXd rhs_upper_below(s.rows()); for (int i = 0; i < s.rows(); i++) rhs_upper_below(i) = mu/s(i)-z(i);
+    Eigen::VectorXd constraints_deviation = -1*eq_constraints.Vals(x);
+    Eigen::VectorXd ineq_constraints_deviation = s-1*ineq_constraints.Vals(x);
+    Eigen::VectorXd rhs(rhs_upper.rows()+rhs_upper_below.rows()+constraints_deviation.rows()+ineq_constraints_deviation.rows());
+    rhs << rhs_upper,rhs_upper_below,constraints_deviation,ineq_constraints_deviation;
+    
+    m_solver.solve(rhs,step_d);
     //g_const = -1*g_const;
     
-    Eigen::VectorXd res;
     //cout << "solving!" << endl;
     //res = solver.solve(g_const);
-    m_solver.solve(g_const,res);
     
+    /*
     for (int d_i = 0; d_i < g.rows(); d_i++) {d[d_i] = res[d_i];}
     for (int d_i = g.rows(); d_i < res.rows(); d_i++) {lambda_d[d_i-g.rows()] = res[d_i];}
     auto solve_time = timer.getElapsedTime()-t;
@@ -347,5 +351,6 @@ double FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& 
     
     //std::cout << "NewtonKKT: old_e = " << old_e << " new_e = " << new_e << std::endl;
     
-    return new_e;
+    //return new_e;
+
 }
