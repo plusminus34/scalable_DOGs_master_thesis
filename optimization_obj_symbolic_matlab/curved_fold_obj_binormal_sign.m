@@ -117,3 +117,7 @@ ccode(H_simp,'file','curved_fold_obj_binormal_sign_H_simp');
 % Other idea, somehow fix the angle between the tangent and the principle
 % normal or tangent and edges
 taylor(B, vars_without_v1_v2, 'Order', 2)
+
+const_formulation = dot(e1,B) + dot(e2,B);
+const_formulation_H = hessian(const_formulation,vars);
+ccode(const_formulation_H,'file','check');

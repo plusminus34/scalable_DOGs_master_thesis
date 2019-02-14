@@ -71,3 +71,5 @@ ccode(const ,'file','V_fold_vals');
 ccode(gradient(const,vars),'file','V_fold_G');
 
 ccode(lambda*hessian(const,vars),'file','V_fold_H');
+
+ccode(lambda*hessian(log(const),vars),'file','V_fold_E_H');
