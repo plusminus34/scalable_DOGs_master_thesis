@@ -248,9 +248,9 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n+s_rows+lambda_rows, col, val); // J offseted in var_n
     }
 
-    // add diagonal matrix with S^-1Z
+    // add diagonal matrix with -1*S^-1Z
     for (int i = 0; i < s.size(); i++) {
-        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(var_n+i,var_n+i, z(i)/s(i));
+        kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(var_n+i,var_n+i, -z(i)/s(i));
     }
     // add minus Identity at size z
     for (int i = 0; i < s.size(); i++) {
