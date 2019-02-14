@@ -6,7 +6,8 @@ MountainValleyConstraints::MountainValleyConstraints(const Dog& dog, std::vector
 																					dog(dog), eS(dog.getEdgeStitching()),
 																					is_mountain(is_mountain) {
     // TODO: different handling of vertices (maybe no consatraints there?)
-	const_n= 2*(eS.edge_coordinates.size()-2);
+	//const_n= 2*(eS.edge_coordinates.size()-2);
+	const_n= 2;//*(eS.edge_coordinates.size()-2);
 	IJV.resize(21*const_n);
 	lambda_hessian_IJV.resize(228*const_n);
 
@@ -15,7 +16,8 @@ MountainValleyConstraints::MountainValleyConstraints(const Dog& dog, std::vector
 	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];	
 		// Go through all the inner vertices in a curve
-		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// get the 3 points
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
 			auto ep_p = ep.getPositionInMesh(dog.getV()); auto ep_b_p = ep_b.getPositionInMesh(dog.getV()); auto ep_f_p = ep_f.getPositionInMesh(dog.getV());
@@ -40,7 +42,8 @@ Eigen::VectorXd MountainValleyConstraints::Vals(const Eigen::VectorXd& x) const 
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			bool flip_binormal_sign = (is_mountain[curve_i] ^ flip_binormal[curve_i][edge_idx-1]);
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
@@ -102,7 +105,8 @@ void MountainValleyConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			bool flip_binormal_sign = (is_mountain[curve_i] ^ flip_binormal[curve_i][edge_idx-1]);
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
@@ -220,7 +224,8 @@ void MountainValleyConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x,
 	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			bool flip_binormal_sign = (is_mountain[curve_i] ^ flip_binormal[curve_i][edge_idx-1]);
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];

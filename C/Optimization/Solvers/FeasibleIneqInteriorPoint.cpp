@@ -90,12 +90,12 @@ void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, do
 double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
                                 double mu, Eigen::VectorXd& x, double current_merit) {
     Eigen::VectorXd step_d;
-    cout << "computing_step_direction" << endl;
+    //cout << "computing_step_direction" << endl;
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
-    cout << "getting alpha" << endl;
+    //cout << "getting alpha" << endl;
     double alpha = get_max_alpha(x,step_d);
     std::cout << "max alpha = " << alpha << std::endl;
-    //ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
+    ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
     if (alpha) update_variables(x,step_d,ineq_constraints, alpha);
     std::cout << "alpha = " << alpha << std::endl;
     return alpha;
@@ -124,7 +124,7 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
     cout << "alpha was " << alpha << endl;
-    cout << "s = " << s << endl;
+    //cout << "s = " << s << endl;
     int wait; cin >> wait;
 }
 
@@ -206,6 +206,7 @@ double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objecti
     std::cout << "\tsz_minus_m_error = " << sz_minus_m_error << std::endl;
     std::cout << "\teq_const_error = " << eq_const_error << std::endl;
     std::cout << "\tineq_const_error = " << ineq_const_error << std::endl;
+    cout << "ineq_constraints.Vals(x).minCoeff() = " << ineq_constraints.Vals(x).minCoeff() << endl;
     return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
 }
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
@@ -343,6 +344,7 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
         m_solver.analyze_pattern();
         m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
         m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
+        //m_solver.iparm[7]  = 5;       /* Max numbers of iterative refinement steps. */
         first_solve = false;
     } else {
         cout << "updating system matrix" << endl;
@@ -381,12 +383,18 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     Eigen::VectorXd px(x.rows()), ps(s.rows()),py(lambda.rows()),pz(z.rows());
     for (int i = 0; i < x.rows(); i++) px(i) = step_d(i);
     for (int i = 0; i < s.rows(); i++) ps(i) = step_d(x.rows()+i);
+    for (int i = 0; i < lambda.rows(); i++) py(i) = step_d(x.rows()+s.rows()+i);
+    for (int i = 0; i < z.rows(); i++) pz(i) = step_d(x.rows()+s.rows()+lambda.rows()+i);
+    cout << "ps = " << ps << endl;
+    int wait; cin >> wait;
     //cout << "ineq_constraints_deviation = " << endl << ineq_constraints_deviation << endl;
     //cout << "rhs = " << rhs << endl;
-    cout << "last equation norm: ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) = " << ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) << endl;
+    //cout << "last equation norm: ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) = " << ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) << endl;
     //cout << "last equation norm: ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)).norm() = " << ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)).norm() << endl;
+    //Eigen::VectorXd BigEps(s.rows()); for (int i = 0; i < s.rows(); i++) BigEps(i) = z(i)/s(i);
+    //cout << "equation norm: ((BigEps.asDiagonal()*ps+pz) - (-1*rhs_upper_below)).norm() = " << ((BigEps.asDiagonal()*ps+pz) - (-1*rhs_upper_below)).norm() << endl;
 
-    exit(1);
+    //exit(1);
 
     //g_const = -1*g_const;
     
