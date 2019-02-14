@@ -145,6 +145,8 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //cout << "solving!" << endl;
     //res = solver.solve(g_const);
     m_solver.solve(g_const,res);
+
+    //cout << "Checking precision: (A*res-g_const).norm() = " << (A*res-g_const).norm() << endl;
     
     for (int d_i = 0; d_i < g.rows(); d_i++) {
         d[d_i] = res[d_i];

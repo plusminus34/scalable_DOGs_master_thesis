@@ -14,17 +14,17 @@ using namespace std;
 
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
-    double current_merit_p = 1e-1*merit_p;
+    double current_merit_p = merit_p;
     x = x0;
 
-    double mu = 1e-5; double mu_sigma = 0.1;
+    double mu = 1; double mu_sigma = 0.1;
     if (lambda.rows()!= eq_constraints.getConstNum()) {
         lambda.resize(eq_constraints.getConstNum());
         lambda.setZero();
         // init ineq slacks 's'
-        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-1;
+        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1;
         // init slacks multipliers 'z'
-        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = 1e-1;//mu/s(i);
+        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
     }
 
     /*
@@ -42,7 +42,7 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
         double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         while ( current_kkt_mu_error > mu) { // tol_mu = mu as in Nocedal
             std::cout << "current_kkt_mu_error before = " << current_kkt_mu_error << " performing another iter" << std::endl;
-            int wait; cin >> wait;
+            //int wait; cin >> wait;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
             current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
             std::cout << "current_kkt_mu_error after = " << current_kkt_mu_error << endl;
@@ -95,7 +95,7 @@ double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0
     cout << "getting alpha" << endl;
     double alpha = get_max_alpha(x,step_d);
     std::cout << "max alpha = " << alpha << std::endl;
-    ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
+    //ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
     if (alpha) update_variables(x,step_d,ineq_constraints, alpha);
     std::cout << "alpha = " << alpha << std::endl;
     return alpha;
@@ -123,6 +123,9 @@ void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen:
     //s = ineq_constraints.Vals(x); // instead of line search, so that the merit function will get infinite
     for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
+    cout << "alpha was " << alpha << endl;
+    cout << "s = " << s << endl;
+    int wait; cin >> wait;
 }
 
 double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& new_x, Eigen::VectorXd& new_s, double mu, Objective& f, 
@@ -243,7 +246,7 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     // Add inequalities jacobian and transpose
     int lambda_rows = lambda.rows();
     for (int i = 0; i < ineq_jacobian_ijv.size(); i++) {
-        int row = ineq_jacobian_ijv[i].row(), col = ineq_jacobian_ijv[i].col(); double val = jacobian_IJV[i].value();
+        int row = ineq_jacobian_ijv[i].row(), col = ineq_jacobian_ijv[i].col(); double val = ineq_jacobian_ijv[i].value();
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(col,row+var_n+s_rows+lambda_rows, val); // Jt columed offseted at var_n + s_rows + lambda_rows
         kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(row+var_n+s_rows+lambda_rows, col, val); // J offseted in var_n
     }
@@ -338,8 +341,8 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();
         m_solver.analyze_pattern();
-        //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
-        //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
+        m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
+        m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
         first_solve = false;
     } else {
         cout << "updating system matrix" << endl;
@@ -372,6 +375,19 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     cout << "solving" << endl;
     m_solver.solve(rhs,step_d);
     cout << "solved" << endl;
+    cout << "result precision: (A*step_d-rhs).norm() = " << (A*step_d-rhs).norm() << endl;
+
+    cout << "checking results" << endl << endl;
+    Eigen::VectorXd px(x.rows()), ps(s.rows()),py(lambda.rows()),pz(z.rows());
+    for (int i = 0; i < x.rows(); i++) px(i) = step_d(i);
+    for (int i = 0; i < s.rows(); i++) ps(i) = step_d(x.rows()+i);
+    //cout << "ineq_constraints_deviation = " << endl << ineq_constraints_deviation << endl;
+    //cout << "rhs = " << rhs << endl;
+    cout << "last equation norm: ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) = " << ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)) << endl;
+    //cout << "last equation norm: ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)).norm() = " << ((jacobian_ineq*px-ps) - (ineq_constraints_deviation)).norm() << endl;
+
+    exit(1);
+
     //g_const = -1*g_const;
     
     //cout << "solving!" << endl;
