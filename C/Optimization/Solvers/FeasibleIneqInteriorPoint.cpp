@@ -34,17 +34,15 @@ double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, O
     }
     */
     cout << "Optimizing!" << endl;
-    int wait; cin >> wait;
     
     double opt_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints, 0 );
     cout << "opt_error = " << opt_error << endl;
     while ( opt_error > tol) {
         std::cout << "mu = " << mu << std::endl;
-        cin >> wait;
         double current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
         while ( current_kkt_mu_error > mu) { // tol_mu = mu as in Nocedal
             std::cout << "current_kkt_mu_error before = " << current_kkt_mu_error << " performing another iter" << std::endl;
-            cin >> wait;
+            int wait; cin >> wait;
             single_homotopy_iter(x, obj, eq_constraints, ineq_constraints, mu, x, current_merit_p);
             current_kkt_mu_error = kkt_mu_error(x,obj, eq_constraints, ineq_constraints,mu );
             std::cout << "current_kkt_mu_error after = " << current_kkt_mu_error << endl;
@@ -92,19 +90,22 @@ void FeasibleIneqInteriorPoint::get_feasible_point(const Eigen::VectorXd& x0, do
 double FeasibleIneqInteriorPoint::single_homotopy_iter(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints, Constraints& ineq_constraints,
                                 double mu, Eigen::VectorXd& x, double current_merit) {
     Eigen::VectorXd step_d;
+    cout << "computing_step_direction" << endl;
     compute_step_direction(x,obj,eq_constraints,ineq_constraints, mu, step_d, current_merit);
+    cout << "getting alpha" << endl;
     double alpha = get_max_alpha(x,step_d);
     std::cout << "max alpha = " << alpha << std::endl;
     ineq_linesearch(x,step_d,alpha,mu,obj,eq_constraints,ineq_constraints,current_merit);
     if (alpha) update_variables(x,step_d,ineq_constraints, alpha);
+    std::cout << "alpha = " << alpha << std::endl;
     return alpha;
 }
 
 double FeasibleIneqInteriorPoint::get_max_alpha(const Eigen::VectorXd& x, const Eigen::VectorXd& d) {
     const double thetha = 0.995;
     double alpha = 1;
-    int s_base = x.rows()+lambda.rows();
-    int z_base = s_base + s.rows();
+    int s_base = x.rows();
+    int z_base = s_base + lambda.rows();
     // fraction to the boundary rule (19.9 in Nocedal), make sure the s and z remain positive
     for (int i = 0; i < s.rows(); i++) if (d(s_base+i) < 0) alpha = std::min(alpha, ((1-thetha)*s(i)-s(i))/d(s_base+i) );
     for (int i = 0; i < z.rows(); i++) if (d(z_base+i) < 0) alpha = std::min(alpha, ((1-thetha)*z(i)-z(i))/d(z_base+i) );
@@ -114,13 +115,13 @@ double FeasibleIneqInteriorPoint::get_max_alpha(const Eigen::VectorXd& x, const 
 void FeasibleIneqInteriorPoint::update_variables(Eigen::VectorXd& x,const Eigen::VectorXd& d, Constraints& ineq_constraints,
             double alpha) {
 
-    int lambda_base = x.rows();
-    int s_base = lambda_base+lambda.rows();
-    int z_base = s_base + s.rows();
+    int s_base = x.rows();
+    int lambda_base = s_base+s.rows();
+    int z_base = s_base + lambda.rows();
     for (int i = 0; i < x.rows(); i++) x(i) += alpha*d(i);
-    for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
     for (int i = 0; i < s.rows(); i++) s(i) += alpha*d(s_base+i);
     //s = ineq_constraints.Vals(x); // instead of line search, so that the merit function will get infinite
+    for (int i = 0; i < lambda.rows(); i++) lambda(i) += alpha*d(lambda_base+i);
     for (int i = 0; i < z.rows(); i++) z(i) += alpha*d(z_base+i);
 }
 
@@ -133,6 +134,9 @@ double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& new_x, Eigen::Vect
     for (int i = 0; i < ineq_log_vals.rows(); i++) {
         ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
     }
+    std::cout << "f.obj(x) = " << f.obj(new_x) << " -mu*ineq_log_vals.sum() = " << -mu*ineq_log_vals.sum() << 
+        " merit*eq_constraints.Vals(new_x).norm() = " << merit*eq_constraints.Vals(new_x).norm() << 
+        " merit*(ineq_constraints.Vals(new_x)-new_s).norm() = " << merit*(ineq_constraints.Vals(new_x)-new_s).norm() << endl;
     return f.obj(new_x) -mu*ineq_log_vals.sum() + merit*eq_constraints.Vals(new_x).norm()+merit*(ineq_constraints.Vals(new_x)-new_s).norm();
 }
 
@@ -141,6 +145,8 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
   double old_energy = merit_func(x,s,mu, f, eq_constraints, ineq_constraints, merit);
   double new_energy = old_energy;
   int cur_iter = 0; int MAX_STEP_SIZE_ITER = 22;
+
+  cout << "d.norm() = " << d.norm() << endl;
 
   int x_rows = x.rows();
   while (new_energy >= old_energy && cur_iter < MAX_STEP_SIZE_ITER)
@@ -158,8 +164,9 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
       step_size /= 2;
       //cout << "step_size = " << step_size << endl;
     } else {
-      x = new_x;
+      //x = new_x; s = new_s;
       new_energy = cur_e;
+      //exit(1);
     }
     cur_iter++;
   }
@@ -253,8 +260,10 @@ void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eige
     for (int i = var_n+s_rows; i < var_n+s_rows+const_n+ineq_const_n; i++) kkt_IJV[ijv_idx++] = Eigen::Triplet<double>(i,i,0);
     if ( A.rows() == 0) {
       A =  Eigen::SparseMatrix<double>(var_n+const_n+2*s_rows,var_n+const_n+2*s_rows);
+      cout << "precomuting sparse matrix" << endl;
       igl::sparse_cached_precompute(kkt_IJV, cached_ijv_data, A);
     } else {
+      cout << "building sparse matrix from cache" << endl;
       igl::sparse_cached(kkt_IJV, cached_ijv_data, A);
     }
 }
@@ -289,13 +298,17 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian
     //auto hessian = f.hessian(x); 
+    cout << "getting hessian info" << endl;
     auto hessian_ijv = f.update_and_get_hessian_ijv(x);
+    cout << "eq hessian info" << endl;
     auto lambda_hessian_ijv = eq_constraints.update_and_get_lambda_hessian(x,lambda);
+    cout << "ineq hessian info" << endl;
     auto lambda_ineq_hessian_ijv = ineq_constraints.update_and_get_lambda_hessian(x,lambda);
     auto hessian_time = timer.getElapsedTime()-t;
 
     // Get Jacobian
     t = timer.getElapsedTime();
+    cout << "getting jacobian info" << endl;
     auto jacobian = eq_constraints.Jacobian(x);
     auto jacobian_ineq = ineq_constraints.Jacobian(x);
     auto jacobian_ijv = eq_constraints.update_and_get_jacobian_ijv(x);
@@ -318,6 +331,7 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
     if (first_solve) {
+        cout << "analyzing pattern" << endl;
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();
         m_solver.analyze_pattern();
@@ -325,10 +339,12 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
         //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
         first_solve = false;
     } else {
+        cout << "updating system matrix" << endl;
         m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
     }
     auto analyze_pattern_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
+    cout << "factorizing" << endl;
     m_solver.factorize();
     /*solver.factorize(A);
     if(solver.info()!=Eigen::Success) {

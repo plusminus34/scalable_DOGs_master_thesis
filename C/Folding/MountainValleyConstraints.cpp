@@ -7,7 +7,7 @@ MountainValleyConstraints::MountainValleyConstraints(const Dog& dog, std::vector
 																					is_mountain(is_mountain) {
     // TODO: different handling of vertices (maybe no consatraints there?)
 	const_n= 2*(eS.edge_coordinates.size()-2);
-	IJV.resize(15*const_n);
+	IJV.resize(21*const_n);
 	lambda_hessian_IJV.resize(228*const_n);
 
 	// initialize flip_binormal
