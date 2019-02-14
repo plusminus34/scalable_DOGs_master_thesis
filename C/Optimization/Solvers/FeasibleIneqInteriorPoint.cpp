@@ -14,17 +14,17 @@ using namespace std;
 
 double FeasibleIneqInteriorPoint::solve_constrained(const Eigen::VectorXd& x0, Objective& obj, Constraints& eq_constraints,
             Constraints& ineq_constraints, Eigen::VectorXd& x) {
-    double current_merit_p = merit_p;
+    double current_merit_p = 1e-1*merit_p;
     x = x0;
 
-    double mu = 100; double mu_sigma = 0.1;
+    double mu = 1e-5; double mu_sigma = 0.1;
     if (lambda.rows()!= eq_constraints.getConstNum()) {
         lambda.resize(eq_constraints.getConstNum());
         lambda.setZero();
         // init ineq slacks 's'
-        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-2;
+        s.resize(ineq_constraints.getConstNum()); for (int i = 0; i < s.rows(); i++) s(i) = 1e-1;
         // init slacks multipliers 'z'
-        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = mu/s(i);
+        z.resize(s.rows()); for (int i = 0; i < z.rows(); i++) z(i) = 1e-1;//mu/s(i);
     }
 
     /*
@@ -130,10 +130,11 @@ double FeasibleIneqInteriorPoint::merit_func(Eigen::VectorXd& new_x, Eigen::Vect
     // Get the log of the inequalities
     //auto ineq_log_vals = ineq_constraints.Vals(x);
     auto ineq_log_vals = new_s;
-    cout << "ineq_log_vals min coeff = " << ineq_log_vals.minCoeff() << endl;
+    //cout << "ineq_log_vals min coeff = " << ineq_log_vals.minCoeff() << endl;
     for (int i = 0; i < ineq_log_vals.rows(); i++) {
         ineq_log_vals(i) = log(max(0.,ineq_log_vals(i)));
     }
+    
     std::cout << "f.obj(x) = " << f.obj(new_x) << " -mu*ineq_log_vals.sum() = " << -mu*ineq_log_vals.sum() << 
         " merit*eq_constraints.Vals(new_x).norm() = " << merit*eq_constraints.Vals(new_x).norm() << 
         " merit*(ineq_constraints.Vals(new_x)-new_s).norm() = " << merit*(ineq_constraints.Vals(new_x)-new_s).norm() << endl;
@@ -155,16 +156,17 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
     for (int i = 0; i < new_x.rows();i++) new_x(i) += step_size*d(i);
     for (int i = 0; i < new_s.rows();i++) new_s(i) += step_size*d(x_rows+i);
 
-    cout << "step size = " << step_size << endl;
     double cur_e = merit_func(new_x, new_s, mu, f, eq_constraints, ineq_constraints, merit);
+    cout << "step size = " << step_size << " cur_e = " << cur_e << " old_energy = " << old_energy << endl;
     
     //cout << "cur_e = " << cur_e << endl;
-    cout << "cur_e = " << cur_e << " old_energy = " << old_energy << endl;
+    //cout << " cur_e = " << cur_e << " old_energy = " << old_energy << endl;
     if (cur_e >= old_energy) {
       step_size /= 2;
       //cout << "step_size = " << step_size << endl;
     } else {
       //x = new_x; s = new_s;
+      cout << "cur_e = " << cur_e << " old_energy = " << old_energy << endl;
       new_energy = cur_e;
       //exit(1);
     }
@@ -173,7 +175,8 @@ double FeasibleIneqInteriorPoint::ineq_linesearch(Eigen::VectorXd& x, const Eige
   if (cur_iter < MAX_STEP_SIZE_ITER) {
     //cout << "ls success!" << endl;
   } else {
-    cout << "ls failure, is it a local minimum?" << endl;
+    cout << "ls failure, is it a local minimum?" << endl; exit(1);
+    //std::cout << "ineq_constraints.Vals(x): " << endl << ineq_constraints.Vals(x) << endl; exit(1);
     step_size = 0;
     return old_energy;
   }
@@ -196,10 +199,10 @@ double FeasibleIneqInteriorPoint::kkt_mu_error(const Eigen::VectorXd& x, Objecti
     if (mu == 0) {
         if (ineq_constraints.Vals(x).minCoeff() < 0) {ineq_const_error = numeric_limits<double>::infinity();}
     }
-    //std::cout << "\tgrad_error = " << grad_error << std::endl;
-    //std::cout << "\tsz_minus_m_error = " << sz_minus_m_error << std::endl;
-    //std::cout << "\teq_const_error = " << eq_const_error << std::endl;
-    //std::cout << "\tineq_const_error = " << ineq_const_error << std::endl;
+    std::cout << "\tgrad_error = " << grad_error << std::endl;
+    std::cout << "\tsz_minus_m_error = " << sz_minus_m_error << std::endl;
+    std::cout << "\teq_const_error = " << eq_const_error << std::endl;
+    std::cout << "\tineq_const_error = " << ineq_const_error << std::endl;
     return std::max({grad_error, sz_minus_m_error, eq_const_error, ineq_const_error});
 }
 void FeasibleIneqInteriorPoint::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
@@ -303,7 +306,7 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     cout << "eq hessian info" << endl;
     auto lambda_hessian_ijv = eq_constraints.update_and_get_lambda_hessian(x,lambda);
     cout << "ineq hessian info" << endl;
-    auto lambda_ineq_hessian_ijv = ineq_constraints.update_and_get_lambda_hessian(x,lambda);
+    auto lambda_ineq_hessian_ijv = ineq_constraints.update_and_get_lambda_hessian(x,z);
     auto hessian_time = timer.getElapsedTime()-t;
 
     // Get Jacobian
@@ -360,7 +363,7 @@ void FeasibleIneqInteriorPoint::compute_step_direction(const Eigen::VectorXd& x,
     // build rhs as the negative of the rhs Nocedal 19.12
     Eigen::VectorXd g = f.grad(x);
     Eigen::VectorXd rhs_upper = g-jacobian.transpose()*lambda-jacobian_ineq.transpose()*z;
-    Eigen::VectorXd rhs_upper_below(s.rows()); for (int i = 0; i < s.rows(); i++) rhs_upper_below(i) = mu/s(i)-z(i);
+    Eigen::VectorXd rhs_upper_below(s.rows()); for (int i = 0; i < s.rows(); i++) rhs_upper_below(i) = z(i)-mu/s(i);
     Eigen::VectorXd constraints_deviation = -1*eq_constraints.Vals(x);
     Eigen::VectorXd ineq_constraints_deviation = s-1*ineq_constraints.Vals(x);
     Eigen::VectorXd rhs(rhs_upper.rows()+rhs_upper_below.rows()+constraints_deviation.rows()+ineq_constraints_deviation.rows());

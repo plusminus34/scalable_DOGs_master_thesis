@@ -667,4 +667,8 @@ void MountainValleyConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x,
 			}
 		}
 	}
+	if (ijv_idx!= lambda_hessian_IJV.size()) {
+		cout << "error, ijv_idx " << ijv_idx << " but lambda_hessian_IJV.size() = " << lambda_hessian_IJV.size() << endl;
+		exit(1);		
+	}
 };
