@@ -82,23 +82,51 @@ Along a curved fold the curves osculating plane bisects the tangent planes of th
 One can also look at the previous characterization of a fold as a rotation of tangent vectors from one side of the developable surface by an angle of $2\alpha$ around the curve's tangent. This creates discontinuity between tangents of the surface from each side. The angle of the rotated tangents depends on the initial angle between the flattenend tangent and the curve's tangent. For instance if they are orthogonal, the angle between the rotated tangent is the same as the angle between the normals of both surfaces. If they are parallel to the curve, than its 0.
 
 \subsection{Characterization 3: Side of osculating plane}
-The previous characterizations implies that if $t_1$ is a vector of the tangent space of $S_1$ along a point on $\gamma$ than the "continuation" of that tangent from the other side of the surface at $S_2$ satisfies $\langle <t_1,B> \rangle = -\langle <t_2,B> \rangle$ if $B$ is the binormal of the curve at that point. This is opposed to the equality $\langle <t_1,B> \rangle = \langle <t_2,B> \rangle$ when there is no fold. This gives us a more "binary" charecterization of folded vs. non folded configuration along a curve. A developable surface is curved folded along a curve if it lies on the same side of the oscullating plane of the curve. Otherwise, each $S_1,S_2$ lie on a different side. TODO: add drawing.
+The previous characterizations implies that if $t_1$ is a vector of the tangent space of $S_1$ along a point on $\gamma$ than the "continuation" of that tangent from the other side of the surface at $S_2$ satisfies $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ if $b$ is the binormal of the curve at that point. This is opposed to the equality $\langle <t_1,b> \rangle = \langle <t_2,b> \rangle$ when there is no fold. This gives us a more "binary" charecterization of folded vs. non folded configuration along a curve. A developable surface is curved folded along a curve if it lies on the same side of the osculating plane of the curve. Otherwise, each $S_1,S_2$ lie on a different side. TODO: add drawing.
 This might be important for optimization, as we can't probably expect to have the previous conditions satisfied exactly on a discrete DOG along an entire curve, but we can expect the sign/side of plane to be correct.
 
-\subsection{Mountain and Valley folds}
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=0.5\linewidth]{plane_side}
+	\caption{Both surfaces are at the same side of the osculating plane in a curved fold. If the surface was not curved folded, the osculating plane would have intersect the surface.}
+	\label{fig:curved_fold_through_curve}
+\end{figure}
 
+\subsection{Mountain and Valley folds}
+A fold is said to be a mountain fold according to the angles between $t_1,b$ or equivalently by the angle between $t_2,b$.
 
 \subsection{Multiple curved folds}
-
+Deforming the curve fold locally deform the entire surface. This (generally) further cause deformation of other curved folds if they exist. For instance for multiple patterns one can choose whether to fold valley/mountain only on 1 fold, and the rest is determined automatically. Similarly if we assign dihedral angles along one fold, this might constrain the dihedral angles around another fold. Thus we should be careful when assigning folding constraint as there is a dependency between different folds.
 	
 % its osculating plane and two options to extend a the curve to developable surface by constructing the 2 planes containing the curve's tangent and making an angle of $\alpha(t)$  with the osculating plane. Choosing 2 different tangents along each 'side' of the curve creates discontinuties along the curve and a curved folded surface.	
 
 \section{Optimizing for curved folds on DOGs}
+\subsection{Discrete fold}
 
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=0.5\linewidth]{folding_an_edge.pdf}
+	\caption{We represent curved folds on DOGs by using different connected component around a curve (here in blue), essentially duplicating shared quads. The red edge is a tangent. On a flat configuration it is continues, or straight from both sides, while a fold is a discontinuity of the tangent created by rotating the tangents along the tangent of the blue curve as explained above, or equivalently in the smooth case by reflecting one tangent along the osculating plane of the blue curve.}
+	\label{fig:folding_an_edge.pdf}
+\end{figure}
+The red curve can be seen as a tangent from each surface. On a curved conifguration its not colinear, and any discretization for the Frenet frame on the blue curve can be used.
 
+\subsection{One fold using positional constraints}
+The easiest way to fold a single curve, is by prescribing positional constraints along one point  of the curved fold, and then minimize bending + isometry objective on a DOG. We can derive positional constraints by simply fixing that point, and rotating the tangent of both surfaces around the tangent of the curve by an angle. Then slowly increasing this angle creates a fold. The ratio between the tangents angle and the dihedral folding angle is dependant of the angle of the flattened tangent with the curve's tangent (and is something I've written on the board), in case we want to prescribe a dihedral angle.
 
+\subsubsection{Positional constraints - Difficulties in extending for multiple folds}
+The problem in extending this fold to multiple one is compatability of different folds. One cannot fix two points along to different folds and still fold it for instance. If we don't fix the second point, it's also not very clear how to derive the positional constraints along a second curve.
+\subsection{Folding movement and folding bias}
+At best, instead of a folding movement we could get a folding bias. So not only some way to fold a paper, but have an objective with a possible set of constraints that can be added to some deformation guaranteeing or pushing towards folded configuration. This will allow us for instance to deform a curve while folding the entire surface simultaneously.
 
+\subsection{Knowing M/V assignemnt}
+Some discretization that will be shown below can be made easier if we know upfront the M/V assignment of the folds. This is in general not known for arbitrary folds but can be easily tested for known crease patterns. Furthermore, if such a discretization will work well we could consider a precomputation of finding a valid/good M/V assignment.
 
+\subsection{Equalities and inequalities}
+Charecterization 1/2 can be discretized using equality constraints by requiring around a fold that  $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ for some discretization of $b$, and using $t_!,t_2$ as the two sides of the red edge in the figure. This is an equality constraint. Alternatively, charecterization 3 can be discretized by merely asking for $\langle t_1,b \rangle \langle t_2,b \rangle < 0$. If we know the mountain/valley assignment this constraint becomes easier, in the form of $\langle t_1,b < 0$ or $\langle t_1,b > 0$ from both sides (depending on the sign of $t_1$ and on the M/V assignment).
+\subsubsection{Exactness}
+\subsubsection{Feasibility}
+\subsubsection{With or without Mountain/Valley assignments}
 
 %\section{Appendix}
 
