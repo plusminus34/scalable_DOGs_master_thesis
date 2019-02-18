@@ -1,0 +1,108 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage{bbm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{filecontents}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{authblk}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\def\<#1>{\left\langle #1 \right\rangle}
+%
+\newcommand{\N}{\ensuremath{\mathbbm{N}}}
+\newcommand{\Z}{\ensuremath{\mathbbm{Z}}}
+\newcommand{\Q}{\ensuremath{\mathbbm{Q}}}
+\newcommand{\R}{\ensuremath{\mathbbm{R}}}
+\newcommand{\C}{\ensuremath{\mathbbm{C}}}
+\newcommand{\CP}{\ensuremath{\mathbbm{CP}}}
+\renewcommand{\H}{\ensuremath{\mathbbm{H}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+
+\newcommand{\ci}{\ensuremath{\mathrm{i}}}
+\newcommand{\qi}{\ensuremath{\mathbbm{i}}}
+\newcommand{\qj}{\ensuremath{\mathbbm{j}}}
+\newcommand{\qk}{\ensuremath{\mathbbm{k}}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand{\J}{\mathbf{J}}
+\newcommand{\K}{\mathbf{K}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\D}{\mathscr{D}}
+\newcommand{\M}{\mathbf{M}}
+%\newcommand{\u}{\mathscr{u}}
+%\newcommand{\v}{\mathscr{v}}
+\newcommand{\TD}{\ensuremath{T_{V(t)}\D}}
+\newcommand{\ND}{\ensuremath{N_{V(t)}\D}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+%
+
+\title{Curved Folded Wallpapers}
+\author[1]{Michael Rabinovich}
+\begin{document}
+
+\maketitle
+
+\section{Curved folded DOGs}
+
+This document discuss various ideas on optimizing for and simulating curved folding on DOGs, though the techniques might be relevant for developable surfaces in general.
+
+\section{Smooth curved folds}
+Given a curve $\gamma$ in $\mathbb{R}^3$ and a non straight flattening of the curve $\gamma_{2d}$, there are exactly 2 different developable surfaces going through that curve with the same flattening of that curve,. A choice of 2 different ones, denoted as $S_1,S_2$ from each side is said to be a fold along that curve.
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{curved_fold_through_curve.pdf}
+	\caption{Left: A flattened curve in 2D. Right: A small neighbourhood around an embedding of the curve in $\mathbb{R}^3$, and 2 different developable surfaces passing through the curve, such that the tangent plane on the curve is different from each side.}
+	\label{fig:curved_fold_through_curve}
+\end{figure}
+
+\subsection{Local frame around a curve on a developable}
+Through this note we will use the local Frenet frame around a curve $\gamma$ on a developable (or DOG), denoting it as $F = \{t,n,b\}$ for the tangent, principal normal and the binormal.
+	
+\subsection{Characterization 1: Reflection of tangent planes}
+Along a curved fold the curves osculating plane bisects the tangent planes of the 2 developables passing through the curve. The dihedral fold angles between the developables is dependant on the bending of the surface along the curve. The more the surface is bend along that curve, the bigger the fold is. Precisely, if at a given point the curvature of the embedding in $3d$ is $k(t)$, its original flattened curvature (or geodesic curvature) is $k_g(t) = cos(\alpha)k(t)$ and the its normal curvature (measuring the bending of that curve) is $k_n(t) = sin(\alpha)k(t)$, then the dihedral folding angle between along the fold is $2\alpha$. The fact that the curve's osculating plane bisects the tangent planes means that along a curved fold, the tangent plane is reflected through the osculating plane, as opposed to being equal when there is no fold and the curve lies on a smooth developable surfaces.
+
+\subsection{Characterization 2: Rotations of tangents around the curve}
+One can also look at the previous characterization of a fold as a rotation of tangent vectors from one side of the developable surface by an angle of $2\alpha$ around the curve's tangent. This creates discontinuity between tangents of the surface from each side. The angle of the rotated tangents depends on the initial angle between the flattenend tangent and the curve's tangent. For instance if they are orthogonal, the angle between the rotated tangent is the same as the angle between the normals of both surfaces. If they are parallel to the curve, than its 0.
+
+\subsection{Characterization 3: Side of osculating plane}
+The previous characterizations implies that if $t_1$ is a vector of the tangent space of $S_1$ along a point on $\gamma$ than the "continuation" of that tangent from the other side of the surface at $S_2$ satisfies $\langle <t_1,B> \rangle = -\langle <t_2,B> \rangle$ if $B$ is the binormal of the curve at that point. This is opposed to the equality $\langle <t_1,B> \rangle = \langle <t_2,B> \rangle$ when there is no fold. This gives us a more "binary" charecterization of folded vs. non folded configuration along a curve. A developable surface is curved folded along a curve if it lies on the same side of the oscullating plane of the curve. Otherwise, each $S_1,S_2$ lie on a different side. TODO: add drawing.
+This might be important for optimization, as we can't probably expect to have the previous conditions satisfied exactly on a discrete DOG along an entire curve, but we can expect the sign/side of plane to be correct.
+
+\subsection{Mountain and Valley folds}
+
+
+\subsection{Multiple curved folds}
+
+	
+% its osculating plane and two options to extend a the curve to developable surface by constructing the 2 planes containing the curve's tangent and making an angle of $\alpha(t)$  with the osculating plane. Choosing 2 different tangents along each 'side' of the curve creates discontinuties along the curve and a curved folded surface.	
+
+\section{Optimizing for curved folds on DOGs}
+
+
+
+
+
+
+%\section{Appendix}
+
+%\clearpage%ss
+%\bibliographystyle{plain}
+%\bibliography{97-bib-opt}
+\end{document}
