@@ -91,8 +91,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       break;
     }
     case SOLVE_NEWTON_FLOW: {
-      //newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
-      interiorPt.solve_constrained(x0, obj.compObj, constraints.compConst, mvFoldingConstraints, x);
+      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      //interiorPt.solve_constrained(x0, obj.compObj, constraints.compConst, mvFoldingConstraints, x);
       break;
     }
     case SOLVE_NONE: {
