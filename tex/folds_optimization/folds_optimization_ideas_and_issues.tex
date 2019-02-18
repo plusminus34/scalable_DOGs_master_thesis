@@ -97,9 +97,14 @@ A fold is said to be a mountain fold according to the angles between $t_1,b$ or 
 
 \subsection{Multiple curved folds}
 Deforming the curve fold locally deform the entire surface. This (generally) further cause deformation of other curved folds if they exist. For instance for multiple patterns one can choose whether to fold valley/mountain only on 1 fold, and the rest is determined automatically. Similarly if we assign dihedral angles along one fold, this might constrain the dihedral angles around another fold. Thus we should be careful when assigning folding constraint as there is a dependency between different folds.
-	
-% its osculating plane and two options to extend a the curve to developable surface by constructing the 2 planes containing the curve's tangent and making an angle of $\alpha(t)$  with the osculating plane. Choosing 2 different tangents along each 'side' of the curve creates discontinuties along the curve and a curved folded surface.	
 
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{multiple_curve_pattern}
+	\caption{A curved folded pattern with multiple creases. Changing the curve between A to B affects the shape of C. All the parameters, folding angles, curvatures/torsions, are linked constrained together.}
+	\label{fig:folding_an_edge.pdf}
+\end{figure}
+	
 \section{Optimizing for curved folds on DOGs}
 \subsection{Discrete fold}
 
@@ -116,6 +121,7 @@ The easiest way to fold a single curve, is by prescribing positional constraints
 
 \subsubsection{Positional constraints - Difficulties in extending for multiple folds}
 The problem in extending this fold to multiple one is compatability of different folds. One cannot fix two points along to different folds and still fold it for instance. If we don't fix the second point, it's also not very clear how to derive the positional constraints along a second curve.
+
 \subsection{Folding movement and folding bias}
 At best, instead of a folding movement we could get a folding bias. So not only some way to fold a paper, but have an objective with a possible set of constraints that can be added to some deformation guaranteeing or pushing towards folded configuration. This will allow us for instance to deform a curve while folding the entire surface simultaneously.
 
@@ -123,7 +129,7 @@ At best, instead of a folding movement we could get a folding bias. So not only 
 Some discretization that will be shown below can be made easier if we know upfront the M/V assignment of the folds. This is in general not known for arbitrary folds but can be easily tested for known crease patterns. Furthermore, if such a discretization will work well we could consider a precomputation of finding a valid/good M/V assignment.
 
 \subsection{Equalities and inequalities}
-Characterization 1/2 can be discretized using equality constraints by requiring around a fold that  $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ for some discretization of $b$, and using $t_!,t_2$ as the two sides of the red edge in the figure. This is an equality constraint. Alternatively, charecterization 3 can be discretized by merely asking for $\langle t_1,b \rangle \langle t_2,b \rangle < 0$. If we know the mountain/valley assignment this constraint becomes easier, in the form of $\langle t_1,b < 0$ or $\langle t_1,b > 0$ from both sides (depending on the sign of $t_1$ and on the M/V assignment).
+Characterization 1/2 can be discretized using equality constraints by requiring around a fold that  $\langle t_1,b \rangle = -\langle t_2,b \rangle$ for some discretization of $b$, and using $t_!,t_2$ as the two sides of the red edge in the figure. This is an equality constraint. Alternatively, charecterization 3 can be discretized by merely asking for $\langle t_1,b \rangle \langle t_2,b \rangle < 0$. If we know the mountain/valley assignment this constraint becomes easier, in the form of $\langle t_1,b \rangle < 0$ or $\langle t_1,b \rangle > 0$ from both sides (depending on the sign of $t_1$ and on the M/V assignment).
 
 \subsection{Equality folding constraints}
 The first problem with the above mentioned equality constraints is that they are not 'exact'. We can't hope to satisfy all of them exactly (or numerically). Thought we can expect a low deviation. Practically this means that the Jacobian of the constraints, if we'll use it, will probably be rank deficient. We could then perform a QR on the constraints to remove linear dependant constraints, but this also means that we need to remove the appropriate rhs constraint values, and in general we cannot hope to achieve that or have a well defined optimization problem. Putting these constraints at the objective brings as to the problem of choosing the appropriate weight for the constraints, which will compete the bending and isometry objective, or the other positional constraints of the curve.
