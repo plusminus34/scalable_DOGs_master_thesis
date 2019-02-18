@@ -123,10 +123,25 @@ At best, instead of a folding movement we could get a folding bias. So not only 
 Some discretization that will be shown below can be made easier if we know upfront the M/V assignment of the folds. This is in general not known for arbitrary folds but can be easily tested for known crease patterns. Furthermore, if such a discretization will work well we could consider a precomputation of finding a valid/good M/V assignment.
 
 \subsection{Equalities and inequalities}
-Charecterization 1/2 can be discretized using equality constraints by requiring around a fold that  $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ for some discretization of $b$, and using $t_!,t_2$ as the two sides of the red edge in the figure. This is an equality constraint. Alternatively, charecterization 3 can be discretized by merely asking for $\langle t_1,b \rangle \langle t_2,b \rangle < 0$. If we know the mountain/valley assignment this constraint becomes easier, in the form of $\langle t_1,b < 0$ or $\langle t_1,b > 0$ from both sides (depending on the sign of $t_1$ and on the M/V assignment).
-\subsubsection{Exactness}
-\subsubsection{Feasibility}
-\subsubsection{With or without Mountain/Valley assignments}
+Characterization 1/2 can be discretized using equality constraints by requiring around a fold that  $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ for some discretization of $b$, and using $t_!,t_2$ as the two sides of the red edge in the figure. This is an equality constraint. Alternatively, charecterization 3 can be discretized by merely asking for $\langle t_1,b \rangle \langle t_2,b \rangle < 0$. If we know the mountain/valley assignment this constraint becomes easier, in the form of $\langle t_1,b < 0$ or $\langle t_1,b > 0$ from both sides (depending on the sign of $t_1$ and on the M/V assignment).
+
+\subsection{Equality folding constraints}
+The first problem with the above mentioned equality constraints is that they are not 'exact'. We can't hope to satisfy all of them exactly (or numerically). Thought we can expect a low deviation. Practically this means that the Jacobian of the constraints, if we'll use it, will probably be rank deficient. We could then perform a QR on the constraints to remove linear dependant constraints, but this also means that we need to remove the appropriate rhs constraint values, and in general we cannot hope to achieve that or have a well defined optimization problem. Putting these constraints at the objective brings as to the problem of choosing the appropriate weight for the constraints, which will compete the bending and isometry objective, or the other positional constraints of the curve.
+
+\subsection{Inequality folding constraints}
+The inequality point of view is useful, as folding/not folding is in fact a binary choice in the smooth case which is done exactly at the beginning of the deformation. After a finite timestep, we cannot undone a folding unless we flattened that part. Optimizing with inequalities is typically done either using barrier methods or active-set methods. 
+\subsubsection{Active set methods}
+In terms of active-set terminology, our optimization is quite unique. All the inequalities start active, and we actually know that we want the active set to be empty. The first problem is that the constraints are almost likely linearly dependent and the first steps means we should include them as equalities. The second and bigger problem is that on the one hand we know that the active set is zero, but minimizing bending energy will probably incur no folds. We are most likely not looking for a KKT point with just the bending energy, at least before the paper was folded "enough", at that point the folds or continuity along them stay the same anyhow. The problem is in fact not well defined by just using bending energy, which unfortunately probably means the minimum is not bounded (might be that at first steps the KKT point actually has equalities...).
+
+\subsubsection{Barrier methods}
+The KKT argument issue as written in "Active set methods" is probably the same there. I've implemented some barrier method and it didn't work. Also, the first step also doesn't lead to feasibility in the constraints. Another problem here is that as opposed to the equality constraint problem, we don't start from a minimum of the energy. We start with infinite energy as all the constraints are active.
+
+\section{Things to try}
+1) Equality constraints for 1 point in each curve.\\
+2) Equality constraints penalty for each point on a curve. Make it strong enough such that we always stay feasible (by changing the weight). Not clear what's the optimization problem we solve here. \\
+3) Combine 1 with 2. \\
+4) Equality constraints on all points in every curve, and then use QR. \\
+5) Smarter positional constraints. Then the problem should be well defined? We can use local Frenet frames. The tangent angle can be defined based on the curve's curvature, torsion, and initial geoedesic curvature. Under isometry assumption the tangent and principal normal should be linear. This requires M/V assignment.
 
 %\section{Appendix}
 
