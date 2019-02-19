@@ -57,6 +57,8 @@ ep_f = ep_f_v1*ep_f_t+(1-ep_f_t)*ep_f_v2;
 ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
 ep_0 = v1*ep_0_t+(1-ep_0_t)*v2;
 
+lambda = sym('lambda','real');
+
 % If there's an isometry energy these should be around the same length
 e1 = v1-v2;
 e2 = w1-w2;
@@ -70,6 +72,8 @@ ccode(B,'file','curved_fold_obj_binormal_B_fixed');
 curve_fold_const = simplify(dot(e1,B) + dot(e2,B));
 
 ccode(curve_fold_const ,'file','FoldingBinormalBiasConstraint_const');
+ccode(gradient(curve_fold_const,vars) ,'file','FoldingBinormalBiasConstraint_gradient');
+ccode(hessian(lambda*curve_fold_const,vars) ,'file','FoldingBinormalBiasConstraint_lambdaHessian');
 
 E = simplify(curve_fold_const.^2);
 % list of variables and their order (the 't' variables are seen as
