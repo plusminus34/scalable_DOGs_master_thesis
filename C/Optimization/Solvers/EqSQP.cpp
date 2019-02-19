@@ -94,7 +94,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
         lambda.setZero();
         //int wait; std::cout << "init lagrange mult" << std::endl; std::cin >> wait;
     }
-    std::cout << "lagrange multipliers norm = " << lambda.norm() << std::endl;
+    //std::cout << "lagrange multipliers norm = " << lambda.norm() << std::endl;
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian

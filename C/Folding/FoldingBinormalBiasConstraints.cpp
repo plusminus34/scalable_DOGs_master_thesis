@@ -5,7 +5,8 @@ using namespace std;
 FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) : dog(dog), eS(dog.getEdgeStitching()) {
     // TODO: different handling of vertices (maybe no consatraints there?)
 	//const_n= 2*(eS.edge_coordinates.size()-2);
-	const_n = 1;//*(eS.edge_coordinates.size()-2);
+	//const_n = 1;//*(eS.edge_coordinates.size()-2);
+	const_n = eS.edge_coordinates.size()-2*eS.stitched_curves.size();
 	IJV.resize(24*const_n);
 	lambda_hessian_IJV.resize(300*const_n);
 }
@@ -20,8 +21,8 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
-		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
 			
@@ -92,8 +93,8 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
-		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
 			
@@ -222,8 +223,8 @@ void FoldingBinormalBiasConstraints::updateLambdaHessianIJV(const Eigen::VectorX
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
-		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
-		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
 			

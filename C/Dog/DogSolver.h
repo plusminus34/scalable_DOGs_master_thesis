@@ -62,6 +62,8 @@ public:
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
 
 	Dog& getDog(){return dog;}
+
+	bool is_folded();
 	
 	struct Constraints {
 		Constraints(const Dog& dog, Eigen::VectorXi& b, Eigen::VectorXd& bc,

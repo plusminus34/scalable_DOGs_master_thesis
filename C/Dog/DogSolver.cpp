@@ -1,5 +1,7 @@
 #include "DogSolver.h"
 
+#include "../Folding/CurvedFoldingBiasObjective.h"
+
 using namespace std;
 
 
@@ -57,6 +59,31 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
     // Empty on purpose
 }
 
+bool DogSolver::is_folded() {
+  bool is_folded = true;
+  auto eS = dog.getEdgeStitching();
+  for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
+    const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
+
+    for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
+      double sign_op_alpha = 1e10; CurvedFoldingBiasObjective tmpCurveSignBiasSignObj(sign_op_alpha,true,false);
+      CurvedFoldBias curvedFoldBias;
+      curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
+      auto edge_pt = foldingCurve[e_idx];
+      curvedFoldBias.edge_t = edge_pt.t;
+      dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
+      tmpCurveSignBiasSignObj.add_fold_bias(curvedFoldBias);
+      double curve_fold_bias_sign_obj = tmpCurveSignBiasSignObj.obj(dog.getV_vector());
+      if (curve_fold_bias_sign_obj> 1e-3) {
+        is_folded = false;
+        break;
+      }
+    }
+  }
+  std::cout << "is_folded = " << is_folded << std::endl;
+  return is_folded;
+}
+
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
   if (is_constrained) {
     cout << "guessing!" << endl;
@@ -94,7 +121,17 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       break;
     }
     case SOLVE_NEWTON_FLOW: {
+      //std::cout << "before foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      //std::cout << "after foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
+      /*
+      int wait;// cin >> wait;
+      for (int i = 0; i < 100; i++) {
+        newtonKKT.solve_constrained(x, obj.compObj, constraints.compConst, x);
+        //std::cout << "iter = " << i << " foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
+      }
+      */
+      //cin >> wait;
       //interiorPt.solve_constrained(x0, obj.compObj, constraints.compConst, mvFoldingConstraints, x);
       break;
     }

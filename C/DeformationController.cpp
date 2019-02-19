@@ -54,7 +54,7 @@ void DeformationController::update_edge_curve_constraints() {
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	dogEditor.update_edge_coords(edgeCoords);
-	is_folded();
+	//is_folded();
 }
 
 void DeformationController::init_curved_fold_from_given_mesh() {
