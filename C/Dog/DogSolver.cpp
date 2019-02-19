@@ -11,10 +11,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         /*CurvedFoldingBiasObjective& curvedFoldingBiasObj*/) :
 
           dog(dog),
-          mvFoldingConstraints(dog, std::vector<bool>(dog.getEdgeStitching().stitched_curves.size(),true)),
+          foldingBinormalBiasConstraints(dog),
           init_x0(init_x0), p(p),
           constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
-          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,/*curvedFoldingBiasObj,*/ p),
+          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,
+                foldingBinormalBiasConstraints, /*curvedFoldingBiasObj,*/ p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
@@ -40,16 +41,18 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           EdgePointConstraints& edgePtConst,
           PointPairConstraints& ptPairConst,
           /*CurvedFoldingBiasObjective& curvedFoldingBiasObj,*/
+          FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0), laplacianSimilarity(dog,init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
         ptPairSoftConst(ptPairConst, init_x0),
+        foldingBinormalBiasObj(foldingBinormalBiasConstraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
         
         compObj(
-          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst/*, &curvedFoldingBiasObj*/},
-          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight/*, p.fold_bias_weight*/})
+          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &foldingBinormalBiasObj/*, &curvedFoldingBiasObj*/},
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.fold_bias_weight /*, p.fold_bias_weight*/})
           {
     // Empty on purpose
 }

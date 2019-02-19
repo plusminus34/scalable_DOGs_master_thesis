@@ -17,7 +17,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 	// Add curve fold constraints
 	int vnum = x.rows()/3;
 	int const_cnt = 0;
-  	
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
@@ -87,7 +86,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 
 
 void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
-
 	// Add curve fold constraints
 	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;
@@ -207,6 +205,8 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i,-t44+t56);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+vnum,-t48+t57);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+2*vnum,-t52+t58);
+
+			const_cnt++;
 		}
 	}
   if (const_cnt != const_n) {
@@ -783,7 +783,7 @@ void FoldingBinormalBiasConstraints::updateLambdaHessianIJV(const Eigen::VectorX
 			IJV[ijv_idx++] = Eigen::Triplet<double>(w2_i+2*vnum,v2_i, -t226);
 			IJV[ijv_idx++] = Eigen::Triplet<double>(w2_i+2*vnum,v2_i+vnum, t232);
 
-
+			const_cnt++;
 		}
 	}
 	if (ijv_idx!= lambda_hessian_IJV.size()) {
