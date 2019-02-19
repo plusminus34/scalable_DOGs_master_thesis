@@ -76,13 +76,13 @@ Given a curve $\gamma$ in $\mathbb{R}^3$ and a non straight flattening of the cu
 Through this note we will use the local Frenet frame around a curve $\gamma$ on a developable (or DOG), denoting it as $F = \{t,n,b\}$ for the tangent, principal normal and the binormal.
 	
 \subsection{Characterization 1: Reflection of tangent planes}
-Along a curved fold the curves osculating plane bisects the tangent planes of the 2 developables passing through the curve. The dihedral fold angles between the developables is dependant on the bending of the surface along the curve. The more the surface is bend along that curve, the bigger the fold is. Precisely, if at a given point the curvature of the embedding in $3d$ is $k(t)$, its original flattened curvature (or geodesic curvature) is $k_g(t) = cos(\alpha)k(t)$ and the its normal curvature (measuring the bending of that curve) is $k_n(t) = sin(\alpha)k(t)$, then the dihedral folding angle between along the fold is $2\alpha$. The fact that the curve's osculating plane bisects the tangent planes means that along a curved fold, the tangent plane is reflected through the osculating plane, as opposed to being equal when there is no fold and the curve lies on a smooth developable surfaces.
+Along a curved fold the curves osculating plane bisects the tangent planes of the 2 developables passing through the curve. The dihedral fold angles between the developables is dependant on the bending of the surface along the curve. The more the surface is bend along that curve, the bigger the fold is. Precisely, if at a given point the curvature of the embedding in $3d$ is $k(t)$, its original flattened curvature (or geodesic curvature) is $k_g(t) = cos(\alpha)k(t)$ and its normal curvature (measuring the bending of that curve) is $k_n(t) = sin(\alpha)k(t)$, then the dihedral folding angle between along the fold is $2\alpha$. The fact that the curve's osculating plane bisects the tangent planes means that along a curved fold, the tangent plane is reflected through the osculating plane, as opposed to being equal when there is no fold and the curve lies on a smooth developable surfaces.
 
 \subsection{Characterization 2: Rotations of tangents around the curve}
-One can also look at the previous characterization of a fold as a rotation of tangent vectors from one side of the developable surface by an angle of $2\alpha$ around the curve's tangent. This creates discontinuity between tangents of the surface from each side. The angle of the rotated tangents depends on the initial angle between the flattenend tangent and the curve's tangent. For instance if they are orthogonal, the angle between the rotated tangent is the same as the angle between the normals of both surfaces. If they are parallel to the curve, than its 0.
+One can also look at the previous characterization of a fold as a rotation of tangent vectors from one side of the developable surface by an angle of $2\alpha$ around the curve's tangent. This creates discontinuity between tangents of the surface from each side. The angle of the rotated tangents depends on the initial angle between the flattened tangent and the curve's tangent (and I've written it on the board). For instance if they are orthogonal, the angle between the rotated tangent is the same as the angle between the normals of both surfaces. If they are parallel to the curve, than its 0.
 
 \subsection{Characterization 3: Side of osculating plane}
-The previous characterizations implies that if $t_1$ is a vector of the tangent space of $S_1$ along a point on $\gamma$ than the "continuation" of that tangent from the other side of the surface at $S_2$ satisfies $\langle <t_1,b> \rangle = -\langle <t_2,b> \rangle$ if $b$ is the binormal of the curve at that point. This is opposed to the equality $\langle <t_1,b> \rangle = \langle <t_2,b> \rangle$ when there is no fold. This gives us a more "binary" charecterization of folded vs. non folded configuration along a curve. A developable surface is curved folded along a curve if it lies on the same side of the osculating plane of the curve. Otherwise, each $S_1,S_2$ lie on a different side. TODO: add drawing.
+The previous characterizations implies that if $t_1$ is a vector of the tangent space of $S_1$ along a point on $\gamma$ than the "continuation" of that tangent from the other side of the surface at $S_2$ satisfies $\langle t_1,b \rangle = -\langle t_2,b \rangle$ if $b$ is the binormal of the curve at that point. This is opposed to the equality $\langle t_1,b \rangle = \langle t_2,b \rangle$ when there is no fold. This gives us a more "binary" charecterization of folded vs. non folded configuration along a curve. A developable surface is curved folded along a curve if it lies on the same side of the osculating plane of the curve. Otherwise, each $S_1,S_2$ lie on a different side.
 This might be important for optimization, as we can't probably expect to have the previous conditions satisfied exactly on a discrete DOG along an entire curve, but we can expect the sign/side of plane to be correct.
 
 \begin{figure} [h]
@@ -102,7 +102,7 @@ Deforming the curve fold locally deform the entire surface. This (generally) fur
 	\centering
 	\includegraphics[width=\linewidth]{multiple_curve_pattern}
 	\caption{A curved folded pattern with multiple creases. Changing the curve between A to B affects the shape of C. All the parameters, folding angles, curvatures/torsions, are linked constrained together.}
-	\label{fig:folding_an_edge.pdf}
+	\label{fig:multiple_curve_pattern}
 \end{figure}
 	
 \section{Optimizing for curved folds on DOGs}
@@ -110,7 +110,7 @@ Deforming the curve fold locally deform the entire surface. This (generally) fur
 
 \begin{figure} [h]
 	\centering
-	\includegraphics[width=0.5\linewidth]{folding_an_edge.pdf}
+	\includegraphics[width=\linewidth,height=0.22\linewidth]{folding_an_edge.pdf}
 	\caption{We represent curved folds on DOGs by using different connected component around a curve (here in blue), essentially duplicating shared quads. The red edge is a tangent. On a flat configuration it is continues, or straight from both sides, while a fold is a discontinuity of the tangent created by rotating the tangents along the tangent of the blue curve as explained above, or equivalently in the smooth case by reflecting one tangent along the osculating plane of the blue curve.}
 	\label{fig:folding_an_edge.pdf}
 \end{figure}
@@ -147,7 +147,7 @@ The KKT argument issue as written in "Active set methods" is probably the same t
 2) Equality constraints penalty for each point on a curve. Make it strong enough such that we always stay feasible (by changing the weight). Not clear what's the optimization problem we solve here. \\
 3) Combine 1 with 2. \\
 4) Equality constraints on all points in every curve, and then use QR. \\
-5) Smarter positional constraints. Then the problem should be well defined? We can use local Frenet frames. The tangent angle can be defined based on the curve's curvature, torsion, and initial geoedesic curvature. Under isometry assumption the tangent and principal normal should be linear. This requires M/V assignment.
+5) Smarter positional constraints. Then the problem should be well defined? We can use local Frenet frames. The tangent angle can be defined based on the curve's curvature, torsion, and initial geoedesic curvature. Under isometry assumption the tangent and principal normal should be linear. This requires M/V assignment. We basically add that (objective for the binormal sign). We could also add the principle normal sign and the tangent sign if needed and that's basically it.. With or without it the problem is that the hessian is complicated and matlab doesn't compute it. We can do it with a gauss-newton hessian, especially since at the first point ri = 0 and it's exactly the same.
 
 %\section{Appendix}
 

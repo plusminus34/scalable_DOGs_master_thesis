@@ -69,6 +69,8 @@ ccode(B,'file','curved_fold_obj_binormal_B_fixed');
 % We want <e1,B> = - <e2,B> or <e1,B>+<e2,B> = 0
 curve_fold_const = simplify(dot(e1,B) + dot(e2,B));
 
+ccode(curve_fold_const ,'file','FoldingBinormalBiasConstraint_const');
+
 E = simplify(curve_fold_const.^2);
 % list of variables and their order (the 't' variables are seen as
 % fixed parameters and we should  not calculate theirgradient/hessian
