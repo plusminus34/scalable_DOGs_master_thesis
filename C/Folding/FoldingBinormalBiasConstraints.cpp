@@ -98,107 +98,116 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 		//for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
 		for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
-			bool flip_binormal_sign = (is_mountain[curve_i] ^ flip_binormal[curve_i][edge_idx-1]);
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-			if (flip_binormal_sign) {
-				// Flip the edge direction
-				std::swap(ep_b,ep_f);
-			}
-			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			
+			int v1,v2,w1,w2;
+			dog->get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
 
-			int ep_0_v1_i(ep.edge.v1), ep_0_v2_i(ep.edge.v2); const double ep_0_t(ep.t);
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int v1_i(v1), v2_i(v2), w1_i(w1), w2_i(w2); const double ep_0_t(ep.t);
+
 			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
 			int ep_f_v1_i(ep_f.edge.v1), ep_f_v2_i(ep_f.edge.v2); const double ep_f_t(ep_f.t);
 
-			const double ep_0_v1_x(x(ep_0_v1_i)); const double ep_0_v1_y(x(ep_0_v1_i+1*vnum)); const double ep_0_v1_z(x(ep_0_v1_i+2*vnum));
-			const double ep_0_v2_x(x(ep_0_v2_i)); const double ep_0_v2_y(x(ep_0_v2_i+1*vnum)); const double ep_0_v2_z(x(ep_0_v2_i+2*vnum));
+			const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+			const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+			const double w1_x(x(w1_i)); const double w1_y(x(w1_i+1*wnum)); const double w1_z(x(w1_i+2*wnum));
+			const double w2_x(x(w2_i)); const double w2_y(x(w2_i+1*wnum)); const double w2_z(x(w2_i+2*wnum));
+
 			const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
 			const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
 			const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
 			const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
 
-			for (int const_side_i = 0; const_side_i < 2 ; const_side_i++) {
-				int folded_v_i = fold_v_indices[const_side_i];
-				const double folded_v_x(x(folded_v_i)); const double folded_v_y(x(folded_v_i+1*vnum)); const double folded_v_z(x(folded_v_i+2*vnum));
+			double t2 = ep_f_t-1.0;
+			double t3 = ep_0_t-1.0;
+			double t4 = ep_f_t*ep_f_v1_y;
+			double t5 = t3*v2_y;
+			double t21 = ep_0_t*v1_y;
+			double t22 = ep_f_v2_y*t2;
+			double t6 = t4+t5-t21-t22;
+			double t7 = ep_f_t*ep_f_v1_z;
+			double t8 = t3*v2_z;
+			double t11 = ep_0_t*v1_z;
+			double t12 = ep_f_v2_z*t2;
+			double t9 = t7+t8-t11-t12;
+			double t10 = v1_z-v2_z;
+			double t13 = w1_z-w2_z;
+			double t14 = ep_f_t*ep_f_v1_x;
+			double t15 = t3*v2_x;
+			double t18 = ep_0_t*v1_x;
+			double t19 = ep_f_v2_x*t2;
+			double t16 = t14+t15-t18-t19;
+			double t17 = v1_y-v2_y;
+			double t20 = v1_x-v2_x;
+			double t23 = w1_y-w2_y;
+			double t24 = w1_x-w2_x;
+			double t25 = ep_b_t-1.0;
+			double t26 = ep_b_t*ep_b_v1_y;
+			double t34 = ep_b_v2_y*t25;
+			double t27 = t5-t21+t26-t34;
+			double t28 = ep_b_t*ep_b_v1_z;
+			double t30 = ep_b_v2_z*t25;
+			double t29 = t8-t11+t28-t30;
+			double t31 = ep_b_t*ep_b_v1_x;
+			double t33 = ep_b_v2_x*t25;
+			double t32 = t15-t18+t31-t33;
+			double t35 = ep_0_t*t6;
+			double t36 = ep_0_t*t9;
+			double t38 = ep_0_t*t29;
+			double t37 = t36-t38;
+			double t39 = ep_0_t*t16;
+			double t41 = ep_0_t*t32;
+			double t40 = t39-t41;
+			double t43 = ep_0_t*t27;
+			double t42 = t35-t43;
+			double t44 = t6*t29;
+			double t45 = t3*t6;
+			double t54 = t3*t27;
+			double t46 = t45-t54;
+			double t47 = t3*t9;
+			double t48 = t9*t32;
+			double t51 = t3*t29;
+			double t49 = t47-t51;
+			double t50 = t3*t16;
+			double t52 = t16*t27;
+			double t55 = t3*t32;
+			double t53 = t50-t55;
+			double t56 = t9*t27;
+			double t57 = t16*t29;
+			double t58 = t6*t32;
 
-				double t2 = ep_0_t-1.0;
-				double t3 = ep_0_t*ep_0_v1_z;
-				double t4 = ep_b_t-1.0;
-				double t5 = ep_0_t*ep_0_v1_y;
-				double t6 = ep_f_t-1.0;
-				double t7 = ep_b_v2_y*t4;
-				double t9 = ep_0_v2_y*t2;
-				double t28 = ep_b_t*ep_b_v1_y;
-				double t8 = t5+t7-t9-t28;
-				double t10 = ep_f_v2_y*t6;
-				double t11 = ep_0_v2_z*t2;
-				double t12 = ep_b_v2_z*t4;
-				double t13 = ep_f_v2_z*t6;
-				double t23 = ep_f_t*ep_f_v1_z;
-				double t14 = t3-t11+t13-t23;
-				double t22 = ep_b_t*ep_b_v1_z;
-				double t15 = t3-t11+t12-t22;
-				double t16 = ep_0_t*ep_0_v1_x;
-				double t17 = ep_b_v2_x*t4;
-				double t19 = ep_0_v2_x*t2;
-				double t26 = ep_b_t*ep_b_v1_x;
-				double t18 = t16+t17-t19-t26;
-				double t20 = ep_f_v2_x*t6;
-				double t21 = folded_v_z-t3+t11;
-				double t24 = ep_0_t*t14;
-				double t25 = t24-ep_0_t*t15;
-				double t35 = ep_f_t*ep_f_v1_y;
-				double t27 = t5-t9+t10-t35;
-				double t31 = ep_f_t*ep_f_v1_x;
-				double t29 = t16-t19+t20-t31;
-				double t30 = ep_0_t*t18;
-				double t32 = t30-ep_0_t*t29;
-				double t33 = folded_v_y-t5+t9;
-				double t34 = ep_0_t*t8;
-				double t36 = t34-ep_0_t*t27;
-				double t37 = folded_v_x-t16+t19;
-				double t38 = t2*t14;
-				double t39 = t14*t18;
-				double t40 = t2*t18;
-				double t41 = t40-t2*t29;
-				double t42 = t2*t8;
-				double t43 = t42-t2*t27;
-				double t44 = t8*t29;
-				double t45 = t8*t14;
-				double t46 = t39-t15*t29;
-				double t47 = t44-t18*t27;
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i,-ep_b_t*t6*t10-ep_b_t*t6*t13+ep_b_t*t9*t17+ep_b_t*t9*t23);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+vnum,ep_b_t*t10*t16-ep_b_t*t9*t20+ep_b_t*t13*t16-ep_b_t*t9*t24);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+2*vnum,ep_b_t*t6*t20+ep_b_t*t6*t24-ep_b_t*t16*t17-ep_b_t*t16*t23);
 
-				//[ ep_0_v1_x, ep_0_v1_y, ep_0_v1_z, ep_0_v2_x, ep_0_v2_y, ep_0_v2_z, ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, folded_v_x, folded_v_y, folded_v_z]
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v1_i,t21*t36+t25*t33+ep_0_t*(t8*(t3+t13-ep_f_t*ep_f_v1_z-ep_0_v2_z*t2)-(t3+t12-ep_b_t*ep_b_v1_z-ep_0_v2_z*t2)*(t5+t10-ep_f_t*ep_f_v1_y-ep_0_v2_y*t2)));
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v1_i+vnum,-ep_0_t*(t39-t15*(t16+t20-ep_f_t*ep_f_v1_x-ep_0_v2_x*t2))-t21*t32-t25*t37);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v1_i+2*vnum,-ep_0_t*t47+t32*t33-t36*t37);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i,t6*t10*t25+t6*t13*t25-t9*t17*t25-t9*t23*t25);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+vnum,-t10*t16*t25+t9*t20*t25-t13*t16*t25+t9*t24*t25);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+2*vnum,-t6*t20*t25-t6*t24*t25+t16*t17*t25+t16*t23*t25);
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v2_i,-t21*t43-t33*(t38-t2*t15)-t2*(t45-t15*t27));
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v2_i+vnum,t2*t46+t21*t41+t37*(t38-t2*t15));
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_0_v2_i+2*vnum,t2*t47-t33*t41+t37*t43);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i,ep_f_t*t10*t27+ep_f_t*t13*t27-ep_f_t*t17*t29-ep_f_t*t23*t29);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+vnum,-ep_f_t*t10*t32-ep_f_t*t13*t32+ep_f_t*t20*t29+ep_f_t*t24*t29);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+2*vnum,-ep_f_t*t20*t27+ep_f_t*t17*t32-ep_f_t*t24*t27+ep_f_t*t23*t32);
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i,-ep_b_t*t14*t33+ep_b_t*t21*t27);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+vnum,-ep_b_t*t21*t29+ep_b_t*t14*t37);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+2*vnum,ep_b_t*t29*t33-ep_b_t*t27*t37);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i,-t2*t10*t27-t2*t13*t27+t2*t17*t29+t2*t23*t29);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+vnum,t2*t10*t32+t2*t13*t32-t2*t20*t29-t2*t24*t29);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+2*vnum,t2*t20*t27-t2*t17*t32+t2*t24*t27-t2*t23*t32);
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i,t4*t14*t33-t4*t21*t27);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+vnum,t4*t21*t29-t4*t14*t37);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+2*vnum,-t4*t29*t33+t4*t27*t37);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i,t44-t9*t27+t10*t42-t17*t37+t13*t42-t23*t37);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i+vnum,t48-t16*t29-t10*t40-t13*t40+t20*(t36-t38)+t24*(t36-t38));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i+2*vnum,t52-t6*t32-t20*t42-t24*t42+t17*(t39-t41)+t23*(t39-t41));
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i,-ep_f_t*t8*t21+ep_f_t*t15*t33);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+vnum,ep_f_t*t18*t21-ep_f_t*t15*t37);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+2*vnum,ep_f_t*t8*t37-ep_f_t*t18*t33);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i,-t44+t56-t10*t46-t13*t46+t17*t49+t23*t49);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i+vnum,-t48+t57+t10*t53+t13*t53-t20*t49-t24*t49);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i+2*vnum,-t52+t58-t17*t53-t23*t53+t20*(t45-t54)+t24*(t45-t54));
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i,t6*t8*t21-t6*t15*t33);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+vnum,-t6*t18*t21+t6*t15*t37);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+2*vnum,-t6*t8*t37+t6*t18*t33);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i,t44-t56);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i+vnum,t48-t57);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i+2*vnum,t52-t58);
 
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,folded_v_i,-t45+t15*t27);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,folded_v_i+vnum,t46);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,folded_v_i+2*vnum,t47);
-
-				const_cnt++;
-			}
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i,-t44+t56);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+vnum,-t48+t57);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+2*vnum,-t52+t58);
 		}
 	}
   if (const_cnt != const_n) {
