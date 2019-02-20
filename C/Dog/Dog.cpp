@@ -2,6 +2,13 @@
 
 #include <igl/boundary_loop.h>
 
+int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
+	int mult_edge_index = edge_to_duplicates.at(edge);
+	int mult_edge_const_start = multiplied_edges_start[mult_edge_index]; 
+	int mult_edges_num = multiplied_edges_num[mult_edge_index];
+	return mult_edges_num;
+}
+
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
 		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
 		const std::vector< std::vector<int> >& submesh_adjacency) :

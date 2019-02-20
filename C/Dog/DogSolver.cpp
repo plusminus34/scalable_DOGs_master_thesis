@@ -123,6 +123,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
     case SOLVE_NEWTON_FLOW: {
       //std::cout << "before foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      is_folded();
       //std::cout << "after foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
       /*
       int wait;// cin >> wait;
