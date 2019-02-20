@@ -125,13 +125,13 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 void OrthogonalGrid::subdivide_grid_at_pt(const Point_2& pt) {
 	if (is_point_on_grid(pt)) return;
 	// Todo: check what is better x or y
-	if (1) {
+	//if (1) {
 		x_coords.push_back(pt.x());
 		std::sort(x_coords.begin(),x_coords.end());
-	} else {
-		x_coords.push_back(pt.y());
+	//} else {
+		y_coords.push_back(pt.y());
 		std::sort(y_coords.begin(),y_coords.end());
-	}	
+	//}	
 }
 
 bool OrthogonalGrid::is_point_on_grid(const Point_2& pt) const {
