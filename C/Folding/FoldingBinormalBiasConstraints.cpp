@@ -6,17 +6,23 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
     // TODO: different handling of vertices (maybe no consatraints there?)
 	//const_n= 2*(eS.edge_coordinates.size()-2);
 	//const_n = 1;//*(eS.edge_coordinates.size()-2);
-	int const_n = 0;
+	std::cout << "number of curves = " << eS.stitched_curves.size() << std::endl;
+	const_n = 0;
 	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
 		// Go through all the inner vertices in a curve
 		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
 			EdgePoint ep = foldingCurve[edge_idx];
 			if (eS.get_vertex_edge_point_deg(ep.edge) == 1) const_n++;
+			else {
+				std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
+			}
 		}
 	}
-	//std::cout << "const_n = " << const_n << " and the other = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size() << std::endl;
+	//exit(1);
 	//const_n = eS.edge_coordinates.size()-2*eS.stitched_curves.size();
+	std::cout << "const_n = " << const_n << " and eS.edge_coordinates.size()-2*eS.stitched_curves.size() = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size()  << std::endl;
+	//exit(1);
 	IJV.resize(24*const_n);
 	lambda_hessian_IJV.resize(300*const_n);
 }
@@ -90,7 +96,7 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 		}
 	}
   if (const_cnt != const_n) {
-		cout << "error, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
+		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
   }
   return constVals;
@@ -223,7 +229,7 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 		}
 	}
   if (const_cnt != const_n) {
-		cout << "error, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
+		cout << "error in jacobian, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
 	}
 }
