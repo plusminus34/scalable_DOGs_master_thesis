@@ -70,6 +70,7 @@ bool DogSolver::is_folded() {
       CurvedFoldBias curvedFoldBias;
       curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
       auto edge_pt = foldingCurve[e_idx];
+      if (eS.get_vertex_edge_point_deg(edge_pt.edge) != 1) continue;
       curvedFoldBias.edge_t = edge_pt.t;
       dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
       tmpCurveSignBiasSignObj.add_fold_bias(curvedFoldBias);
