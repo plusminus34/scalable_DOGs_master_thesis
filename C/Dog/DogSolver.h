@@ -45,7 +45,7 @@ public:
 		double fold_bias_weight = 100;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
-		int max_newton_iters = 100;
+		int max_newton_iters = 10;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
 		bool align_procrustes = false;

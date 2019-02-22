@@ -135,7 +135,8 @@ int main(int argc, char *argv[]) {
   if (boost::iequals(extension, "svg")) {
     std::cout << "Reading svg " << input_path << endl;
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
-    if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
+    if (argc == 3) {x_res = y_res = std::stoi(argv[2]);};
+    if (argc == 4) {x_res = std::stoi(argv[2]); y_res = std::stoi(argv[3]);};
     state.init_from_svg(input_path, x_res, y_res);
     //modelViewer.viewMode = ViewModeCreases;
 
