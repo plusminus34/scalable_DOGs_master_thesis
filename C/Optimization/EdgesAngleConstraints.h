@@ -13,7 +13,7 @@ public:
 			edge_pairs(edge_pairs), cos_angles(cos_angles) {
 		// Every edge pairs consist 1 angle constraint
 		const_n = edge_pairs.size();
-		IJV.resize(2*const_n);
+		IJV.resize(12*const_n);
 	};
 
 	void set_angles(const std::vector<double> cos_angles_i) { cos_angles = cos_angles_i;}
