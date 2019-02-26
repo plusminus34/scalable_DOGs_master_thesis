@@ -6,7 +6,7 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 			const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
 	 if (eS.edge_const_1.size()) {
-	 	surfaceCurve.edgePoints = eS.stitched_curves[1];
+	 	surfaceCurve.edgePoints = eS.stitched_curves[0];
 	 	init_from_surface_curve(V);
 	 }
 }

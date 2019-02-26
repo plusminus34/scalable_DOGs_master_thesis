@@ -66,18 +66,25 @@ bool DogSolver::is_folded() {
     const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
 
     for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
-      double sign_op_alpha = 1e10; CurvedFoldingBiasObjective tmpCurveSignBiasSignObj(sign_op_alpha,true,false);
-      CurvedFoldBias curvedFoldBias;
-      curvedFoldBias.ep_b = foldingCurve[e_idx-1]; curvedFoldBias.ep_f = foldingCurve[e_idx+1];
-      auto edge_pt = foldingCurve[e_idx];
+      auto ep_b = foldingCurve[e_idx-1]; auto ep_f = foldingCurve[e_idx+1];
+      auto edge_pt = foldingCurve[e_idx]; double edge_t = edge_pt.t;
       if (eS.get_vertex_edge_point_deg(edge_pt.edge) != 1) continue;
-      curvedFoldBias.edge_t = edge_pt.t;
-      dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, curvedFoldBias.v1,curvedFoldBias.v2,curvedFoldBias.w1,curvedFoldBias.w2);
-      tmpCurveSignBiasSignObj.add_fold_bias(curvedFoldBias);
-      double curve_fold_bias_sign_obj = tmpCurveSignBiasSignObj.obj(dog.getV_vector());
-      if (curve_fold_bias_sign_obj> 1e-3) {
+      int v1,v2,w1,w2; dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, v1,v2,w1,w2);
+      Eigen::VectorXd V1_p(dog.getV().row(v1)), V2_p(dog.getV().row(v2));
+      Eigen::VectorXd W1_p(dog.getV().row(w1)), W2_p(dog.getV().row(w2));
+      auto ep_p = edge_pt.getPositionInMesh(dog.getV()); auto ep_b_p = ep_b.getPositionInMesh(dog.getV()); auto ep_f_p = ep_f.getPositionInMesh(dog.getV());
+      Eigen::VectorXd B = ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).normalized();
+
+      Eigen::VectorXd e1 = V1_p-V2_p, e2 = W1_p-W2_p;
+      //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
+      double sign1 = B.dot(e1), sign2 = B.dot(e2);
+      if (sign1*sign2 > 0) {
         is_folded = false;
-        break;
+        //cout << "Change!" << endl;
+        //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
+        cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << endl;
+        //cout << "The entire curve's length is " << foldingCurve.size() << endl;
+        //break;
       }
     }
   }
