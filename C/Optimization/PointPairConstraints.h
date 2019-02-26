@@ -10,6 +10,7 @@
 class PointPairConstraints : public Constraints {
 public:
 	PointPairConstraints(const std::vector<std::pair<int,int>>& pairs) : pairs(pairs) {
+		// Here the pairs are assumed to be defined on the vector pairs (so pairing up points means having 3 index pairs in the c'tor here)
 		const_n = pairs.size();
 		IJV.resize(2*const_n);
 	};
