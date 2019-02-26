@@ -401,11 +401,18 @@ void DeformationController::setup_fold_constraints() {
 	int vnum = globalDog->getV().rows();
 
 	int fold_curve_idx = 0; int e_idx; 
-	e_idx=globalDog->getEdgeStitching().stitched_curves[0].size()/3;
+	e_idx=globalDog->getEdgeStitching().stitched_curves[0].size()/2;
+	cout << "e_idx = " << e_idx << endl;
 
 	EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
 
 	bool is_mountain = true; bool keep_rigid_motion = true;
+	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
+
+	e_idx=globalDog->getEdgeStitching().stitched_curves[0].size()/4;
+	cout << "e_idx = " << e_idx << endl;
+
+	//EdgePoint edgePoint = find_most_equally_spaced_edge_on_fold_curve(fold_curve_idx, e_idx);
 	mvFoldingConstraintsBuilder.add_fold(*globalDog, fold_curve_idx, e_idx, is_mountain, keep_rigid_motion);
 /*
 	for (int i = 0; i < 2; i++) {
