@@ -164,6 +164,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     auto solve_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
     double step_size = 1;
+
     //new_e = line_search(x,d,init_t,f);
     new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
     // update lagrange multipliers

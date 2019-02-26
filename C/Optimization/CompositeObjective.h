@@ -20,8 +20,9 @@ public:
 
 	virtual CompositeObjective* clone() const {return new CompositeObjective(*this);}
 	void add_objective(Objective* e, double w = 1.) {
-		objectives.push_back(e->clone()); 
+		objectives.push_back(e->clone());
 		weights.push_back(w);
+		std::cout<<std::endl;
 		ijv_size += e->get_hessian_IJV_size();
 		IJV.resize(ijv_size);
 	}

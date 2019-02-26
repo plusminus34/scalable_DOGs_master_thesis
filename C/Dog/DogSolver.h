@@ -4,6 +4,7 @@
 
 #include "../Optimization/CompositeConstraints.h"
 #include "../Optimization/CompositeObjective.h"
+#include "../Optimization/EdgesAngleConstraints.h"
 #include "../Optimization/EdgePointConstraints.h"
 #include "../Optimization/PositionalConstraints.h"
 #include "../Optimization/PointPairConstraints.h"
