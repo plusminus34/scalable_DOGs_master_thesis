@@ -14,7 +14,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, dogEditor.p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
 }
 
 void DeformationController::single_optimization() {
@@ -80,5 +80,5 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, dogEditor.p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
 }

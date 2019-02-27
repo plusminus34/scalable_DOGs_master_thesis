@@ -36,7 +36,6 @@ public:
 
 	double curve_timestep = 0;
 
-	DogSolver::Params p;
 	Editor::MouseMode mouse_mode = Editor::NONE;
 	Editor::SelectMode select_mode = Editor::VertexPicker;
 

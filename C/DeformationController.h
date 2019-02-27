@@ -24,6 +24,7 @@ public:
 
 	bool is_curve_constraint = false;
 	DogEditor dogEditor;
+	DogSolver::Params p;
 	double curve_timestep = 0;
 	double constraints_deviation;
 	double objective;
