@@ -6,7 +6,7 @@
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
-	DeformationController() {globalDog = NULL; editedSubmesh = NULL; dogSolver = NULL; curveConstraintsBuilder = NULL;}
+	DeformationController();
 	~DeformationController() {if (dogSolver) delete dogSolver;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
@@ -36,6 +36,15 @@ private:
 	void update_point_coords(Eigen::VectorXd& bc_i);
 
 	igl::opengl::glfw::Viewer* viewer;
+
+	// Positional constraints
+	Eigen::VectorXi b; Eigen::VectorXd bc;
+	// Point pair constraints
+	std::vector<std::pair<int,int>> paired_vertices;
+	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+
+	Editor* editor;
+
 	Eigen::VectorXd init_x0;
 	// This needs to resest sometimes. 
 	// For instance when a new soft constraint is added (but not when the constraint value change), or when a entirely new DOG is loaded

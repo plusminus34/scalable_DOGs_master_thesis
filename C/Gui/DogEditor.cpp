@@ -2,6 +2,12 @@
 
 std::vector<int> get_second_dog_row(Dog& dog);
 
+DogEditor::DogEditor(Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
+		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : b(b),bc(bc),paired_vertices(paired_vertices),
+		edgePoints(edgePoints), edgeCoords(edgeCoords) {
+		// empty on purpose
+}
+
 DogEditor::~DogEditor() {
 	if (editor) delete editor;
 }

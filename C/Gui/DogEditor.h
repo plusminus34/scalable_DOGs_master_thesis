@@ -5,9 +5,11 @@
 
 class DogEditor {
 public:
-	void init_from_new_dog(Dog& dog);
+	DogEditor(Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
+				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
 	~DogEditor();
 
+	void init_from_new_dog(Dog& dog);
 	bool has_new_constraints() {return editor->new_constraints;}
 	void signal_handled_new_constraints() {editor->new_constraints = false;}
 	bool has_new_point_constraints() {return new_point_constraints;}
@@ -34,19 +36,15 @@ public:
 	void add_pair_vertices_constraint(int v1, int v2);
 	*/
 
-	double curve_timestep = 0;
-
 	Editor::MouseMode mouse_mode = Editor::NONE;
 	Editor::SelectMode select_mode = Editor::VertexPicker;
-
-	// Positional constraints
-	Eigen::VectorXi b; Eigen::VectorXd bc;
-	// Point pair constraints
-	std::vector<std::pair<int,int>> paired_vertices;
-	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	Editor* editor;
 
+
 private:
+	Eigen::VectorXi& b; Eigen::VectorXd& bc; std::vector<std::pair<int,int>>& paired_vertices;
+	std::vector<EdgePoint>& edgePoints; Eigen::MatrixXd& edgeCoords;
+
 	igl::opengl::glfw::Viewer* viewer;
 	Eigen::MatrixXi FTriangular; // The triangular faces of the dog (not dogFrendering)
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints

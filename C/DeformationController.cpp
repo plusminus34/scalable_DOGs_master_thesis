@@ -3,6 +3,11 @@
 #include <queue>
 using namespace std;
 
+DeformationController::DeformationController() : dogEditor(b,bc,paired_vertices,edgePoints,edgeCoords), globalDog(NULL),
+			 editedSubmesh(NULL), dogSolver(NULL), curveConstraintsBuilder(NULL) {
+	// empty on purpose
+}
+
 void DeformationController::init_from_new_dog(Dog& dog) {
 	if (globalDog) delete globalDog;
 	if (editedSubmesh) delete editedSubmesh;
@@ -14,7 +19,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
 }
 
 void DeformationController::single_optimization() {
@@ -23,7 +28,7 @@ void DeformationController::single_optimization() {
 		dogEditor.signal_handled_new_constraints();
 	}
 	if (is_curve_constraint) update_edge_curve_constraints();
-	if (dogEditor.has_new_point_constraints()) dogSolver->update_point_coords(dogEditor.bc);
+	if (dogEditor.has_new_point_constraints()) dogSolver->update_point_coords(bc);
 	dogSolver->single_iteration(constraints_deviation, objective);
 }
 
@@ -44,19 +49,19 @@ void DeformationController::update_edge_curve_constraints() {
 }
 
 void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
-	dogEditor.edgeCoords = edgeCoords_i; dogSolver->update_edge_coords(dogEditor.edgeCoords);
+	edgeCoords = edgeCoords_i; dogSolver->update_edge_coords(edgeCoords);
 }
 
 void DeformationController::update_point_coords(Eigen::VectorXd& bc_i) {
-	dogEditor.bc = bc_i; dogSolver->update_point_coords(dogEditor.bc);
+	bc = bc_i; dogSolver->update_point_coords(bc);
 }
 
 void DeformationController::reset_constraints() {
-	dogEditor.b.resize(0);
-	dogEditor.bc.resize(0); 
-	dogEditor.paired_vertices.clear(); 
-	dogEditor.edgePoints.clear(); 
-	dogEditor.edgeCoords.resize(0,3); 
+	b.resize(0);
+	bc.resize(0); 
+	paired_vertices.clear(); 
+	edgePoints.clear(); 
+	edgeCoords.resize(0,3); 
 	dogEditor.editor->clearHandles(); 
 	reset_dog_solver(); 
 	is_curve_constraint = false;
@@ -80,5 +85,5 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
 }
