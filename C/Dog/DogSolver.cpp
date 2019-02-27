@@ -131,6 +131,9 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
     }
     case SOLVE_NEWTON_FLOW: {
       //std::cout << "before foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
+
+      /*
+      Used to test edge angle constraint
       std::pair<Edge,Edge> edge_pairs(Edge(424,434),Edge(434,444));
       EdgesAngleConstraints edgeAngleConstraints(x,{edge_pairs},{0.8});
       QuadraticConstraintsSumObjective edgeAngleConstraintsObj(edgeAngleConstraints,x0);
@@ -138,8 +141,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       
       CompositeObjective compObjNew({&obj.compObj,&edgeAngleConstraintsObj},{1.,100.});
       newtonKKT.solve_constrained(x0, compObjNew, constraints.compConst, x);
-
-      //newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      */
+      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
       is_folded();
       //std::cout << "after foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
       /*
