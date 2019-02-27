@@ -191,8 +191,8 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
-      ImGui::InputDouble("Constraints deviation", &DC.dogEditor.constraints_deviation);
-      ImGui::InputDouble("objective", &DC.dogEditor.objective);
+      ImGui::InputDouble("Constraints deviation", &DC.constraints_deviation);
+      ImGui::InputDouble("objective", &DC.objective);
       ImGui::Checkbox("Is optimizing?", &is_optimizing);
 
       ImGui::End();

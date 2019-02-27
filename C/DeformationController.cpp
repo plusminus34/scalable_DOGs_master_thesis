@@ -9,13 +9,22 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	globalDog = &dog;
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
+
 	dogEditor.init_from_new_dog(dog);
+
+	init_x0 = dog.getV_vector();
+	if (dogSolver) delete dogSolver;
+	dogSolver = new DogSolver(dog,init_x0, dogEditor.p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
 }
 
-
 void DeformationController::single_optimization() {
+	if (dogEditor.has_new_constraints()) {
+		reset_dog_solver();
+		dogEditor.signal_handled_new_constraints();
+	}
 	if (is_curve_constraint) update_edge_curve_constraints();
-	return dogEditor.single_optimization();
+	if (dogEditor.has_new_point_constraints()) dogSolver->update_point_coords(dogEditor.bc);
+	dogSolver->single_iteration(constraints_deviation, objective);
 }
 
 void DeformationController::setup_curve_constraints() {
@@ -31,7 +40,26 @@ void DeformationController::setup_curve_constraints() {
 void DeformationController::update_edge_curve_constraints() {
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
-	dogEditor.update_edge_coords(edgeCoords);
+	update_edge_coords(edgeCoords);
+}
+
+void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
+	dogEditor.edgeCoords = edgeCoords_i; dogSolver->update_edge_coords(dogEditor.edgeCoords);
+}
+
+void DeformationController::update_point_coords(Eigen::VectorXd& bc_i) {
+	dogEditor.bc = bc_i; dogSolver->update_point_coords(dogEditor.bc);
+}
+
+void DeformationController::reset_constraints() {
+	dogEditor.b.resize(0);
+	dogEditor.bc.resize(0); 
+	dogEditor.paired_vertices.clear(); 
+	dogEditor.edgePoints.clear(); 
+	dogEditor.edgeCoords.resize(0,3); 
+	dogEditor.editor->clearHandles(); 
+	reset_dog_solver(); 
+	is_curve_constraint = false;
 }
 
 // t = 0.5 in the edge constraint means it is equally spaced
@@ -47,4 +75,10 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 		}
 	}
 	return foldingCurve[min_edge];
+}
+
+void DeformationController::reset_dog_solver() {
+	Dog& dog = dogSolver->getDog();
+	if (dogSolver) delete dogSolver;
+	dogSolver = new DogSolver(dog,init_x0, dogEditor.p, dogEditor.b, dogEditor.bc, dogEditor.edgePoints, dogEditor.edgeCoords, dogEditor.paired_vertices);
 }
