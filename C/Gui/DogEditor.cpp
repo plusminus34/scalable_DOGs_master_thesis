@@ -38,6 +38,8 @@ bool DogEditor::callback_mouse_down() {
 		translate_vertex_edit_mouse_down();
 	} else if (edit_mode == VERTEX_PAIRS) {
 		vertex_pairs_edit_mouse_down();
+	} else if (edit_mode == EDGES_ANGLE) {
+		edges_angle_edit_mouse_down();
 	}
 	return action_started;
 }
@@ -51,9 +53,7 @@ bool DogEditor::callback_mouse_move(int mouse_x, int mouse_y) {
 			lasso.strokeAddCurve(mouse_x, mouse_y);
 			return true;
 		}
-	}
-	
-	if (edit_mode == TRANSLATE) {
+	} else if (edit_mode == TRANSLATE) {
 		Eigen::Vector3f translation = computeTranslation(viewer, mouse_x, down_mouse_x, mouse_y, down_mouse_y, handle_centroids.row(moving_handle));
 		get_new_handle_locations(translation);
 		down_mouse_x = mouse_x;
@@ -217,19 +217,29 @@ void DogEditor::apply_new_constraint() {
 
 void DogEditor::cancel_new_constraint() {
 	if (edit_mode == VERTEX_PAIRS) {
-		pair_vertex_1 = pair_vertex_2 = -1;
+		
+	} else if (edit_mode == EDGES_ANGLE) {
+		edge_angle_v1 = edge_angle_v2 = edge_angle_center = -1; edges_angle_pick_idx = 0;
 	}
+}
+
+void DogEditor::cancel_new_pair_constraint() {
+	pair_vertex_1 = pair_vertex_2 = -1; next_pair_first = true;
+}
+
+void DogEditor::cancel_new_edge_angle_constraint() {
+	edge_angle_v1 = -1; edge_angle_center = -1; edge_angle_v2 = -1; edges_angle_pick_idx = 0;
 }
 
 void DogEditor::clearHandles() {
 	handle_id.setConstant(V.rows(),1,-1);
 	handle_vertex_positions.setZero(0,3);
-	handle_vertices.resize(0);handle_vertices.setZero(0);
+	handle_vertices.resize(0); handle_vertices.setZero(0);
 
 	moving_handle = -1;
 	current_handle = -1;
-	pair_vertex_1 = pair_vertex_2 = -1;
-	paired_vertices.clear();
+	cancel_new_pair_constraint(); paired_vertices.clear();
+	cancel_new_edge_angle_constraint();
 }
 
 void DogEditor::select_positional_mouse_down() {
@@ -262,15 +272,28 @@ void DogEditor::translate_vertex_edit_mouse_down() {
 }
 
 void DogEditor::vertex_pairs_edit_mouse_down() {
-	cout << "shalom!" << endl;
 	if (select_mode != VertexPicker) return;
 	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 	if (vi >=0) {
-		cout << "chose vi = " << vi << endl;
 		if (next_pair_first) {
 			pair_vertex_1 = vi; next_pair_first = false;
 		} else {
 			pair_vertex_2 = vi; next_pair_first = true;
 		}
 	}
+}
+
+void DogEditor::edges_angle_edit_mouse_down() {
+	if (select_mode != VertexPicker) return;
+	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	if (vi >=0) {
+		if (edges_angle_pick_idx == 0) {
+			edge_angle_v1 = vi; edges_angle_pick_idx +=1;
+		} else if (edges_angle_pick_idx == 1) {
+			edge_angle_center = vi; edges_angle_pick_idx +=1;
+		} else {
+			edge_angle_v2 = vi; edges_angle_pick_idx +=1;
+		}
+	}
+	edges_angle_pick_idx = edges_angle_pick_idx % 3;
 }
