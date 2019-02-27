@@ -50,7 +50,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (render_pos_const) {
 		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
-		DC.dogEditor.render_pairs();
+		DC.dogEditor->render_pairs();
 	}
 	render_mesh(viewer, *dog);
 }
@@ -155,7 +155,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 	//viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
-	DC.dogEditor.render_positional_constraints();
+	DC.dogEditor->render_positional_constraints();
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {

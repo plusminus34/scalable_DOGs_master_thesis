@@ -3,7 +3,7 @@
 #include <queue>
 using namespace std;
 
-DeformationController::DeformationController() : dogEditor(has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords), globalDog(NULL),
+DeformationController::DeformationController() : dogEditor(NULL), globalDog(NULL),
 			 editedSubmesh(NULL), dogSolver(NULL), curveConstraintsBuilder(NULL) {
 	// empty on purpose
 }
@@ -15,8 +15,9 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
 
-	dogEditor.init_from_new_dog(dog);
-
+	dogEditor = new DogEditor(*viewer, *globalDog, mouse_mode, select_mode, 
+								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords);
+	
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, paired_vertices);
@@ -95,7 +96,7 @@ void DeformationController::reset_constraints() {
 	paired_vertices.clear(); 
 	edgePoints.clear(); 
 	edgeCoords.resize(0,3); 
-	dogEditor.editor->clearHandles(); 
+	dogEditor->clearHandles(); 
 	reset_dog_solver(); 
 	is_curve_constraint = false;
 }

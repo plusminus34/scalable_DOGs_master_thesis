@@ -72,13 +72,13 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'S':
-    DC.dogEditor.mouse_mode = Editor::SELECT;
+    DC.mouse_mode = DogEditor::SELECT;
     break;
   case 'D':
-    DC.dogEditor.mouse_mode = Editor::TRANSLATE;
+    DC.mouse_mode = DogEditor::TRANSLATE;
     break;
   case 'A':
-    DC.dogEditor.mouse_mode = Editor::APPLY;
+    DC.mouse_mode = DogEditor::APPLY;
     break;
   case 'C':
     DC.reset_constraints();
@@ -96,21 +96,21 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return DC.dogEditor.callback_mouse_down();
+  if (modelViewer.viewMode == ViewModeMesh) return DC.dogEditor->callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor.callback_mouse_move(mouse_x, mouse_y);
+  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor.callback_mouse_up();
+  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor->callback_mouse_up();
   return false;
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
   if ((is_optimizing) && (is_curve_constrainted) && (DC.curve_timestep < 1)) DC.curve_timestep+=curve_timestep_diff;
-  if ( ((DC.dogEditor.has_constraints())) && is_optimizing) run_optimization();
+  if ( ((DC.dogEditor->has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
@@ -168,15 +168,15 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
       //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
+      ImGui::Combo("Mouse mode", (int *)(&DC.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
+      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
       ImGui::Combo("Solver type", (int *)(&DC.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
+      //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor->curve_timestep, 0, 0, "%.4f") ) DC.dogEditor->update_positional_constraints();
       ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
       ImGui::InputDouble("Curve step size", &curve_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};

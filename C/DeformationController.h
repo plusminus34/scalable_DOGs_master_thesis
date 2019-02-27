@@ -1,15 +1,15 @@
 #pragma once
 
+#include "Dog/DogSolver.h"
+#include "Dog/Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
-// The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
-// The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
 public:
 	DeformationController();
 	~DeformationController() {if (dogSolver) delete dogSolver;}
 	void init_from_new_dog(Dog& dog);
-	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i; dogEditor.init_viewer(viewer_i);}
+	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
 
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
@@ -25,9 +25,12 @@ public:
 	void reset_constraints();
 	bool is_folded();
 
+	DogEditor::MouseMode mouse_mode = DogEditor::NONE;
+	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
+
 	bool has_new_constraints = false;
 	bool is_curve_constraint = false;
-	DogEditor dogEditor;
+	DogEditor* dogEditor;
 	DogSolver::Params p;
 	double curve_timestep = 0;
 	double constraints_deviation;
@@ -51,8 +54,6 @@ private:
 	// Point pair constraints
 	std::vector<std::pair<int,int>> paired_vertices;
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
-
-	Editor* editor;
 
 	Eigen::VectorXd init_x0;
 	// This needs to resest sometimes. 
