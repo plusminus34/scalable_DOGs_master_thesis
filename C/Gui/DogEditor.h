@@ -8,10 +8,10 @@
 
 class DogEditor {
 public:
-	enum MouseMode { SELECT, TRANSLATE, APPLY, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
-	enum SelectMode {VertexPicker, PairPicker, CurvePicker};
+	enum EditMode { SELECT_POSITIONAL, TRANSLATE, VERTEX_PAIRS, EDGES_ANGLE, DIHEDRAL_ANGLE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
+	enum SelectMode {VertexPicker, CurvePicker};
 
-	DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, MouseMode& mouse_mode, SelectMode& select_mode,
+	DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,
          bool& has_new_constraints, Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
 				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
 	~DogEditor();
@@ -19,6 +19,9 @@ public:
 	bool callback_mouse_down();
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
+
+	void apply_new_constraint();
+	void cancel_new_constraint();
 
 	void render_pairs() const {render_paired_constraints();render_selected_pairs();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
@@ -29,12 +32,16 @@ public:
 	void clearHandles();
 private:
 	Dog& dog;
-	MouseMode& mouse_mode; SelectMode& select_mode;
+	EditMode& edit_mode; SelectMode& select_mode;
 	bool& has_new_constraints;
 	Eigen::VectorXi& b; Eigen::VectorXd& bc; std::vector<std::pair<int,int>>& paired_vertices;
 	std::vector<EdgePoint>& edgePoints; Eigen::MatrixXd& edgeCoords;
 	
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
+
+	void select_positional_mouse_down();
+	void translate_vertex_edit_mouse_down();
+	void vertex_pairs_edit_mouse_down();
 
 	void onNewHandleID();
 	void compute_handle_centroids();

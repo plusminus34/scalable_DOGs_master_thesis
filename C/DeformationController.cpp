@@ -15,7 +15,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
 
-	dogEditor = new DogEditor(*viewer, *globalDog, mouse_mode, select_mode, 
+	dogEditor = new DogEditor(*viewer, *globalDog, edit_mode, select_mode, 
 								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords);
 	
 	init_x0 = dog.getV_vector();

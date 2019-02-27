@@ -72,13 +72,16 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'S':
-    DC.mouse_mode = DogEditor::SELECT;
+    DC.edit_mode = DogEditor::SELECT_POSITIONAL;
     break;
   case 'D':
-    DC.mouse_mode = DogEditor::TRANSLATE;
+    DC.edit_mode = DogEditor::TRANSLATE;
     break;
   case 'A':
-    DC.mouse_mode = DogEditor::APPLY;
+    DC.editor_apply_new_constraint();
+    break;
+  case 'Z':
+    DC.editor_cancel_new_constraint();
     break;
   case 'C':
     DC.reset_constraints();
@@ -168,8 +171,10 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
       //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
-      ImGui::Combo("Mouse mode", (int *)(&DC.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
+      ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 None\0\0");
+      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Curve picker\0\0");
+      if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.editor_apply_new_constraint();}
+      if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.editor_cancel_new_constraint();}
       ImGui::Combo("Solver type", (int *)(&DC.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");

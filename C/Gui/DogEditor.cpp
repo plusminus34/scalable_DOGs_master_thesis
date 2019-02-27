@@ -7,14 +7,14 @@ using namespace std;
 
 std::vector<int> get_second_dog_row(Dog& dog);
 
-DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, MouseMode& mouse_mode, SelectMode& select_mode,
+DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,
          bool& has_new_constraints, Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
 				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
 		dog(dog), viewer(viewer),
 		has_new_constraints(has_new_constraints),b(b),bc(bc),
 		paired_vertices(paired_vertices),edgePoints(edgePoints), edgeCoords(edgeCoords),
 		V(dog.getV()), F(dog.getFTriangular()),
-		lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode) {
+		lasso(viewer,V,F), edit_mode(edit_mode), select_mode(select_mode) {
 	
 	handle_id.setConstant(V.rows(), 1, -1);
 	oldV = V;
@@ -31,70 +31,29 @@ bool DogEditor::callback_mouse_down() {
 	down_mouse_x = viewer.current_mouse_x;
 	down_mouse_y = viewer.current_mouse_y;
 	
-	if (mouse_mode == SELECT) {
-		if (select_mode == CurvePicker) {
-			if (lasso.strokeAddCurve(viewer.current_mouse_x, viewer.current_mouse_y) >=0) {
-				action_started = true;
-			}
-		} else if (select_mode == VertexPicker) {
-			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-			if (vi >=0) {
-				int index = handle_id.maxCoeff()+1;
-				if (handle_id[vi] == -1) handle_id[vi] = index;
-				current_handle = index;
-				
-				onNewHandleID();
-			}
-		} else if (select_mode == PairPicker) {
-			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-			if (vi >=0) {
-				if (next_pair_first) {
-					pair_vertex_1 = vi; next_pair_first = false;
-				} else {
-					pair_vertex_2 = vi; next_pair_first = true;
-				}
-			}
-		}
-	} else if (mouse_mode == TRANSLATE) {
-			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-			if(vi>=0 && handle_id[vi]>=0)  {//if a region was found, mark it for translation/rotation {
-				moving_handle = handle_id[vi];
-				current_handle = moving_handle;
-				oldV = V;//.copy();
-				//get_new_handle_locations();
-				//compute_grad_constraints();
-				action_started = true;
-			}
-	} else if (mouse_mode == APPLY) {
-		if (select_mode == PairPicker) {
-			int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-			if ( (pair_vertex_1!=-1) && (pair_vertex_2!=-1) ){
-				if ((vi == pair_vertex_1) || (vi == pair_vertex_2)) {
-					int vnum = V.rows();
-					for (int i = 0; i < 3; i++) {
-						paired_vertices.push_back(std::pair<int,int>(i*vnum+pair_vertex_1,i*vnum+pair_vertex_2));	
-					}
-					
-					pair_vertex_1 = pair_vertex_2 = -1;
-					has_new_constraints = true;
-				}
-			}
-		}
+	cout << "mouse down, and edit_mode = " << edit_mode <<  endl;
+	if (edit_mode == SELECT_POSITIONAL) {
+		select_positional_mouse_down();
+	} else if (edit_mode == TRANSLATE) {
+		translate_vertex_edit_mouse_down();
+	} else if (edit_mode == VERTEX_PAIRS) {
+		vertex_pairs_edit_mouse_down();
 	}
 	return action_started;
 }
+
 bool DogEditor::callback_mouse_move(int mouse_x, int mouse_y) {
 	if (!action_started)
 		return false;
 	
-	if (mouse_mode == SELECT) {
+	if (edit_mode == SELECT_POSITIONAL) {
 		if (select_mode == CurvePicker) {
 			lasso.strokeAddCurve(mouse_x, mouse_y);
 			return true;
 		}
 	}
 	
-	if (mouse_mode == TRANSLATE) {
+	if (edit_mode == TRANSLATE) {
 		Eigen::Vector3f translation = computeTranslation(viewer, mouse_x, down_mouse_x, mouse_y, down_mouse_y, handle_centroids.row(moving_handle));
 		get_new_handle_locations(translation);
 		down_mouse_x = mouse_x;
@@ -109,7 +68,7 @@ bool DogEditor::callback_mouse_up() {
 		return false;
 	action_started = false;
 	
-	if (mouse_mode == TRANSLATE) {
+	if (edit_mode == TRANSLATE) {
 		Eigen::Vector3f translation; translation.setZero();
 		moving_handle = -1;
 		oldV = V;
@@ -121,7 +80,7 @@ bool DogEditor::callback_mouse_up() {
 		return true;
 	}
 
-	if (mouse_mode == SELECT) {
+	if (edit_mode == SELECT_POSITIONAL) {
 		if (select_mode == CurvePicker) {
 			lasso.strokeFinishCurve(spline_pt_number);
 			//lasso->strokeFinishCurve(D.const_edges, D.edge_coordinates);
@@ -150,7 +109,7 @@ void DogEditor::onNewHandleID() {
 	// update b and bc (vector form of handle_vertices and handle_vertex_positions)
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 
-	// b contains normal constraints + z-up/down constraints for folding
+	// b contains normal constraints
 	b.resize(3*handle_vertices.rows()); bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
 		b(i) = handle_vertices(i); bc(i) = handle_vertex_positions(i,0);
@@ -171,7 +130,7 @@ void DogEditor::get_new_handle_locations(Eigen::Vector3f translation) {
 			Eigen::RowVector3f goalPosition = oldV.row(vi).cast<float>();
 			//Eigen::RowVector3f goalPosition = oldV.row(vi).cast<float>();
 			if (handle_id[vi] == moving_handle){
-				if( mouse_mode == TRANSLATE) goalPosition+=translation;
+				if( edit_mode == TRANSLATE) goalPosition+=translation;
 			}
 			handle_vertex_positions.row(count++) = goalPosition.cast<double>();
 			oldV.row(vi) = goalPosition.cast<double>();;
@@ -242,6 +201,26 @@ void DogEditor::render_selected_pairs() const {
 	}	
 }
 
+void DogEditor::apply_new_constraint() {
+	if (edit_mode == VERTEX_PAIRS) {
+		if ( (pair_vertex_1!= -1) && (pair_vertex_2!= -1) ) {
+			int vnum = V.rows();
+			for (int i = 0; i < 3; i++) {
+				paired_vertices.push_back(std::pair<int,int>(i*vnum+pair_vertex_1,i*vnum+pair_vertex_2));	
+			}
+		
+			pair_vertex_1 = pair_vertex_2 = -1;
+			has_new_constraints = true;	
+		}
+	}
+}
+
+void DogEditor::cancel_new_constraint() {
+	if (edit_mode == VERTEX_PAIRS) {
+		pair_vertex_1 = pair_vertex_2 = -1;
+	}
+}
+
 void DogEditor::clearHandles() {
 	handle_id.setConstant(V.rows(),1,-1);
 	handle_vertex_positions.setZero(0,3);
@@ -251,4 +230,47 @@ void DogEditor::clearHandles() {
 	current_handle = -1;
 	pair_vertex_1 = pair_vertex_2 = -1;
 	paired_vertices.clear();
+}
+
+void DogEditor::select_positional_mouse_down() {
+	if (select_mode == CurvePicker) {
+		if (lasso.strokeAddCurve(viewer.current_mouse_x, viewer.current_mouse_y) >=0) {
+			action_started = true;
+		}
+	} else if (select_mode == VertexPicker) {
+		int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+		if (vi >=0) {
+			int index = handle_id.maxCoeff()+1;
+			if (handle_id[vi] == -1) handle_id[vi] = index;
+			current_handle = index;
+			
+			onNewHandleID();
+		}
+	}
+}
+
+void DogEditor::translate_vertex_edit_mouse_down() {
+	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	if(vi>=0 && handle_id[vi]>=0)  {//if a region was found, mark it for translation/rotation {
+		moving_handle = handle_id[vi];
+		current_handle = moving_handle;
+		oldV = V;//.copy();
+		//get_new_handle_locations();
+		//compute_grad_constraints();
+		action_started = true;
+	}
+}
+
+void DogEditor::vertex_pairs_edit_mouse_down() {
+	cout << "shalom!" << endl;
+	if (select_mode != VertexPicker) return;
+	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	if (vi >=0) {
+		cout << "chose vi = " << vi << endl;
+		if (next_pair_first) {
+			pair_vertex_1 = vi; next_pair_first = false;
+		} else {
+			pair_vertex_2 = vi; next_pair_first = true;
+		}
+	}
 }
