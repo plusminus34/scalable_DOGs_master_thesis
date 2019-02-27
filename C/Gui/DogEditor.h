@@ -39,8 +39,6 @@ private:
 	void onNewHandleID();
 	void compute_handle_centroids();
 	void get_new_handle_locations(Eigen::Vector3f translation);
-	Eigen::Vector3f computeTranslation (int mouse_x, int from_x, int mouse_y, int from_y, Eigen::RowVector3d pt3D);
-	Eigen::Vector4f computeRotation(int mouse_x, int from_x, int mouse_y, int from_y, Eigen::RowVector3d pt3D);
 
 	igl::opengl::glfw::Viewer& viewer;
 	const Eigen::MatrixXd &V; Eigen::MatrixXd oldV;
