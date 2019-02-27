@@ -143,7 +143,7 @@ void ModelViewer::render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& vi
 void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	Eigen::VectorXd x(dog->getV_vector());
-	Eigen::VectorXi b; Eigen::VectorXd bc; DC.dogEditor.get_positional_constraints(b,bc);
+	Eigen::VectorXi b; Eigen::VectorXd bc; DC.get_positional_constraints(b,bc);
 	Eigen::VectorXd constrained_pts_coords_vec; igl::slice(x,b,1, constrained_pts_coords_vec);
 
 	int pts_num = b.size()/3;
@@ -161,7 +161,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
-	DC.dogEditor.get_edge_point_constraints(edgePoints, edgeCoords);
+	DC.get_edge_point_constraints(edgePoints, edgeCoords);
 	if (!edgePoints.size()) return;
 	Eigen::MatrixXd currentCoords = EdgePoint::getPositionInMesh(edgePoints, dog->getV());
 	viewer.data().add_edges(currentCoords,edgeCoords,Eigen::RowVector3d(1.,0,0));

@@ -18,8 +18,6 @@ public:
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up() {return editor->callback_mouse_up();}
 
-	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
-	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
 	void render_positional_constraints() const {return editor->render_positional_constraints();}
 	void render_pairs() const {editor->render_paired_constraints();editor->render_selected_pairs();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}

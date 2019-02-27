@@ -14,6 +14,9 @@ public:
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 
+	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
+	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
+
 	void single_optimization();
 
 	void setup_curve_constraints();
