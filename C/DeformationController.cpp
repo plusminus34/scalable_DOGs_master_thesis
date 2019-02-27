@@ -3,7 +3,7 @@
 #include <queue>
 using namespace std;
 
-DeformationController::DeformationController() : dogEditor(b,bc,paired_vertices,edgePoints,edgeCoords), globalDog(NULL),
+DeformationController::DeformationController() : dogEditor(has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords), globalDog(NULL),
 			 editedSubmesh(NULL), dogSolver(NULL), curveConstraintsBuilder(NULL) {
 	// empty on purpose
 }
@@ -23,12 +23,10 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 }
 
 void DeformationController::single_optimization() {
-	if (dogEditor.has_new_constraints()) {
-		reset_dog_solver();
-		dogEditor.signal_handled_new_constraints();
-	}
+	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
-	if (dogEditor.has_new_point_constraints()) dogSolver->update_point_coords(bc);
+	dogSolver->update_point_coords(bc);
+	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);
 }
 
@@ -39,13 +37,12 @@ void DeformationController::setup_curve_constraints() {
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	is_curve_constraint = true;
-	dogEditor.add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
+	add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
 }
 
 void DeformationController::update_edge_curve_constraints() {
-	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
+	SurfaceCurve surfaceCurve;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
-	update_edge_coords(edgeCoords);
 }
 
 void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
@@ -55,6 +52,42 @@ void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
 void DeformationController::update_point_coords(Eigen::VectorXd& bc_i) {
 	bc = bc_i; dogSolver->update_point_coords(bc);
 }
+
+void DeformationController::add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords) {
+	edgePoints.insert(edgePoints.end(), new_edgePoints.begin(), new_edgePoints.end());
+	Eigen::MatrixXd old_edgeCoords = edgeCoords; edgeCoords.resize(old_edgeCoords.rows()+new_edgeCoords.rows(), old_edgeCoords.cols());
+	if (old_edgeCoords.rows()) edgeCoords << old_edgeCoords, new_edgeCoords; else edgeCoords = new_edgeCoords; // Eigen's concatenate crashes if one of them is empty
+
+	has_new_constraints = true;
+}
+
+void DeformationController::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
+	Eigen::VectorXi old_b = b; Eigen::VectorXd old_bc = bc;
+	b.resize(old_b.rows()+new_b.rows()); bc.resize(b.rows());
+	if (old_b.rows()) {
+		b << old_b,new_b; bc << old_bc,new_bc;
+	} else {
+		b = new_b; bc = new_bc; // Eigen's concatenate crashes if one of them is empty
+	}
+	
+	has_new_constraints = true;
+}
+
+void DeformationController::add_edge_point_constraint(const EdgePoint& new_edgePoint, const Eigen::RowVector3d& new_edgeCoords) {
+	std::vector<EdgePoint> new_edgePoints = {new_edgePoint}; Eigen::MatrixXd newCoords(1,3); newCoords.row(0) = new_edgeCoords;
+	add_edge_point_constraints(new_edgePoints, newCoords);
+}
+
+void DeformationController::add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices) {
+	paired_vertices.insert(paired_vertices.end(), new_pair_vertices.begin(), new_pair_vertices.end());
+	has_new_constraints = true;
+}
+
+void DeformationController::add_pair_vertices_constraint(int v1, int v2) {
+	std::vector<std::pair<int,int>> new_pair_vertices{std::pair<int,int>(v1,v2)}; 
+	add_pair_vertices_constraints(new_pair_vertices);
+}
+
 
 void DeformationController::reset_constraints() {
 	b.resize(0);

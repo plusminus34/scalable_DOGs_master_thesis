@@ -9,9 +9,10 @@
 using namespace std;
 
 Editor::Editor(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd &V, const Eigen::MatrixXi &F_tri,
+				bool& has_new_constraints,
 				Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
 				const MouseMode& mouse_mode, const SelectMode& select_mode) : 
-				viewer(viewer), V(V), F(F_tri), b(b), bc(bc), paired_vertices(paired_vertices), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
+				viewer(viewer), V(V), F(F_tri), has_new_constraints(has_new_constraints), b(b), bc(bc), paired_vertices(paired_vertices), lasso(viewer,V,F), mouse_mode(mouse_mode), select_mode(select_mode),
 				translation(0,0,0) {
 	handle_id.setConstant(V.rows(), 1, -1);
 	oldV = V;
@@ -65,7 +66,7 @@ bool Editor::callback_mouse_down() {
 					}
 					
 					pair_vertex_1 = pair_vertex_2 = -1;
-					new_constraints = true;
+					has_new_constraints = true;
 				}
 			}
 		}
@@ -169,7 +170,7 @@ void Editor::onNewHandleID() {
 	//solver.setConst(D.b);
 	//Direction direction; direction.x = direction.y = direction.z = 0;
 	//handle_directions.push_back(direction);
-	new_constraints = true;
+	has_new_constraints = true;
 }
 
 void Editor::get_new_handle_locations() {

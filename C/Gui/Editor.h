@@ -11,6 +11,7 @@ public:
 	Editor(igl::opengl::glfw::Viewer& viewer,
 		  const Eigen::MatrixXd &V,
          const Eigen::MatrixXi &F_tri,
+         bool& has_new_constraints,
          Eigen::VectorXi& b, Eigen::VectorXd& bc, // positional constraints
          std::vector<std::pair<int,int>>& paired_vertices,
          const Editor::MouseMode& mouse_mode,
@@ -26,7 +27,7 @@ public:
 
 	Eigen::VectorXi& b; Eigen::VectorXd& bc;
 	std::vector<std::pair<int,int>>& paired_vertices;
-	bool new_constraints = false;
+	bool& has_new_constraints;
 
 private:
 	void applySelection();

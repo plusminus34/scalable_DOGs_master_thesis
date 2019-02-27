@@ -22,6 +22,7 @@ public:
 	void reset_constraints();
 	bool is_folded();
 
+	bool has_new_constraints = false;
 	bool is_curve_constraint = false;
 	DogEditor dogEditor;
 	DogSolver::Params p;
@@ -32,8 +33,13 @@ private:
 	void reset_dog_solver();
 	EdgePoint find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx, int& edge_index);
 
+	void add_edge_point_constraints(const std::vector<EdgePoint>& new_edgePoints, const Eigen::MatrixXd& new_edgeCoords);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords_i);
 	void update_point_coords(Eigen::VectorXd& bc_i);
+	void add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc);
+	void add_edge_point_constraint(const EdgePoint& new_edgePoints, const Eigen::RowVector3d& new_edgeCoords);
+	void add_pair_vertices_constraints(const std::vector<std::pair<int,int>>& new_pair_vertices);
+	void add_pair_vertices_constraint(int v1, int v2);
 
 	igl::opengl::glfw::Viewer* viewer;
 
