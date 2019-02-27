@@ -33,16 +33,12 @@ private:
 	bool& has_new_constraints;
 	Eigen::VectorXi& b; Eigen::VectorXd& bc; std::vector<std::pair<int,int>>& paired_vertices;
 	std::vector<EdgePoint>& edgePoints; Eigen::MatrixXd& edgeCoords;
-
-	
 	
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
 
-
-	void applySelection();
 	void onNewHandleID();
 	void compute_handle_centroids();
-	void get_new_handle_locations();
+	void get_new_handle_locations(Eigen::Vector3f translation);
 	Eigen::Vector3f computeTranslation (int mouse_x, int from_x, int mouse_y, int from_y, Eigen::RowVector3d pt3D);
 	Eigen::Vector4f computeRotation(int mouse_x, int from_x, int mouse_y, int from_y, Eigen::RowVector3d pt3D);
 
@@ -51,10 +47,8 @@ private:
 	Eigen::MatrixXi F; // The triangular faces of the dog (not dogFrendering)
 	Lasso lasso;
 
-	Eigen::Vector3f translation;
+	//Eigen::Vector3f translation;
 
-	//list of currently selected vertices
-	Eigen::VectorXi selected_v;//(0,1);
 	//updated positions of handle vertices, #HV x3
 	Eigen::MatrixXd handle_vertex_positions;//(0,3);
 	//list of all vertices belonging to handles, #HV x1
