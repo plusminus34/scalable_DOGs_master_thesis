@@ -15,7 +15,6 @@
 using namespace std;
 
 bool is_optimizing = true;
-bool is_folding = false;
 bool is_curve_constrainted = false;
 double dihedral_diff = 0.01;
 double curve_timestep_diff = 0.01;
@@ -81,21 +80,13 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'A':
     DC.dogEditor.mouse_mode = Editor::APPLY;
     break;
-  case 'F':
-    DC.propagate_submesh_constraints();
-    editedSubmeshI = -1;
-    break;
   case 'C':
     DC.reset_constraints();
-    is_folding = false;
     is_curve_constrainted = false;
 
     break;
   case 'R':
     DC.single_optimization();
-    break;
-  case 'P':
-    DC.init_curved_fold_from_given_mesh();
     break;
   case 'E':
     exit(1);
@@ -118,9 +109,8 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ((is_optimizing) && (is_folding) && (DC.fold_dihedral_angle < M_PI/2) ) DC.fold_dihedral_angle += dihedral_diff;
   if ((is_optimizing) && (is_curve_constrainted) && (DC.curve_timestep < 1)) DC.curve_timestep+=curve_timestep_diff;
-  if ( ((DC.is_initializing_curved_fold) || (DC.dogEditor.has_constraints())) && is_optimizing) run_optimization();
+  if ( ((DC.dogEditor.has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
@@ -175,16 +165,12 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      if (ImGui::Button("Setup fold constraints", ImVec2(-1,0))) {DC.setup_fold_constraints();is_optimizing = false; is_folding = true;}
-      if (ImGui::Button("Setup reflection fold constraints", ImVec2(-1,0))) {DC.setup_reflection_fold_constraints();is_optimizing = false; is_folding = true;}
-      if (ImGui::Button("Setup fold bias", ImVec2(-1,0))) {DC.setup_fold_bias();is_optimizing = false; is_folding = true;}
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
-      if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
+      //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Mouse mode", (int *)(&DC.dogEditor.mouse_mode), "Select\0Translate\0Apply\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.dogEditor.select_mode), "Vertex Picker\0Pair picker\0Curve picker\0\0");
       ImGui::Combo("Solver type", (int *)(&DC.dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
-      if (ImGui::InputInt("Edited submesh", &editedSubmeshI) ) DC.update_edited_mesh(editedSubmeshI);
       ImGui::InputDouble("Bending", &DC.dogEditor.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.dogEditor.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Laplacian Similarity", &DC.dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
@@ -194,9 +180,8 @@ int main(int argc, char *argv[]) {
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor.curve_timestep, 0, 0, "%.4f") ) DC.dogEditor.update_positional_constraints();
       ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
       ImGui::InputDouble("Curve step size", &curve_timestep_diff, 0, 0, "%.4f");
-      if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
+      //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       if (ImGui::InputDouble("Curve timestep", &DC.curve_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
-      ImGui::InputDouble("Sign opt alpha", &DC.sign_opt_alpha, 0, 0, "%.4f");
       ImGui::InputDouble("Merit penalty", &DC.dogEditor.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.dogEditor.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.dogEditor.p.infeasability_filter);

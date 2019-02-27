@@ -6,8 +6,7 @@
 
 class DogEditor {
 public:
-	DogEditor(CurvedFoldingBiasObjective& curvedFoldingBiasObjective): 
-		curvedFoldingBiasObjective(curvedFoldingBiasObjective), dogSolver(NULL) {}
+	DogEditor(): dogSolver(NULL) {}
 	~DogEditor();
 	void single_optimization();
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
@@ -57,7 +56,6 @@ private:
 	// This needs to be reset when the DOG change, or when the soft positional constraints indices change
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	// This doesn't change when the values of the soft constraints change
-	CurvedFoldingBiasObjective& curvedFoldingBiasObjective;
 	DogSolver* dogSolver;
 	Editor* editor;
 
