@@ -173,7 +173,6 @@ int main(int argc, char *argv[]) {
       ImGui::Combo("Solver type", (int *)(&DC.dogEditor.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &DC.dogEditor.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.dogEditor.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Laplacian Similarity", &DC.dogEditor.p.laplacian_similarity_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.dogEditor.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.dogEditor.p.fold_bias_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();

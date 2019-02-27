@@ -22,11 +22,8 @@
 #include "Objectives/DogConstraints.h"
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
-#include "Objectives/HEnergy.h"
-#include "Objectives/LaplacianSimilarity.h"
 #include "Objectives/StitchingConstraints.h"
 
-//#include "../Folding/CurvedFoldingBiasObjective.h"
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 
 
@@ -41,7 +38,6 @@ public:
 		DogSolver::SolverType solverType = SOLVE_NEWTON_FLOW;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
-		double laplacian_similarity_weight = 0;
 		double soft_pos_weight = 1;
 		double fold_bias_weight = 100;
 		int penalty_repetitions = 1;
@@ -85,17 +81,13 @@ public:
 	  			EdgePointConstraints& edgePtConst,
 	  			PointPairConstraints& ptPairConst,
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
-	  			//CurvedFoldingBiasObjective& curvedFoldingBiasObj,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	//LaplacianSimilarity laplacianSimilarity;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
-      	LaplacianSimilarity laplacianSimilarity;
-      	//CurvedFoldingBiasObjective& curvedFoldingBiasObj;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
       	CompositeObjective compObj;
 	};

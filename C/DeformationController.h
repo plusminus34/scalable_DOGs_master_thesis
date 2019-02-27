@@ -2,9 +2,6 @@
 
 #include "Gui/DogEditor.h"
 
-#include "Folding/MVFolds.h"
-#include "Folding/ReflectionFolds.h"
-
 // The DOG structure is be constant (we have a global DOG that consists of multiple submeshses connected by creases/folds)
 // The deformation controller holds pointer to the global Dog and to an "edited submesh DOG"
 class DeformationController {
