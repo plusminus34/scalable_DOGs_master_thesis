@@ -20,7 +20,7 @@ void DogEditor::add_edge_point_constraints(const std::vector<EdgePoint>& new_edg
 	Eigen::MatrixXd old_edgeCoords = edgeCoords; edgeCoords.resize(old_edgeCoords.rows()+new_edgeCoords.rows(), old_edgeCoords.cols());
 	if (old_edgeCoords.rows()) edgeCoords << old_edgeCoords, new_edgeCoords; else edgeCoords = new_edgeCoords; // Eigen's concatenate crashes if one of them is empty
 
-	new_point_constraints = true;
+	editor->new_constraints = true;
 }
 /*
 void DogEditor::add_positional_constraints(const Eigen::VectorXi& new_b, const Eigen::VectorXd& new_bc) {
