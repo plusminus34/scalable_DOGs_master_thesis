@@ -21,6 +21,8 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices);
+
+	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
 
 void DeformationController::single_optimization() {
@@ -47,7 +49,7 @@ void DeformationController::apply_new_editor_constraint() {
 void DeformationController::setup_curve_constraints() {
 	if (curveConstraintsBuilder) delete curveConstraintsBuilder;
 	curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(), 
-															globalDog->getEdgeStitching(), curve_timestep);
+															globalDog->getEdgeStitching(), deformation_timestep);
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	is_curve_constraint = true;

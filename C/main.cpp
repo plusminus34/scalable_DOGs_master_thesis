@@ -17,7 +17,7 @@ using namespace std;
 bool is_optimizing = true;
 bool is_curve_constrainted = false;
 double dihedral_diff = 0.01;
-double curve_timestep_diff = 0.01;
+double deformation_timestep_diff = 0.01;
 
 ModelState state;
 DeformationController DC;
@@ -112,7 +112,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ((is_optimizing) && (is_curve_constrainted) && (DC.curve_timestep < 1)) DC.curve_timestep+=curve_timestep_diff;
+  if ((is_optimizing) && (is_curve_constrainted) && (DC.deformation_timestep < 1)) DC.deformation_timestep+=deformation_timestep_diff;
   if ( ((DC.dogEditor->has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
@@ -183,9 +183,9 @@ int main(int argc, char *argv[]) {
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor->curve_timestep, 0, 0, "%.4f") ) DC.dogEditor->update_positional_constraints();
       ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
-      ImGui::InputDouble("Curve step size", &curve_timestep_diff, 0, 0, "%.4f");
+      ImGui::InputDouble("Curve step size", &deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
-      if (ImGui::InputDouble("Curve timestep", &DC.curve_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
+      if (ImGui::InputDouble("Curve timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
       ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);

@@ -2,6 +2,7 @@
 
 #include "Dog/DogSolver.h"
 #include "Dog/Objectives/CurveInterpolationConstraintsBuilder.h"
+#include "Dog/Objectives/FoldingDihedralAngleConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
 class DeformationController {
@@ -34,7 +35,7 @@ public:
 	bool is_curve_constraint = false;
 	DogEditor* dogEditor;
 	DogSolver::Params p;
-	double curve_timestep = 0;
+	double deformation_timestep = 0;
 	double constraints_deviation;
 	double objective;
 
@@ -71,4 +72,5 @@ private:
 	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
 
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
+	FoldingDihedralAngleConstraintsBuilder* foldingDihedralAngleConstraintsBuilder;
 };

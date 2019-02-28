@@ -1,8 +1,7 @@
 #include "FoldingDihedralAngleConstraintsBuilder.h"
 
-FoldingDihedralAngleConstraintsBuilder::FoldingDihedralAngleConstraintsBuilder(const Dog& dog, 
-			std::vector<double>& destination_dihedral_angles, const double& timestep) : 
-				dog(dog), destination_dihedral_angles(destination_dihedral_angles), timestep(timestep) {
+FoldingDihedralAngleConstraintsBuilder::FoldingDihedralAngleConstraintsBuilder(const Dog& dog, const double& timestep) : 
+				dog(dog), timestep(timestep) {
 	// Todo: find the initial tangent angles so that we could convert angles to angles
 }
 
@@ -20,10 +19,10 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 
 	// Take the tangent of the osculating circle passing through these 3 points
 	auto grid_tangent_direction = (dog.getV().row(v1)-dog.getV()).normalized();
+	// Doesn't matter if we take alpha or pi-alpha as its symmetric and give the same values
 	double curve_tangents_angle = acos(T.dot((grid_tangent_direction).normalized()));
 
 	edge_angle_pairs.push_back(std::pair<Edge,Edge>(e1,e2));
-	// Doesn't matter if we take alpha or pi-alpha as its symmetric and give the same values
 	tangent_angles.push_back(curve_tangents_angle);
 	destination_dihedral_angles.push_back(dihedral_angle);
 
