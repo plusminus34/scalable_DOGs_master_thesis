@@ -179,14 +179,15 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor->curve_timestep, 0, 0, "%.4f") ) DC.dogEditor->update_positional_constraints();
       //ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
-      ImGui::InputDouble("Fold angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
+      ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputDouble("Curve step size", &deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
-      if (ImGui::InputDouble("Curve timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_edge_curve_constraints();};
+      if (ImGui::InputDouble("Curve timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
       ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);

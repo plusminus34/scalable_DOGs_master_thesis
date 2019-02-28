@@ -15,12 +15,17 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 
 	// Get the next and prev curved fold points
 	EdgePoint ep_b,ep_f; find_prev_next_edge_points(ep,ep_b,ep_f);
-	auto curve_t1 = ep.getPositionInMesh(dog.getV())-ep_b.getPositionInMesh(dog.getV());
-	auto curve_t2 = ep_f.getPositionInMesh(dog.getV())-ep.getPositionInMesh(dog.getV());
-	auto T = (curve_t1*curve_t2.norm()+curve_t2*curve_t1.norm()).normalized();
+	Eigen::RowVector3d curve_t1 = ep.getPositionInMesh(dog.getV())-ep_b.getPositionInMesh(dog.getV());
+	Eigen::RowVector3d curve_t2 = ep_f.getPositionInMesh(dog.getV())-ep.getPositionInMesh(dog.getV());
+	cout << "curve_t1 = " << curve_t1 << endl;
+	cout << "curve_t2 = " << curve_t2 << endl;
+	cout << "curve_t1*curve_t2.norm()+curve_t2*curve_t1.norm() = " << curve_t1*curve_t2.norm()+curve_t2*curve_t1.norm() << endl;
+	Eigen::RowVector3d T = (curve_t1*curve_t2.norm()+curve_t2*curve_t1.norm()).normalized();
 
 	// Take the tangent of the osculating circle passing through these 3 points
-	auto grid_tangent_direction = (dog.getV().row(v1)-dog.getV()).normalized();
+	Eigen::RowVector3d grid_tangent_direction = (dog.getV().row(v1)-dog.getV().row(v2)).normalized();
+	cout << "grid_tangent_direction = " << grid_tangent_direction << endl;
+	cout << "T = " << T << endl;
 	// Doesn't matter if we take alpha or pi-alpha as its symmetric and give the same values
 	double curve_tangents_angle = acos(T.dot((grid_tangent_direction).normalized()));
 
@@ -28,6 +33,7 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 	tangent_angles.push_back(curve_tangents_angle);
 	destination_dihedral_angles.push_back(dihedral_angle);
 	cout << "Added edge point with v1 = " << v1 << " v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
+	cout << "curve_tangents_angle = " << curve_tangents_angle << endl;
 
 }
 void FoldingDihedralAngleConstraintsBuilder::find_prev_next_edge_points(const EdgePoint& ep, EdgePoint& prev_ep, EdgePoint& next_ep) {
@@ -37,6 +43,7 @@ void FoldingDihedralAngleConstraintsBuilder::find_prev_next_edge_points(const Ed
 			if (eS.stitched_curves[c_i][e_i].edge == ep.edge) {
 				prev_ep = eS.stitched_curves[c_i][e_i-1];
 				next_ep = eS.stitched_curves[c_i][e_i+1];
+				return;
 			}
 		}
 	}
@@ -47,11 +54,11 @@ void FoldingDihedralAngleConstraintsBuilder::find_prev_next_edge_points(const Ed
 void FoldingDihedralAngleConstraintsBuilder::get_edge_angle_constraints(std::vector<double>& edge_cos_angles) {
 	edge_cos_angles.resize(destination_dihedral_angles.size());
 	for (int i = 0; i < destination_dihedral_angles.size(); i++) {
-		double alpha = tangent_angles[i]; 
+		double alpha = tangent_angles[i];
 		double dest_dihedral_angle = destination_dihedral_angles[i];
 		double const_dihedral = timestep*dest_dihedral_angle;
 		edge_cos_angles[i] = pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral);
 
-		cout << "Getting dihedral angle with cos =  " << cos(const_dihedral) << " by getting a tangent angle of cos = " << edge_cos_angles[i] << endl;
+		cout << "Getting dihedral angle of  " << const_dihedral << " by getting a tangent angle of " << acos(edge_cos_angles[i]) << endl;
 	}
 }
