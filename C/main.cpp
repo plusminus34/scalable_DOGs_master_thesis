@@ -164,8 +164,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false;}
-      //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
-      //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
+      
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
@@ -176,11 +175,9 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
-      //if (ImGui::InputDouble("Fold angle", &dogEditor.folding_angle, 0, 0, "%.4f") ) dogSolver.update_positional_constraints();
-      //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor->curve_timestep, 0, 0, "%.4f") ) DC.dogEditor->update_positional_constraints();
-      //ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
+      
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
-      ImGui::InputDouble("Curve step size", &DC.deformation_timestep_diff, 0, 0, "%.4f");
+      ImGui::InputDouble("Time step size", &DC.deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       if (ImGui::InputDouble("Timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
       ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
