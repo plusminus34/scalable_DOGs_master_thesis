@@ -207,35 +207,21 @@ void DogEditor::render_selected_pairs() const {
 	}	
 }
 
-void DogEditor::apply_new_constraint() {
+void DogEditor::reset_new_constraint() {
 	if (edit_mode == VERTEX_PAIRS) {
-		if ( (pair_vertex_1!= -1) && (pair_vertex_2!= -1) ) {
-			int vnum = V.rows();
-			for (int i = 0; i < 3; i++) {
-				paired_vertices.push_back(std::pair<int,int>(i*vnum+pair_vertex_1,i*vnum+pair_vertex_2));	
-			}
-		
-			pair_vertex_1 = pair_vertex_2 = -1;
-			has_new_constraints = true;	
-		}
-	}
-}
-
-void DogEditor::cancel_new_constraint() {
-	if (edit_mode == VERTEX_PAIRS) {
-		cancel_new_pair_constraint();
+		reset_new_pair_constraint();
 	} else if (edit_mode == EDGES_ANGLE) {
-		cancel_new_edge_angle_constraint();
+		reset_new_edge_angle_constraint();
 	} else if (edit_mode == DIHEDRAL_ANGLE) {
 		picked_edge.t = -1;
 	}
 }
 
-void DogEditor::cancel_new_pair_constraint() {
+void DogEditor::reset_new_pair_constraint() {
 	pair_vertex_1 = pair_vertex_2 = -1; next_pair_first = true;
 }
 
-void DogEditor::cancel_new_edge_angle_constraint() {
+void DogEditor::reset_new_edge_angle_constraint() {
 	edge_angle_v1 = -1; edge_angle_center = -1; edge_angle_v2 = -1; edges_angle_pick_idx = 0;
 }
 
@@ -247,8 +233,8 @@ void DogEditor::clearHandles() {
 	moving_handle = -1;
 	current_handle = -1;
 	picked_edge.t = -1;
-	cancel_new_pair_constraint(); paired_vertices.clear();
-	cancel_new_edge_angle_constraint();
+	reset_new_pair_constraint(); paired_vertices.clear();
+	reset_new_edge_angle_constraint();
 }
 
 void DogEditor::select_positional_mouse_down() {
@@ -308,6 +294,9 @@ void DogEditor::dihedral_angle_edit_mouse_down() {
 	EdgePoint ep;
 	if (pick_edge(ep) >= 0) {
 		picked_edge = ep;
+		int v1,v2,w1,w2;
+		//dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
+		//cout << "v1 = " << v1 << "v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
 		return;
 	}
 	cout << "No edge found" << endl;

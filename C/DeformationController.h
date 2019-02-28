@@ -10,8 +10,8 @@ public:
 	~DeformationController() {if (dogSolver) delete dogSolver;}
 	void init_from_new_dog(Dog& dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
-	void editor_apply_new_constraint() {dogEditor->apply_new_constraint();}
-	void editor_cancel_new_constraint() {dogEditor->cancel_new_constraint();}
+	void apply_new_editor_constraint();
+	void reset_new_editor_constraint() {dogEditor->reset_new_constraint();}
 
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
@@ -52,11 +52,14 @@ private:
 
 	igl::opengl::glfw::Viewer* viewer;
 
-	// Positional constraints
+	// Points positional constraints
 	Eigen::VectorXi b; Eigen::VectorXd bc;
+	// Edge positional constraints
+	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	// Point pair constraints
 	std::vector<std::pair<int,int>> paired_vertices;
-	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
+	// Edge angle constraints
+	std::vector<std::pair<Edge,Edge>> edge_angle_pairs; std::vector<double> edge_cos_angles;
 
 	Eigen::VectorXd init_x0;
 	// This needs to resest sometimes. 

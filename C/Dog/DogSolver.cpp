@@ -7,13 +7,14 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         const DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+        std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
         std::vector<std::pair<int,int>>& pairs) :
 
           dog(dog),
           foldingBinormalBiasConstraints(dog),
           init_x0(init_x0), p(p),
-          constraints(dog, b, bc, edgePoints, edgeCoords, pairs), 
-          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.ptPairConst,
+          constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, pairs), 
+          obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.edgeAngleConst,constraints.ptPairConst,
                 foldingBinormalBiasConstraints, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
@@ -22,14 +23,16 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
     is_constrained = (b.rows() + edgePoints.size())>0;
 }
 
-DogSolver::Constraints::Constraints(const Dog& dog,
+DogSolver::Constraints::Constraints(const Dog& dog, const Eigen::VectorXd& init_x0,
       Eigen::VectorXi& b, Eigen::VectorXd& bc, 
       std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+      std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
       std::vector<std::pair<int,int>>& pairs) : 
                     dogConst(dog.getQuadTopology()),
                     stitchingConstraints(dog.getQuadTopology(), dog.getEdgeStitching()),
                     posConst(b,bc),
                     edgePtConst(edgePoints, edgeCoords),
+                    edgeAngleConst(init_x0, edge_angle_pairs, edge_cos_angles),
                     ptPairConst(pairs),
                     compConst({&dogConst, &stitchingConstraints}) /*the positional/edge constraints are soft and go into the objective*/ {
     // Empty on purpose
@@ -38,12 +41,14 @@ DogSolver::Constraints::Constraints(const Dog& dog,
 DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
           PositionalConstraints& posConst,
           EdgePointConstraints& edgePtConst,
+          EdgesAngleConstraints& edgeAnglesConst,
           PointPairConstraints& ptPairConst,
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
         edgePosSoftConstraints(edgePtConst, init_x0),
+        edgeAnglesSoftConstraints(edgeAnglesConst, init_x0),
         ptPairSoftConst(ptPairConst, init_x0),
         foldingBinormalBiasObj(foldingBinormalBiasConstraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
@@ -130,14 +135,17 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
       /*
       Used to test edge angle constraint
-      std::pair<Edge,Edge> edge_pairs(Edge(424,434),Edge(434,444));
-      EdgesAngleConstraints edgeAngleConstraints(x,{edge_pairs},{0.8});
+      std::pair<Edge,Edge> edge_pairs(Edge(90,111),Edge(481,491));
+      EdgesAngleConstraints edgeAngleConstraints(x,{edge_pairs},{0.9});
       QuadraticConstraintsSumObjective edgeAngleConstraintsObj(edgeAngleConstraints,x0);
+      edgeAngleConstraintsObj.obj(x0);//exit(1);
 
       
       CompositeObjective compObjNew({&obj.compObj,&edgeAngleConstraintsObj},{1.,100.});
+
       newtonKKT.solve_constrained(x0, compObjNew, constraints.compConst, x);
       */
+      
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
       is_folded();
       //std::cout << "after foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;

@@ -51,8 +51,8 @@ public:
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-		std::vector<std::pair<int,int>>& pairs
-		/*CurvedFoldingBiasObjective& curvedFoldingBiasObj*/);
+		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
+		std::vector<std::pair<int,int>>& pairs);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -63,14 +63,16 @@ public:
 	bool is_folded();
 	
 	struct Constraints {
-		Constraints(const Dog& dog, Eigen::VectorXi& b, Eigen::VectorXd& bc,
+		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+			std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 			std::vector<std::pair<int,int>>& pairs);
 
 		DogConstraints dogConst;
 		StitchingConstraints stitchingConstraints;
 		PositionalConstraints posConst;
 		EdgePointConstraints edgePtConst;
+		EdgesAngleConstraints edgeAngleConst;
 		PointPairConstraints ptPairConst;
 		CompositeConstraints compConst;
 	};
@@ -79,6 +81,7 @@ public:
 	  Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
+	  			EdgesAngleConstraints& edgeAnglesConst,
 	  			PointPairConstraints& ptPairConst,
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			const DogSolver::Params& p);
@@ -87,6 +90,7 @@ public:
 	  	IsometryObjective isoObj;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
+      	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
       	CompositeObjective compObj;

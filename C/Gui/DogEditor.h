@@ -20,8 +20,7 @@ public:
 	bool callback_mouse_move(int mouse_x, int mouse_y);
 	bool callback_mouse_up();
 
-	void apply_new_constraint();
-	void cancel_new_constraint();
+	void reset_new_constraint();
 
 	void render_pairs() const {render_paired_constraints();render_selected_pairs();}
 	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
@@ -30,6 +29,11 @@ public:
 	void render_paired_constraints() const;
 	void render_selected_pairs() const;
 	void clearHandles();
+
+	int pair_vertex_1 = -1; int pair_vertex_2 = -1; bool next_pair_first = true;
+	int edge_angle_v1 = -1; int edge_angle_center = -1; int edge_angle_v2 = -1; int edges_angle_pick_idx = 0;
+
+	EdgePoint picked_edge;
 private:
 	Dog& dog;
 	EditMode& edit_mode; SelectMode& select_mode;
@@ -51,8 +55,8 @@ private:
 	void compute_handle_centroids();
 	void get_new_handle_locations(Eigen::Vector3f translation);
 
-	void cancel_new_pair_constraint();
-	void cancel_new_edge_angle_constraint();
+	void reset_new_pair_constraint();
+	void reset_new_edge_angle_constraint();
 
 	igl::opengl::glfw::Viewer& viewer;
 	const Eigen::MatrixXd &V_ren; const Eigen::MatrixXd &V; Eigen::MatrixXd oldV;
@@ -72,11 +76,6 @@ private:
 
 	//index of handle being moved
 	int moving_handle = -1;
-
-	int pair_vertex_1 = -1; int pair_vertex_2 = -1; bool next_pair_first = true;
-	int edge_angle_v1 = -1; int edge_angle_center = -1; int edge_angle_v2 = -1; int edges_angle_pick_idx = 0;
-
-	EdgePoint picked_edge;
 
 	//centroids of handle regions, #H x1
 	Eigen::MatrixXd handle_centroids;//(0,3);

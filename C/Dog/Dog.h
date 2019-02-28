@@ -59,6 +59,8 @@ public:
 
 	Dog* get_submesh(int submesh_i);
 
+	int get_v_num() {return V.rows();}
+
 	// If true, gives the min/max in terms of submesh vertices, otherwise faces
 	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices = true);
 	int get_submesh_n() const { return submeshVSize.size();}

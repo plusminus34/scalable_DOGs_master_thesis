@@ -78,10 +78,10 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     DC.edit_mode = DogEditor::TRANSLATE;
     break;
   case 'A':
-    DC.editor_apply_new_constraint();
+    DC.apply_new_editor_constraint();
     break;
   case 'Z':
-    DC.editor_cancel_new_constraint();
+    DC.reset_new_editor_constraint();
     break;
   case 'C':
     DC.reset_constraints();
@@ -173,8 +173,8 @@ int main(int argc, char *argv[]) {
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
-      if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.editor_apply_new_constraint();}
-      if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.editor_cancel_new_constraint();}
+      if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
+      if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
       ImGui::Combo("Solver type", (int *)(&DC.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
