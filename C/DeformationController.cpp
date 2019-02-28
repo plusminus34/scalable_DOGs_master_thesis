@@ -127,7 +127,9 @@ void DeformationController::reset_constraints() {
 	b.resize(0);
 	bc.resize(0); 
 	paired_vertices.clear(); 
-	edgePoints.clear(); 
+	edgePoints.clear();
+	edge_angle_pairs.clear(); 
+	edge_cos_angles.clear();
 	edgeCoords.resize(0,3); 
 	dogEditor->clearHandles(); 
 	reset_dog_solver(); 
