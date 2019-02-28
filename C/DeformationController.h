@@ -23,7 +23,9 @@ public:
 	void single_optimization();
 
 	void setup_curve_constraints();
+	void update_time_deformations() {update_edge_curve_constraints();update_dihedral_constraints();}
 	void update_edge_curve_constraints();
+	void update_dihedral_constraints();
 
 	void reset_constraints();
 	bool is_folded();
@@ -33,10 +35,13 @@ public:
 
 	bool has_new_constraints = false;
 	bool is_curve_constraint = false;
+	bool is_time_dependent_deformation = false;
+	
 	DogEditor* dogEditor;
 	DogSolver::Params p;
 	double deformation_timestep = 0;
-	double dst_dihedral_angle = 0;
+	double deformation_timestep_diff = 0.01;
+	double dst_dihedral_angle = 0; // Later possibly have a list for every edge_angle_pair, so we could have different ones
 	double constraints_deviation;
 	double objective;
 

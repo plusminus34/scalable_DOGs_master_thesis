@@ -15,9 +15,6 @@
 using namespace std;
 
 bool is_optimizing = true;
-bool is_curve_constrainted = false;
-double dihedral_diff = 0.01;
-double deformation_timestep_diff = 0.01;
 
 ModelState state;
 DeformationController DC;
@@ -85,7 +82,6 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'C':
     DC.reset_constraints();
-    is_curve_constrainted = false;
 
     break;
   case 'R':
@@ -112,7 +108,6 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ((is_optimizing) && (is_curve_constrainted) && (DC.deformation_timestep < 1)) DC.deformation_timestep+=deformation_timestep_diff;
   if ( ((DC.dogEditor->has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
@@ -168,7 +163,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false; is_curve_constrainted = true;}
+      if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false;}
       //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 None\0\0");
@@ -185,9 +180,9 @@ int main(int argc, char *argv[]) {
       //if (ImGui::InputDouble("Curve timestep", &DC.dogEditor->curve_timestep, 0, 0, "%.4f") ) DC.dogEditor->update_positional_constraints();
       //ImGui::InputDouble("Dihedral step size", &dihedral_diff, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
-      ImGui::InputDouble("Curve step size", &deformation_timestep_diff, 0, 0, "%.4f");
+      ImGui::InputDouble("Curve step size", &DC.deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
-      if (ImGui::InputDouble("Curve timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
+      if (ImGui::InputDouble("Timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
       ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);

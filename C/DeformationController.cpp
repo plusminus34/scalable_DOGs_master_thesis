@@ -26,8 +26,12 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 }
 
 void DeformationController::single_optimization() {
+	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
+		deformation_timestep+=deformation_timestep_diff;
+	}
 	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
+	update_dihedral_constraints();
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);
@@ -41,6 +45,13 @@ void DeformationController::apply_new_editor_constraint() {
 				paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
 			}
 		}
+	} else if (edit_mode == DogEditor::DIHEDRAL_ANGLE) {
+		if (dogEditor->picked_edge.t !=-1) {
+			foldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, dst_dihedral_angle);
+			foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
+			foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
+			is_time_dependent_deformation = true;
+		}
 	}
 	has_new_constraints = true;	
 	reset_new_editor_constraint();
@@ -53,12 +64,19 @@ void DeformationController::setup_curve_constraints() {
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	is_curve_constraint = true;
+	is_time_dependent_deformation = true;
 	add_edge_point_constraints(surfaceCurve.edgePoints,edgeCoords);
 }
 
 void DeformationController::update_edge_curve_constraints() {
-	SurfaceCurve surfaceCurve;
-	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
+	if (curveConstraintsBuilder) {
+		SurfaceCurve surfaceCurve;
+		curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);	
+	}
+}
+
+void DeformationController::update_dihedral_constraints() {
+	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
 }
 
 void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
