@@ -17,6 +17,7 @@ DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit
 		lasso(viewer,V_ren,F), edit_mode(edit_mode), select_mode(select_mode) {
 	
 	handle_id.setConstant(V.rows(), 1, -1);
+	picked_edge.t = -1;
 	oldV = V;
 }
 
@@ -178,6 +179,10 @@ void DogEditor::render_positional_constraints() const {
     }
     igl::slice(V, handle_vertices, 1, const_v);
     viewer.data().add_points(const_v, handle_colors);
+    if (picked_edge.t != -1) {
+    	Eigen::RowVector3d coord = picked_edge.getPositionInMesh(V);
+    	viewer.data().add_points(coord, Eigen::RowVector3d(220./255,0./255,102./255));
+    }
 }
 void DogEditor::render_paired_constraints() const {
 	Eigen::MatrixXd E1(paired_vertices.size()/3,3),E2(paired_vertices.size()/3,3);
@@ -218,9 +223,11 @@ void DogEditor::apply_new_constraint() {
 
 void DogEditor::cancel_new_constraint() {
 	if (edit_mode == VERTEX_PAIRS) {
-		
+		cancel_new_pair_constraint();
 	} else if (edit_mode == EDGES_ANGLE) {
-		edge_angle_v1 = edge_angle_v2 = edge_angle_center = -1; edges_angle_pick_idx = 0;
+		cancel_new_edge_angle_constraint();
+	} else if (edit_mode == DIHEDRAL_ANGLE) {
+		picked_edge.t = -1;
 	}
 }
 
@@ -239,6 +246,7 @@ void DogEditor::clearHandles() {
 
 	moving_handle = -1;
 	current_handle = -1;
+	picked_edge.t = -1;
 	cancel_new_pair_constraint(); paired_vertices.clear();
 	cancel_new_edge_angle_constraint();
 }
@@ -299,7 +307,7 @@ void DogEditor::vertex_pairs_edit_mouse_down() {
 void DogEditor::dihedral_angle_edit_mouse_down() {
 	EdgePoint ep;
 	if (pick_edge(ep) >= 0) {
-		cout << "Found an edge!" << endl;
+		picked_edge = ep;
 		return;
 	}
 	cout << "No edge found" << endl;

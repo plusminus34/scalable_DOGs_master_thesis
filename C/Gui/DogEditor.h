@@ -76,6 +76,8 @@ private:
 	int pair_vertex_1 = -1; int pair_vertex_2 = -1; bool next_pair_first = true;
 	int edge_angle_v1 = -1; int edge_angle_center = -1; int edge_angle_v2 = -1; int edges_angle_pick_idx = 0;
 
+	EdgePoint picked_edge;
+
 	//centroids of handle regions, #H x1
 	Eigen::MatrixXd handle_centroids;//(0,3);
 	int down_mouse_x = -1, down_mouse_y = -1;
