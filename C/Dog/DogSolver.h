@@ -57,6 +57,7 @@ public:
 	void single_iteration(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
+	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
 
 	Dog& getDog(){return dog;}
 
