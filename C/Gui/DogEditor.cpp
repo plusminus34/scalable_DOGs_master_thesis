@@ -13,7 +13,7 @@ DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit
 		dog(dog), viewer(viewer),
 		has_new_constraints(has_new_constraints),b(b),bc(bc),
 		paired_vertices(paired_vertices),edgePoints(edgePoints), edgeCoords(edgeCoords),
-		V_ren(dog.getVrendering()), V(dog.getV()), F(dog.getFTriangular()), 
+		V_ren(dog.getVrendering()), V(dog.getV()), F(dog.getFrendering()), 
 		lasso(viewer,V_ren,F), edit_mode(edit_mode), select_mode(select_mode) {
 	
 	handle_id.setConstant(V.rows(), 1, -1);
@@ -31,7 +31,6 @@ bool DogEditor::callback_mouse_down() {
 	down_mouse_x = viewer.current_mouse_x;
 	down_mouse_y = viewer.current_mouse_y;
 	
-	cout << "mouse down, and edit_mode = " << edit_mode <<  endl;
 	if (edit_mode == SELECT_POSITIONAL) {
 		select_positional_mouse_down();
 	} else if (edit_mode == TRANSLATE) {
@@ -40,6 +39,8 @@ bool DogEditor::callback_mouse_down() {
 		vertex_pairs_edit_mouse_down();
 	} else if (edit_mode == EDGES_ANGLE) {
 		edges_angle_edit_mouse_down();
+	} else if (edit_mode == DIHEDRAL_ANGLE) {
+		dihedral_angle_edit_mouse_down();
 	}
 	return action_started;
 }
@@ -265,6 +266,12 @@ int DogEditor::pick_vertex() {
 	return -1;
 }
 
+int DogEditor::pick_edge(EdgePoint& edgePoint) {
+	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	if ((vi>=0) && (dog.is_v_ren_vertex_fold(vi)) ) return dog.v_ren_idx_to_edge(vi, edgePoint);
+	return -1;	
+}
+
 void DogEditor::translate_vertex_edit_mouse_down() {
 	int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 	if(vi>=0 && handle_id[vi]>=0)  {//if a region was found, mark it for translation/rotation {
@@ -289,6 +296,14 @@ void DogEditor::vertex_pairs_edit_mouse_down() {
 	}
 }
 
+void DogEditor::dihedral_angle_edit_mouse_down() {
+	EdgePoint ep;
+	if (pick_edge(ep) >= 0) {
+		cout << "Found an edge!" << endl;
+		return;
+	}
+	cout << "No edge found" << endl;
+}
 void DogEditor::edges_angle_edit_mouse_down() {
 	if (select_mode != VertexPicker) return;
 	int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);

@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
       //if (ImGui::Button("Check is folded", ImVec2(-1,0))) {DC.is_folded();}
       //ImGui::Combo("Deformation type", (int *)(&dogEditor.deformationType), "Dihedral Folding\0Curve\0\0");
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 None\0\0");
-      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Curve picker\0\0");
+      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.editor_apply_new_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.editor_cancel_new_constraint();}
       ImGui::Combo("Solver type", (int *)(&DC.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");

@@ -9,7 +9,7 @@
 class DogEditor {
 public:
 	enum EditMode { SELECT_POSITIONAL, TRANSLATE, VERTEX_PAIRS, EDGES_ANGLE, DIHEDRAL_ANGLE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
-	enum SelectMode {VertexPicker, CurvePicker};
+	enum SelectMode {VertexPicker, EdgePointPicker, CurvePicker};
 
 	DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,
          bool& has_new_constraints, Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
@@ -39,11 +39,13 @@ private:
 	
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
 	int pick_vertex();
+	int pick_edge(EdgePoint& edgePoint);
 
 	void select_positional_mouse_down();
 	void translate_vertex_edit_mouse_down();
 	void vertex_pairs_edit_mouse_down();
 	void edges_angle_edit_mouse_down();
+	void dihedral_angle_edit_mouse_down();
 
 	void onNewHandleID();
 	void compute_handle_centroids();

@@ -116,7 +116,7 @@ int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 	return -1;
 }
 
-int Dog::v_ren_idx_to_edge_idx(int v_idx, EdgePoint& edgePt) const {
+int Dog::v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const {
 	auto coords = V_ren.row(v_idx);
 	for (auto curve_v: edgeStitching.stitched_curves) {
 		for (auto ep : curve_v) {
