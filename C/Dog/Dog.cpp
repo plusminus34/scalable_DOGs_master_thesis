@@ -105,3 +105,27 @@ void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_
 	}
 	submesh_max_i = submesh_min_i+submesh_vn-1;
 }
+
+int Dog::v_ren_idx_to_v_idx(int v_idx) const {
+	auto coords = V_ren.row(v_idx);
+	for (int i = 0; i < V.rows(); i++) {
+		if ((V.row(i)-coords).norm() == 0) 
+			return i;
+	}
+	// did not find matching point
+	return -1;
+}
+
+int Dog::v_ren_idx_to_edge_idx(int v_idx, EdgePoint& edgePt) const {
+	auto coords = V_ren.row(v_idx);
+	for (auto curve_v: edgeStitching.stitched_curves) {
+		for (auto ep : curve_v) {
+			if ((ep.getPositionInMesh(V)-coords).norm() == 0) {
+				edgePt = ep;
+				return 0;
+			}
+		}
+	}
+	return -1;
+	std::vector<std::vector<EdgePoint>> stitched_curves;
+}

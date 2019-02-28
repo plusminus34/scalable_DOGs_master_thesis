@@ -38,6 +38,7 @@ private:
 	std::vector<EdgePoint>& edgePoints; Eigen::MatrixXd& edgeCoords;
 	
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
+	int pick_vertex();
 
 	void select_positional_mouse_down();
 	void translate_vertex_edit_mouse_down();
@@ -52,7 +53,7 @@ private:
 	void cancel_new_edge_angle_constraint();
 
 	igl::opengl::glfw::Viewer& viewer;
-	const Eigen::MatrixXd &V; Eigen::MatrixXd oldV;
+	const Eigen::MatrixXd &V_ren; const Eigen::MatrixXd &V; Eigen::MatrixXd oldV;
 	Eigen::MatrixXi F; // The triangular faces of the dog (not dogFrendering)
 	Lasso lasso;
 

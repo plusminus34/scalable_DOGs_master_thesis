@@ -13,8 +13,8 @@ DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit
 		dog(dog), viewer(viewer),
 		has_new_constraints(has_new_constraints),b(b),bc(bc),
 		paired_vertices(paired_vertices),edgePoints(edgePoints), edgeCoords(edgeCoords),
-		V(dog.getV()), F(dog.getFTriangular()),
-		lasso(viewer,V,F), edit_mode(edit_mode), select_mode(select_mode) {
+		V_ren(dog.getVrendering()), V(dog.getV()), F(dog.getFTriangular()), 
+		lasso(viewer,V_ren,F), edit_mode(edit_mode), select_mode(select_mode) {
 	
 	handle_id.setConstant(V.rows(), 1, -1);
 	oldV = V;
@@ -248,7 +248,7 @@ void DogEditor::select_positional_mouse_down() {
 			action_started = true;
 		}
 	} else if (select_mode == VertexPicker) {
-		int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+		int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 		if (vi >=0) {
 			int index = handle_id.maxCoeff()+1;
 			if (handle_id[vi] == -1) handle_id[vi] = index;
@@ -259,8 +259,14 @@ void DogEditor::select_positional_mouse_down() {
 	}
 }
 
-void DogEditor::translate_vertex_edit_mouse_down() {
+int DogEditor::pick_vertex() {
 	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	if ((vi>=0) && (!dog.is_v_ren_vertex_fold(vi)) ) return dog.v_ren_idx_to_v_idx(vi);
+	return -1;
+}
+
+void DogEditor::translate_vertex_edit_mouse_down() {
+	int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 	if(vi>=0 && handle_id[vi]>=0)  {//if a region was found, mark it for translation/rotation {
 		moving_handle = handle_id[vi];
 		current_handle = moving_handle;
@@ -273,7 +279,7 @@ void DogEditor::translate_vertex_edit_mouse_down() {
 
 void DogEditor::vertex_pairs_edit_mouse_down() {
 	if (select_mode != VertexPicker) return;
-	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 	if (vi >=0) {
 		if (next_pair_first) {
 			pair_vertex_1 = vi; next_pair_first = false;
@@ -285,7 +291,7 @@ void DogEditor::vertex_pairs_edit_mouse_down() {
 
 void DogEditor::edges_angle_edit_mouse_down() {
 	if (select_mode != VertexPicker) return;
-	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
+	int vi = pick_vertex();//lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
 	if (vi >=0) {
 		if (edges_angle_pick_idx == 0) {
 			edge_angle_v1 = vi; edges_angle_pick_idx +=1;
