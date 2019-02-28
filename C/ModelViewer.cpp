@@ -156,6 +156,10 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 	//viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
 	DC.dogEditor->render_positional_constraints();
+	for (int d_i = 0; d_i < DC.dihedral_constrained.size(); d_i++) {
+		auto ep = DC.dihedral_constrained[d_i];
+		viewer.data().add_points(ep.getPositionInMesh(DC.getEditedSubmesh()->getV()),Eigen::RowVector3d(1.,1,0));
+	}
 }
 
 void ModelViewer::render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer) {

@@ -50,7 +50,16 @@ void DeformationController::apply_new_editor_constraint() {
 			foldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, dst_dihedral_angle);
 			foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
 			foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
+			dihedral_constrained.push_back(dogEditor->picked_edge);
 			is_time_dependent_deformation = true;
+		}
+	} else if (edit_mode == DogEditor::EDGES_ANGLE) {
+		if ((dogEditor->edge_angle_v1 != -1) && (dogEditor->edge_angle_v2 != -1) && (dogEditor->edge_angle_center != -1) ) {
+			cout << "adding constraint with edge = " << dogEditor->edge_angle_v1 << "," << dogEditor->edge_angle_center << 
+						"," << dogEditor->edge_angle_v2 << endl;
+			edge_angle_pairs.push_back(pair<Edge,Edge>(Edge(dogEditor->edge_angle_v1,dogEditor->edge_angle_center),
+														Edge(dogEditor->edge_angle_center,dogEditor->edge_angle_v2)));
+			edge_cos_angles.push_back(cos(dst_dihedral_angle));
 		}
 	}
 	has_new_constraints = true;	
@@ -128,6 +137,7 @@ void DeformationController::reset_constraints() {
 	bc.resize(0); 
 	paired_vertices.clear(); 
 	edgePoints.clear();
+	dihedral_constrained.clear();
 	edge_angle_pairs.clear(); 
 	edge_cos_angles.clear();
 	edgeCoords.resize(0,3); 

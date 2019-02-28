@@ -45,6 +45,8 @@ public:
 	double constraints_deviation;
 	double objective;
 
+	std::vector<EdgePoint> dihedral_constrained; // used for also plotting the dihedral constraints
+
 private:
 	void reset_dog_solver();
 	EdgePoint find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx, int& edge_index);
@@ -65,7 +67,7 @@ private:
 	std::vector<EdgePoint> edgePoints; Eigen::MatrixXd edgeCoords;
 	// Point pair constraints
 	std::vector<std::pair<int,int>> paired_vertices;
-	// Edge angle constraints
+	// Edge angle constraint and dihedral constraints
 	std::vector<std::pair<Edge,Edge>> edge_angle_pairs; std::vector<double> edge_cos_angles;
 
 	Eigen::VectorXd init_x0;
