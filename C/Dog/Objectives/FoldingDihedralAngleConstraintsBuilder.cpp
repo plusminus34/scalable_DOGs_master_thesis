@@ -1,5 +1,7 @@
 #include "FoldingDihedralAngleConstraintsBuilder.h"
 
+using namespace std;
+
 FoldingDihedralAngleConstraintsBuilder::FoldingDihedralAngleConstraintsBuilder(const Dog& dog, const double& timestep) : 
 				dog(dog), timestep(timestep) {
 	// Todo: find the initial tangent angles so that we could convert angles to angles
@@ -25,6 +27,7 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 	edge_angle_pairs.push_back(std::pair<Edge,Edge>(e1,e2));
 	tangent_angles.push_back(curve_tangents_angle);
 	destination_dihedral_angles.push_back(dihedral_angle);
+	cout << "Added edge point with v1 = " << v1 << " v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
 
 }
 void FoldingDihedralAngleConstraintsBuilder::find_prev_next_edge_points(const EdgePoint& ep, EdgePoint& prev_ep, EdgePoint& next_ep) {
@@ -48,5 +51,7 @@ void FoldingDihedralAngleConstraintsBuilder::get_edge_angle_constraints(std::vec
 		double dest_dihedral_angle = destination_dihedral_angles[i];
 		double const_dihedral = timestep*dest_dihedral_angle;
 		edge_cos_angles[i] = pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral);
+
+		cout << "Getting dihedral angle with cos =  " << cos(const_dihedral) << " by getting a tangent angle of cos = " << edge_cos_angles[i] << endl;
 	}
 }

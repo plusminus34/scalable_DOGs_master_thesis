@@ -36,6 +36,7 @@ public:
 	DogEditor* dogEditor;
 	DogSolver::Params p;
 	double deformation_timestep = 0;
+	double dst_dihedral_angle = 0;
 	double constraints_deviation;
 	double objective;
 
