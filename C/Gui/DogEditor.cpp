@@ -294,9 +294,6 @@ void DogEditor::dihedral_angle_edit_mouse_down() {
 	EdgePoint ep;
 	if (pick_edge(ep) >= 0) {
 		picked_edge = ep;
-		int v1,v2,w1,w2;
-		//dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
-		//cout << "v1 = " << v1 << "v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
 		return;
 	}
 	cout << "No edge found" << endl;
