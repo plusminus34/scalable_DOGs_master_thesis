@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
       ImGui::InputDouble("Infeasability epsilon", &DC.p.infeasability_epsilon);
       ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);
+      ImGui::InputDouble("Convergence threshold", &DC.p.convergence_threshold);
       ImGui::InputInt("Max Newton iterations", &DC.p.max_newton_iters);
       ImGui::InputInt("Penalty repetitions", &DC.p.penalty_repetitions);
       //ImGui::Checkbox("Align Procrustes", &DC.p.align_procrustes);

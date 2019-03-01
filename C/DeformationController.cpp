@@ -25,6 +25,14 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
 
+bool DeformationController::has_constraints() {
+	// positional constraints
+	if ( (b.rows() + edgePoints.size()) > 0) return true;
+	if (is_curve_constraint) return true;
+	if (dihedral_constrained.size()) return true;
+	return false;
+}
+
 void DeformationController::single_optimization() {
 	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
 		deformation_timestep+=deformation_timestep_diff;

@@ -46,6 +46,7 @@ public:
 		int max_newton_iters = 30;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
+		double convergence_threshold = 1e-3;
 		bool align_procrustes = false;
 	};
 
@@ -113,7 +114,7 @@ private:
 
 	// Solvers
 	DOGGuess dogGuess;
-	Newton newton;
+	//NewtonKKT newtonKKT;
 	EqSQP newtonKKT;
-	FeasibleIneqInteriorPoint interiorPt;
+	//FeasibleIneqInteriorPoint interiorPt;
 };

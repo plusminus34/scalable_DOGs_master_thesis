@@ -12,7 +12,8 @@ using namespace std;
 //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
-double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x) {
+double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
+        double convergence_threshold) {
     auto prev_x = x0; double current_merit_p = merit_p;
 	double ret = one_iter(x0,f,constraints,x,current_merit_p); int iter = 1;
     double const_dev = constraints.Vals(x).norm();

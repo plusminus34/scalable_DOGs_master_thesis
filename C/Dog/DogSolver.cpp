@@ -17,7 +17,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
           obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.edgeAngleConst,constraints.ptPairConst,
                 foldingBinormalBiasConstraints, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
-          interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
+          //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           dogGuess(dog, p.align_procrustes) {
     
     is_constrained = (b.rows() + edgePoints.size())>0;
@@ -93,7 +93,7 @@ bool DogSolver::is_folded() {
   return is_folded;
 }
 
-void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+void DogSolver::single_iteration_old(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
   if (!is_folded()) {
@@ -101,7 +101,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
   }
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
-  newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+  newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x);
   
   if (is_folded()) {
@@ -115,7 +115,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       cout << "Rolled back and is_folded = " << is_folded() << endl;
       p.fold_bias_weight *= 10;
       obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
-      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
       dog.update_V_vector(x);
     }
   }
@@ -127,7 +127,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
   objective = obj.compObj.obj(x);
 }
 
-void DogSolver::single_iteration_old(double& constraints_deviation, double& objective) {
+void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
   if (is_constrained) {
     cout << "guessing!" << endl;
     dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
@@ -135,73 +135,12 @@ void DogSolver::single_iteration_old(double& constraints_deviation, double& obje
 
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(dog.getV_vector()), x(x0);
-  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
-
 
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
 
+  newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
+  is_folded();
 
-  /*
-  std::cout << "current objective = " << obj.compObj.obj(x0) << std::endl; int wait; std::cin >> wait;
-  std::cout <<"obj.bending.obj(x0) = " << obj.bending.obj(x0) << std::endl; std::cin >> wait;
-  std::cout <<"obj.isoObj.obj(x0) = " << obj.isoObj.obj(x0) << std::endl; std::cin >> wait;
-  */
-
-  switch (p.solverType) {
-    case SOLVE_NEWTON_PENALTY: {
-      /*
-      CompositeObjective compObj2;
-      compObj2.add_objective(&state->obj.bending,p.bending_weight,true);
-      compObj2.add_objective(&state->obj.isoObj,p.isometry_weight,true);
-      QuadraticConstraintsSumObjective edgePosConst(edgePtConst);
-      compObj2.add_objective(&edgePosConst,p.const_obj_penalty,true);
-
-      double penalty = 1;
-      for (int i = 0; i < p.penalty_repetitions  ; i++) {
-        CompositeObjective compObj3(compObj2);
-        QuadraticConstraintsSumObjective dogConstSoft(state->constraints.dogConst);
-        compObj3.add_objective(&dogConstSoft,penalty,true);
-        state->newton.solve(x0, compObj3, x); 
-        penalty*=2;
-      }
-      */
-      break;
-    }
-    case SOLVE_NEWTON_FLOW: {
-      //std::cout << "before foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
-
-      /*
-      Used to test edge angle constraint
-      std::pair<Edge,Edge> edge_pairs(Edge(90,111),Edge(481,491));
-      EdgesAngleConstraints edgeAngleConstraints(x,{edge_pairs},{0.9});
-      QuadraticConstraintsSumObjective edgeAngleConstraintsObj(edgeAngleConstraints,x0);
-      edgeAngleConstraintsObj.obj(x0);//exit(1);
-
-      
-      CompositeObjective compObjNew({&obj.compObj,&edgeAngleConstraintsObj},{1.,100.});
-
-      newtonKKT.solve_constrained(x0, compObjNew, constraints.compConst, x);
-      */
-      
-      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
-      is_folded();
-      //std::cout << "after foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
-      /*
-      int wait;// cin >> wait;
-      for (int i = 0; i < 100; i++) {
-        newtonKKT.solve_constrained(x, obj.compObj, constraints.compConst, x);
-        //std::cout << "iter = " << i << " foldingBinormalBiasConstraints.Vals(x).norm() = " << foldingBinormalBiasConstraints.Vals(x).norm() << std::endl;
-      }
-      */
-      //cin >> wait;
-      //interiorPt.solve_constrained(x0, obj.compObj, constraints.compConst, mvFoldingConstraints, x);
-      break;
-    }
-    case SOLVE_NONE: {
-      // Empty on purpose
-      break;
-    }
-  }
   dog.update_V_vector(x);
   
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();

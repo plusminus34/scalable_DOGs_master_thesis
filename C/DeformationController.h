@@ -14,6 +14,8 @@ public:
 	void apply_new_editor_constraint();
 	void reset_new_editor_constraint() {dogEditor->reset_new_constraint();}
 
+	bool has_constraints();
+
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 
