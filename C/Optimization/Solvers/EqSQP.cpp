@@ -12,7 +12,7 @@ using namespace std;
 //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
-double EqSQP::solve_constrained_old(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
+double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
             double convergence_threshold) {
     if (lambda.rows()!= constraints.getConstNum()) {
         lambda.resize(constraints.getConstNum());
@@ -25,22 +25,22 @@ double EqSQP::solve_constrained_old(const Eigen::VectorXd& x0, Objective& f, Con
     std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     //while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
-    double error = kkt_error(x, f, constraints);
-    error = convergence_threshold+1e-2; // hack to get at least one iteration. Problem is that the gradient condition is too tight, maybe.
+    double error = 100*kkt_error(x, f, constraints);
+    //error = convergence_threshold+1e-2; // hack to get at least one iteration. Problem is that the gradient condition is too tight, maybe.
     // this might be due to the modified jacobian. We should probably use the normal non modified one for the termination condition..
     while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {
         double ret = one_iter(x,f,constraints,x,current_merit_p);
         double const_dev = constraints.Vals(x).norm();
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
-        if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         error = kkt_error(x, f, constraints);
+        if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         iter++;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
 }
 
-double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
+double EqSQP::solve_constrained_old(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
             double convergence_threshold) {
     auto prev_x = x0; double current_merit_p = merit_p;
     double ret = one_iter(x0,f,constraints,x,current_merit_p); int iter = 1;
@@ -234,6 +234,6 @@ double EqSQP::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& e
     
     //std::cout << "\tgrad_error = " << grad_error << std::endl;
     //std::cout << "\teq_const_error = " << eq_const_error << std::endl;
-    //return std::max(grad_error, eq_const_error);
-    return eq_const_error;
+    return std::max(grad_error, eq_const_error);
+    //return eq_const_error;
 }
