@@ -4,7 +4,7 @@ using namespace std;
 
 
 DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, 
-        const DogSolver::Params& p,
+        DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
@@ -83,26 +83,67 @@ bool DogSolver::is_folded() {
         is_folded = false;
         //cout << "Change!" << endl;
         //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
-        cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << endl;
+        cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;
         //break;
       }
     }
   }
-  std::cout << "is_folded = " << is_folded << std::endl;
+  //std::cout << "is_folded = " << is_folded << std::endl;
   return is_folded;
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+	cout << "running a single optimization routine" << endl;
+	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
+  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
+  cout << "before x0.norm() = " << x0.norm() << endl;
+  cout << "Before is_folded = " << is_folded() << endl;
+  exit(1);
+  newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+  cout << "after x0.norm() = " << x0.norm() << endl;
+  cout << "after x.norm() = " << x.norm() << endl;
+
+  if (is_folded()) {
+    p.fold_bias_weight = 100;
+  } else {
+    while (!is_folded() && (p.fold_bias_weight < 1e6)) {
+      cout << "Not folded, fold bias = " << p.fold_bias_weight << " reverting back and making the bias stronger" << endl;
+      x = x0;
+      cout << "x.norm() = " << x.norm() << endl;
+      dog.update_V_vector(x);
+      cout << "Rolled back and is_folded = " << is_folded() << endl;
+      p.fold_bias_weight *= 10;
+      obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
+      newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x);
+      exit(1);
+    }
+  }
+  cout << "Finished: fold bias = " << p.fold_bias_weight << " and is_folded = " << is_folded() << endl;
+  int wait; cin >> wait;
+
+  dog.update_V_vector(x);
+
+  cout << "now dog.getV_vector().norm() = " << dog.getV_vector().norm() << endl;
+  
+  constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
+  objective = obj.compObj.obj(x);
+}
+
+void DogSolver::single_iteration_old(double& constraints_deviation, double& objective) {
   if (is_constrained) {
     cout << "guessing!" << endl;
     dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
   }
 
-	cout << "running a single optimization routine" << endl;
-	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
+  cout << "running a single optimization routine" << endl;
+  Eigen::VectorXd x0(dog.getV_vector()), x(x0);
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
+
+
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
+
 
   /*
   std::cout << "current objective = " << obj.compObj.obj(x0) << std::endl; int wait; std::cin >> wait;

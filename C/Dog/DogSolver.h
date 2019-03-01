@@ -49,13 +49,14 @@ public:
 		bool align_procrustes = false;
 	};
 
-	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, const DogSolver::Params& p,
+	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p,
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 		std::vector<std::pair<int,int>>& pairs);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
+	void single_iteration_old(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
 	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
@@ -108,7 +109,7 @@ private:
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
 	DogSolver::Objectives obj;
-	const DogSolver::Params& p;
+	DogSolver::Params& p;
 
 	// Solvers
 	DOGGuess dogGuess;
