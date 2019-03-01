@@ -21,16 +21,16 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 
 	// Take the tangent of the osculating circle passing through these 3 points
 	Eigen::RowVector3d grid_tangent_direction = (dog.getV().row(v1)-dog.getV().row(v2)).normalized();
-	cout << "grid_tangent_direction = " << grid_tangent_direction << endl;
-	cout << "T = " << T << endl;
+	//cout << "grid_tangent_direction = " << grid_tangent_direction << endl;
+	//cout << "T = " << T << endl;
 	// Doesn't matter if we take alpha or pi-alpha as its symmetric and give the same values
 	double curve_tangents_angle = acos(T.dot((grid_tangent_direction).normalized()));
 
 	edge_angle_pairs.push_back(std::pair<Edge,Edge>(e1,e2));
 	tangent_angles.push_back(curve_tangents_angle);
 	destination_dihedral_angles.push_back(dihedral_angle);
-	cout << "Added edge point with v1 = " << v1 << " v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
-	cout << "curve_tangents_angle = " << curve_tangents_angle << endl;
+	//cout << "Added edge point with v1 = " << v1 << " v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
+	//cout << "curve_tangents_angle = " << curve_tangents_angle << endl;
 
 }
 void FoldingDihedralAngleConstraintsBuilder::find_prev_next_edge_points(const EdgePoint& ep, EdgePoint& prev_ep, EdgePoint& next_ep) {
@@ -56,7 +56,7 @@ void FoldingDihedralAngleConstraintsBuilder::get_edge_angle_constraints(std::vec
 		double const_dihedral = timestep*dest_dihedral_angle;
 		edge_cos_angles[i] = pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral);
 
-		cout << "timestep = " << timestep << endl;
-		cout << "Getting dihedral angle of  " << const_dihedral << " by getting a tangent angle of " << acos(edge_cos_angles[i]) << endl;
+		//cout << "timestep = " << timestep << endl;
+		//cout << "Getting dihedral angle of  " << const_dihedral << " by getting a tangent angle of " << acos(edge_cos_angles[i]) << endl;
 	}
 }

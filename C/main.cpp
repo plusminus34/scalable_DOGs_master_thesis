@@ -74,8 +74,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'D':
     DC.edit_mode = DogEditor::TRANSLATE;
     break;
-  case 'A':
+  case 'Q':
     DC.apply_new_editor_constraint();
+    is_optimizing = false;
     break;
   case 'Z':
     DC.reset_new_editor_constraint();
@@ -108,7 +109,7 @@ bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifi
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ( ((DC.dogEditor->has_constraints())) && is_optimizing) run_optimization();
+  if ( ((DC.has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }

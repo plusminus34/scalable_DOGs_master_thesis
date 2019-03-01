@@ -23,7 +23,6 @@ public:
 	void reset_new_constraint();
 
 	void render_pairs() const {render_paired_constraints();render_selected_pairs();}
-	bool has_constraints() {return (b.rows() + edgePoints.size()) > 0;}
 
 	void render_positional_constraints() const;
 	void render_paired_constraints() const;

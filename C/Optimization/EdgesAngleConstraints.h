@@ -47,8 +47,8 @@ public:
 			double cos_angle = cos_angles[i];
 			vals(i) = -cos_angle+((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z))/e_len;
 			//std::cout << "dot prod = " << ((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z)) << std::endl;
-			std::cout << "cos_angle = " << cos_angle << std::endl;
-			std::cout << "normalized it's: " << ((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z))/e_len << std::endl;
+			//std::cout << "cos_angle = " << cos_angle << std::endl;
+			//std::cout << "normalized it's: " << ((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z))/e_len << std::endl;
 			//exit(1);
 		};
 		return vals;
@@ -67,7 +67,7 @@ public:
 
 			double cos_angle = cos_angles[i];
 			double e_len = e_lens[i];
-			std::cout << "e_len = " << e_len << std::endl;
+			//std::cout << "e_len = " << e_len << std::endl;
 
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, v1_i, (w1_x-w2_x)/e_len);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, v1_i+vnum, (w1_y-w2_y)/e_len);
