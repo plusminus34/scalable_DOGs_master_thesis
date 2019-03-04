@@ -75,7 +75,7 @@ void DeformationController::apply_new_editor_constraint() {
 			edge_cos_angles.push_back(cos(dst_dihedral_angle));
 		}
 	}
-	has_new_constraints = true;	
+	has_new_constraints = true;
 	reset_new_editor_constraint();
 }
 

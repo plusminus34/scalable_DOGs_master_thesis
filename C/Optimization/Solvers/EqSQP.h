@@ -40,4 +40,10 @@ private:
 	Eigen::VectorXd lambda;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
+
+	PardisoSolver m_solver2;
+
+	//bool first_solve = true;
+	Eigen::VectorXi ai2,aj2;
+	Eigen::VectorXd K2;
 };

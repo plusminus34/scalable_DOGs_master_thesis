@@ -4,20 +4,18 @@
 #include "Constraints.h"
 //#include <Eigen/Array.h>
 
-double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, double cur_energy = -1);
+double line_search(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, int max_iter = 20);
 
 double line_search_l1_directional_derivative(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, 
       const Constraints& constraints,
         const double& merit_penalty,
-        double cur_energy = -1);
+        int max_iter = 20);
 
 double exact_l2_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, const Constraints& constraints,
-				const double& merit_penalty,
-				double cur_energy = -1);
+				const double& merit_penalty, int max_iter = 20);
 
 double exact_l1_merit_linesearch(Eigen::VectorXd& x, const Eigen::VectorXd& d, double& step_size, Objective& f, const Constraints& constraints,
-				const double& merit_penalty,
-				double cur_energy = -1);
+				const double& merit_penalty);
 
 
 class ExactL1MeritObjective: public Objective {

@@ -12,9 +12,10 @@ using namespace std;
 
 EqSQP::EqSQP(const double& infeasability_epsilon, const double& infeasability_filter, const int& max_newton_iters, const double& merit_p) :
     infeasability_epsilon(infeasability_epsilon), infeasability_filter(infeasability_filter), 
-             max_newton_iters(max_newton_iters) ,merit_p(merit_p), m_solver(ai,aj,K) {
+             max_newton_iters(max_newton_iters) ,merit_p(merit_p), m_solver(ai,aj,K), m_solver2(ai2,aj2,K2) {
     cout << "EqSQP::Constructor" << endl;
     m_solver.set_type(-2);
+    m_solver2.set_type(2);
 }
 //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
@@ -28,6 +29,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
     }
 
     auto prev_x = x0; double current_merit_p = merit_p; x = x0;
+    current_merit_p = max(0.05,lambda.cwiseAbs().maxCoeff()*1.1); // (18.32) in Nocedal
     double ret = f.obj(x0); int iter = 0;
     std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
@@ -42,6 +44,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
         //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
+        //current_merit_p *=2;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
@@ -204,13 +207,57 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     t = timer.getElapsedTime();
     double step_size = 1;
 
+    //cout << "0.5*d.transpose()*(A)*d = " << 0.5*d.transpose()*(A)*d << endl;
     //new_e = line_search(x,d,init_t,f);
-    current_merit = lambda.cwiseAbs().maxCoeff()*1.1;
-    //cout << "current_merit = " << current_merit << endl;
-    new_e = exact_l1_merit_linesearch(x,d,step_size,f,constraints,current_merit);
-    cout << "step_size = " << step_size << endl;
-    //new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    //current_merit = min(lambda.cwiseAbs().maxCoeff()*1.1,10.); // (18.32) in Nocedal
+     // (18.36) in Nocedal remembering that A is minus the laplacian
+    //double what = 0.5*d.transpose()*A*d; double negative_thing = min(0.,what);
+    //current_merit = max(0.1,min(1000.,(-g.dot(d)-negative_thing)/(0.1)*constraints_deviation.lpNorm<1>()));
+
+    cout << "current_merit = " << current_merit << endl;
+    //new_e = exact_l1_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    //new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit,1);
+    new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    //new_e = line_search_l1_directional_derivative(x,d,step_size,f,constraints,current_merit,2);
     //new_e = line_search_l1_directional_derivative(x,d,step_size,f,constraints,current_merit);
+    /*
+    if (step_size < 1) {
+        
+        cout << "performing second correction" << endl; //int wait; cin >> wait;
+        // Second order correction
+        step_size = 1;
+        m_solver2.set_system_matrix((jacobian*jacobian.transpose()).triangularView<Eigen::Upper>());
+        m_solver2.set_pattern();
+        m_solver2.analyze_pattern();
+        auto correction_rhs = constraints.Vals(x+d);
+        Eigen::VectorXd correction_solve_res; m_solver2.solve(correction_rhs,correction_solve_res);
+        auto correction = -jacobian.transpose()*correction_solve_res;
+        cout << "constraints.Vals(x+d).norm() = " << constraints.Vals(x+d).norm() << 
+            " constraints.Vals(x+d+correction).norm() = " << constraints.Vals(x+d+correction).norm() << endl;
+
+        new_e = exact_l2_merit_linesearch(x,d+correction,step_size,f,constraints,current_merit*10,1);
+        /*
+        Eigen::VectorXd new_constraints_deviation = jacobian*d -1*constraints.Vals(x+d);
+        Eigen::VectorXd new_rhs; igl::cat(1, rhs_upper, new_constraints_deviation, new_rhs);
+        Eigen::VectorXd new_res; m_solver.solve(new_rhs,new_res); Eigen::VectorXd d_correction(d.rows());
+        for (int d_i = 0; d_i < g.rows(); d_i++) {d_correction[d_i] = new_res[d_i];}
+        new_e = line_search_l1_directional_derivative(x,d+d_correction,step_size,f,constraints,current_merit,2);
+        */
+        /*
+        if (step_size != 1) {
+            // Do a full line search
+            cout << "SOC failed, continuing with line search" << endl;
+            step_size = 0.9;
+            new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+            //cin >> wait;
+        } else {
+            cout << "SOC success!" << endl;
+        }
+    }
+    */
+    cout << "step_size = " << step_size << endl;
+    
+    
     // update lagrange multipliers
     lambda = lambda + step_size*lambda_d;
     auto linesearch_time = timer.getElapsedTime()-t;
