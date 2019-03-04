@@ -329,7 +329,7 @@
    /* -------------------------------------------------------------------- */
    phase = 33;
    //iparm[7] = 1;       /* Max numbers of iterative refinement steps. */
-   iparm[7] = 1;       /* Max numbers of iterative refinement steps. */
+   //iparm[7] = 1;       /* Max numbers of iterative refinement steps. */
    //iparm[4] = 31;
 
    pardiso (pt, &maxfct, &mnum, &mtype, &phase,

@@ -38,10 +38,10 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
     while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {
         double ret = one_iter(x,f,constraints,x,current_merit_p);
         double const_dev = constraints.Vals(x).norm();
+        iter++;
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
         if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
-        iter++;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
@@ -164,11 +164,13 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //solver.analyzePattern(A);
     //cout << "A.norm() = " << A.norm() << endl;
     if (first_solve) {
+        m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
+        //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
+        //m_solver.iparm[7] = 5; // iterative refinement
+
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();
         m_solver.analyze_pattern();
-        //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
-        //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
         first_solve = false;
     } else {
         m_solver.update_system_matrix(A.triangularView<Eigen::Upper>());
