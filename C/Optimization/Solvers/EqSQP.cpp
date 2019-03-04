@@ -41,7 +41,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
         iter++;
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
-        if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
+        //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
@@ -205,12 +205,16 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     double step_size = 1;
 
     //new_e = line_search(x,d,init_t,f);
-    new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    current_merit = lambda.cwiseAbs().maxCoeff()*1.1;
+    //cout << "current_merit = " << current_merit << endl;
+    new_e = exact_l1_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    cout << "step_size = " << step_size << endl;
+    //new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    //new_e = line_search_l1_directional_derivative(x,d,step_size,f,constraints,current_merit);
     // update lagrange multipliers
     lambda = lambda + step_size*lambda_d;
     auto linesearch_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
-
 
     double total_time = timer.getElapsedTime()-init_time;
     /*
