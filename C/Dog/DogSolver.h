@@ -17,7 +17,6 @@
 #include "../Optimization/Solvers/FeasibleIneqInteriorPoint.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
-#include "Solvers/DOGGuess.h"
 
 #include "Objectives/DogConstraints.h"
 #include "Objectives/IsometryObjective.h"
@@ -46,7 +45,7 @@ public:
 		int max_newton_iters = 30;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
-		double convergence_threshold = 1e-3;
+		double convergence_threshold = 1e-6;
 		bool align_procrustes = false;
 	};
 
@@ -54,7 +53,8 @@ public:
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
-		std::vector<std::pair<int,int>>& pairs);
+		std::vector<std::pair<int,int>>& pairs,
+		std::ofstream* time_measurements_log = NULL);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_old(double& constraints_deviation, double& objective);
@@ -113,8 +113,9 @@ private:
 	DogSolver::Params& p;
 
 	// Solvers
-	DOGGuess dogGuess;
 	//NewtonKKT newtonKKT;
 	EqSQP newtonKKT;
 	//FeasibleIneqInteriorPoint interiorPt;
+
+	std::ofstream* time_measurements_log;
 };

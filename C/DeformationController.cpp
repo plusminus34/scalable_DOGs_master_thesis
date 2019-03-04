@@ -5,7 +5,11 @@ using namespace std;
 
 DeformationController::DeformationController() : dogEditor(NULL), globalDog(NULL),
 			 editedSubmesh(NULL), dogSolver(NULL), curveConstraintsBuilder(NULL) {
-	// empty on purpose
+	// empty on piurpose
+}
+
+void DeformationController::setup_optimization_measurements(std::string log_file_name) {
+	opt_measurements_log = new ofstream(log_file_name);
 }
 
 void DeformationController::init_from_new_dog(Dog& dog) {
@@ -20,7 +24,8 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices,
+						opt_measurements_log);
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
@@ -172,5 +177,8 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices);
+	cout << "reseting dog solver" << endl;
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices,
+	 opt_measurements_log);
+	has_new_constraints = false;
 }

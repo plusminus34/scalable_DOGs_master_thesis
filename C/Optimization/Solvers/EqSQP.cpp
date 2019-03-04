@@ -9,6 +9,13 @@
 #include "igl/matlab_format.h"
 
 using namespace std;
+
+EqSQP::EqSQP(const double& infeasability_epsilon, const double& infeasability_filter, const int& max_newton_iters, const double& merit_p) :
+    infeasability_epsilon(infeasability_epsilon), infeasability_filter(infeasability_filter), 
+             max_newton_iters(max_newton_iters) ,merit_p(merit_p), m_solver(ai,aj,K) {
+    cout << "EqSQP::Constructor" << endl;
+    m_solver.set_type(-2);
+}
 //m_solver.iparm[10] = 1; // scaling for highly indefinite symmetric matrices
                 //m_solver.iparm[12] = 2; // imporved accuracy for highly indefinite symmetric matrices
                 //m_solver.iparm[20] = 1;
@@ -25,7 +32,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
     std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     //while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
-    double error = 100*kkt_error(x, f, constraints);
+    double error = 10000*kkt_error(x, f, constraints);
     //error = convergence_threshold+1e-2; // hack to get at least one iteration. Problem is that the gradient condition is too tight, maybe.
     // this might be due to the modified jacobian. We should probably use the normal non modified one for the termination condition..
     while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {
@@ -155,6 +162,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
+    //cout << "A.norm() = " << A.norm() << endl;
     if (first_solve) {
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();

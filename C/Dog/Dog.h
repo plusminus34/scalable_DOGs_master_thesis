@@ -35,6 +35,9 @@ struct DogEdgeStitching  : public igl::Serializable {
       Add(edge_const_1,std::string("edge_const_1"));
       Add(edge_const_2,std::string("edge_const_2"));
       Add(edge_coordinates,std::string("edge_coordinates"));
+      Add(multiplied_edges_start,std::string("multiplied_edges_start"));
+      Add(multiplied_edges_num,std::string("multiplied_edges_num"));
+      Add(edge_to_duplicates,std::string("edge_to_duplicates"));
       Add(stitched_curves,std::string("stitched_curves"));
     }
 };
@@ -91,9 +94,14 @@ public:
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
+      Add(quadTop,std::string("_quadTop"));
       Add(V_ren,std::string("_V_ren"));
       Add(F_ren,std::string("_F_ren"));
+      Add(submeshVSize,std::string("_submeshVSize"));
+      Add(submeshFSize,std::string("_submeshFSize"));
+      Add(submesh_adjacency,std::string("_submesh_adjacency"));
       Add(edgeStitching,std::string("_edgeStitching"));
+      Add(vi_to_submesh,std::string("_vi_to_submesh"));
     }
 	
 private:

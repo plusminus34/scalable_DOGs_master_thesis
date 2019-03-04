@@ -15,6 +15,7 @@
 using namespace std;
 
 bool is_optimizing = true;
+bool optimization_measurements = false;
 
 ModelState state;
 DeformationController DC;
@@ -132,6 +133,10 @@ int main(int argc, char *argv[]) {
   } else if (boost::iequals(extension, "work")) {
     std::cout << "Reading workspace " << input_path << endl;
     state.load_from_workspace(input_path);
+    if (argc == 3) {
+      optimization_measurements = true;
+      DC.setup_optimization_measurements(argv[2]);
+    }
 
   } else if (boost::iequals(basename, "planar")) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;

@@ -8,7 +8,8 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
-        std::vector<std::pair<int,int>>& pairs) :
+        std::vector<std::pair<int,int>>& pairs,
+        std::ofstream* time_measurements_log) :
 
           dog(dog),
           foldingBinormalBiasConstraints(dog),
@@ -18,9 +19,13 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
                 foldingBinormalBiasConstraints, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
-          dogGuess(dog, p.align_procrustes) {
+          time_measurements_log(time_measurements_log)
+           {
     
     is_constrained = (b.rows() + edgePoints.size())>0;
+    if (time_measurements_log) {
+      p.max_newton_iters = 1;
+    }
 }
 
 DogSolver::Constraints::Constraints(const Dog& dog, const Eigen::VectorXd& init_x0,
@@ -128,11 +133,6 @@ void DogSolver::single_iteration_old(double& constraints_deviation, double& obje
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
-  if (is_constrained) {
-    cout << "guessing!" << endl;
-    dogGuess.guess(dog, constraints.posConst, constraints.stitchingConstraints, constraints.edgePtConst);
-  }
-
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(dog.getV_vector()), x(x0);
 
@@ -143,6 +143,9 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
   dog.update_V_vector(x);
   
-  constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
+  constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
+  if (time_measurements_log) {
+    *time_measurements_log << objective << "," << constraints_deviation << endl;
+  }
 }

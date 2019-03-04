@@ -23,6 +23,8 @@ private:
 	void build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, int var_n,
                                      const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n);
 
+	double kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints);
+
 	const double& infeasability_epsilon; 
 	const double& infeasability_filter;
 	const int& max_newton_iters;

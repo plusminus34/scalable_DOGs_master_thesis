@@ -13,6 +13,7 @@ public:
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
 	void apply_new_editor_constraint();
 	void reset_new_editor_constraint() {dogEditor->reset_new_constraint();}
+	void setup_optimization_measurements(std::string log_file_name);
 
 	bool has_constraints();
 
@@ -83,4 +84,7 @@ private:
 
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 	FoldingDihedralAngleConstraintsBuilder* foldingDihedralAngleConstraintsBuilder;
+
+	bool optimization_measurements;
+	std::ofstream* opt_measurements_log;
 };

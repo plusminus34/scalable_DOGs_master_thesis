@@ -14,17 +14,24 @@ using namespace std;
                 //m_solver.iparm[20] = 1;
 double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
         double convergence_threshold) {
-    auto prev_x = x0; double current_merit_p = merit_p;
-	double ret = one_iter(x0,f,constraints,x,current_merit_p); int iter = 1;
-    double const_dev = constraints.Vals(x).norm();
-    if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
-    while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
-        std::cout << "const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
-        ret = one_iter(x,f,constraints,x,current_merit_p);
-        const_dev = constraints.Vals(x).norm();
+
+    auto prev_x = x0; double current_merit_p = merit_p; x = x0;
+    double ret = f.obj(x0); int iter = 0;
+    std::cout << "convergence_threshold = " << convergence_threshold << endl;
+    //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
+    //while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
+    double error = 10000*kkt_error(x, f, constraints);
+    //error = convergence_threshold+1e-2; // hack to get at least one iteration. Problem is that the gradient condition is too tight, maybe.
+    // this might be due to the modified jacobian. We should probably use the normal non modified one for the termination condition..
+    while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {
+        double ret = one_iter(x,f,constraints,x,current_merit_p);
+        double const_dev = constraints.Vals(x).norm();
+        std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
+        error = kkt_error(x, f, constraints);
         if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
         iter++;
     }
+    cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
 }
 
@@ -115,6 +122,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
+    // cout << "NewtonKKT A.norm() = " << A.norm() << endl;
     if (first_solve) {
         m_solver.set_system_matrix(A.triangularView<Eigen::Upper>());
         m_solver.set_pattern();
@@ -182,4 +190,18 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //std::cout << "NewtonKKT: old_e = " << old_e << " new_e = " << new_e << std::endl;
     
     return new_e;
+}
+
+double NewtonKKT::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints) {
+    auto jacobian = eq_constraints.Jacobian(x);
+    
+    auto g = obj.grad(x);
+    // TODO this is wrong, add the lambda (even if we don't use it for optimization)
+    double grad_error = 0.0001*g.norm();//0.0001*(g-jacobian.transpose()*lambda).norm();
+    double eq_const_error = eq_constraints.Vals(x).norm();
+    
+    //std::cout << "\tgrad_error = " << grad_error << std::endl;
+    //std::cout << "\teq_const_error = " << eq_const_error << std::endl;
+    return std::max(grad_error, eq_const_error);
+    //return eq_const_error;
 }
