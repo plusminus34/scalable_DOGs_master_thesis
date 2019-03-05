@@ -3,11 +3,11 @@
 #include "igl/procrustes.h"
 
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
-			int curve_idx, const double& timestep) : timestep(timestep) {
+			int curve_idx, const double& timestep, double k_addition, double k_mult, double t_addition) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
 	 if (eS.edge_const_1.size()) {
 	 	surfaceCurve.edgePoints = eS.stitched_curves[curve_idx];
-	 	init_from_surface_curve(V);
+	 	init_from_surface_curve(V, k_addition, k_mult, t_addition);
 	 }
 }
 
@@ -19,10 +19,11 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 		edgePt.edge.v1 = edgePt.edge.v2 = v_indices[vi_cnt++];
 		edgePt.t = 1;
 	}
-	init_from_surface_curve(V);
+	init_from_surface_curve(V,0,2,0);
 }
 
-void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::MatrixXd& V) {
+void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::MatrixXd& V, 
+		double k_addition, double k_mult, double t_addition) {
 	auto initCoords = surfaceCurve.get_curve_coords(V);
 	srcCurve = new Curve(initCoords);
 	Curve::getTranslationAndFrameFromCoords(initCoords, T, F);
@@ -32,8 +33,8 @@ void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::
 	// todo save frame
 	// todo create dst curve from the curve parameters
 	std::vector<double> dst_len = srcCurve->len, dst_k = srcCurve->k, dst_t = srcCurve->t;
-	for (auto& k: dst_k) {k*=2;/*k+=0.15;k*=2;*/};
-	//for (auto& t: dst_t) t+=0.05;
+	for (auto& k: dst_k) {k = k*k_mult+k_addition;/*k+=0.15;k*=2;*/};
+	for (auto& t: dst_t) t+=t_addition;
 	dstCurve = new Curve(dst_len, dst_k, dst_t);
 }
 

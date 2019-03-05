@@ -82,7 +82,8 @@ void DeformationController::apply_new_editor_constraint() {
 void DeformationController::setup_curve_constraints() {
 	if (curveConstraintsBuilder) delete curveConstraintsBuilder;
 	curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(), 
-															globalDog->getEdgeStitching(), deformed_curve_idx, deformation_timestep);
+															globalDog->getEdgeStitching(), deformed_curve_idx, deformation_timestep,
+															curve_k_translation, curve_k_mult, curve_t_addition);
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	is_curve_constraint = true;

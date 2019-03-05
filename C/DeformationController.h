@@ -37,6 +37,7 @@ public:
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
 
 	int deformed_curve_idx = 0;
+	double curve_k_translation = 0; double curve_k_mult = 2; double curve_t_addition = 0;
 
 	bool has_new_constraints = false;
 	bool is_curve_constraint = false;
