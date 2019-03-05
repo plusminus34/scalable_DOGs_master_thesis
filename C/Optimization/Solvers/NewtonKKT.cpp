@@ -15,7 +15,14 @@ using namespace std;
 double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constraints& constraints, Eigen::VectorXd& x,
         double convergence_threshold) {
 
+    if (lambda.rows()!= constraints.getConstNum()) {
+        lambda.resize(constraints.getConstNum());
+        lambda.setZero();
+        //int wait; std::cout << "init lagrange mult" << std::endl; std::cin >> wait;
+    }
+
     auto prev_x = x0; double current_merit_p = merit_p; x = x0;
+    current_merit_p = max(0.05,lambda.cwiseAbs().maxCoeff()*1.1); // (18.32) in Nocedal
     double ret = f.obj(x0); int iter = 0;
     std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
@@ -26,10 +33,11 @@ double NewtonKKT::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Con
     while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {
         double ret = one_iter(x,f,constraints,x,current_merit_p);
         double const_dev = constraints.Vals(x).norm();
+        iter++;
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
-        if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
-        iter++;
+        //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2; iter--;/*do another iter*/} prev_x = x;
+        //current_merit_p *=2;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
     return ret;
@@ -118,7 +126,7 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
     //energy->check_grad(x);
     double old_e = f.obj(x);
     Eigen::VectorXd g(f.grad(x)); Eigen::VectorXd neg_g = -1*g;
-    Eigen::VectorXd d(g.rows());
+    Eigen::VectorXd d(g.rows()); Eigen::VectorXd lambda_d(lambda.rows());
     //Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
     //cout << "analayzing pattern" << endl;
     //solver.analyzePattern(A);
@@ -157,14 +165,14 @@ double NewtonKKT::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints&
 
     //cout << "Checking precision: (A*res-g_const).norm() = " << (A*res-g_const).norm() << endl;
     
-    for (int d_i = 0; d_i < g.rows(); d_i++) {
-        d[d_i] = res[d_i];
-    }
+    for (int d_i = 0; d_i < g.rows(); d_i++) {d[d_i] = res[d_i];}
+    for (int d_i = g.rows(); d_i < res.rows(); d_i++) {lambda_d[d_i-g.rows()] = res[d_i];}
     auto solve_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
-    double init_timestep = 1;
+    double step_size = 1;
     //new_e = line_search(x,d,init_t,f);
-    new_e = exact_l2_merit_linesearch(x,d,init_timestep,f,constraints,current_merit);
+    new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
+    lambda = lambda + step_size*lambda_d;
     auto linesearch_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
 

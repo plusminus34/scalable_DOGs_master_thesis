@@ -38,4 +38,5 @@ private:
 	bool first_solve = true;
 	Eigen::VectorXi ai,aj;
 	Eigen::VectorXd K;
+	Eigen::VectorXd lambda;
 };

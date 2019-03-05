@@ -3,10 +3,10 @@
 #include "igl/procrustes.h"
 
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, 
-			const double& timestep) : timestep(timestep) {
+			int curve_idx, const double& timestep) : timestep(timestep) {
 	// Create initial curve and dest curve, save the initial frame
 	 if (eS.edge_const_1.size()) {
-	 	surfaceCurve.edgePoints = eS.stitched_curves[0];
+	 	surfaceCurve.edgePoints = eS.stitched_curves[curve_idx];
 	 	init_from_surface_curve(V);
 	 }
 }

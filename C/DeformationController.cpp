@@ -82,7 +82,7 @@ void DeformationController::apply_new_editor_constraint() {
 void DeformationController::setup_curve_constraints() {
 	if (curveConstraintsBuilder) delete curveConstraintsBuilder;
 	curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(), 
-															globalDog->getEdgeStitching(), deformation_timestep);
+															globalDog->getEdgeStitching(), deformed_curve_idx, deformation_timestep);
 	SurfaceCurve surfaceCurve; Eigen::MatrixXd edgeCoords;
 	curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	is_curve_constraint = true;
@@ -99,6 +99,7 @@ void DeformationController::update_edge_curve_constraints() {
 
 void DeformationController::update_dihedral_constraints() {
 	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
+	dogSolver->update_edge_angles(edge_cos_angles);
 }
 
 void DeformationController::update_edge_coords(Eigen::MatrixXd& edgeCoords_i) {
@@ -180,5 +181,7 @@ void DeformationController::reset_dog_solver() {
 	cout << "reseting dog solver" << endl;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices,
 	 opt_measurements_log);
+	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
+	//int wait; cin >> wait;
 	has_new_constraints = false;
 }

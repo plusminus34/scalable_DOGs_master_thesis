@@ -16,7 +16,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
           init_x0(init_x0), p(p),
           constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, pairs), 
           obj(dog, init_x0, constraints.posConst, constraints.edgePtConst,constraints.edgeAngleConst,constraints.ptPairConst,
-                foldingBinormalBiasConstraints, p),
+                foldingBinormalBiasConstraints, constraints.compConst, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
@@ -49,6 +49,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           EdgesAngleConstraints& edgeAnglesConst,
           PointPairConstraints& ptPairConst,
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+          CompositeConstraints& constraints,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(posConst, init_x0),
@@ -56,11 +57,17 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         edgeAnglesSoftConstraints(edgeAnglesConst, init_x0),
         ptPairSoftConst(ptPairConst, init_x0),
         foldingBinormalBiasObj(foldingBinormalBiasConstraints, init_x0),
+        allConstQuadraticObj(constraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
         
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj},
           {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight})
+          /*
+        compObj(
+          {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj, &allConstQuadraticObj},
+          {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight,1})
+          */
           {
     // Empty on purpose
 }
@@ -106,6 +113,7 @@ void DogSolver::single_iteration_old(double& constraints_deviation, double& obje
   }
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight});
+  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight,1});
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x);
   

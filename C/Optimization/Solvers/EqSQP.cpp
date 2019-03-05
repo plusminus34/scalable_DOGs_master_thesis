@@ -43,7 +43,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
         iter++;
         std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
-        //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
+        //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2; iter--;/*do another iter*/} prev_x = x;
         //current_merit_p *=2;
     }
     cout << "finished opt after " << iter << "iterations" << endl;
@@ -181,6 +181,17 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     auto analyze_pattern_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
     m_solver.factorize();
+    /*
+    cout << "positive eigen values = " <<  m_solver.iparm[22]  << endl;
+    cout << "negative eigen values = " <<  m_solver.iparm[21]  << endl;
+    if ( (m_solver.iparm[21] != const_n) || (m_solver.iparm[22] != var_n) ) {
+        cout << "positive eigen values = " <<  m_solver.iparm[22]  << endl;
+        cout << "negative eigen values = " <<  m_solver.iparm[21]  << endl;
+        cout << "V.rows() = "<< var_n << endl;
+        cout << "jacobian.rows() = "<< const_n << endl;    
+        int wait; cin >> wait;
+    }
+    */
     /*solver.factorize(A);
     if(solver.info()!=Eigen::Success) {
         cout << "Eigen Failure!" << endl;
@@ -290,7 +301,7 @@ double EqSQP::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& e
     auto jacobian = eq_constraints.Jacobian(x);
     
     auto g = obj.grad(x);
-    double grad_error = 0.0001*(g-jacobian.transpose()*lambda).norm();
+    double grad_error = (g-jacobian.transpose()*lambda).norm();
     double eq_const_error = eq_constraints.Vals(x).norm();
     
     //std::cout << "\tgrad_error = " << grad_error << std::endl;

@@ -84,9 +84,9 @@ void DogConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 				e1 << t3,t4,t5; e2 << t31,t32,t33;
 				n = e1.cross(e2).normalized();
 				double f = (double)rand() / RAND_MAX;
-				p0_x += (0.01 + f * (0.02 - 0.01))*n(0);
-				p0_y += (0.01 + f * (0.02 - 0.01))*n(1);
-				p0_z += (0.01 + f * (0.02 - 0.01))*n(2);
+				p0_x += (0.000001 + f * (0.000002 - 0.000001))*n(0);
+				p0_y += (0.000001 + f * (0.000002 - 0.000001))*n(1);
+				p0_z += (0.000001 + f * (0.000002 - 0.000001))*n(2);
 				//p0_z += (0.01 + f * (0.02 - 0.01))*1;
 			}
 		}

@@ -42,7 +42,7 @@ public:
 		double fold_bias_weight = 100;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
-		int max_newton_iters = 30;
+		int max_newton_iters = 1;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
 		double convergence_threshold = 1e-6;
@@ -88,6 +88,7 @@ public:
 	  			EdgesAngleConstraints& edgeAnglesConst,
 	  			PointPairConstraints& ptPairConst,
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+	  			CompositeConstraints& constraints,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -97,6 +98,7 @@ public:
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
+      	QuadraticConstraintsSumObjective allConstQuadraticObj;
       	CompositeObjective compObj;
 	};
 

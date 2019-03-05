@@ -183,6 +183,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
+      ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
       ImGui::InputDouble("Time step size", &DC.deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
       if (ImGui::InputDouble("Timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
