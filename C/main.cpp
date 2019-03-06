@@ -175,6 +175,7 @@ int main(int argc, char *argv[]) {
       ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
+      ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::Combo("Solver type", (int *)(&DC.p.solverType), "None\0Newton Penalty\0Newton Flow\0\0");
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");

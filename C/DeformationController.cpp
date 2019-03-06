@@ -20,7 +20,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmeshI = -1; // Editing the global dog
 
 	dogEditor = new DogEditor(*viewer, *globalDog, edit_mode, select_mode, 
-								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords);
+								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords, z_only_editing);
 	
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;

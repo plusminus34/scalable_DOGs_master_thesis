@@ -9,12 +9,12 @@ std::vector<int> get_second_dog_row(Dog& dog);
 
 DogEditor::DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,
          bool& has_new_constraints, Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
-				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords) : 
+				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords, bool& z_const_only_mode) : 
 		dog(dog), viewer(viewer),
 		has_new_constraints(has_new_constraints),b(b),bc(bc),
 		paired_vertices(paired_vertices),edgePoints(edgePoints), edgeCoords(edgeCoords),
 		V_ren(dog.getVrendering()), V(dog.getV()), F(dog.getFrendering()), 
-		lasso(viewer,V_ren,F), edit_mode(edit_mode), select_mode(select_mode) {
+		lasso(viewer,V_ren,F), edit_mode(edit_mode), select_mode(select_mode), z_const_only_mode(z_const_only_mode) {
 	
 	handle_id.setConstant(V.rows(), 1, -1);
 	picked_edge.t = -1;
@@ -112,11 +112,24 @@ void DogEditor::onNewHandleID() {
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 
 	// b contains normal constraints
-	b.resize(3*handle_vertices.rows()); bc.resize(b.rows());
+	if (z_const_only_mode) b.resize(handle_vertices.rows()+2); else b.resize(3*handle_vertices.rows());
+	bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
-		b(i) = handle_vertices(i); bc(i) = handle_vertex_positions(i,0);
-		b(const_v_num+i) = handle_vertices(i) + v_num; bc(const_v_num+i) = handle_vertex_positions(i,1);
-		b(2*const_v_num+i) = handle_vertices(i) + 2*v_num; bc(2*const_v_num+i) = handle_vertex_positions(i,2);
+		if (z_const_only_mode) {
+			// Have the first constraint on x,y,z, so that the mesh will not run away, but the rest for only 'z'
+			if (i == 0) {
+				b(i) = handle_vertices(i); bc(i) = handle_vertex_positions(i,0);
+				b(const_v_num) = handle_vertices(i) + v_num; bc(const_v_num) = handle_vertex_positions(i,1);
+				b(const_v_num+1) = handle_vertices(i) + 2*v_num; bc(const_v_num+1) = handle_vertex_positions(i,2);	
+			} else {
+				b(i) = handle_vertices(i) + 2*v_num; bc(i) = handle_vertex_positions(i,2);	
+			}
+			
+		} else {
+			b(i) = handle_vertices(i); bc(i) = handle_vertex_positions(i,0);
+			b(const_v_num+i) = handle_vertices(i) + v_num; bc(const_v_num+i) = handle_vertex_positions(i,1);
+			b(2*const_v_num+i) = handle_vertices(i) + 2*v_num; bc(2*const_v_num+i) = handle_vertex_positions(i,2);
+		}
 	}
 	//solver.setConst(D.b);
 	//Direction direction; direction.x = direction.y = direction.z = 0;
@@ -140,9 +153,19 @@ void DogEditor::get_new_handle_locations(Eigen::Vector3f translation) {
 	const int const_v_num = handle_vertices.rows(); const int v_num = V.rows();
 	bc.resize(b.rows());
 	for (int i = 0; i < const_v_num; i++) {
-		bc(i) = handle_vertex_positions(i,0);
-		bc(const_v_num+i) = handle_vertex_positions(i,1);
-		bc(2*const_v_num+i) = handle_vertex_positions(i,2);
+		if (z_const_only_mode) {
+			if (i == 0) {
+				bc(i) = handle_vertex_positions(i,0);
+				bc(const_v_num) = handle_vertex_positions(i,1);
+				bc(const_v_num+1) = handle_vertex_positions(i,2);	
+			} else {
+				bc(i) = handle_vertex_positions(i,2);	
+			}
+		} else {
+			bc(i) = handle_vertex_positions(i,0);
+			bc(const_v_num+i) = handle_vertex_positions(i,1);
+			bc(2*const_v_num+i) = handle_vertex_positions(i,2);
+		}
 	}
 }
 

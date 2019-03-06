@@ -13,7 +13,7 @@ public:
 
 	DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,
          bool& has_new_constraints, Eigen::VectorXi& b, Eigen::VectorXd& bc, std::vector<std::pair<int,int>>& paired_vertices,
-				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords);
+				std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords, bool& z_const_only_mode);
 	~DogEditor();
 
 	bool callback_mouse_down();
@@ -39,6 +39,8 @@ private:
 	bool& has_new_constraints;
 	Eigen::VectorXi& b; Eigen::VectorXd& bc; std::vector<std::pair<int,int>>& paired_vertices;
 	std::vector<EdgePoint>& edgePoints; Eigen::MatrixXd& edgeCoords;
+
+	bool& z_const_only_mode;
 	
 	// TODO: Use V_ren and F_ren with the editor. Convert inner points to the correct V index and edge points to edge point constraints
 	int pick_vertex();
