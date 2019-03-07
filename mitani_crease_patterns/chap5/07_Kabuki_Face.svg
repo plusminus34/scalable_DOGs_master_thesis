@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="595.28px" height="841.89px" viewBox="0 0 595.28 841.89" enable-background="new 0 0 595.28 841.89" xml:space="preserve">
+<g id="CutLine">
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="256.017" y1="87.053" x2="527.217" y2="87.052"/>
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="527.026" y1="771.871" x2="256.017" y2="771.871"/>
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="256.017" y1="771.871" x2="54.254" y2="771.871"/>
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="54.254" y1="87.053" x2="54.254" y2="771.871"/>
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="527.217" y1="87.052" x2="527.217" y2="771.871"/>
+	
+		<line fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="54.254" y1="87.053" x2="256.017" y2="87.053"/>
+</g>
+<g id="ValleyLine">
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="478.181" y1="87.053" x2="478.181" y2="222.278"/>
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="478.317" y1="292.047" x2="478.317" y2="564.891"/>
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="103.29" y1="771.871" x2="103.29" y2="634.661"/>
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="478.183" y1="634.659" x2="478.183" y2="769.884"/>
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="103.29" y1="564.893" x2="103.29" y2="292.048"/>
+	
+		<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4" x1="103.154" y1="222.279" x2="103.154" y2="87.052"/>
+</g>
+<g id="MountainLine">
+	<g id="LINE_622_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.453,462.239 316.075,456.993 
+			307.056,452.398 298.64,449.119 290.798,447.809 282.98,449.119 274.623,452.398 265.68,456.993 256.39,462.239 		"/>
+	</g>
+	<g id="LINE_614_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.591,394.698 316.214,399.946 
+			307.192,404.54 298.776,407.819 290.935,409.131 283.118,407.819 274.76,404.54 265.819,399.946 256.525,394.698 		"/>
+	</g>
+	<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M478.181,771.871"/>
+	<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M256.017,771.871"/>
+	<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M256.017,87.053"/>
+	<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M103.29,771.871"/>
+	<g id="LINE_14_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="255.879,394.698 246.069,380.396 
+			236.868,365.198 227.75,350.564 218.749,336.776 209.86,324.116 201.073,312.864 192.32,303.303 183.506,295.714 174.474,290.378 
+			165.136,287.014 155.462,285.34 145.453,285.074 135.149,285.932 124.609,287.638 113.904,289.904 103.154,292.048 		"/>
+	</g>
+	<g id="LINE_7_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="255.879,119.629 246.069,133.932 
+			236.868,149.128 227.75,163.763 218.749,177.551 209.86,190.211 201.073,201.462 192.32,211.024 183.506,218.613 174.474,223.949 
+			165.136,227.313 155.462,228.986 145.453,229.253 135.149,228.395 124.609,226.689 113.904,224.423 103.154,222.279 		"/>
+	</g>
+	<g id="LINE_16_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="256.014,737.311 246.204,723.009 
+			237.004,707.811 227.886,693.178 218.883,679.389 209.996,666.729 201.208,655.477 192.456,645.916 183.642,638.328 
+			174.609,632.99 165.271,629.627 155.597,627.954 145.589,627.687 135.285,628.545 124.745,630.25 114.039,632.518 103.29,634.661 
+					"/>
+	</g>
+	<g id="LINE_10_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="256.39,462.239 246.204,476.545 
+			237.004,491.741 227.886,506.376 218.883,520.163 209.996,532.823 201.208,544.075 192.456,553.637 183.642,561.227 
+			174.609,566.562 165.271,569.926 155.597,571.6 145.589,571.865 135.285,571.008 124.745,569.302 114.039,567.036 103.29,564.893 
+					"/>
+	</g>
+	<g id="LINE_33_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.591,394.698 335.402,380.394 
+			344.603,365.198 353.721,350.563 362.724,336.775 371.611,324.114 380.398,312.864 389.151,303.301 397.966,295.713 
+			406.997,290.377 416.335,287.013 426.009,285.339 436.019,285.073 446.322,285.931 456.861,287.637 467.567,289.903 
+			478.317,292.047 		"/>
+	</g>
+	<g id="LINE_32_">
+		
+			<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" x1="406.713" y1="123.53" x2="397.649" y2="115.721"/>
+	</g>
+	<g id="LINE_31_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.593,119.628 334.869,114.72 
+			344.102,111.349 353.247,108.618 362.281,106.843 371.196,106.347 380.017,107.449 388.8,110.467 397.649,115.721 406.713,123.53 
+			416.082,133.574 425.795,145.534 435.838,159.091 446.176,173.923 456.752,189.713 467.495,206.142 478.317,222.278 		"/>
+	</g>
+	<g id="LINE_30_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.593,119.628 335.402,133.931 
+			344.603,149.127 353.721,163.762 362.724,177.55 371.611,190.21 380.398,201.461 389.151,211.023 397.966,218.612 
+			406.997,223.948 416.335,227.312 426.009,228.985 436.019,229.252 446.322,228.394 456.861,226.688 467.567,224.422 
+			478.317,222.278 		"/>
+	</g>
+	<g id="LINE_25_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.457,737.311 335.267,723.007 
+			344.468,707.811 353.586,693.176 362.588,679.389 371.476,666.729 380.264,655.477 389.016,645.916 397.83,638.326 
+			406.862,632.99 416.2,629.627 425.874,627.952 435.883,627.687 446.187,628.545 456.727,630.25 467.432,632.516 478.183,634.659 
+					"/>
+	</g>
+	<g id="LINE_22_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.453,462.239 335.267,476.543 
+			344.468,491.741 353.586,506.374 362.588,520.163 371.476,532.823 380.264,544.075 389.016,553.637 397.83,561.225 
+			406.862,566.562 416.2,569.926 425.874,571.598 435.883,571.865 446.187,571.008 456.727,569.302 467.432,567.034 
+			478.183,564.891 		"/>
+	</g>
+	<g id="LINE_4_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.453,119.833 316.075,114.583 
+			307.056,109.99 298.64,106.71 290.798,105.398 282.98,106.71 274.623,109.99 265.68,114.583 256.39,119.833 		"/>
+	</g>
+	<g id="LINE_34_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.59,737.106 316.212,742.357 
+			307.19,746.951 298.775,750.231 290.934,751.542 283.116,750.231 274.759,746.951 265.817,742.357 256.524,737.106 		"/>
+	</g>
+	<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="54.254,564.893 103.29,564.893 
+		103.29,634.659 54.254,634.659 	"/>
+	<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="54.117,292.048 103.154,292.048 
+		103.154,222.279 54.117,222.279 	"/>
+	<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="527.217,564.891 478.181,564.891 
+		478.181,634.659 527.217,634.659 	"/>
+	<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="527.353,222.278 478.317,222.278 
+		478.317,292.048 527.353,292.048 	"/>
+	<g id="LINE_23_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.457,462.242 334.733,457.333 
+			343.967,453.963 353.111,451.23 362.146,449.457 371.061,448.961 379.882,450.062 388.664,453.08 397.515,458.335 
+			406.578,466.143 415.947,476.188 425.659,488.147 435.703,501.704 446.041,516.536 456.616,532.327 467.36,548.754 
+			478.183,564.891 		"/>
+	</g>
+	<g id="LINE_35_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.593,394.696 334.869,399.605 
+			344.102,402.976 353.247,405.707 362.281,407.482 371.196,407.978 380.017,406.876 388.8,403.857 397.649,398.604 
+			406.713,390.795 416.082,380.751 425.795,368.79 435.838,355.233 446.176,340.401 456.752,324.612 467.495,308.184 
+			478.317,292.047 		"/>
+	</g>
+	<g id="LINE_27_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="325.457,737.311 334.733,742.218 
+			343.967,745.59 353.111,748.319 362.146,750.096 371.061,750.591 379.882,749.488 388.664,746.47 397.515,741.218 
+			406.578,733.409 415.947,723.365 425.659,711.404 435.703,697.848 446.041,683.016 456.616,667.225 467.36,650.796 
+			478.183,634.659 		"/>
+	</g>
+	<g id="LINE_18_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="256.014,737.311 246.738,742.22 
+			237.504,745.59 228.36,748.322 219.324,750.096 210.411,750.591 201.589,749.49 192.807,746.473 183.957,741.218 174.894,733.409 
+			165.524,723.365 155.813,711.404 145.768,697.848 135.431,683.016 124.855,667.225 114.112,650.798 103.29,634.661 		"/>
+	</g>
+	<g id="LINE_13_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="256.014,462.242 246.738,457.335 
+			237.504,453.963 228.36,451.232 219.324,449.457 210.411,448.961 201.589,450.063 192.807,453.082 183.957,458.335 
+			174.894,466.143 165.524,476.188 155.813,488.147 145.768,501.704 135.431,516.536 124.855,532.327 114.112,548.756 
+			103.29,564.893 		"/>
+	</g>
+	<g id="LINE_66_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="255.879,394.698 246.602,399.606 
+			237.37,402.977 228.225,405.708 219.189,407.483 210.276,407.979 201.454,406.877 192.672,403.858 183.822,398.605 
+			174.758,390.797 165.389,380.752 155.677,368.792 145.633,355.235 135.295,340.403 124.72,324.612 113.976,308.185 
+			103.154,292.048 		"/>
+	</g>
+	<g id="LINE_9_">
+		<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="255.879,119.629 246.602,114.721 
+			237.37,111.35 228.225,108.619 219.189,106.844 210.276,106.348 201.454,107.45 192.672,110.468 183.822,115.722 174.758,123.531 
+			165.389,133.575 155.677,145.535 145.633,159.092 135.295,173.924 124.72,189.714 113.976,206.143 103.154,222.279 		"/>
+	</g>
+</g>
+<g id="Text">
+	<text transform="matrix(1 0 0 1 432.3096 815.2715)" font-family="'ArialMT'" font-size="14">(c) 2016 Jun Mitani</text>
+	<text transform="matrix(1 0 0 1 31.7119 42.1099)" font-family="'ArialMT'" font-size="18">Kabuki Face</text>
+</g>
+</svg>

@@ -1,0 +1,1 @@
+  t0 = -cos_angle-(center_x-v1_x)*(center_x-v2_x)-(center_y-v1_y)*(center_y-v2_y)-(center_z-v1_z)*(center_z-v2_z);

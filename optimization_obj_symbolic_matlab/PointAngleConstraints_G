@@ -1,0 +1,6 @@
+  A0[0][0] = center_x-v2_x;
+  A0[1][0] = center_y-v2_y;
+  A0[2][0] = center_z-v2_z;
+  A0[3][0] = center_x-v1_x;
+  A0[4][0] = center_y-v1_y;
+  A0[5][0] = center_z-v1_z;
