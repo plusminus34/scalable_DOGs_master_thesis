@@ -94,8 +94,8 @@ bool DogSolver::is_folded() {
       if ( sign1*sign2 > 0){
         is_folded = false;
         //cout << "Change!" << endl;
-        //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
-        //cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
+        std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
+        cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;
         //break;
       }
@@ -125,7 +125,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   if (is_folded()) {
     p.fold_bias_weight = 100;
   } else {
-    while (!is_folded() && (p.fold_bias_weight < 1e12)) {
+    while (!is_folded() && (p.fold_bias_weight < 1e14)) {
       cout << "Not folded, fold bias = " << p.fold_bias_weight << " reverting back and making the bias stronger" << endl;
       x = x0;
       cout << "x.norm() = " << x.norm() << endl;
