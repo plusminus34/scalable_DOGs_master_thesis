@@ -46,7 +46,7 @@ public:
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
 		double convergence_threshold = 1e-6;
-		bool align_procrustes = false;
+		bool folding_mode = false;
 	};
 
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p,
@@ -57,7 +57,8 @@ public:
 		std::ofstream* time_measurements_log = NULL);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
-	void single_iteration_old(double& constraints_deviation, double& objective);
+	void single_iteration_fold(double& constraints_deviation, double& objective);
+	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
 	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}

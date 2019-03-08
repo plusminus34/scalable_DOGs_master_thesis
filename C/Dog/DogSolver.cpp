@@ -105,7 +105,12 @@ bool DogSolver::is_folded() {
   return is_folded;
 }
 
-void DogSolver::single_iteration_old(double& constraints_deviation, double& objective) {
+void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+  if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
+  else return single_iteration_normal(constraints_deviation, objective);
+}
+
+void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
   if (!is_folded()) {
@@ -140,7 +145,7 @@ void DogSolver::single_iteration_old(double& constraints_deviation, double& obje
   objective = obj.compObj.obj(x);
 }
 
-void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(dog.getV_vector()), x(x0);
 

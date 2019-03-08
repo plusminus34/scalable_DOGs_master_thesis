@@ -197,10 +197,10 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);
       ImGui::InputDouble("Convergence threshold", &DC.p.convergence_threshold);
       ImGui::InputInt("Max Newton iterations", &DC.p.max_newton_iters);
-      ImGui::InputInt("Penalty repetitions", &DC.p.penalty_repetitions);
-      //ImGui::Checkbox("Align Procrustes", &DC.p.align_procrustes);
-      ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
-      ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
+      //ImGui::InputInt("Penalty repetitions", &DC.p.penalty_repetitions);
+      ImGui::Checkbox("Folding mode", &DC.p.folding_mode);
+      //ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
+      //ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
       ImGui::InputDouble("Constraints deviation", &DC.constraints_deviation);
