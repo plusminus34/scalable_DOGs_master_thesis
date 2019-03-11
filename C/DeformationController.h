@@ -80,7 +80,7 @@ private:
 	std::vector<MVTangentCreaseFold> mvTangentCreaseAngleParams; std::vector<double> mv_cos_angles;
 
 	Eigen::VectorXd init_x0;
-	// This needs to resest sometimes. 
+	// This needs to reset sometimes. 
 	// For instance when a new soft constraint is added (but not when the constraint value change), or when a entirely new DOG is loaded
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	DogSolver* dogSolver;
