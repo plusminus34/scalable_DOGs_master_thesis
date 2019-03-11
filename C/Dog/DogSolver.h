@@ -22,6 +22,7 @@
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/StitchingConstraints.h"
+#include "Objectives/MVTangentCreaseAngleConstraints.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 
