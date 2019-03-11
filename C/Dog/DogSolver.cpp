@@ -81,7 +81,7 @@ bool DogSolver::is_folded() {
     for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
       auto ep_b = foldingCurve[e_idx-1]; auto ep_f = foldingCurve[e_idx+1];
       auto edge_pt = foldingCurve[e_idx]; double edge_t = edge_pt.t;
-      if (eS.get_vertex_edge_point_deg(edge_pt.edge) != 1) continue;
+      if ((eS.get_vertex_edge_point_deg(edge_pt.edge) == 1) && dog.is_crease_vertex_flat(fold_curve_idx,e_idx) ) continue;
       int v1,v2,w1,w2; dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, v1,v2,w1,w2);
       Eigen::VectorXd V1_p(dog.getV().row(v1)), V2_p(dog.getV().row(v2));
       Eigen::VectorXd W1_p(dog.getV().row(w1)), W2_p(dog.getV().row(w2));

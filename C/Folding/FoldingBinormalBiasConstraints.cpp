@@ -17,10 +17,10 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
 			else {
 				// either a vertex or an almost flat point (which is not very stable)
 				//std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
+				//std::cout << "dog.is_crease_vertex_flat(curve_i,edge_idx) = " << dog.is_crease_vertex_flat(curve_i,edge_idx) << endl;
 			}
 		}
 	}
-	//exit(1);
 	//const_n = eS.edge_coordinates.size()-2*eS.stitched_curves.size();
 	std::cout << "const_n = " << const_n << " and eS.edge_coordinates.size()-2*eS.stitched_curves.size() = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size()  << std::endl;
 	//exit(1);
@@ -43,7 +43,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
 			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
-			
 			int v1,v2,w1,w2;
 			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
 
