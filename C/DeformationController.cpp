@@ -24,8 +24,8 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices,
-						opt_measurements_log);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, 
+				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, opt_measurements_log);
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
@@ -180,8 +180,8 @@ void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
 	cout << "reseting dog solver" << endl;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, paired_vertices,
-	 opt_measurements_log);
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
+		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
 	//int wait; cin >> wait;
 	has_new_constraints = false;

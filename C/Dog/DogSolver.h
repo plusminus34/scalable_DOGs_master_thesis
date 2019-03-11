@@ -54,6 +54,7 @@ public:
 		Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
+		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
 		std::ofstream* time_measurements_log = NULL);
 	
@@ -72,6 +73,7 @@ public:
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 			std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
+			std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 			std::vector<std::pair<int,int>>& pairs);
 
 		DogConstraints dogConst;
@@ -79,18 +81,20 @@ public:
 		PositionalConstraints posConst;
 		EdgePointConstraints edgePtConst;
 		EdgesAngleConstraints edgeAngleConst;
+		MVTangentCreaseAngleConstraints mvTangentCreaseAngleConst;
 		PointPairConstraints ptPairConst;
 		CompositeConstraints compConst;
 	};
 
 	struct Objectives {
 	  Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
+	  			 Constraints& constraints,
+	  	/*
 	  			PositionalConstraints& posConst,
 	  			EdgePointConstraints& edgePtConst,
-	  			EdgesAngleConstraints& edgeAnglesConst,
-	  			PointPairConstraints& ptPairConst,
+	  			EdgesAngleConstraints& edgeAngleConst,
+	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
-	  			CompositeConstraints& constraints,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -98,9 +102,10 @@ public:
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;
+      	QuadraticConstraintsSumObjective mvTangentCreaseSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
-      	QuadraticConstraintsSumObjective allConstQuadraticObj;
+      	//QuadraticConstraintsSumObjective allConstQuadraticObj;
       	CompositeObjective compObj;
 	};
 

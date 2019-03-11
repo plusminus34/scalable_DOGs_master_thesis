@@ -76,6 +76,8 @@ private:
 	std::vector<std::pair<int,int>> paired_vertices;
 	// Edge angle constraint and dihedral constraints
 	std::vector<std::pair<Edge,Edge>> edge_angle_pairs; std::vector<double> edge_cos_angles;
+	// MV dihedral angle folds data (typically used for straight creases but sometimes for dihedral angle with an M/V assignment)
+	std::vector<MVTangentCreaseFold> mvTangentCreaseAngleParams; std::vector<double> mv_cos_angles;
 
 	Eigen::VectorXd init_x0;
 	// This needs to resest sometimes. 
