@@ -17,9 +17,9 @@ void FoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& ep,
 	EdgePoint ep_b,ep_f; find_prev_next_edge_points(ep,ep_b,ep_f);
 	Eigen::RowVector3d curve_t1 = ep.getPositionInMesh(dog.getV())-ep_b.getPositionInMesh(dog.getV());
 	Eigen::RowVector3d curve_t2 = ep_f.getPositionInMesh(dog.getV())-ep.getPositionInMesh(dog.getV());
+	// Take the tangent of the osculating circle passing through these 3 points
 	Eigen::RowVector3d T = (curve_t1*curve_t2.norm()+curve_t2*curve_t1.norm()).normalized();
 
-	// Take the tangent of the osculating circle passing through these 3 points
 	Eigen::RowVector3d grid_tangent_direction = (dog.getV().row(v1)-dog.getV().row(v2)).normalized();
 	//cout << "grid_tangent_direction = " << grid_tangent_direction << endl;
 	//cout << "T = " << T << endl;

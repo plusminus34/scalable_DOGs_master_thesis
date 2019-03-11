@@ -72,6 +72,8 @@ public:
 
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
+	bool is_crease_vertex_flat(int curve_i, int edge_i) const;
+
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
@@ -91,6 +93,9 @@ public:
 	int v_ren_idx_to_v_idx(int v_idx) const;
 	int v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const;
 
+	// The initial length/angles/curvatures of the initial stitched curves
+	std::vector<std::vector<double>> stitched_curves_l; std::vector<std::vector<double>> stitched_curves_angles; std::vector<std::vector<double>> stitched_curves_curvature;
+
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
@@ -101,11 +106,15 @@ public:
       Add(submeshFSize,std::string("_submeshFSize"));
       Add(submesh_adjacency,std::string("_submesh_adjacency"));
       Add(edgeStitching,std::string("_edgeStitching"));
+      Add(stitched_curves_l,std::string("stitched_curves_l"));
+      Add(stitched_curves_angles,std::string("stitched_curves_angles"));
+      Add(stitched_curves_curvature,std::string("stitched_curves_curvature"));
       Add(vi_to_submesh,std::string("_vi_to_submesh"));
     }
 	
 private:
 	void update_rendering_v();
+	void setup_stitched_curves_initial_l_angles_length();
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;

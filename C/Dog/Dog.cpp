@@ -2,6 +2,8 @@
 
 #include <igl/boundary_loop.h>
 
+using namespace std;
+
 int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
 	int mult_edge_index = edge_to_duplicates.at(edge);
 	int mult_edge_const_start = multiplied_edges_start[mult_edge_index]; 
@@ -24,6 +26,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 		min_idx += submesh_vn;
 	}
 	quad_topology(V,F,quadTop);
+	setup_stitched_curves_initial_l_angles_length();
 }
 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(V), F_ren(Fsqr_to_F(F)) {
@@ -34,8 +37,37 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), submeshVSize(d.submeshVSize), submeshFSize(d.submeshFSize),
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
+						stitched_curves_l(d.stitched_curves_l),stitched_curves_angles(d.stitched_curves_angles), stitched_curves_curvature(d.stitched_curves_curvature),
 						vi_to_submesh(d.vi_to_submesh) {
 	// empty on purpose
+}
+
+void Dog::setup_stitched_curves_initial_l_angles_length() {
+	const DogEdgeStitching& eS = edgeStitching;
+	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
+		std::vector<double> curve_l;
+		// Go through all the inner vertices in a curve
+		for (int edge_idx = 0; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+			auto pt1 = foldingCurve[edge_idx].getPositionInMesh(V); auto pt2 = foldingCurve[edge_idx+1].getPositionInMesh(V);
+			curve_l.push_back((pt1-pt2).norm());
+		}
+		std::vector<double> curve_a,curve_k;
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+			auto pt = foldingCurve[edge_idx].getPositionInMesh(V); auto pt_b = foldingCurve[edge_idx-1].getPositionInMesh(V); auto pt_f = foldingCurve[edge_idx+1].getPositionInMesh(V);
+			auto e1 = pt_f-pt; auto e2 = pt-pt_b;
+			double edges_dot = (e1).dot(e2); double l_normalization = e1.norm()*e2.norm();
+			double angle = acos(edges_dot/l_normalization);
+			double k = sin(angle)/(pt_f-pt_b).norm();
+
+			curve_a.push_back(angle);
+			curve_k.push_back(k);
+		}
+
+		stitched_curves_l.push_back(curve_l);
+		stitched_curves_angles.push_back(curve_a);
+		stitched_curves_curvature.push_back(curve_k);
+	}
 }
 
 Dog* Dog::get_submesh(int submesh_i) {
@@ -128,4 +160,16 @@ int Dog::v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const {
 	}
 	return -1;
 	std::vector<std::vector<EdgePoint>> stitched_curves;
+}
+
+bool Dog::is_crease_vertex_flat(int curve_i, int edge_i) const {
+	double flat_point_curvature_tolerance = 1e-4;
+	// First verify the range
+	if ( (curve_i >=0 ) && (curve_i <= edgeStitching.stitched_curves.size()) ) {
+		if ( (edge_i >= 1) && (edge_i <= edgeStitching.stitched_curves[curve_i].size()-1) ) {
+			//cout << "abs(stitched_curves_curvature[curve_i][edge_i-1] = " << abs(stitched_curves_curvature[curve_i][edge_i-1]) << endl;
+			return (abs(stitched_curves_curvature[curve_i][edge_i-1]) <= flat_point_curvature_tolerance);
+		}
+	}
+	return true;
 }

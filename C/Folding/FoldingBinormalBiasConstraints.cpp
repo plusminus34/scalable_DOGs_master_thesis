@@ -13,9 +13,10 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
 		// Go through all the inner vertices in a curve
 		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
 			EdgePoint ep = foldingCurve[edge_idx];
-			if (eS.get_vertex_edge_point_deg(ep.edge) == 1) const_n++;
+			if ((eS.get_vertex_edge_point_deg(ep.edge) == 1) && !dog.is_crease_vertex_flat(curve_i,edge_idx) ) const_n++;
 			else {
-				std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
+				// either a vertex or an almost flat point (which is not very stable)
+				//std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
 			}
 		}
 	}
@@ -41,7 +42,7 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-			if (eS.get_vertex_edge_point_deg(ep.edge) != 1) continue;
+			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
 			
 			int v1,v2,w1,w2;
 			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
@@ -114,7 +115,7 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-			if (eS.get_vertex_edge_point_deg(ep.edge) != 1) continue;
+			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
 			
 			int v1,v2,w1,w2;
 			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
@@ -245,7 +246,7 @@ void FoldingBinormalBiasConstraints::updateLambdaHessianIJV(const Eigen::VectorX
 		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 			// Should flip the binormal only if is_mountain xor flip_binormal is true
 			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-			if (eS.get_vertex_edge_point_deg(ep.edge) != 1) continue;
+			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
 			
 			int v1,v2,w1,w2;
 			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
