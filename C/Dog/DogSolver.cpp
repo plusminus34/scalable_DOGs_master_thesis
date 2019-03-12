@@ -153,6 +153,9 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(dog.getV_vector()), x(x0);
 
+  std::cout << "obj.mvTangentCreaseSoftConstraints.grad(x0).norm() = " << mvTangentCreaseSoftConstraints.grad(x0).norm() << std::endl;
+  exit(1);
+
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight});
 
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);

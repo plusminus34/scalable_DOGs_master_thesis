@@ -32,10 +32,10 @@ void MVFoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& e
 	// Opposite order for v1,v2 and w1,w2 to make sure there's a fold
 	 // note the 't' here is important for the osculating plane, so if changing M/V make sure we change t as well!
 	MVTangentCreaseFold mvFold1(v1,v2,w1,w2,t,ep_b,ep_f),mvFold2(w2,w1,v1,v2,ep.t,ep_b,ep_f);
-	mvTangentCreaseFolds.push_back(mvFold1); mvTangentCreaseFolds.push_back(mvFold2);
-	is_mountain.push_back(is_mountain_fold); is_mountain.push_back(is_mountain_fold); // push twice, one for each side of the fold
-	tangent_angles.push_back(curve_tangents_angle); tangent_angles.push_back(curve_tangents_angle); // twice
-	destination_dihedral_angles.push_back(dihedral_angle); destination_dihedral_angles.push_back(dihedral_angle); // twice
+	mvTangentCreaseFolds.push_back(mvFold1);// mvTangentCreaseFolds.push_back(mvFold2);
+	is_mountain.push_back(is_mountain_fold); //is_mountain.push_back(is_mountain_fold); // push twice, one for each side of the fold
+	tangent_angles.push_back(curve_tangents_angle); //tangent_angles.push_back(curve_tangents_angle); // twice
+	destination_dihedral_angles.push_back(dihedral_angle);// destination_dihedral_angles.push_back(dihedral_angle); // twice
 	//cout << "Added edge point with v1 = " << v1 << " v2 = " << v2 << " w1 = " << w1 << " w2 = " << w2 << endl;
 	//cout << "curve_tangents_angle = " << curve_tangents_angle << endl;
 
@@ -61,8 +61,11 @@ void MVFoldingDihedralAngleConstraintsBuilder::get_edge_angle_constraints(std::v
 		double alpha = tangent_angles[i];
 		double dest_dihedral_angle = destination_dihedral_angles[i];
 		double const_dihedral = timestep*dest_dihedral_angle;
+		std::cout << "const_dihedral = " << const_dihedral << endl;
 		// This is half because it is measured from tangent to the bisector
-		edge_cos_angles[i] = 0.5*(pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral));
+		edge_cos_angles[i] = const_dihedral;//(pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral));
+		std::cout << "edge_cos_angles[i] = " << edge_cos_angles[i] << std::endl;
+		//exit(1);
 
 		//cout << "timestep = " << timestep << endl;
 		//cout << "Getting dihedral angle of  " << const_dihedral << " by getting a tangent angle of " << acos(edge_cos_angles[i]) << endl;

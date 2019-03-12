@@ -16,7 +16,13 @@ public:
 		IJV.resize(ijv_size);
 	}
 
-	void update_weights(const std::vector<double>& weights_i) { weights = weights_i;}
+	void update_weights(const std::vector<double>& weights_i) { 
+		weights = weights_i; 
+		if (weights.size()<objectives.size()) {
+			std::cout << "Error in CompositeObjective::update_weights - " << "There are " << objectives.size() << " objectives" << 
+				" but got " << weights.size() << " new weights " << std::endl;
+
+		}}
 
 	virtual CompositeObjective* clone() const {return new CompositeObjective(*this);}
 	void add_objective(Objective* e, double w = 1.) {

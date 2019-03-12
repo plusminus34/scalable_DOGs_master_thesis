@@ -301,6 +301,7 @@ double EqSQP::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& e
     auto jacobian = eq_constraints.Jacobian(x);
     
     auto g = obj.grad(x);
+    std::cout << "g.norm() = " << g.norm() << std::endl;
     double grad_error = (g-jacobian.transpose()*lambda).norm();
     double eq_const_error = eq_constraints.Vals(x).norm();
     
