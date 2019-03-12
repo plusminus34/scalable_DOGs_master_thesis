@@ -9,7 +9,7 @@
 
 struct MVTangentCreaseFold {
 	MVTangentCreaseFold(int v1, int v2, int w1, int w2, double edge_t, EdgePoint ep_b, EdgePoint ep_f) : 
-			v1(v1),v2(v2),w1(v1),w2(v2),edge_t(edge_t),ep_b(ep_b),ep_f(ep_f) {}
+			v1(v1),v2(v2),w1(w1),w2(w2),edge_t(edge_t),ep_b(ep_b),ep_f(ep_f) {}
 	int v1,v2;
 	int w1,w2;
 	double edge_t;
@@ -63,6 +63,7 @@ public:
 			//std::cout << "curve_T_grid_t_angle = " << curve_T_grid_t_angle << std::endl;
 			fold_e_crease_angles.push_back(curve_T_grid_t_angle);
 
+			/*
 			std::cout << "ep_b_v1 = " << ep_b_v1 << std::endl;
 			std::cout << "ep_b_v2 = " << ep_b_v2 << std::endl;
 
@@ -84,7 +85,8 @@ public:
 			std::cout << "l2 = " << l2 << std::endl;
 			std::cout << "fold_e_1 = " << fold_e1_l << std::endl;
 			std::cout << "fold_e_2 = " << fold_e2_l << std::endl;
-			int wait; std::cin >> wait;
+			*/
+			//int wait; std::cin >> wait;
 		};
 	};
 
@@ -248,8 +250,6 @@ public:
 			double t56 = t2*t3*t4*t6*t11*t14*t42;
 			double t57 = t2*t3*t4*t6*t8*t14*t47;
 			double t58 = t2*t3*t4*t6*t9*t14*t54;
-
-			std::cout << "cos_angle = " << cos_angle << std::endl;
 			
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, ep_b_v1_i, -ep_b_t*t2*t3*t4*t6*t7*t11+ep_b_t*t2*t3*t4*t6*t8*t10);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, ep_b_v1_i+vnum, ep_b_t*t2*t3*t4*t6*t7*t9-ep_b_t*t2*t3*t4*t6*t8*t12);
@@ -283,8 +283,6 @@ public:
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, w2_i+vnum, -t57+t2*t3*t4*t6*t9*t14*t42);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt, w2_i+2*vnum, -t58+t2*t3*t4*t6*t11*t14*t47);
 
-			std::cout << "w2_i+2*vnum grad = " << -t58+t2*t3*t4*t6*t11*t14*t47 << std::endl;
-			//exit(1);
   			const_cnt++;
   		}
   		if (const_cnt != const_n) {
@@ -295,6 +293,7 @@ public:
 			std::cout << "MVTangentCreaseAngleConstraints: Error! ijv_cnt = " << ijv_cnt << " but IJV.size() " << IJV.size() << std::endl;
 			exit(1);
 		}
+		std::cout << "const_cnt = " << const_cnt << std::endl;
 	}
 	
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {

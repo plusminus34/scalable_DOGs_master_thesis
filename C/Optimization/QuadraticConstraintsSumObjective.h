@@ -29,6 +29,9 @@ public:
 	
 	Eigen::VectorXd grad(const Eigen::VectorXd& x) const {
 		// The derivative of the sum of squares is twice times the sume of the gradients times the values
+		auto jacob = cnst->Jacobian(x);
+		auto jacob_norm = jacob.squaredNorm();
+		auto vals_norm = cnst->Vals(x).norm();
 		return 2*cnst->Jacobian(x).transpose()*cnst->Vals(x);
 	}
 
