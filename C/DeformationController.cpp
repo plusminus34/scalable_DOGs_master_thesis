@@ -28,6 +28,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, opt_measurements_log);
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
+	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
 
 bool DeformationController::has_constraints() {

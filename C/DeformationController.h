@@ -3,6 +3,7 @@
 #include "Dog/DogSolver.h"
 #include "Dog/Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Dog/Objectives/FoldingDihedralAngleConstraintsBuilder.h"
+#include "Dog/Objectives/MVFoldingDihedralAngleConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
 class DeformationController {
@@ -90,6 +91,7 @@ private:
 
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 	FoldingDihedralAngleConstraintsBuilder* foldingDihedralAngleConstraintsBuilder;
+	MVFoldingDihedralAngleConstraintsBuilder* mvFoldingDihedralAngleConstraintsBuilder;
 
 	bool optimization_measurements;
 	std::ofstream* opt_measurements_log;

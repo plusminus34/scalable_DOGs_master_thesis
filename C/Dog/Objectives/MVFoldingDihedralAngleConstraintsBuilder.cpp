@@ -2,10 +2,6 @@
 
 using namespace std;
 
-struct MVTangentCreaseFold {
-	int v1,v2;
-	EdgePoint ep,ep_b,ep_f;
-};
 MVFoldingDihedralAngleConstraintsBuilder::MVFoldingDihedralAngleConstraintsBuilder(const Dog& dog, const double& timestep) : 
 				dog(dog), timestep(timestep) {
 	// Todo: find the initial tangent angles so that we could convert angles to angles

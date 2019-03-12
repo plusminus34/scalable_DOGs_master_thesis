@@ -12,9 +12,9 @@ public:
 	MVFoldingDihedralAngleConstraintsBuilder(const Dog& dog, const double& timestep);
 	
 	void add_constraint(const EdgePoint& ep, double dihedral_angle, bool is_mountain = true);
-	//void get_edge_angle_pairs(std::vector<std::pair<Edge,Edge>>& out_edge_angle_pairs) {out_edge_angle_pairs = edge_angle_pairs;}
+	void get_mv_tangent_crease_folds(std::vector<MVTangentCreaseFold>& out_mvTangentCreaseFolds) {out_mvTangentCreaseFolds = mvTangentCreaseFolds;}
 	// convert edge angles to dihedral
-	//void get_edge_angle_constraints(std::vector<double>& edge_cos_angles);
+	void get_edge_angle_constraints(std::vector<double>& edge_cos_angles);
 private:
 	void find_prev_next_edge_points(const EdgePoint& ep, EdgePoint& prev_ep, EdgePoint& next_ep);
 
@@ -24,5 +24,5 @@ private:
 	const double& timestep;
 	std::vector<MVTangentCreaseFold> mvTangentCreaseFolds;
 	std::vector<double> tangent_angles; // angles between the tangent of the curve and the DOG grid
-	vector<bool> is_mountain;
+	std::vector<bool> is_mountain;
 };
