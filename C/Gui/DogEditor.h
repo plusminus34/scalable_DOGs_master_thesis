@@ -8,7 +8,7 @@
 
 class DogEditor {
 public:
-	enum EditMode { SELECT_POSITIONAL, TRANSLATE, VERTEX_PAIRS, EDGES_ANGLE, DIHEDRAL_ANGLE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
+	enum EditMode { SELECT_POSITIONAL, TRANSLATE, VERTEX_PAIRS, EDGES_ANGLE, DIHEDRAL_ANGLE, MV_DIHEDRAL_ANGLE, NONE};//, ROTATE, CUT, GLUE1, GLUE2, NONE };
 	enum SelectMode {VertexPicker, EdgePointPicker, CurvePicker};
 
 	DogEditor(igl::opengl::glfw::Viewer& viewer, Dog& dog, EditMode& edit_mode, SelectMode& select_mode,

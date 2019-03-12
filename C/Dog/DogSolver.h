@@ -29,13 +29,8 @@
 
 class DogSolver {
 public:
-	enum SolverType {
-		SOLVE_NONE = 0,
-		SOLVE_NEWTON_PENALTY = 1,
-		SOLVE_NEWTON_FLOW = 2
-	};
+	
 	struct Params {
-		DogSolver::SolverType solverType = SOLVE_NEWTON_FLOW;
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
 		double soft_pos_weight = 1;
@@ -64,6 +59,7 @@ public:
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
 	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
+	void update_mv_cos_angles(const std::vector<double> cos_angles_i) {constraints.mvTangentCreaseAngleConst.set_angles(cos_angles_i);}
 
 	Dog& getDog(){return dog;}
 

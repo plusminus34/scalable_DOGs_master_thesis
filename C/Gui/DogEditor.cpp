@@ -40,7 +40,7 @@ bool DogEditor::callback_mouse_down() {
 		vertex_pairs_edit_mouse_down();
 	} else if (edit_mode == EDGES_ANGLE) {
 		edges_angle_edit_mouse_down();
-	} else if (edit_mode == DIHEDRAL_ANGLE) {
+	} else if ( (edit_mode == DIHEDRAL_ANGLE) || (edit_mode == MV_DIHEDRAL_ANGLE) ){
 		dihedral_angle_edit_mouse_down();
 	}
 	return action_started;
@@ -235,7 +235,7 @@ void DogEditor::reset_new_constraint() {
 		reset_new_pair_constraint();
 	} else if (edit_mode == EDGES_ANGLE) {
 		reset_new_edge_angle_constraint();
-	} else if (edit_mode == DIHEDRAL_ANGLE) {
+	} else if ( (edit_mode == DIHEDRAL_ANGLE) || (edit_mode == MV_DIHEDRAL_ANGLE)) {
 		picked_edge.t = -1;
 	}
 }
