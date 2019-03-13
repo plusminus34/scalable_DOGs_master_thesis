@@ -12,10 +12,12 @@ OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res) :
 }
 
 void OrthogonalGrid::add_additional_grid_points(const std::vector<Point_2>& additional_grid_points) {
-  for (auto pt : additional_grid_points) {
-    subdivide_grid_at_pt(pt);
-    //added_vertices.push_back(pt);
+  for (auto pt: additional_grid_points) {
+    if (is_point_on_grid(pt)) continue;
+    added_x_coords.push_back(pt.x());
+    added_y_coords.push_back(pt.y());  
   }
+  
 }
 
 void OrthogonalGrid::regularize_grid() {
@@ -42,38 +44,39 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
         if (dist < closest_dist) {closest_dist = dist; vertex_i = i;}
         else break;
       }
-      std::cout << "Closest point to " << CGAL::to_double(added_pt) << " is " << axis_vec[vertex_i] << " with index = " << vertex_i << std::endl;
+      //std::cout << "Closest point to " << CGAL::to_double(added_pt) << " is " << axis_vec[vertex_i] << " with index = " << vertex_i << std::endl;
       // set this index as the vertex
       axis_vec[vertex_i] = added_pt;
       // now fix backwards all of the values
       Number_type min_pt = axis_vec[start_i-1];
       Number_type spacing = (added_pt-min_pt)/(vertex_i-start_i+1);
-      std::cout << "min_pt = " << min_pt << std::endl;
+      //std::cout << "min_pt = " << min_pt << std::endl;
       int spacing_idx = 1;
       for (int i = start_i; i < vertex_i; i++) {
-        std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+        //std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
         axis_vec[i] = min_pt+spacing_idx*spacing;
         spacing_idx++;
       }
       // start the next search with another index
       start_i = vertex_i+1;
-      std::cout << "next start_i = " << start_i << std::endl;
+      //std::cout << "next start_i = " << start_i << std::endl;
   }
   
   // Make the rest regular
   Number_type min_pt = axis_vec[start_i-1]; int last_idx = axis_vec.size()-1; Number_type last_pt = axis_vec[last_idx];
   Number_type spacing = (last_pt-min_pt)/(last_idx-start_i+1);
-  std::cout << "min_pt = " << min_pt << std::endl;
+  //std::cout << "min_pt = " << min_pt << std::endl;
   int spacing_idx = 1;
   for (int i = start_i; i < last_idx; i++) {
-    std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+    //std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
     axis_vec[i] = min_pt+spacing_idx*spacing;
     spacing_idx++;
   }
-  std::cout << "last pt = " << last_pt << std::endl;
+  //std::cout << "last pt = " << last_pt << std::endl;
   //exit(1);
 }
 void OrthogonalGrid::initialize_grid() {
+  regularize_grid();
   // Add x and y lines to arrangements
   std::vector<Segment_2> grid_segments;
   for (auto x : x_coords) {grid_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
@@ -178,23 +181,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
     return polyline_construct(new_poly_points.begin(), new_poly_points.end());
-}
-
-void OrthogonalGrid::subdivide_grid_at_pt(const Point_2& pt) {
-	if (is_point_on_grid(pt)) return;
-	// Todo: check what is better x or y
-	//if (1) {
-  /*
-		x_coords.push_back(pt.x());
-		std::sort(x_coords.begin(),x_coords.end());
-	//} else {
-		y_coords.push_back(pt.y());
-		std::sort(y_coords.begin(),y_coords.end());
-    */
-
-    added_x_coords.push_back(pt.x());
-    added_y_coords.push_back(pt.y());
-	//}	
 }
 
 bool OrthogonalGrid::is_point_on_grid(const Point_2& pt) const {

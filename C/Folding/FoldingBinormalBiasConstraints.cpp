@@ -16,11 +16,12 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
 			if ((eS.get_vertex_edge_point_deg(ep.edge) == 1) && !dog.is_crease_vertex_flat(curve_i,edge_idx) ) const_n++;
 			else {
 				// either a vertex or an almost flat point (which is not very stable)
-				//std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
+				std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
 				//std::cout << "dog.is_crease_vertex_flat(curve_i,edge_idx) = " << dog.is_crease_vertex_flat(curve_i,edge_idx) << endl;
 			}
 		}
 	}
+	int wait; cin >> wait;
 	//const_n = eS.edge_coordinates.size()-2*eS.stitched_curves.size();
 	std::cout << "const_n = " << const_n << " and eS.edge_coordinates.size()-2*eS.stitched_curves.size() = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size()  << std::endl;
 	//exit(1);

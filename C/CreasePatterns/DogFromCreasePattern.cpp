@@ -20,12 +20,12 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<std::vector<bool>> submeshV_is_inner;
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogEdgeStitching edgeStitching;
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
+	std::vector<SubmeshPoly> submesh_polygons;
+	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
 
 	std::vector<Point_2> constrained_pts_non_unique;
 	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique,V);
 
-	std::vector<SubmeshPoly> submesh_polygons;
-	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
 	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, edgeStitching, V_ren);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, constrained_pts_non_unique);
 
@@ -131,7 +131,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	for (auto pt: constrained_pts) {
 
 		Number_type edge_t; std::vector<Edge> edge_v_indices;
-		pt_to_edge_coordiantes(pt, creasePattern, submeshVList, edge_v_indices, edge_t);
+		pt_to_edge_coordinates(pt, creasePattern, submeshVList, edge_v_indices, edge_t);
 
 		edgeStitching.multiplied_edges_start.push_back(edge_constraints_cnt);
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
@@ -162,7 +162,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		edgeStitching.stitched_curves[i].resize(pts.size());
 		for (int j = 0; j < pts.size(); j++) {
 			Number_type edge_t; std::vector<Edge> edge_v_indices;
-			pt_to_edge_coordiantes(pts[j], creasePattern, submeshVList, edge_v_indices, edge_t);
+			pt_to_edge_coordinates(pts[j], creasePattern, submeshVList, edge_v_indices, edge_t);
 
 			auto edge_v = CGAL::to_double(edge_t)*V.row(edge_v_indices[0].v1)+(1-CGAL::to_double(edge_t))*V.row(edge_v_indices[0].v2);
 			// Choose one of the edges, don't need the duplicates and they are all (approximately) equal anyhow
@@ -327,7 +327,7 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
 	}
 }
 
-void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 				std::vector<Edge>& edge_v_indices, Number_type& edge_t) {
 
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
@@ -336,6 +336,8 @@ void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePatter
 		std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
 		exit(1); // Should never get here, and if so all is lost
 	}
+	std::vector<Polygon_2> submeshBnd; 
+	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
 	//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 	// Now find the indices of both points and add them as constraints
 	// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
@@ -346,6 +348,8 @@ void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePatter
 	// Go through every submesh
 	int global_idx_base = 0;
 	for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
+		bool pt_in_submesh = (submeshBnd[sub_i].bounded_side(pt) != CGAL::ON_UNBOUNDED_SIDE);
+
 		// Find the indices of the pts in the submesh (if they exist)
 		int pt1_idx = -1, pt2_idx = -1;
 		for (int v_i = 0; v_i < submeshVList[sub_i].rows(); v_i++) {
@@ -355,8 +359,18 @@ void pt_to_edge_coordiantes(const Point_2& pt, const CreasePattern& creasePatter
 		}
 		// Found the edge (both points) on the submesh
 		if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
-			// Insert the (global V) indices
-			edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
+			Point_2 direc(edge_pts.first.x()-edge_pts.second.x(),edge_pts.first.y()-edge_pts.second.y());
+			Point_2 offset_plus = Point_2(pt.x()+Number_type(0.01)*direc.x(),pt.y()+Number_type(0.01)*direc.y() );
+			Point_2 offset_minus = Point_2(pt.x()-Number_type(0.01)*direc.x(),pt.y()-Number_type(0.01)*direc.y() );
+			bool pos_eps_inside = (submeshBnd[sub_i].bounded_side(offset_plus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_m_eps_inside = (submeshBnd[sub_i].bounded_side(offset_minus) == CGAL::ON_BOUNDED_SIDE);
+			pt_in_submesh = pt_in_submesh | pos_eps_inside | pos_m_eps_inside;
+
+			//std::cout << "inside and pt_in_submesh = " << pt_in_submesh << std::endl;
+			if (pt_in_submesh) {
+				// Insert the (global V) indices
+				edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));	
+			}
 		}
 		global_idx_base += submeshVList[sub_i].rows();
 	}
