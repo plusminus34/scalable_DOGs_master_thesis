@@ -15,6 +15,8 @@ public:
 	// Third parameter is used for curves intersection, hence we need to subdivide the grid to add that
 	OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res);
 	void add_additional_grid_points(const std::vector<Point_2>& additional_grid_points);
+	void regularize_grid();
+
 	void initialize_grid();
 
 	// multiple polylines
@@ -31,15 +33,19 @@ public:
 
 private:
 	// True if it is on the grid lines (edges or vertices)
+	void add_vertices_to_axis_and_keep_as_regular_as_possible(std::vector<Number_type>& axis_vec, std::vector<Number_type>& added_coords);
 	bool is_point_on_grid(const Point_2& pt) const;
 	void subdivide_grid_at_pt(const Point_2& pt);
 	void create_spaced_range(const Number_type min, const Number_type max, const int num_points, std::vector<Number_type>& range);
 
 	void polyline_to_segments(const Polyline_2& polyline, std::vector<Segment_2>& segments);
+	bool pt_in_vec(const std::vector<Number_type>& vec, const Number_type& pt) const;
 	//Number_type lower_bound(const Point_2& pt, int axis);
 	// Holds only the grid, as there's no need to have multiple intersected polylines calculation all the time
 	
+	double x_res,y_res;
 	const CGAL::Bbox_2& bbox;
+	std::vector<Number_type> added_x_coords, added_y_coords;
 	std::vector<Number_type> x_coords;
 	std::vector<Number_type> y_coords;
 };

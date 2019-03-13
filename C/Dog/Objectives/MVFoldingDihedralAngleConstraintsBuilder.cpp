@@ -31,7 +31,8 @@ void MVFoldingDihedralAngleConstraintsBuilder::add_constraint(const EdgePoint& e
 
 	// Opposite order for v1,v2 and w1,w2 to make sure there's a fold
 	 // note the 't' here is important for the osculating plane, so if changing M/V make sure we change t as well!
-	MVTangentCreaseFold mvFold1(v1,v2,w1,w2,t,ep_b,ep_f),mvFold2(w2,w1,v1,v2,ep.t,ep_b,ep_f);
+	// but 't' is defined on v1,v2 pair (so can change the second set of vertices without it)
+	MVTangentCreaseFold mvFold1(v1,v2,w2,w1,t,ep_b,ep_f),mvFold2(w2,w1,v1,v2,ep.t,ep_b,ep_f);
 	mvTangentCreaseFolds.push_back(mvFold1);// mvTangentCreaseFolds.push_back(mvFold2);
 	is_mountain.push_back(is_mountain_fold); //is_mountain.push_back(is_mountain_fold); // push twice, one for each side of the fold
 	tangent_angles.push_back(curve_tangents_angle); //tangent_angles.push_back(curve_tangents_angle); // twice

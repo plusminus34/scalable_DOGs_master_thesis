@@ -5,16 +5,74 @@
 
 //#include <map.h>
 
-OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res) : bbox(bbox) {
+OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res) : x_res(x_res), y_res(y_res), bbox(bbox) {
 	// Create x line and y coodrinates
 	create_spaced_range(bbox.xmin(), bbox.xmax(), x_res, x_coords);
 	create_spaced_range(bbox.ymin(), bbox.ymax(), y_res, y_coords);
 }
 
 void OrthogonalGrid::add_additional_grid_points(const std::vector<Point_2>& additional_grid_points) {
-  for (auto pt : additional_grid_points) {subdivide_grid_at_pt(pt);}
+  for (auto pt : additional_grid_points) {
+    subdivide_grid_at_pt(pt);
+    //added_vertices.push_back(pt);
+  }
 }
 
+void OrthogonalGrid::regularize_grid() {
+  // Do something only if there are vertices
+  if (added_x_coords.size()) {
+    add_vertices_to_axis_and_keep_as_regular_as_possible(x_coords, added_x_coords);
+    added_x_coords.clear();
+  }
+  if (added_y_coords.size()) {
+    add_vertices_to_axis_and_keep_as_regular_as_possible(y_coords, added_y_coords);
+    added_y_coords.clear();
+  }
+  //exit(1);
+}
+void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::vector<Number_type>& axis_vec,
+  std::vector<Number_type>& added_coords) {
+
+  int start_i = 1;
+  for (auto added_pt : added_coords) {
+      // find the index of the closest point (but don't replace the first or last point)
+      double closest_dist = std::numeric_limits<double>::infinity(); int vertex_i = -1;
+      for (int i = start_i; i < axis_vec.size()-1; i++) {
+        int dist = std::abs(CGAL::to_double(axis_vec[i] - added_pt));
+        if (dist < closest_dist) {closest_dist = dist; vertex_i = i;}
+        else break;
+      }
+      std::cout << "Closest point to " << CGAL::to_double(added_pt) << " is " << axis_vec[vertex_i] << " with index = " << vertex_i << std::endl;
+      // set this index as the vertex
+      axis_vec[vertex_i] = added_pt;
+      // now fix backwards all of the values
+      Number_type min_pt = axis_vec[start_i-1];
+      Number_type spacing = (added_pt-min_pt)/(vertex_i-start_i+1);
+      std::cout << "min_pt = " << min_pt << std::endl;
+      int spacing_idx = 1;
+      for (int i = start_i; i < vertex_i; i++) {
+        std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+        axis_vec[i] = min_pt+spacing_idx*spacing;
+        spacing_idx++;
+      }
+      // start the next search with another index
+      start_i = vertex_i+1;
+      std::cout << "next start_i = " << start_i << std::endl;
+  }
+  
+  // Make the rest regular
+  Number_type min_pt = axis_vec[start_i-1]; int last_idx = axis_vec.size()-1; Number_type last_pt = axis_vec[last_idx];
+  Number_type spacing = (last_pt-min_pt)/(last_idx-start_i+1);
+  std::cout << "min_pt = " << min_pt << std::endl;
+  int spacing_idx = 1;
+  for (int i = start_i; i < last_idx; i++) {
+    std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+    axis_vec[i] = min_pt+spacing_idx*spacing;
+    spacing_idx++;
+  }
+  std::cout << "last pt = " << last_pt << std::endl;
+  //exit(1);
+}
 void OrthogonalGrid::initialize_grid() {
   // Add x and y lines to arrangements
   std::vector<Segment_2> grid_segments;
@@ -126,11 +184,16 @@ void OrthogonalGrid::subdivide_grid_at_pt(const Point_2& pt) {
 	if (is_point_on_grid(pt)) return;
 	// Todo: check what is better x or y
 	//if (1) {
+  /*
 		x_coords.push_back(pt.x());
 		std::sort(x_coords.begin(),x_coords.end());
 	//} else {
 		y_coords.push_back(pt.y());
 		std::sort(y_coords.begin(),y_coords.end());
+    */
+
+    added_x_coords.push_back(pt.x());
+    added_y_coords.push_back(pt.y());
 	//}	
 }
 
@@ -139,13 +202,17 @@ bool OrthogonalGrid::is_point_on_grid(const Point_2& pt) const {
     if ((pt.x() < x_coords[0]) || (pt.x() > x_coords[x_coords.size()-1])) return false;
     if ((pt.y() < y_coords[0]) || (pt.y() > y_coords[y_coords.size()-1])) return false;
 
-	  auto it = std::lower_bound(x_coords.begin(),x_coords.end(),pt.x());
-    bool is_on_x = (it != x_coords.end() && *it == pt.x());
+    bool is_on_x = pt_in_vec(x_coords,pt.x());
+    bool is_on_y = pt_in_vec(y_coords,pt.y());
+    bool is_on_added_x = pt_in_vec(added_x_coords, pt.x());
+    bool is_on_added_y = pt_in_vec(added_y_coords, pt.y());
 
-    it = std::lower_bound(y_coords.begin(),y_coords.end(),pt.y());
-    bool is_on_y = (it != y_coords.end() && *it == pt.y());
+    return is_on_x || is_on_y || is_on_added_x || is_on_added_y;
+}
 
-    return is_on_x || is_on_y;
+bool OrthogonalGrid::pt_in_vec(const std::vector<Number_type>& vec, const Number_type& pt) const {
+  auto it = std::lower_bound(vec.begin(),vec.end(),pt);
+  return (it != vec.end() && *it == pt);
 }
 
 bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, Number_type& t) const {
