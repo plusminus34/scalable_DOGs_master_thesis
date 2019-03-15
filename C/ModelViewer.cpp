@@ -43,7 +43,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
 	if (render_curved_folding_properties) render_curved_folding_normals(viewer);
 	if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
-		render_dog_stitching_curves(viewer, state.dog);
+		render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 	} else {
 		render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
 	}

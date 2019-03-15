@@ -163,7 +163,7 @@ int Dog::v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const {
 }
 
 bool Dog::is_crease_vertex_flat(int curve_i, int edge_i) const {
-	double flat_point_curvature_tolerance = 1e-4;
+	double flat_point_curvature_tolerance = 1e-5;
 	// First verify the range
 	if ( (curve_i >=0 ) && (curve_i <= edgeStitching.stitched_curves.size()) ) {
 		if ( (edge_i >= 1) && (edge_i <= edgeStitching.stitched_curves[curve_i].size()-1) ) {

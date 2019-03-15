@@ -30,6 +30,9 @@ public:
 	// In case it is on a vertex, t will be 1 (and v1=v2 but in that case one should ignore v2)
 	bool get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, Number_type& t) const;
 
+	Number_type get_avg_x_edge() const {return (bbox.xmax()-bbox.xmin())/(x_res-1);}
+	Number_type get_avg_y_edge() const {return (bbox.ymax()-bbox.ymin())/(y_res-1);}
+
 private:
 	void regularize_grid();
 	// True if it is on the grid lines (edges or vertices)

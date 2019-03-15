@@ -33,12 +33,12 @@ public:
 	struct Params {
 		double bending_weight = 1.;
 		double isometry_weight = 0.1;
-		double soft_pos_weight = 1;
+		double soft_pos_weight = 10;
 		double dihedral_weight = 10;
-		double fold_bias_weight = 100;
+		double fold_bias_weight = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
-		int max_newton_iters = 1;
+		int max_newton_iters = 5;
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
 		double convergence_threshold = 1e-6;

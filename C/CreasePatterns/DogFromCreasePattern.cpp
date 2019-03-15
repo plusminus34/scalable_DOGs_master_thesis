@@ -355,22 +355,32 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 		for (int v_i = 0; v_i < submeshVList[sub_i].rows(); v_i++) {
 			if (submeshVList[sub_i].row(v_i) == pt1) {pt1_idx = v_i;}
 			if (submeshVList[sub_i].row(v_i) == pt2) {pt2_idx = v_i;}
-			if ((pt1_idx!=-1)&& (pt2_idx != -1)) break;
+			if ((pt1_idx!=-1) && (pt2_idx != -1)) break;
 		}
 		// Found the edge (both points) on the submesh
 		if ((pt1_idx!=-1)&& (pt2_idx != -1)) {
-			Point_2 direc(edge_pts.first.x()-edge_pts.second.x(),edge_pts.first.y()-edge_pts.second.y());
-			Point_2 offset_plus = Point_2(pt.x()+Number_type(0.01)*direc.x(),pt.y()+Number_type(0.01)*direc.y() );
-			Point_2 offset_minus = Point_2(pt.x()-Number_type(0.01)*direc.x(),pt.y()-Number_type(0.01)*direc.y() );
-			bool pos_eps_inside = (submeshBnd[sub_i].bounded_side(offset_plus) == CGAL::ON_BOUNDED_SIDE);
-			bool pos_m_eps_inside = (submeshBnd[sub_i].bounded_side(offset_minus) == CGAL::ON_BOUNDED_SIDE);
-			pt_in_submesh = pt_in_submesh | pos_eps_inside | pos_m_eps_inside;
+			Number_type min_edge = std::min(orthGrid.get_avg_x_edge(),orthGrid.get_avg_y_edge());
+			double step_size = 0.01*CGAL::to_double(min_edge);
+
+			Point_2 offset_xplus = Point_2(pt.x()+Number_type(step_size),pt.y());
+			Point_2 offset_xminus = Point_2(pt.x()-Number_type(step_size),pt.y());
+			Point_2 offset_yplus = Point_2(pt.x(),pt.y()+Number_type(step_size));
+			Point_2 offset_yminus = Point_2(pt.x()-Number_type(step_size),pt.y()-+Number_type(step_size));
+			
+			bool pos_eps_insidex = (submeshBnd[sub_i].bounded_side(offset_xplus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_m_eps_insidex = (submeshBnd[sub_i].bounded_side(offset_xminus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_eps_insidey = (submeshBnd[sub_i].bounded_side(offset_yplus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_m_eps_insidey = (submeshBnd[sub_i].bounded_side(offset_yminus) == CGAL::ON_BOUNDED_SIDE);
+
+			pt_in_submesh = pt_in_submesh | pos_eps_insidex | pos_m_eps_insidex | pos_eps_insidey | pos_m_eps_insidey;
 
 			//std::cout << "inside and pt_in_submesh = " << pt_in_submesh << std::endl;
+			
 			if (pt_in_submesh) {
 				// Insert the (global V) indices
 				edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));	
 			}
+			
 		}
 		global_idx_base += submeshVList[sub_i].rows();
 	}

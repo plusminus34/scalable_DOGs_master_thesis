@@ -15,13 +15,15 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
 			EdgePoint ep = foldingCurve[edge_idx];
 			if ((eS.get_vertex_edge_point_deg(ep.edge) == 1) && !dog.is_crease_vertex_flat(curve_i,edge_idx) ) const_n++;
 			else {
-				// either a vertex or an almost flat point (which is not very stable)
-				std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;
-				//std::cout << "dog.is_crease_vertex_flat(curve_i,edge_idx) = " << dog.is_crease_vertex_flat(curve_i,edge_idx) << endl;
+				if (dog.is_crease_vertex_flat(curve_i,edge_idx)) {
+					std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is flat = " <<  dog.is_crease_vertex_flat(curve_i,edge_idx) << endl;
+				}
+				if (eS.get_vertex_edge_point_deg(ep.edge) != 1) {
+					std::cout << "curve_i = " << curve_i << " edge_idx = " << edge_idx << " is a vertex" << " with rank = " << eS.get_vertex_edge_point_deg(ep.edge) + 1 << std::endl;	
+				}
 			}
 		}
 	}
-	int wait; cin >> wait;
 	//const_n = eS.edge_coordinates.size()-2*eS.stitched_curves.size();
 	std::cout << "const_n = " << const_n << " and eS.edge_coordinates.size()-2*eS.stitched_curves.size() = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size()  << std::endl;
 	//exit(1);
@@ -70,41 +72,197 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 			double t6 = t2*v2_x;
 			double t7 = ep_b_t*ep_b_v1_x;
 			double t11 = ep_0_t*v1_x;
-			double t20 = ep_b_v2_x*t3;
-			double t8 = t6+t7-t11-t20;
+			double t23 = ep_b_v2_x*t3;
+			double t8 = t6+t7-t11-t23;
 			double t9 = t2*v2_z;
 			double t10 = ep_f_t*ep_f_v1_x;
 			double t12 = ep_b_t*ep_b_v1_y;
 			double t19 = ep_0_t*v1_y;
-			double t22 = ep_b_v2_y*t3;
-			double t13 = t4+t12-t19-t22;
+			double t26 = ep_b_v2_y*t3;
+			double t13 = t4+t12-t19-t26;
 			double t14 = ep_f_t*ep_f_v1_z;
 			double t17 = ep_0_t*v1_z;
-			double t24 = ep_f_v2_z*t5;
-			double t15 = t9+t14-t17-t24;
+			double t29 = ep_f_v2_z*t5;
+			double t15 = t9+t14-t17-t29;
 			double t16 = ep_b_t*ep_b_v1_z;
 			double t18 = ep_f_t*ep_f_v1_y;
-			double t30 = ep_f_v2_y*t5;
-			double t21 = t4+t18-t19-t30;
 			double t27 = ep_f_v2_x*t5;
-			double t23 = t6+t10-t11-t27;
-			double t25 = t8*t15;
-			double t29 = ep_b_v2_z*t3;
-			double t26 = t9+t16-t17-t29;
-			double t28 = t13*t15;
-			double t31 = t28-t21*t26;
-			constVals(const_cnt++) = (t25-t23*t26)*(w1_y-w2_y)+(t25-t23*(t9+t16-ep_b_v2_z*t3-ep_0_t*v1_z))*(v1_y-v2_y)-t31*(v1_x-v2_x)-t31*(w1_x-w2_x)+(t13*(t6+t10-ep_f_v2_x*t5-ep_0_t*v1_x)-t8*(t4+t18-ep_f_v2_y*t5-ep_0_t*v1_y))*(v1_z-v2_z)-(w1_z-w2_z)*(t8*t21-t13*t23);
+			double t20 = t6+t10-t11-t27;
+			double t31 = ep_b_v2_z*t3;
+			double t21 = t9+t16-t17-t31;
+			double t24 = ep_f_v2_y*t5;
+			double t22 = t4+t18-t19-t24;
+			double t25 = t8*t22;
+			double t28 = t25-t13*t20;
+			double t30 = t8*t15;
+			double t32 = t30-t20*t21;
+			double t33 = t13*t15;
+			double t34 = t33-t21*t22;
+			constVals(const_cnt++) = -tanh(t28*(v1_z-v2_z)*1.0E3-t32*(v1_y-v2_y)*1.0E3+t34*(v1_x-v2_x)*1.0E3)-tanh(t28*(w1_z-w2_z)*1.0E3-t32*(w1_y-w2_y)*1.0E3+t34*(w1_x-w2_x)*1.0E3);
 		}
 	}
   if (const_cnt != const_n) {
 		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
   }
+  std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
   return constVals;
 }
 
-
 void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
+	// Add curve fold constraints
+	int vnum = x.rows()/3;
+	int const_cnt = 0; int ijv_cnt = 0;
+  	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
+		// Go through all the inner vertices in a curve
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+			// Should flip the binormal only if is_mountain xor flip_binormal is true
+			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
+			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
+			
+			int v1,v2,w1,w2;
+			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
+
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int v1_i(v1), v2_i(v2), w1_i(w1), w2_i(w2); const double ep_0_t(ep.t);
+
+			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
+			int ep_f_v1_i(ep_f.edge.v1), ep_f_v2_i(ep_f.edge.v2); const double ep_f_t(ep_f.t);
+
+			const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+			const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+			const double w1_x(x(w1_i)); const double w1_y(x(w1_i+1*vnum)); const double w1_z(x(w1_i+2*vnum));
+			const double w2_x(x(w2_i)); const double w2_y(x(w2_i+1*vnum)); const double w2_z(x(w2_i+2*vnum));
+
+			const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
+			const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
+			const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
+			const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
+
+			double t2 = ep_f_t-1.0;
+			double t3 = ep_0_t-1.0;
+			double t4 = v1_z-v2_z;
+			double t5 = ep_f_t*ep_f_v1_y;
+			double t6 = t3*v2_y;
+			double t8 = ep_0_t*v1_y;
+			double t25 = ep_f_v2_y*t2;
+			double t7 = t5+t6-t8-t25;
+			double t9 = ep_b_t-1.0;
+			double t10 = t3*v2_x;
+			double t11 = v1_y-v2_y;
+			double t12 = ep_b_t*ep_b_v1_x;
+			double t19 = ep_0_t*v1_x;
+			double t28 = ep_b_v2_x*t9;
+			double t13 = t10+t12-t19-t28;
+			double t14 = ep_f_t*ep_f_v1_z;
+			double t15 = t3*v2_z;
+			double t17 = ep_0_t*v1_z;
+			double t22 = ep_f_v2_z*t2;
+			double t16 = t14+t15-t17-t22;
+			double t18 = ep_f_t*ep_f_v1_x;
+			double t20 = ep_b_t*ep_b_v1_y;
+			double t30 = ep_b_v2_y*t9;
+			double t21 = t6-t8+t20-t30;
+			double t23 = ep_b_t*ep_b_v1_z;
+			double t35 = ep_b_v2_z*t9;
+			double t24 = t15-t17+t23-t35;
+			double t29 = t7*t13;
+			double t31 = ep_f_v2_x*t2;
+			double t32 = t10+t18-t19-t31;
+			double t34 = t13*t16;
+			double t36 = t24*t32;
+			double t37 = t34-t36;
+			double t38 = t16*t21;
+			double t39 = t7*t24;
+			double t40 = t38-t39;
+			double t42 = v1_x-v2_x;
+			double t45 = t11*t37*1.0E3;
+			double t46 = t40*t42*1.0E3;
+			double t26 = tanh(-t45+t46+t4*(t29-t21*(t10+t18-t31-ep_0_t*v1_x))*1.0E3);
+			double t27 = w1_z-w2_z;
+			double t33 = w1_y-w2_y;
+			double t43 = t21*t32;
+			double t44 = t29-t43;
+			double t48 = w1_x-w2_x;
+			double t49 = t27*t44*1.0E3;
+			double t50 = t33*t37*1.0E3;
+			double t51 = t40*t48*1.0E3;
+			double t52 = t49-t50+t51;
+			double t41 = tanh(t52);
+			double t55 = t4*t44*1.0E3;
+			double t56 = -t45+t46+t55;
+			double t47 = tanh(t56);
+			double t53 = t41*t41;
+			double t54 = t53-1.0;
+			double t57 = t47*t47;
+			double t58 = t57-1.0;
+			double t59 = ep_0_t*t7;
+			double t67 = ep_0_t*t21;
+			double t60 = t59-t67;
+			double t61 = ep_0_t*t16;
+			double t63 = ep_0_t*t24;
+			double t62 = t61-t63;
+			double t64 = ep_0_t*t13;
+			double t66 = ep_0_t*t32;
+			double t65 = t64-t66;
+			double t68 = t7*t24*1.0E3;
+			double t69 = t3*t7;
+			double t77 = t3*t21;
+			double t70 = t69-t77;
+			double t71 = t3*t16;
+			double t72 = t13*t16*1.0E3;
+			double t73 = t3*t13;
+			double t76 = t3*t32;
+			double t74 = t73-t76;
+			double t75 = t7*t13*1.0E3;
+			double t78 = t72-t24*t32*1.0E3;
+			double t79 = t75-t21*t32*1.0E3;
+			double t80 = t54*t79;
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i,(t26*t26-1.0)*(ep_b_t*t4*t7*1.0E3-ep_b_t*t11*t16*1.0E3)+t54*(ep_b_t*t7*t27*1.0E3-ep_b_t*t16*t33*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+vnum,-t58*(ep_b_t*t4*t32*1.0E3-ep_b_t*t16*t42*1.0E3)-t54*(ep_b_t*t27*t32*1.0E3-ep_b_t*t16*t48*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v1_i+2*vnum,t58*(ep_b_t*t11*t32*1.0E3-ep_b_t*t7*t42*1.0E3)-t54*(ep_b_t*t7*t48*1.0E3-ep_b_t*t32*t33*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i,-t58*(t4*t7*t9*1.0E3-t9*t11*t16*1.0E3)-t54*(t7*t9*t27*1.0E3-t9*t16*t33*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+vnum,t58*(t4*t9*t32*1.0E3-t9*t16*t42*1.0E3)+t54*(t9*t27*t32*1.0E3-t9*t16*t48*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_b_v2_i+2*vnum,-t58*(t9*t11*t32*1.0E3-t7*t9*t42*1.0E3)+t54*(t7*t9*t48*1.0E3-t9*t32*t33*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i,-t58*(ep_f_t*t4*t21*1.0E3-ep_f_t*t11*t24*1.0E3)-t54*(ep_f_t*t21*t27*1.0E3-ep_f_t*t24*t33*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+vnum,t58*(ep_f_t*t4*t13*1.0E3-ep_f_t*t24*t42*1.0E3)+t54*(ep_f_t*t13*t27*1.0E3-ep_f_t*t24*t48*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v1_i+2*vnum,-t58*(ep_f_t*t11*t13*1.0E3-ep_f_t*t21*t42*1.0E3)-t54*(ep_f_t*t13*t33*1.0E3-ep_f_t*t21*t48*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i,t58*(t2*t4*t21*1.0E3-t2*t11*t24*1.0E3)+t54*(t2*t21*t27*1.0E3-t2*t24*t33*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+vnum,-t58*(t2*t4*t13*1.0E3-t2*t24*t42*1.0E3)-t54*(t2*t13*t27*1.0E3-t2*t24*t48*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,ep_f_v2_i+2*vnum,t58*(t2*t11*t13*1.0E3-t2*t21*t42*1.0E3)+t54*(t2*t13*t33*1.0E3-t2*t21*t48*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i,-t58*(t68-t16*t21*1.0E3+t4*t60*1.0E3-t11*t62*1.0E3)-t54*(t27*t60*1.0E3-t33*t62*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i+vnum,-t58*(t72-t24*t32*1.0E3+t4*t65*1.0E3+t42*t62*1.0E3)-t54*(t27*t65*1.0E3+t48*t62*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v1_i+2*vnum,t58*(t75-t21*t32*1.0E3+t11*t65*1.0E3+t42*(t59-t67)*1.0E3)+t54*(t33*t65*1.0E3+t48*(t59-t67)*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i,t58*(t68-t16*t21*1.0E3+t4*t70*1.0E3-t11*(t71-t3*t24)*1.0E3)+t54*(t27*t70*1.0E3-t33*(t71-t3*t24)*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i+vnum,t58*(t72-t24*t32*1.0E3+t4*t74*1.0E3+t42*(t71-t3*t24)*1.0E3)+t54*(t27*t74*1.0E3+t48*(t71-t3*t24)*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,v2_i+2*vnum,-t58*(t75-t21*t32*1.0E3+t11*t74*1.0E3+t42*t70*1.0E3)-t54*(t33*t74*1.0E3+t48*t70*1.0E3));
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i,-t54*(t68-t16*t21*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i+vnum,-t54*t78);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w1_i+2*vnum,t80);
+
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i,t54*(t68-t16*t21*1.0E3));
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+vnum,t54*t78);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_cnt,w2_i+2*vnum,-t80);
+
+			const_cnt++;
+		}
+	}
+  if (const_cnt != const_n) {
+		cout << "error in jacobian, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
+		exit(1);
+	}
+}
+/*
+void FoldingBinormalBiasConstraints::updateJacobianIJV_old(const Eigen::VectorXd& x) {
 	// Add curve fold constraints
 	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;
@@ -234,6 +392,84 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 		exit(1);
 	}
 }
+
+
+Eigen::VectorXd FoldingBinormalBiasConstraints::Vals_old(const Eigen::VectorXd& x) const {
+	// Edges should be exactly equal
+	Eigen::VectorXd constVals(const_n); constVals.setZero();
+	
+	// Add curve fold constraints
+	int vnum = x.rows()/3;
+	int const_cnt = 0;
+  	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
+		// Go through all the inner vertices in a curve
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+			// Should flip the binormal only if is_mountain xor flip_binormal is true
+			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
+			if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
+			int v1,v2,w1,w2;
+			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
+
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int v1_i(v1), v2_i(v2), w1_i(w1), w2_i(w2); const double ep_0_t(ep.t);
+
+			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
+			int ep_f_v1_i(ep_f.edge.v1), ep_f_v2_i(ep_f.edge.v2); const double ep_f_t(ep_f.t);
+
+			const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+			const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+			const double w1_x(x(w1_i)); const double w1_y(x(w1_i+1*vnum)); const double w1_z(x(w1_i+2*vnum));
+			const double w2_x(x(w2_i)); const double w2_y(x(w2_i+1*vnum)); const double w2_z(x(w2_i+2*vnum));
+
+			const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
+			const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
+			const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
+			const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
+
+			double t2 = ep_0_t-1.0;
+			double t3 = ep_b_t-1.0;
+			double t4 = t2*v2_y;
+			double t5 = ep_f_t-1.0;
+			double t6 = t2*v2_x;
+			double t7 = ep_b_t*ep_b_v1_x;
+			double t11 = ep_0_t*v1_x;
+			double t20 = ep_b_v2_x*t3;
+			double t8 = t6+t7-t11-t20;
+			double t9 = t2*v2_z;
+			double t10 = ep_f_t*ep_f_v1_x;
+			double t12 = ep_b_t*ep_b_v1_y;
+			double t19 = ep_0_t*v1_y;
+			double t22 = ep_b_v2_y*t3;
+			double t13 = t4+t12-t19-t22;
+			double t14 = ep_f_t*ep_f_v1_z;
+			double t17 = ep_0_t*v1_z;
+			double t24 = ep_f_v2_z*t5;
+			double t15 = t9+t14-t17-t24;
+			double t16 = ep_b_t*ep_b_v1_z;
+			double t18 = ep_f_t*ep_f_v1_y;
+			double t30 = ep_f_v2_y*t5;
+			double t21 = t4+t18-t19-t30;
+			double t27 = ep_f_v2_x*t5;
+			double t23 = t6+t10-t11-t27;
+			double t25 = t8*t15;
+			double t29 = ep_b_v2_z*t3;
+			double t26 = t9+t16-t17-t29;
+			double t28 = t13*t15;
+			double t31 = t28-t21*t26;
+			constVals(const_cnt++) = (t25-t23*t26)*(w1_y-w2_y)+(t25-t23*(t9+t16-ep_b_v2_z*t3-ep_0_t*v1_z))*(v1_y-v2_y)-t31*(v1_x-v2_x)-t31*(w1_x-w2_x)+(t13*(t6+t10-ep_f_v2_x*t5-ep_0_t*v1_x)-t8*(t4+t18-ep_f_v2_y*t5-ep_0_t*v1_y))*(v1_z-v2_z)-(w1_z-w2_z)*(t8*t21-t13*t23);
+		}
+	}
+  if (const_cnt != const_n) {
+		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
+		exit(1);
+  }
+  return constVals;
+}
+
+*/
+
 
 void FoldingBinormalBiasConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda_v) {
 		// Add curve fold constraints
