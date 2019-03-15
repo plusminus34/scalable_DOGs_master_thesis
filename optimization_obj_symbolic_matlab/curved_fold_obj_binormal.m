@@ -75,6 +75,12 @@ ccode(curve_fold_const ,'file','FoldingBinormalBiasConstraint_const');
 ccode(gradient(curve_fold_const,vars) ,'file','FoldingBinormalBiasConstraint_gradient');
 ccode(hessian(lambda*curve_fold_const,vars) ,'file','FoldingBinormalBiasConstraint_lambdaHessian');
 
+curve_fold_const_sign = tanh(1000*dot(e1,B)) + tanh(1000*dot(e2,B));
+
+ccode(curve_fold_const_sign ,'file','FoldingBinormalBiasSignConstraint_const');
+ccode(gradient(curve_fold_const_sign,vars) ,'file','FoldingBinormalBiasSignConstraint_gradient');
+ccode(hessian(lambda*curve_fold_const,vars) ,'file','FoldingBinormalBiasSignConstraint_lambdaHessian');
+
 E = simplify(curve_fold_const.^2);
 % list of variables and their order (the 't' variables are seen as
 % fixed parameters and we should  not calculate theirgradient/hessian

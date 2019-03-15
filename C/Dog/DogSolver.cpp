@@ -127,7 +127,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   dog.update_V_vector(x);
   
   if (is_folded()) {
-    p.fold_bias_weight = 100;
+    p.fold_bias_weight = 1;
   } else {
     while (!is_folded() && (p.fold_bias_weight < 1e14)) {
       cout << "Not folded, fold bias = " << p.fold_bias_weight << " reverting back and making the bias stronger" << endl;
