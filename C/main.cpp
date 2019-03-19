@@ -219,6 +219,7 @@ int main(int argc, char *argv[]) {
   viewer.callback_mouse_down = callback_mouse_down;
   viewer.callback_mouse_move = callback_mouse_move;
   viewer.callback_mouse_up = callback_mouse_up;
+  viewer.data().line_width = 2;
 
   viewer.data().show_lines = false;
   viewer.launch();
