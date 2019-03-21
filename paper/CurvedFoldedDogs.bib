@@ -1,1623 +1,803 @@
-%%% ====================================================================
-%%%  BibTeX-file{
-%%%     author          = "Gerry Murray",
-%%%     version         = "1.2",
-%%%     date            = "2 April 2012",
-%%%     filename        = "acmsmall-sample-bibfile.bib",
-%%%     address         = "ACM, NY",
-%%%     email           = "murray at hq.acm.org",
-%%%     codetable       = "ISO/ASCII",
-%%%     keywords        = "ACM Reference Format, bibliography, citation, references",
-%%%     supported       = "yes",
-%%%     docstring       = "This BibTeX database file contains 'bibdata' entries
-%%%                        that 'match' the examples provided in the Specifications Document
-%%%                        AND, also, 'legacy'-type bibs. It should assist authors in
-%%%                        choosing the 'correct' at-bibtype and necessary bib-fields
-%%%                        so as to obtain the appropriate ACM Reference Format output.
-%%%                        It also contains many 'Standard Abbreviations'. "
-%%%  }
-%%% ====================================================================
+@STRING{CAD = {Computer Aided Design}}
+@STRING{j-AT = {Journal of Approximation Theory}}
+@STRING{j-CAGD = {Comput.\ Aided Geom.\ Des.}}
+@STRING{j-CGF = {Comput.\ Graph.\ Forum}}
+@STRING{j-SIAM-J-NUM-ANAL = {SIAM Journal on Numerical Analysis}}
+@STRING{p-SCA = {Proc.\ SCA}}
+@STRING{j-TOG = {ACM Trans.\ Graph.}}
 
-% Journals
+@STRING{CAD = {Computer Aided Design}}
+@STRING{j-AT = {Journal of Approximation Theory}}
+@STRING{j-CAGD = {Comput.\ Aided Geom.\ Des.}}
+@STRING{j-CGF = {Comput.\ Graph.\ Forum}}
+@STRING{j-SIAM-J-NUM-ANAL = {SIAM Journal on Numerical Analysis}}
+@STRING{p-SCA = {Proc.\ SCA}}
+@STRING{j-TOG = {ACM Trans.\ Graph.}}
 
-% First the Full Name is given, then the abbreviation used in the AMS Math
-% Reviews, with an indication if it could not be found there.
-% Note the 2nd overwrites the 1st, so swap them if you want the full name.
-
- %{AMS}
- @String{AMSTrans = "American Mathematical Society Translations" }
- @String{AMSTrans = "Amer. Math. Soc. Transl." }
- @String{BullAMS = "Bulletin of the American Mathematical Society" }
- @String{BullAMS = "Bull. Amer. Math. Soc." }
- @String{ProcAMS = "Proceedings of the American Mathematical Society" }
- @String{ProcAMS = "Proc. Amer. Math. Soc." }
- @String{TransAMS = "Transactions of the American Mathematical Society" }
- @String{TransAMS = "Trans. Amer. Math. Soc." }
-
- %ACM
- @String{CACM = "Communications of the {ACM}" }
- @String{CACM = "Commun. {ACM}" }
- @String{CompServ = "Comput. Surveys" }
- @String{JACM = "J. ACM" }
- @String{ACMMathSoft = "{ACM} Transactions on Mathematical Software" }
- @String{ACMMathSoft = "{ACM} Trans. Math. Software" }
- @String{SIGNUM = "{ACM} {SIGNUM} Newsletter" }
- @String{SIGNUM = "{ACM} {SIGNUM} Newslett." }
-
- @String{AmerSocio = "American Journal of Sociology" }
- @String{AmerStatAssoc = "Journal of the American Statistical Association" }
- @String{AmerStatAssoc = "J. Amer. Statist. Assoc." }
- @String{ApplMathComp = "Applied Mathematics and Computation" }
- @String{ApplMathComp = "Appl. Math. Comput." }
- @String{AmerMathMonthly = "American Mathematical Monthly" }
- @String{AmerMathMonthly = "Amer. Math. Monthly" }
- @String{BIT = "{BIT}" }
- @String{BritStatPsych = "British Journal of Mathematical and Statistical
-          Psychology" }
- @String{BritStatPsych = "Brit. J. Math. Statist. Psych." }
- @String{CanMathBull = "Canadian Mathematical Bulletin" }
- @String{CanMathBull = "Canad. Math. Bull." }
- @String{CompApplMath = "Journal of Computational and Applied Mathematics" }
- @String{CompApplMath = "J. Comput. Appl. Math." }
- @String{CompPhys = "Journal of Computational Physics" }
- @String{CompPhys = "J. Comput. Phys." }
- @String{CompStruct = "Computers and Structures" }
- @String{CompStruct = "Comput. \& Structures" }
- @String{CompJour = "The Computer Journal" }
- @String{CompJour = "Comput. J." }
- @String{CompSysSci = "Journal of Computer and System Sciences" }
- @String{CompSysSci = "J. Comput. System Sci." }
- @String{Computing = "Computing" }
- @String{ContempMath = "Contemporary Mathematics" }
- @String{ContempMath = "Contemp. Math." }
- @String{Crelle = "Crelle's Journal" }
- @String{GiornaleMath = "Giornale di Mathematiche" }
- @String{GiornaleMath = "Giorn. Mat." } % didn't find in AMS MR., ibid.
-
- %IEEE
- @String{Computer = "{IEEE} Computer" }
- @String{IEEETransComp = "{IEEE} Transactions on Computers" }
- @String{IEEETransComp = "{IEEE} Trans. Comput." }
- @String{IEEETransAC = "{IEEE} Transactions on Automatic Control" }
- @String{IEEETransAC = "{IEEE} Trans. Automat. Control" }
- @String{IEEESpec = "{IEEE} Spectrum" } % didn't find in AMS MR
- @String{ProcIEEE = "Proceedings of the {IEEE}" }
- @String{ProcIEEE = "Proc. {IEEE}" } % didn't find in AMS MR
- @String{IEEETransAeroElec = "{IEEE} Transactions on Aerospace and Electronic
-     Systems" }
- @String{IEEETransAeroElec = "{IEEE} Trans. Aerospace Electron. Systems" }
-
- @String{IMANumerAna = "{IMA} Journal of Numerical Analysis" }
- @String{IMANumerAna = "{IMA} J. Numer. Anal." }
- @String{InfProcLet = "Information Processing Letters" }
- @String{InfProcLet = "Inform. Process. Lett." }
- @String{InstMathApp = "Journal of the Institute of Mathematics and
-     its Applications" }
- @String{InstMathApp = "J. Inst. Math. Appl." }
- @String{IntControl = "International Journal of Control" }
- @String{IntControl = "Internat. J. Control" }
- @String{IntNumerEng = "International Journal for Numerical Methods in
-     Engineering" }
- @String{IntNumerEng = "Internat. J. Numer. Methods Engrg." }
- @String{IntSuper = "International Journal of Supercomputing Applications" }
- @String{IntSuper = "Internat. J. Supercomputing Applic." } % didn't find
-%% in AMS MR
- @String{Kibernetika = "Kibernetika" }
- @String{JResNatBurStand = "Journal of Research of the National Bureau
-     of Standards" }
- @String{JResNatBurStand = "J. Res. Nat. Bur. Standards" }
- @String{LinAlgApp = "Linear Algebra and its Applications" }
- @String{LinAlgApp = "Linear Algebra Appl." }
- @String{MathAnaAppl = "Journal of Mathematical Analysis and Applications" }
- @String{MathAnaAppl = "J. Math. Anal. Appl." }
- @String{MathAnnalen = "Mathematische Annalen" }
- @String{MathAnnalen = "Math. Ann." }
- @String{MathPhys = "Journal of Mathematical Physics" }
- @String{MathPhys = "J. Math. Phys." }
- @String{MathComp = "Mathematics of Computation" }
- @String{MathComp = "Math. Comp." }
- @String{MathScand = "Mathematica Scandinavica" }
- @String{MathScand = "Math. Scand." }
- @String{TablesAidsComp = "Mathematical Tables and Other Aids to Computation" }
- @String{TablesAidsComp = "Math. Tables Aids Comput." }
- @String{NumerMath = "Numerische Mathematik" }
- @String{NumerMath = "Numer. Math." }
- @String{PacificMath = "Pacific Journal of Mathematics" }
- @String{PacificMath = "Pacific J. Math." }
- @String{ParDistComp = "Journal of Parallel and Distributed Computing" }
- @String{ParDistComp = "J. Parallel and Distrib. Comput." } % didn't find
-%% in AMS MR
- @String{ParComputing = "Parallel Computing" }
- @String{ParComputing = "Parallel Comput." }
- @String{PhilMag = "Philosophical Magazine" }
- @String{PhilMag = "Philos. Mag." }
- @String{ProcNAS = "Proceedings of the National Academy of Sciences
-                    of the USA" }
- @String{ProcNAS = "Proc. Nat. Acad. Sci. U. S. A." }
- @String{Psychometrika = "Psychometrika" }
- @String{QuartMath = "Quarterly Journal of Mathematics, Oxford, Series (2)" }
- @String{QuartMath = "Quart. J. Math. Oxford Ser. (2)" }
- @String{QuartApplMath = "Quarterly of Applied Mathematics" }
- @String{QuartApplMath = "Quart. Appl. Math." }
- @String{RevueInstStat = "Review of the International Statisical Institute" }
- @String{RevueInstStat = "Rev. Inst. Internat. Statist." }
-
- %SIAM
- @String{JSIAM = "Journal of the Society for Industrial and Applied
-     Mathematics" }
- @String{JSIAM = "J. Soc. Indust. Appl. Math." }
- @String{JSIAMB = "Journal of the Society for Industrial and Applied
-     Mathematics, Series B, Numerical Analysis" }
- @String{JSIAMB = "J. Soc. Indust. Appl. Math. Ser. B Numer. Anal." }
- @String{SIAMAlgMeth = "{SIAM} Journal on Algebraic and Discrete Methods" }
- @String{SIAMAlgMeth = "{SIAM} J. Algebraic Discrete Methods" }
- @String{SIAMAppMath = "{SIAM} Journal on Applied Mathematics" }
- @String{SIAMAppMath = "{SIAM} J. Appl. Math." }
- @String{SIAMComp = "{SIAM} Journal on Computing" }
- @String{SIAMComp = "{SIAM} J. Comput." }
- @String{SIAMMatrix = "{SIAM} Journal on Matrix Analysis and Applications" }
- @String{SIAMMatrix = "{SIAM} J. Matrix Anal. Appl." }
- @String{SIAMNumAnal = "{SIAM} Journal on Numerical Analysis" }
- @String{SIAMNumAnal = "{SIAM} J. Numer. Anal." }
- @String{SIAMReview = "{SIAM} Review" }
- @String{SIAMReview = "{SIAM} Rev." }
- @String{SIAMSciStat = "{SIAM} Journal on Scientific and Statistical
-     Computing" }
- @String{SIAMSciStat = "{SIAM} J. Sci. Statist. Comput." }
-
- @String{SoftPracExp = "Software Practice and Experience" }
- @String{SoftPracExp = "Software Prac. Experience" } % didn't find in AMS MR
- @String{StatScience = "Statistical Science" }
- @String{StatScience = "Statist. Sci." }
- @String{Techno = "Technometrics" }
- @String{USSRCompMathPhys = "{USSR} Computational Mathematics and Mathematical
-     Physics" }
- @String{USSRCompMathPhys = "{U. S. S. R.} Comput. Math. and Math. Phys." }
- @String{VLSICompSys = "Journal of {VLSI} and Computer Systems" }
- @String{VLSICompSys = "J. {VLSI} Comput. Syst." }
- @String{ZAngewMathMech = "Zeitschrift fur Angewandte Mathematik und
-     Mechanik" }
- @String{ZAngewMathMech = "Z. Angew. Math. Mech." }
- @String{ZAngewMathPhys = "Zeitschrift fur Angewandte Mathematik und Physik" }
- @String{ZAngewMathPhys = "Z. Angew. Math. Phys." }
-
-% Publishers % ================================================= |
-
- @String{Academic = "Academic Press" }
- @String{ACMPress = "{ACM} Press" }
- @String{AdamHilger = "Adam Hilger" }
- @String{AddisonWesley = "Addison-Wesley" }
- @String{AllynBacon = "Allyn and Bacon" }
- @String{AMS = "American Mathematical Society" }
- @String{Birkhauser = "Birkha{\"u}ser" }
- @String{CambridgePress = "Cambridge University Press" }
- @String{Chelsea = "Chelsea" }
- @String{ClaredonPress = "Claredon Press" }
- @String{DoverPub = "Dover Publications" }
- @String{Eyolles = "Eyolles" }
- @String{HoltRinehartWinston = "Holt, Rinehart and Winston" }
- @String{Interscience = "Interscience" }
- @String{JohnsHopkinsPress = "The Johns Hopkins University Press" }
- @String{JohnWileySons = "John Wiley and Sons" }
- @String{Macmillan = "Macmillan" }
- @String{MathWorks = "The Math Works Inc." }
- @String{McGrawHill = "McGraw-Hill" }
- @String{NatBurStd = "National Bureau of Standards" }
- @String{NorthHolland = "North-Holland" }
- @String{OxfordPress = "Oxford University Press" }  %address Oxford or London?
- @String{PergamonPress = "Pergamon Press" }
- @String{PlenumPress = "Plenum Press" }
- @String{PrenticeHall = "Prentice-Hall" }
- @String{SIAMPub = "{SIAM} Publications" }
- @String{Springer = "Springer-Verlag" }
- @String{TexasPress = "University of Texas Press" }
- @String{VanNostrand = "Van Nostrand" }
- @String{WHFreeman = "W. H. Freeman and Co." }
-
-%Entries
-
-@Article{Abril07,
-  author        = "Patricia S. Abril and Robert Plant",
-  title         = "The patent holder's dilemma: Buy, sell, or troll?",
-  journal       = "Communications of the ACM",
-  volume        = "50",
-  number        = "1",
-  month         = jan,
-  year          = "2007",
-  pages         = "36--44",
-  doi           = "10.1145/1188913.1188915",
-  url           = "http://doi.acm.org/10.1145/1219092.1219093",
-  note          = "",
+@book{do_carmo,
+author={do Carmo, Manfredo P.},
+title={Differential Geometry of Curves and Surfaces},
+publisher={Prentice-Hall},
+year=1976
 }
 
-@Article{Cohen07,
-  author        = "Sarah Cohen and Werner Nutt and Yehoshua Sagic",
-  title         = "Deciding equivalances among conjunctive aggregate queries",
-  journal       = JACM,
-  articleno     = "5",
-  numpages      = "50",
-  volume        = "54",
-  number        = "2",
-  month         = apr,
-  year          = "2007",
-  doi           = "10.1145/1219092.1219093",
-  url           = "http://doi.acm.org/10.1145/1219092.1219093",
-  acmid         = "1219093",
-  note          = "",
+@inproceedings{Sederberg1993,
+  title={2-{D} shape blending: an intrinsic solution to the vertex path problem},
+  author={Sederberg, Thomas W and Gao, Peisheng and Wang, Guojin and Mu, Hong},
+  booktitle={Proc.\ ACM SIGGRAPH},
+  pages={15--18},
+  year={1993},
 }
 
-
-@periodical{JCohen96,
-  key =          "Cohen",
-  editor =       "Jacques Cohen",
-  title =        "Special issue: Digital Libraries",
-  journal =      CACM,
-  volume =       "39",
-  number =       "11",
-  month =        nov,
-  year =         "1996",
+@book{spivak,
+   title = "{A} Comprehensive introduction to differential geometry, 1",
+   author = "Spivak, Michael",
+   publisher = "Publish or Perish",
+   address = "Houston, TX",
+   url = "http://opac.inria.fr/record=b1117511",
+   isbn = "0-914098-70-5",
+   year = 1999
 }
 
-
-@Book{Kosiur01,
-  author =       "David Kosiur",
-  title =        "Understanding Policy-Based Networking",
-  publisher =    "Wiley",
-  year =         "2001",
-  address =      "New York, NY",
-  edition =      "2nd.",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  month =        "",
-  note =         "",
+@book{DDG_Book,
+   title = "Discrete differential geometry: integrable structure",
+   author = "Bobenko, Alexander I. and Suris, Yuri B.",
+   series = "Graduate studies in mathematics",
+   volume = "98",
+   publisher = "American Mathematical Society",
+   address = "Providence (R.I.)",
+   isbn = "978-0-8218-4700-8",
+   year = 2008
 }
 
-
-@Book{Harel79,
-  author =       "David Harel",
-  year =         "1979",
-  title =        "First-Order Dynamic Logic",
-  series =       "Lecture Notes in Computer Science",
-  volume =       "68",
-  address =      "New York, NY",
-  publisher =    "Springer-Verlag",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09237-4",
-  editor =       "",
-  number =       "",
-  month =        "",
-  note =         "",
+@book{sauer,
+  title={Differenzengeometrie},
+  author={Sauer, Robert},
+  year={1970},
+  publisher={Springer}
 }
 
-
-@Inbook{Editor00,
-  author =       "",
-  editor =       "Ian Editor",
-  title =        "The title of book one",
-  subtitle =     "The book subtitle",
-  series =       "The name of the series one",
-  year =         "2007",
-  volume =       "9",
-  address =      "Chicago",
-  edition =      "1st.",
-  publisher =    "University of Chicago Press",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09456-9",
-  chapter =      "",
-  pages =        "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
+@inproceedings{DDG_Desbrun,
+  title={Discrete differential geometry: An applied introduction},
+  author={Desbrun, M. and Grinspun, E. and Schr{\"o}der, P. and Wardetzky, M.},
+  booktitle={SIGGRAPH Course Notes},
+  volume={1},
+  year={2005}
 }
 
-%
-@InBook{Editor00a,
-  author =       "",
-  editor =       "Ian Editor",
-  title =        "The title of book two",
-  subtitle =     "The book subtitle",
-  series =       "The name of the series two",
-  year =         "2008",
-  address =      "Chicago",
-  edition =      "2nd.",
-  publisher =    "University of Chicago Press",
-  doi =          "10.1007/3-540-09237-4",
-  url =          "http://dx.doi.org/10.1007/3-540-09456-9",
-  volume =       "",
-  chapter =      "100",
-  pages =        "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
+@article{wunderlich,
+        author = "W. Wunderlich",
+        title = "Zur {D}ifferenzengeometrie der {F}l{\"a}chen konstanter negativer {K}r{\"u}mmung",
+        journal = "Sitzungsber. {\"O}sterr. Akad. Wiss.",
+        year = 1951,
+        volume = 160,
+        pages = "39--77",
 }
 
+@Book{origami_book,
+  AUTHOR        = {Erik D. Demaine and Joseph O'Rourke},
+  TITLE         = {Geometric Folding Algorithms: Linkages, Origami, Polyhedra},
+  PUBLISHER     = {Cambridge University Press},
+  publisherurl  = {http://www.cambridge.org/},
+  MONTH         = {July},
+  YEAR          = 2007,
 
-% incollection (has an editor, title, and possibly a booktitle)
-@Incollection{Spector90,
-  author =       "Asad Z. Spector",
-  title =        "Achieving application requirements",
-  booktitle =    "Distributed Systems",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  year =         "1990",
-  edition =      "2nd.",
-  chapter =      "",
-  editor =       "Sape Mullender",
-  pages =        "19--33",
-  doi =          "10.1145/90417.90738",
-  url =          "http://doi.acm.org/10.1145/90417.90738",
-  volume =       "",
-  number =       "",
-  series =       "",
-  type =         "",
-  month =        "",
-  note =         "",
+  length        = {496 pages},
+  comments      = {See <A HREF="http://www.gfalop.org/">the book's webpage</A>.
+                   &nbsp; <A HREF="http://www.gfalop.org/"><IMG ALIGN="MIDDLE" SRC="cover.jpg"></A>
+                   &nbsp; <A HREF="http://www.jaist.ac.jp/~uehara/gfalop/">Now available in Japanese!</A> &nbsp; <IMG ALIGN="MIDDLE" SRC="cover_japanese_small.jpg">},
+  availability  = {Available for purchase from <A HREF="http://www.cambridge.org/uk/catalogue/catalogue.asp?isbn=9780521857574">the publisher</A> or <A HREF="http://www.amazon.com/Geometric-Folding-Algorithms-Linkages-Polyhedra/dp/0521857570">Amazon</A>.},
+  category      = {art},
 }
 
-
-% incollection (has an editor, title, and possibly a booktitle)
-@Incollection{Douglass98,
-  author =       "Bruce P. Douglass and David Harel and Mark B. Trakhtenbrot",
-  title =        "Statecarts in use: structured analysis and object-orientation",
-  series =       "Lecture Notes in Computer Science",
-  booktitle =    "Lectures on Embedded Systems",
-  publisher =    "Springer-Verlag",
-  address =      "London",
-  volume =       "1494",
-  year =         "1998",
-  chapter =      "",
-  editor =       "Grzegorz Rozenberg and Frits W. Vaandrager",
-  pages =        "368--394",
-  doi =          "10.1007/3-540-65193-4_29",
-  url =          "http://dx.doi.org/10.1007/3-540-65193-4_29",
-  edition =      "",
-  number =       "",
-  type =         "",
-  month =        "",
-  note =         "",
+@article{froh_botsch,
+author = {Fr\"ohlich, Stefan and Botsch, Mario},
+title = {Example-Driven Deformations Based on Discrete Shells},
+journal = j-CGF,
+volume = {30},
+number = {8},
+publisher = {Blackwell Publishing Ltd},
+issn = {1467-8659},
+pages = {2246--2257},
+keywords = {mesh deformation, physics-based deformation, discrete shells, inverse kinematics, I.3.5 [Computer Graphics]: Computational Geometry and Object ModelingÑPhysically based modeling},
+year = {2011},
 }
 
-
-@Book{Knuth97,
-  author =       "Donald E. Knuth",
-  title =        "The Art of Computer Programming, Vol. 1: Fundamental Algorithms (3rd. ed.)",
-  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-  year =         "1997",
-  address =      "",
-  edition =      "",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  month =        "",
-  note =         "",
-}
-
-
-@Book{Knuth98,
-  author =       "Donald E. Knuth",
-  year =         "1998",
-  title =        "The Art of Computer Programming",
-  series =       "Fundamental Algorithms",
-  volume =       "1",
-  edition =      "3rd",
-  address =      "",
-  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-  doi =          "",
-  url =          "",
-  editor =       "",
-  number =       "",
-  month =        "",
-  note =         "(book)",
-}
-
-%Inbook{Knuth97,
-%  author =       "Donald E. Knuth",
-%  title =        "The Art of Computer Programming",
-%  booktitle =    "the booktitle",
-%  edition =      "3",
-%  volume =       "1",
-%  year =         "1997",
-%  publisher =    "Addison Wesley Longman Publishing Co., Inc.",
-%  editor =       "",
-%  number =       "",
-%  series =       "Fundamental Algorithms",
-%  type =         "",
-%  chapter =      "",
-%  pages =        "",
-%  address =      "",
-%  month =        "",
-%  note =         "(inbook)",
-%}
-
-%INBOOK{DK:73-inbook-full,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (inbook w series)",
-%   volume = 1,
-%   series = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   edition = "Second",
-%   month = "10~" # jan,
-%   year = "1973",
-%   type = "Section",
-%   chapter = "1.2",
-%   pages = "10--119",
-%   note = "Full INBOOK entry (w series)",
-%}
-
-%INcollection{DK:74-incoll,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (incoll)",
-%   volume = 1,
-%   booktitle = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   month = "10~" # jan,
-%   year = "1974",
-%   pages = "10--119",
-%   editor = "Bernard Rous",
-%   note = "This is a full incoll entry with an editor",
-%}
-
-%INcollection{DK:75-incollws,
-%   author = "Donald E. Knuth",
-%   title = "Fundamental Algorithms (incoll w series)",
-%   volume = 1,
-%   booktitle = "The Art of Computer Programming",
-%   series = "The Art of Computer Programming",
-%   publisher = "Addison-Wesley",
-%   address = "Reading, Massachusetts",
-%   month = "10~" # jan,
-%   year = "1975",
-%   pages = "10--119",
-%   editor = "Bernard Rous",
-%   note = "This is a full incoll entry with an editor and series",
-%}
-
-
-@incollection{GM05,
-Author= "Dan Geiger and Christopher Meek",
-Title= "Structured Variational Inference Procedures and their Realizations (as incol)",
-Year= 2005,
-Booktitle="Proceedings of Tenth International Workshop on Artificial Intelligence and Statistics, {\rm The Barbados}",
-Publisher="The Society for Artificial Intelligence and Statistics",
-Month= jan,
-Editors= "Z. Ghahramani and R. Cowell"
-}
-
-@Inproceedings{Smith10,
-  author =       "Stan W. Smith",
-  title =        "An experiment in bibliographic mark-up: Parsing metadata for XML export",
-  booktitle =    "Proceedings of the 3rd. annual workshop on Librarians and Computers",
-  series =       "LAC '10",
-  editor =       "Reginald N. Smythe and Alexander Noble",
-  volume =       "3",
-  year =         "2010",
-  publisher =    "Paparazzi Press",
-  address =      "Milan Italy",
-  pages =        "422--431",
-  doi =          "99.9999/woot07-S422",
-  url =          "http://dx.doi.org/99.0000/woot07-S422",
-  number =       "",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Inproceedings{VanGundy07,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         "2007",
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '07",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  articleno =    "7",
-  numpages =     "9",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  pages =        "",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Inproceedings{VanGundy08,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         "2008",
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '08",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  articleno =    "7",
-  numpages =     "2",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  pages =        "99-100",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Inproceedings{VanGundy09,
-  author =       "Matthew Van Gundy and Davide Balzarotti and Giovanni Vigna",
-  year =         "2009",
-  title =        "Catch me, if you can: Evading network signatures with web-based polymorphic worms",
-  booktitle =    "Proceedings of the first USENIX workshop on Offensive Technologies",
-  series =       "WOOT '09",
-  publisher =    "USENIX Association",
-  address =      "Berkley, CA",
-  articleno =    "",
-  numpages =     "",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  pages =        "90--100",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Inproceedings{Andler79,
-  author =       "Sten Andler",
-  title =        "Predicate Path expressions",
-  booktitle =    "Proceedings of the 6th. ACM SIGACT-SIGPLAN symposium on Principles of Programming Languages",
-  series =       "POPL '79",
-  year =         "1979",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  pages =        "226--236",
-  doi =          "10.1145/567752.567774",
-  url =          "http://doi.acm.org/10.1145/567752.567774",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  month =        "",
-  organization = "",
-  note =         "",
-}
-
-@Techreport{Harel78,
-  author =       "David Harel",
-  year =         "1978",
-  title =        "LOGICS of Programs: AXIOMATICS and DESCRIPTIVE POWER",
-  institution =  "Massachusetts Institute of Technology",
-  type =         "MIT Research Lab Technical Report",
-  number =       "TR-200",
-  address =      "Cambridge, MA",
-  month =        "",
-  note =         "",
-}
-
-@MASTERSTHESIS{anisi03,
-author = {David A. Anisi},
-title = {Optimal Motion Control of a Ground Vehicle},
-school = {Royal Institute of Technology (KTH), Stockholm, Sweden},
-intitution = {FOI-R-0961-SE, Swedish Defence Research Agency (FOI)},
-year = {2003},
-}
-
-
-@Phdthesis{Clarkson85,
-  author =       "Kenneth L. Clarkson",
-  year =         "1985",
-  title =        "Algorithms for Closest-Point Problems (Computational Geometry)",
-  school =       "Stanford University",
-  address =      "Palo Alto, CA",
-  note =         "UMI Order Number: AAT 8506171",
-  type =         "",
-  month =        "",
-}
-
-
-@online{Thornburg01,
-  author =       "Harry Thornburg",
-  year =         "2001",
-  title =        "Introduction to Bayesian Statistics",
-  url =          "http://ccrma.stanford.edu/~jos/bayes/bayes.html",
-  month =        mar,
-  lastaccessed = "March 2, 2005",
-}
-
-
-@online{Ablamowicz07,
-  author =       "Rafal Ablamowicz and Bertfried Fauser",
-  year =         "2007",
-  title =        "CLIFFORD: a Maple 11 Package for Clifford Algebra Computations, version 11",
-  url =          "http://math.tntech.edu/rafal/cliff11/index.html",
-  lastaccessed = "February 28, 2008",
-}
-
-
-@misc{Poker06,
-  author =       "Poker-Edge.Com",
-  year =         "2006",
-  month =        mar,
-  title =        "Stats and Analysis",
-  lastaccessed = "June 7, 2006",
-  url =          "http://www.poker-edge.com/stats.php",
-}
-
-@misc{Obama08,
-  author        = "Barack Obama",
-  year          = "2008",
-  title         = "A more perfect union",
-  howpublished  = "Video",
-  day           = "5",
-  url           = "http://video.google.com/videoplay?docid=6528042696351994555",
-  month         = mar,
-  lastaccessed  = "March 21, 2008",
-  note          =  "",
-}
-
-@misc{JoeScientist001,
-  author =       "Joseph Scientist",
-  year =         "2009",
-  title =        "The fountain of youth",
-  note =         "Patent No. 12345, Filed July 1st., 2008, Issued Aug. 9th., 2009",
-  url =          "",
-  howpublished = "",
-  month =        aug,
-  lastaccessed = "",
-}
-
-
-@Inproceedings{Novak03,
-  author =       "Dave Novak",
-  title =        "Solder man",
-  booktitle =    "ACM SIGGRAPH 2003 Video Review on Animation theater Program: Part I - Vol. 145 (July 27--27, 2003)",
-  year =         "2003",
-  publisher =    "ACM Press",
-  address =      "New York, NY",
-  pages =        "4",
-  month =        "March 21, 2008",
-  doi =          "99.9999/woot07-S422",
-  url =          "http://video.google.com/videoplay?docid=6528042696351994555",
-  note =         "",
-  howpublished = "Video",
-  editor =       "",
-  volume =       "",
-  number =       "",
-  series =       "",
-  organization = "",
-}
-
-
-@article{Lee05,
-  author =       "Newton Lee",
-  year =         "2005",
-  title =        "Interview with Bill Kinder: January 13, 2005",
-  journal =      "Comput. Entertain.",
-  eid =          "4",
-  volume =       "3",
-  number =       "1",
-  month =        "Jan.-March",
-  doi =          "10.1145/1057270.1057278",
-  url =          "http://doi.acm.org/10.1145/1057270.1057278",
-  howpublished = "Video",
-  note =         "",
-}
-
-@article{Rous08,
-  author =       "Bernard Rous",
-  year =         "2008",
-  title =        "The Enabling of Digital Libraries",
-  journal =      "Digital Libraries",
-  volume =       "12",
-  number =       "3",
-  month =        jul,
-  articleno =    "5",
-  doi =          "",
-  url =          "",
-  howpublished = "",
-  note =         "To appear",
-}
-
-@article{384253,
- author = {Werneck,, Renato and Setubal,, Jo\~{a}o and da Conceic\~{a}o,, Arlindo},
- title = {(old) Finding minimum congestion spanning trees},
- journal = {J. Exp. Algorithmics},
- volume = {5},
- year = {2000},
- issn = {1084-6654},
- pages = {11},
- doi = {http://doi.acm.org/10.1145/351827.384253},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-
-@article{Werneck:2000:FMC:351827.384253,
- author = {Werneck, Renato and Setubal, Jo\~{a}o and da Conceic\~{a}o, Arlindo},
- title = {(new) Finding minimum congestion spanning trees},
- journal = {J. Exp. Algorithmics},
- volume = {5},
- month = dec,
- year = {2000},
- issn = {1084-6654},
- articleno = {11},
- url = {http://portal.acm.org/citation.cfm?id=351827.384253},
- doi = {10.1145/351827.384253},
- acmid = {384253},
- publisher = {ACM},
- address = {New York, NY, USA},
-}
-
-@article{1555162,
- author = {Conti, Mauro and Di Pietro, Roberto and Mancini, Luigi V. and Mei, Alessandro},
- title = {(old) Distributed data source verification in wireless sensor networks},
- journal = {Inf. Fusion},
- volume = {10},
- number = {4},
- year = {2009},
- issn = {1566-2535},
- pages = {342--353},
- doi = {http://dx.doi.org/10.1016/j.inffus.2009.01.002},
- publisher = {Elsevier Science Publishers B. V.},
- address = {Amsterdam, The Netherlands, The Netherlands},
- }
-
-@article{Conti:2009:DDS:1555009.1555162,
- author = {Conti, Mauro and Di Pietro, Roberto and Mancini, Luigi V. and Mei, Alessandro},
- title = {(new) Distributed data source verification in wireless sensor networks},
- journal = {Inf. Fusion},
- volume = {10},
- number = {4},
- month = oct,
- year = {2009},
- issn = {1566-2535},
- pages = {342--353},
- numpages = {12},
- url = {http://portal.acm.org/citation.cfm?id=1555009.1555162},
- doi = {10.1016/j.inffus.2009.01.002},
- acmid = {1555162},
- publisher = {Elsevier Science Publishers B. V.},
- address = {Amsterdam, The Netherlands, The Netherlands},
- keywords = {Clone detection, Distributed protocol, Securing data fusion, Wireless sensor networks},
-}
-
-@inproceedings{Li:2008:PUC:1358628.1358946,
- author = {Li, Cheng-Lun and Buyuktur, Ayse G. and Hutchful, David K. and Sant, Natasha B. and Nainwal, Satyendra K.},
- title = {Portalis: using competitive online interactions to support aid initiatives for the homeless},
- booktitle = {CHI '08 extended abstracts on Human factors in computing systems},
- year = {2008},
- isbn = {978-1-60558-012-X},
- location = {Florence, Italy},
- pages = {3873--3878},
- numpages = {6},
- url = {http://portal.acm.org/citation.cfm?id=1358628.1358946},
- doi = {10.1145/1358628.1358946},
- acmid = {1358946},
- publisher = {ACM},
- address = {New York, NY, USA},
- keywords = {cscw, distributed knowledge acquisition, incentive design, online games, recommender systems, reputation systems, user studies, virtual community},
-}
-
-@book{Hollis:1999:VBD:519964,
- author = {Hollis, Billy S.},
- title = {Visual Basic 6: Design, Specification, and Objects with Other},
- year = {1999},
- isbn = {0130850845},
- edition = {1st},
- publisher = {Prentice Hall PTR},
- address = {Upper Saddle River, NJ, USA},
- }
-
-
-@book{Goossens:1999:LWC:553897,
- author = {Goossens, Michel and Rahtz, S. P. and Moore, Ross and Sutor, Robert S.},
- title = {The  Latex Web Companion: Integrating TEX, HTML, and XML},
- year = {1999},
- isbn = {0201433117},
- edition = {1st},
- publisher = {Addison-Wesley Longman Publishing Co., Inc.},
- address = {Boston, MA, USA},
- }
-
-% need to test genres for errant isbn output
-
-% techreport
-@techreport{897367,
- author = {Buss, Jonathan F. and Rosenberg, Arnold L. and Knott, Judson D.},
- title = {Vertex Types in Book-Embeddings},
- year = {1987},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Aumass_cs%3Ancstrl.umassa_cs%2F%2FUM-CS-1987-018},
- publisher = {University of Massachusetts},
- address = {Amherst, MA, USA},
- }
-
-@techreport{Buss:1987:VTB:897367,
- author = {Buss, Jonathan F. and Rosenberg, Arnold L. and Knott, Judson D.},
- title = {Vertex Types in Book-Embeddings},
- year = {1987},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Aumass_cs%3Ancstrl.umassa_cs%2F%2FUM-CS-1987-018},
- publisher = {University of Massachusetts},
- address = {Amherst, MA, USA},
- }
-
-% whole proceedings
-
-@proceedings{Czerwinski:2008:1358628,
- author = {},
- note = {General Chair-Czerwinski, Mary and General Chair-Lund, Arnie and Program Chair-Tan, Desney},
- title = {CHI '08: CHI '08 extended abstracts on Human factors in computing systems},
- year = {2008},
- isbn = {978-1-60558-012-X},
- location = {Florence, Italy},
- order_no = {608085},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-% phdthesis
-
-@phdthesis{Clarkson:1985:ACP:911891,
- author = {Clarkson, Kenneth Lee},
- advisor = {Yao, Andrew C.},
- title = {Algorithms for Closest-Point Problems (Computational Geometry)},
- year = {1985},
- note = {AAT 8506171},
- school = {Stanford University},
- address = {Stanford, CA, USA},
- }
-% school is being picked up -- but not publisher (which is OK)
-% Also -- the title is NOT being output in italics !!! Arrrrgh! - I fixed it. :-)
-
-
-%%% compare with 'old'
-%%% atsign-Phdthesis{Clarkson85,
-%%%  author =       "Kenneth L. Clarkson",
-%%%  year =         "1985",
-%%%  title =        "Algorithms for Closest-Point Problems (Computational Geometry)",
-%%%  school =       "Stanford University",
-%%%  address =      "Palo Alto, CA",
-%%%  note =         "UMI Order Number: AAT 8506171",
-%%%  type =         "",
-%%%  month =        "",
-%%%}
-
-% A bibliography
-@Article{1984:1040142,
- key = {{$\!\!$}},
- journal = {SIGCOMM Comput. Commun. Rev.},
- year = {1984},
- issn = {0146-4833},
- volume = {13-14},
- number = {5-1},
- issue_date = {January/April 1984},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
-
-
-% grinder
-@inproceedings{2004:ITE:1009386.1010128,
- key = {IEEE},
- title = {IEEE TCSC Executive Committee},
- booktitle = {Proceedings of the IEEE International Conference on Web Services},
- series = {ICWS '04},
- year = {2004},
- isbn = {0-7695-2167-3},
- pages = {21--22},
- url = {http://dx.doi.org/10.1109/ICWS.2004.64},
- doi = {http://dx.doi.org/10.1109/ICWS.2004.64},
- acmid = {1010128},
- publisher = {IEEE Computer Society},
- address = {Washington, DC, USA},
-}
-
-% div book
-@book{Mullender:1993:DS(:302430,
- editor = {Mullender, Sape},
- title = {Distributed systems (2nd Ed.)},
- year = {1993},
- isbn = {0-201-62427-3},
- publisher = {ACM Press/Addison-Wesley Publishing Co.},
- address = {New York, NY, USA},
- }
-
-% master thesis (as techreport and thesis)
-
-@techreport{Petrie:1986:NAD:899644,
- author = {Petrie, Charles J.},
- title = {New Algorithms for Dependency-Directed Backtracking (Master's thesis)},
- year = {1986},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Autexas_cs%3AUTEXAS_CS%2F%2FAI86-33},
- publisher = {University of Texas at Austin},
- address = {Austin, TX, USA},
- }
-
-@MASTERSTHESIS{Petrie:1986:NAD:12345,
- author = {Petrie, Charles J.},
- title = {New Algorithms for Dependency-Directed Backtracking (Master's thesis)},
- year = {1986},
- source = {http://www.ncstrl.org:8900/ncstrl/servlet/search?formname=detail\&id=oai%3Ancstrlh%3Autexas_cs%3AUTEXAS_CS%2F%2FAI86-33},
- school = {University of Texas at Austin},
- address = {Austin, TX, USA},
- }
-
-
-
-
-@BOOK{book-minimal,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   publisher = "Addison-Wesley",
-   year = "1981",
-}
-
-% incollection (has an editor, title, and possibly a booktitle)
-@INcollection{KA:2001,
- author = {Kong, Wei-Chang},
- Title = {The implementation of electronic commerce in SMEs in Singapore (as Incoll)},
- booktitle = {E-commerce and cultural values},
- year = {2001},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
-}
-
-
-% with bibfield 'type' before chapter (note no editor)
-@INBOOK{KAGM:2001,
- author = {Kong, Wei-Chang},
- type = {Name of Chapter:},
- chapter = {The implementation of electronic commerce in SMEs in Singapore (Inbook-w-chap-w-type)},
- title = {E-commerce and cultural values},
- year = {2001},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
-}
-
-%%% Notes! This is because the atsign-INBOOK citation type specifies EITHER
-%%% editor or author, but not both. In my experiments with the harvard/dcu
-%%% bibtex style (and presumably this applies to other styles too), bibtex
-%%% ignores the editor information if author information exists in an
-%%% atsign-INBOOK entry. atsign-INCOLLECTION is far more commonly used in my references,
-%%% and in the absence of an editor I believe most bibtex styles will just
-%%% ommit the editor from the reference - the chapter information will not
-%%% end up in the in-text citation as you suggest it should be but at least
-%%% there is a place to put the editor if necessary.
-
-
-
-% was 'Inbook' -- changed to incollection - (editor is different to author) - need to tell Asad to codify as such.
-@incollection{Kong:2002:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {Chapter 9},
-  booktitle =   {E-commerce and cultural values (Incoll-w-text (chap 9) 'title')},
-  year =        {2002},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  type =        "",
-  month =       "",
-  note =        "",
-}
-
-% incol when the chapter is 'text' - due to presence of editor (different to author)
-@incollection{Kong:2003:IEC:887006.887011,
- author = {Kong, Wei-Chang},
- title = {The implementation of electronic commerce in SMEs in Singapore (Incoll)},
- booktitle = {E-commerce and cultural values},
- editor = {Thanasankit, Theerasak},
+@inproceedings{grin_shells,
+ author = {Grinspun, Eitan and Hirani, Anil N. and Desbrun, Mathieu and Schr\"{o}der, Peter},
+ title = {Discrete Shells},
+ booktitle = {Proc.\ ACM SIGGRAPH/Eurographics Symposium on Computer Animation},
  year = {2003},
- isbn = {1-59140-056-2},
- pages = {51--74},
- numpages = {24},
- url = {http://portal.acm.org/citation.cfm?id=887006.887010},
- acmid = {887010},
- publisher = {IGI Publishing},
- address = {Hershey, PA, USA},
+ isbn = {1-58113-659-5},
+ location = {San Diego, California},
+ pages = {62--67},
+ url = {http://dl.acm.org/citation.cfm?id=846276.846284},
+ acmid = {846284},
+} 
+
+@inproceedings{Schief2008,
+author="Schief, Wolfgang K. and Bobenko, Alexander I. and Hoffmann, Tim",
+title="On the Integrability of Infinitesimal and Finite Deformations of Polyhedral Surfaces",
+bookTitle="Discrete Differential Geometry",
+year="2008",
+publisher="Birkh{\"a}user Basel",
+address="Basel",
+pages="67--93",
+isbn="978-3-7643-8621-4",
+doi="10.1007/978-3-7643-8621-4_4",
+url="http://dx.doi.org/10.1007/978-3-7643-8621-4_4"
 }
 
-% ------ test
-%incollection{Kong:2003:IEC:887006.887010,
-% author = {Kong, Wei-Chang},
-% chapter = {The implementation of electronic commerce in SMEs in Singapore (Incoll-text-in-chap)},
-% booktitle = {booktitle E-commerce and cultural values},
-% title =   {The title},
-% editor = {Thanasankit, Theerasak},
-% year = {2003},
-% isbn = {1-59140-056-2},
-% pages = {51--74},
-% numpages = {24},
-% url = {http://portal.acm.org/citation.cfm?id=887006.887010},
-% acmid = {887010},
-% publisher = {IGI Publishing},
-% address = {Hershey, PA, USA},
-%}
-
-
-% ---------
-
-
-
-
-
-% Need inbook with num in chapter
-
-% and inbook with number in chapter
-@InBook{Kong:2004:IEC:123456.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values - (InBook-num-in-chap)},
-  chapter =     {9},
-  year =        {2004},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  type =        "",
-  month =       "",
-  note =        "",
+@Article{DevHistory,
+author="Lawrence, Sne{\v{z}}ana",
+title="Developable Surfaces: Their History and Application",
+journal="Nexus Network Journal",
+year="2011",
+volume="13",
+number="3",
+pages="701--714",
+abstract="Developable surfaces form a very small subset of all possible surfaces and were for centuries studied only in passing, but the discovery of differential calculus in the seventeenth century meant that their properties could be studied in greater depth. Here we show that the generating principles of developable surfaces were also at the core of their study by Monge. In a historical context, from the beginning of the study of developable surfaces, to the contributions Monge made to the field, it can be seen that the nature of developable surfaces is closely related to the spatial intuition and treatment of space as defined by Monge through his descriptive geometry, which played a major role in developing an international language of geometrical communication for architecture and engineering. The use of developable surfaces in the architecture of Frank Gehry is mentioned, in particular in relation to his fascination with `movement' and its role in architectural design.",
+issn="1522-4600",
+doi="10.1007/s00004-011-0087-z",
+url="http://dx.doi.org/10.1007/s00004-011-0087-z"
 }
 
-
-% and inbook with text in chapter
-@Inbook{Kong:2005:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values (Inbook-text-in-chap)},
-  chapter =     {The implementation of electronic commerce in SMEs in Singapore},
-  year =        {2005},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  type =        {Chapter:},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  month =       "",
-  note =        "",
+@article{Frey1,
+  title={Boundary triangulations approximating developable surfaces that interpolate a closed space curve},
+  author={Frey, William H},
+  journal={International Journal of Foundations of Computer Science},
+  volume={13},
+  number={02},
+  pages={285--302},
+  year={2002},
+  publisher={World Scientific}
 }
 
-
-% and inbook with a num and type field
-@Inbook{Kong:2006:IEC:887006.887010,
-  author =      {Kong, Wei-Chang},
-  editor =      {Theerasak Thanasankit},
-  title =       {E-commerce and cultural values (Inbook-num chap)},
-  chapter =     {22},
-  year =        {2006},
-  address =     {Hershey, PA, USA},
-  publisher =   {IGI Publishing},
-  url =         {http://portal.acm.org/citation.cfm?id=887006.887010},
-  type =        {Chapter (in type field)},
-  pages =       {51--74},
-  numpages =    {24},
-  acmid =       {887010},
-  isbn =        {1-59140-056-2},
-  number =      "",
-  month =       "",
-  note =        "",
+@article{Frey2,
+  title={Modeling buckled developable surfaces by triangulation},
+  author={Frey, William H},
+  journal=CAD,
+  volume={36},
+  number={4},
+  pages={299--313},
+  year={2004},
+  publisher={Elsevier}
 }
 
+@inproceedings{sheffer,
+ author = {Rose, Kenneth and Sheffer, Alla and Wither, Jamie and Cani, Marie-Paule and Thibert, Boris},
+ title = {Developable Surfaces from Arbitrary Sketched Boundaries},
+ booktitle = {Proc.\ Symposium on Geometry Processing},
+ year = {2007},
+ isbn = {978-3-905673-46-3},
+ pages = {163--172},
+ url = {http://dl.acm.org/citation.cfm?id=1281991.1282014},
+ acmid = {1282014},
+} 
 
-% and incol coz we have a BLANK chapter - due to presence of editor
-%atIncollection{Kong:2006:IEC:887006.887011,
-%  author =     {Kong, Wei-Chang},
-%  editor =     {Theerasak Thanasankit},
-%  title =      "The title"
-%  booktitle =  {E-commerce and cultural values (Incol-coz-blank-chap)},
-%  year =       {2006},
-%  address =    {Hershey, PA, USA},
-%  publisher =  {IGI Publishing},
-%  url =        {http://portal.acm.org/citation.cfm?id=887006.887010},
-%  type =       {Type!},
-%  chapter =    {},
-%  pages =      {51--74},
-%  numpages =   {24},
-%  acmid =      {887010},
-%  isbn =       {1-59140-056-2},
-%  number =     "",
-%  month =      "",
-%  note =       "",
-%}
-
-@article{SaeediMEJ10,
-            author = {Mehdi Saeedi and Morteza Saheb Zamani and Mehdi Sedighi},
-            title = {A library-based synthesis methodology for reversible logic},
-            journal = {Microelectron. J.},
-            volume = {41},
-            number = {4},
-            month = apr,
-            year = {2010},
-            pages = {185--194},
-}
-
-@ARTICLE{SaeediJETC10,
-            author = {Mehdi Saeedi and Morteza Saheb Zamani and Mehdi Sedighi and Zahra Sasanian},
-            title = {Synthesis of Reversible Circuit Using Cycle-Based Approach},
-            journal = {J. Emerg. Technol. Comput. Syst.},
-            volume = {6},
-            number = {4},
-            month = dec,
-            year = {2010}
-            }
-
-% Asad's new version
-@article{Kirschmer:2010:AEI:1958016.1958018,
- author = {Kirschmer, Markus and Voight, John},
- title = {Algorithmic Enumeration of Ideal Classes for Quaternion Orders},
- journal = {SIAM J. Comput.},
- issue_date = {January 2010},
- volume = {39},
- number = {5},
- month = jan,
- year = {2010},
- issn = {0097-5397},
- pages = {1714--1747},
- numpages = {34},
- url = {http://dx.doi.org/10.1137/080734467},
- doi = {https://doi.org/10.1137/080734467},
- acmid = {1958018},
- publisher = {Society for Industrial and Applied Mathematics},
- address = {Philadelphia, PA, USA},
- keywords = {ideal classes, maximal orders, number theory, quaternion algebras},
-}
-
-
-% incol due to presence of booktitle
-@incollection{Hoare:1972:CIN:1243380.1243382,
- author = {Hoare, C. A. R.},
- title = {Chapter II: Notes on data structuring},
- booktitle = {Structured programming (incoll)},
- editor = {Dahl, O. J. and Dijkstra, E. W. and Hoare, C. A. R.},
- year = {1972},
- isbn = {0-12-200550-3},
- pages = {83--174},
- numpages = {92},
- url = {http://portal.acm.org/citation.cfm?id=1243380.1243382},
- acmid = {1243382},
- publisher = {Academic Press Ltd.},
- address = {London, UK, UK},
-}
-
-% incol due to presence of booktitle
-@incollection{Lee:1978:TQA:800025.1198348,
- author = {Lee, Jan},
- title = {Transcript of question and answer session},
- booktitle = {History of programming languages I (incoll)},
- editor = {Wexelblat, Richard L.},
- year = {1981},
- isbn = {0-12-745040-8},
- pages = {68--71},
- numpages = {4},
- url = {http://doi.acm.org/10.1145/800025.1198348},
- doi = {http://doi.acm.org/10.1145/800025.1198348},
- acmid = {1198348},
+@article{conical,
+ author = {Liu, Yang and Pottmann, Helmut and Wallner, Johannes and Yang, Yong-Liang and Wang, Wenping},
+ title = {Geometric modeling with conical meshes and developable surfaces},
+ journal = j-TOG,
+ volume = {25},
+ number = {3},
+ year = {2006},
+ issn = {0730-0301},
+ acmid = {1141941},
  publisher = {ACM},
  address = {New York, NY, USA},
+ keywords = {developable subdivision surface, developable surface, discrete differential geometry, nonlinear subdivision, offset mesh, principal mesh, quad mesh, surfaces in architecture},
 }
 
-% incol due to booktitle
-@incollection{Dijkstra:1979:GSC:1241515.1241518,
- author = {Dijkstra, E.},
- title = {Go to statement considered harmful},
- booktitle = {Classics in software engineering (incoll)},
- year = {1979},
- isbn = {0-917072-14-6},
- pages = {27--33},
- numpages = {7},
- url = {http://portal.acm.org/citation.cfm?id=1241515.1241518},
- acmid = {1241518},
- publisher = {Yourdon Press},
- address = {Upper Saddle River, NJ, USA},
+@article{rect_dev,
+  title={Geodesic-Controlled Developable Surfaces for Modeling Paper Bending},
+  author={Bo, Pengbo and Wang, Wenping},
+  journal=j-CGF,
+  volume={26},
+  number={3},
+  pages={365--374},
+  year={2007},
 }
 
-% incol due to booktitle
-@incollection{Wenzel:1992:TVA:146022.146089,
- author = {Wenzel, Elizabeth M.},
- title = {Three-dimensional virtual acoustic displays},
- booktitle = {Multimedia interface design (incoll)},
- year = {1992},
- isbn = {0-201-54981-6},
- pages = {257--288},
- numpages = {32},
- url = {http://portal.acm.org/citation.cfm?id=146022.146089},
- doi = {10.1145/146022.146089},
- acmid = {146089},
+@article{conical_angle,
+  title={An angle criterion for conical mesh vertices},
+  author={Wang, Wenping and Wallner, Johannes and Liu, Yang},
+  journal={Journal for Geometry and Graphics},
+  volume={11},
+  number={2},
+  pages={199--208},
+  year={2007}
+}
+
+@article{curved_folding,
+ author = {Kilian, Martin and Fl\"{o}ry, Simon and Chen, Zhonggui and Mitra, Niloy J. and Sheffer, Alla and Pottmann, Helmut},
+ title = {Curved folding},
+ journal = j-TOG,
+ volume = {27},
+ number = {3},
+ year = {2008},
+ issn = {0730-0301},
+ pages = {75:1--75:9},
+  acmid = {1360674},
  publisher = {ACM},
  address = {New York, NY, USA},
-}
+ keywords = {architectural geometry, computational differential geometry, computational origami, curved fold, developable surface, digital reconstruction, folding, industrial design, isometry},
+} 
 
-% incol due to booktitle
-@incollection{Mumford:1987:MES:54905.54911,
- author = {Mumford, E.},
- title = {Managerial expert systems and organizational change: some critical research issues},
- booktitle = {Critical issues in information systems research (incoll)},
- year = {1987},
- isbn = {0-471-91281-6},
- pages = {135--155},
- numpages = {21},
- url = {http://portal.acm.org/citation.cfm?id=54905.54911},
- acmid = {54911},
- publisher = {John Wiley \& Sons, Inc.},
+@article{pottmann_new,
+ author = {Tang, Chengcheng and Bo, Pengbo and Wallner, Johannes and Pottmann, Helmut},
+ title = {Interactive design of developable surfaces},
+ journal = j-TOG,
+ volume = {35},
+ number = {2},
+ year = {2016},
+ issn = {0730-0301},
+ pages = {12:1--12:12},
+ articleno = {12},
+ numpages = {12},
+ acmid = {2832906},
+ publisher = {ACM},
  address = {New York, NY, USA},
+ keywords = {Interactive design, computational differential geometry, constraint solving, curved folding, developable surface, digital reconstruction, isometric deformation, origami, spline surface},
 }
 
-@book{McCracken:1990:SSC:575315,
- author = {McCracken, Daniel D. and Golden, Donald G.},
- title = {Simplified Structured COBOL with Microsoft/MicroFocus COBOL},
- year = {1990},
- isbn = {0471514071},
- publisher = {John Wiley \& Sons, Inc.},
- address = {New York, NY, USA},
+@book{computational_line,
+   title = "Computational line geometry",
+   author = "Pottmann, Helmut and Wallner, Johannes",
+   series = "Mathematics and visualization",
+   publisher = "Springer",
+   address = "Berlin, Heidelberg, New York",
+   isbn = "3-540-42058-4",
+   year = 2001
 }
 
-% Let's include Boris / BBeeton entries  (multi-volume works)
-
-@book {MR781537,
-    AUTHOR = {H{\"o}rmander, Lars},
-     TITLE = {The analysis of linear partial differential operators. {III}},
-    SERIES = {Grundlehren der Mathematischen Wissenschaften [Fundamental
-              Principles of Mathematical Sciences]},
-    VOLUME = {275},
-      NOTE = {Pseudodifferential operators},
-PUBLISHER = {Springer-Verlag},
-   ADDRESS = {Berlin, Germany},
-      YEAR = {1985},
-     PAGES = {viii+525},
-      ISBN = {3-540-13828-5},
-   MRCLASS = {35-02 (35Sxx 47G05 58G15)},
-  MRNUMBER = {781536 (87d:35002a)},
-MRREVIEWER = {Min You Qi},
+@article{pottmann_approx,
+title = "Approximation algorithms for developable surfaces",
+journal = j-CAGD,
+volume = "16",
+number = "6",
+pages = "539 - 556",
+year = "1999",
+note = "",
+issn = "0167-8396",
+doi = "http://dx.doi.org/10.1016/S0167-8396(99)00012-6",
+url = "http://www.sciencedirect.com/science/article/pii/S0167839699000126",
+author = "Helmut Pottmann and Johannes Wallner",
+keywords = "Computer aided geometric design",
+keywords = "Surface approximation",
+keywords = "Developable surface",
+keywords = "Dual representation",
+keywords = "NURBS"
 }
 
-@book {MR781536,
-    AUTHOR = {H{\"o}rmander, Lars},
-     TITLE = {The analysis of linear partial differential operators. {IV}},
-    SERIES = {Grundlehren der Mathematischen Wissenschaften [Fundamental
-              Principles of Mathematical Sciences]},
-    VOLUME = {275},
-      NOTE = {Fourier integral operators},
-PUBLISHER = {Springer-Verlag},
-   ADDRESS = {Berlin, Germany},
-      YEAR = {1985},
-     PAGES = {vii+352},
-      ISBN = {3-540-13829-3},
-   MRCLASS = {35-02 (35Sxx 47G05 58G15)},
-  MRNUMBER = {781537 (87d:35002b)},
-MRREVIEWER = {Min You Qi},
-}
-
-%%%%%%%%%%%%%%%%%%%%%% Start of Aptara sample bib entries
-
-% acmsmall-sam.bib
-@InProceedings{Adya-01,
-  author        = {A. Adya and P. Bahl and J. Padhye and A.Wolman and L. Zhou},
-  title         = {A multi-radio unification protocol for {IEEE} 802.11 wireless networks},
-  booktitle     = {Proceedings of the IEEE 1st International Conference on Broadnets Networks (BroadNets'04)},
-  publisher     = "IEEE",
-  address       = "Los Alamitos, CA",
-  year          = {2004},
-  pages         = "210--217"
-}
-
-@article{Akyildiz-01,
-  author        = {I. F. Akyildiz and W. Su and Y. Sankarasubramaniam and E. Cayirci},
-  title         = {Wireless Sensor Networks: A Survey},
-  journal       = {Comm. ACM},
-  volume        = 38,
-  number        = "4",
-  year          = {2002},
-  pages         = "393--422"
-}
-
-@article{Akyildiz-02,
-  author        = {I. F. Akyildiz and T. Melodia and K. R. Chowdhury},
-  title         = {A Survey on Wireless Multimedia Sensor Networks},
-  journal       = {Computer Netw.},
-  volume        = 51,
-  number        = "4",
-  year          = {2007},
-  pages         = "921--960"
-}
-
-@InProceedings{Bahl-02,
-  author        = {P. Bahl and R. Chancre and J. Dungeon},
-  title         = {{SSCH}: Slotted Seeded Channel Hopping for Capacity Improvement in {IEEE} 802.11 Ad-Hoc Wireless Networks},
-  booktitle     = {Proceeding of the 10th International Conference on Mobile Computing and Networking (MobiCom'04)},
-  publisher     = "ACM",
-  address       = "New York, NY",
-  year          = {2004},
-  pages         = "112--117"
-}
-
-@misc{CROSSBOW,
-  key       = {CROSSBOW},
-  title     = {{XBOW} Sensor Motes Specifications},
-  note      = {http://www.xbow.com},
-  year      = 2008
-}
-
-@article{Culler-01,
-  author        = {D. Culler and D. Estrin and M. Srivastava},
-  title         = {Overview of Sensor Networks},
-  journal       = {IEEE Comput.},
-  volume        = 37,
-  number        = "8 (Special Issue on Sensor Networks)",
-  publisher     = "IEEE",
-  address       = "Los Alamitos, CA",
-  year          = {2004},
-  pages         = "41--49"
-}
-
-@misc{Harvard-01,
-    key         = {Harvard CodeBlue},
-    title       = {{CodeBlue}: Sensor Networks for Medical Care},
-    note        = {http://www.eecs.harvard.edu/mdw/ proj/codeblue/},
-    year        = 2008
-}
-
-@InProceedings{Natarajan-01,
-    author      = {A. Natarajan and M. Motani and B. de Silva and K. Yap and K. C. Chua},
-    title       = {Investigating Network Architectures for Body Sensor Networks},
-    booktitle   = {Network Architectures},
-    editor      = {G. Whitcomb and P. Neece},
-    publisher   = "Keleuven Press",
-    address     = "Dayton, OH",
-    year        = {2007},
-    pages       = "322--328",
-    eprint      = "960935712",
-    primaryclass = "cs",
-}
-
-@techreport{Tzamaloukas-01,
-  author        = {A. Tzamaloukas and J. J. Garcia-Luna-Aceves},
-  title         = {Channel-Hopping Multiple Access},
-  number =        {I-CA2301},
-  institution =   {Department of Computer Science, University of California},
-  address =       {Berkeley, CA},
-  year          = {2000}
-}
-
-@BOOK{Zhou-06,
-  author        = {G. Zhou and J. Lu and C.-Y. Wan and M. D. Yarvis and J. A. Stankovic},
-  title         = {Body Sensor Networks},
-  publisher     = "MIT Press",
-  address       = "Cambridge, MA",
-  year          = {2008}
-}
-
-@mastersthesis{ko94,
-author = "Jacob Kornerup",
-title = "Mapping Powerlists onto Hypercubes",
-school = "The University of Texas at Austin",
-note = "(In preparation)",
-year = "1994"}
-%month = "dec",}
-
-@PhdThesis{gerndt:89,
-  author =       "Michael Gerndt",
-  title =        "Automatic Parallelization for Distributed-Memory
-                  Multiprocessing Systems",
-  school =       "University of Bonn",
-  year =         1989,
-  address =      "Bonn, Germany",
-  month =        dec
-}
-
-@article{6:1:1,
-author = "J. E. {Archer, Jr.} and R. Conway and F. B. Schneider",
-title = "User recovery and reversal in interactive systems",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "6",
-number = "1",
-month = jan,
-year = 1984,
-pages = "1--19"}
-
-@article{7:1:137,
-author = "D. D. Dunlop and V. R. Basili",
-title = "Generalizing specifications for uniformly implemented loops",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
-number = "1",
-month = jan,
-year = 1985,
-pages = "137--158"}
-
-@article{7:2:183,
-author = "J. Heering and P. Klint",
-title = "Towards monolingual programming environments",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
+@article{chen_approx,
+title = "On Surface Approximation Using Developable Surfaces",
+journal = "Graphical Models and Image Processing",
+volume = "61",
 number = "2",
-month = apr,
-year = 1985,
-pages = "183--213"}
+pages = "110 - 124",
+year = "1999",
+note = "",
+issn = "1077-3169",
+doi = "http://dx.doi.org/10.1006/gmip.1999.0487",
+url = "http://www.sciencedirect.com/science/article/pii/S1077316999904872",
+author = "H.-Y. Chen and I.-K. Lee and S. Leopoldseder and H. Pottmann and T. Randrup and J. Wallner",
 
-@book{knuth:texbook,
-author = "Donald E. Knuth",
-title = "The {\TeX{}book}",
-publisher = "Addison-Wesley",
-address = "Reading, MA.",
-year = 1984}
-
-@article{6:3:380,
-author = "E. Korach and D.  Rotem and N. Santoro",
-title = "Distributed algorithms for finding centers and medians in networks",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "6",
-number = "3",
-month = jul,
-year = 1984,
-pages = "380--401"}
-
-@book{lamport:latex,
-author = "Leslie Lamport",
-title = "\it {\LaTeX}: A Document Preparation System",
-publisher = "Addison-Wesley",
-address = "Reading, MA.",
-year = 1986}
-
-@article{7:3:359,
-author = "F. Nielson",
-title = "Program transformations in a denotational setting",
-journal = "ACM Trans. Program. Lang. Syst.",
-volume =  "7",
-number = "3",
-month = jul,
-year = 1985,
-pages = "359--379"}
-
-%testing
-@BOOK{test,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   volume = 2,
-   series = "The Art of Computer Programming",
-   publisher = "Addison-Wesley",
-   address = "Reading, MA",
-   edition = "2nd",
-   month = "10~" # jan,
-   year = "1981",
 }
 
-@inproceedings{reid:scribe,
-author = "Brian K. Reid",
-title = "A high-level approach to computer document formatting",
-booktitle = "Proceedings of the 7th Annual Symposium on Principles of
-  Programming Languages",
-month = jan,
-year = 1980,
-publisher = "ACM",
-address = "New York",
-pages = "24--31"}
+@article{bishop,
+  title={There is more than one way to frame a curve},
+  author={Bishop, Richard L},
+  journal={The American Mathematical Monthly},
+  volume={82},
+  number={3},
+  pages={246--251},
+  year={1975},
+  publisher={JSTOR}
+}
 
-@article{Zhou:2010:MMS:1721695.1721705,
- author = {Zhou, Gang and Wu, Yafeng and Yan, Ting and He, Tian and Huang, Chengdu and Stankovic, John A. and Abdelzaher, Tarek F.},
- title = {A multifrequency MAC specially designed for wireless sensor network applications},
- journal = {ACM Trans. Embed. Comput. Syst.},
- issue_date = {March 2010},
- volume = 9,
- number = 4,
- month = {April},
- year = 2010,
- issn = {1539-9087},
- pages = {39:1--39:41},
- articleno = 39,
- numpages = 41,
- url = {http://doi.acm.org/10.1145/1721695.1721705},
- doi = {10.1145/1721695.1721705},
- acmid = 1721705,
+@article{graustein,
+  title={On the geodesics and geodesic circles on a developable surface},
+  author={Graustein, William Caspar},
+  journal={Annals of Mathematics},
+  volume = {18},
+  number = {3},
+  pages={132--138},
+  year={1917},
+}
+
+@article{huffman,
+  added-at = {2015-12-22T00:00:00.000+0100},
+  author = {Huffman, David A.},
+  biburl = {http://www.bibsonomy.org/bibtex/2a36bd91c813e9928bada4c18866d6faf/dblp},
+  ee = {http://doi.ieeecomputersociety.org/10.1109/TC.1976.1674542},
+  interhash = {b7033be47d9a1b21cdcac5d68bce216a},
+  intrahash = {a36bd91c813e9928bada4c18866d6faf},
+  journal = {IEEE Trans.\ Computers},
+  keywords = {dblp},
+  number = 10,
+  pages = {1010-1019},
+  timestamp = {2015-12-24T11:54:55.000+0100},
+  title = {Curvature and creases: a primer on paper},
+  volume = 25,
+  year = 1976
+}
+
+@article{huffman2,
+  title={Cones, curves, shells, towers: He made paper jump to life},
+  author={Wertheim, Margaret},
+  journal={The New York Times},
+  volume={2},
+  number={4},
+  pages={5},
+  year={2004}
+}
+
+@article {curved_geo,
+	author = {Duncan, J. P. and Duncan, J. L.},
+	title = {Folded Developables},
+	volume = {383},
+	number = {1784},
+	pages = {191--205},
+	year = {1982},
+	doi = {10.1098/rspa.1982.0126},
+	publisher = {The Royal Society},
+	abstract = {A plane, inextensible sheet may be folded or creased along a curved line to produce two connected but distinct developable surfaces. Various theorems applying to this folding process are identified and two special cases investigated. In one, the fold line remains a plane curve during deformation and in the other the dihedral angle at the fold is constant along the curve. Curved-line folding occurs naturally in the collapse of thin-sheet-metal structures composed of developable surfaces. The theorems presented identify the kinematic constraint existing between pairs of developable surfaces connected by curved-line folds and permit the design of sheet-metal products that use these surfaces. This expands considerably the range of engineering products that can be made by folding and bending a single inextensible sheet.},
+	issn = {0080-4630},
+	URL = {http://rspa.royalsocietypublishing.org/content/383/1784/191},
+	eprint = {http://rspa.royalsocietypublishing.org/content/383/1784/191.full.pdf},
+	journal = {Proceedings of the Royal Society of London A: Mathematical, Physical and Engineering Sciences}
+}
+
+@article{tachi_sim,
+  title={Simulation of rigid origami},
+  author={Tachi, Tomohiro},
+  journal={Origami},
+  volume={4},
+  pages={175--187},
+  year={2009}
+}
+
+@article {solomon,
+journal = j-CGF,
+title = {Flexible developable surfaces},
+author = {Solomon, Justin and Vouga, Etienne and Wardetzky, Max and Grinspun, Eitan},
+year = {2012},
+volume = {31},
+pages={1567--1576},
+number = {5},
+}
+
+@article{Wang,
+  added-at = {2016-01-29T00:00:00.000+0100},
+  author = {Schreck, Camille and Rohmer, Damien and Hahmann, Stefanie and Cani, Marie-Paule and Jin, Shuo and Wang, Charlie C. L. and Bloch, Jean-Francis},
+  biburl = {http://www.bibsonomy.org/bibtex/262450f9a7c5c0607457c4b0b6e422365/dblp},
+  ee = {http://doi.acm.org/10.1145/2829948},
+  interhash = {8d28162c39251455ad2d6bdae8e3e38d},
+  intrahash = {62450f9a7c5c0607457c4b0b6e422365},
+  journal = {ACM Trans. Graph.},
+  keywords = {dblp},
+  number = 1,
+  pages = 10,
+  timestamp = {2016-01-30T11:37:19.000+0100},
+  title = {Nonsmooth Developable Geometry for Interactively Animating Paper Crumpling.},
+  url = {http://dblp.uni-trier.de/db/journals/tog/tog35.html#SchreckRHCJWB15},
+  volume = 35,
+  year = 2015
+}
+
+@Article{SchreckEG2017,
+  author  = {Camille Schreck and Damien Rohmer and Stefanie Hahmann},
+  title   = {Interactive paper tearing},
+  journal = {Computer Graphics Forum (Eurographics)},
+  year    = {2017},
+  volume  = {36},
+  number  = {2},
+  pages={95--106},
+}
+
+@inproceedings{shells,
+  title={Discrete Shells Origami},
+  author={Rob Burgoon and Zo{\"e} J. Wood and Eitan Grinspun},
+  booktitle={Computers and Their Applications},
+  year={2006}
+}
+
+@article{Narain,
+  title = {Folding and Crumpling Adaptive Sheets},
+  journal = j-TOG,
+  author = {Rahul Narain and Tobias Pfaff and James F. O'Brien},
+  number = 4,
+  volume = 32,
+  year = 2013,
+}
+
+@article{non_pleated,
+  title={(Non) existence of pleated folds: how paper folds between creases},
+  author={Demaine, Erik D and Demaine, Martin L and Hart, Vi and Price, Gregory N and Tachi, Tomohiro},
+  journal={Graphs and Combinatorics},
+  volume={27},
+  number={3},
+  pages={377--397},
+  year={2011},
+  publisher={Springer}
+}
+
+@inproceedings{arap,
+author = {Olga Sorkine and Marc Alexa},
+title = {As-rigid-as-possible surface modeling},
+booktitle = {Proc.\ Symposium on Geometry Processing},
+year = {2007},
+pages = {109--116},
+}
+
+@article{lbfgs,
+  title={Updating quasi-Newton matrices with limited storage},
+  author={Nocedal, Jorge},
+  journal={Mathematics of Computation},
+  volume={35},
+  number={151},
+  pages={773--782},
+  year={1980}
+}
+
+@phdthesis{gehry,
+  title={Digital surface representation and the constructibility of Gehry's architecture},
+  author={Shelden, Dennis Robert},
+  year={2002},
+  school={Massachusetts Institute of Technology}
+}
+
+
+@article{DDG_Keenan,
+	author = {Crane, Keenan and Wardetzky, Max},
+	year = {2017},
+	month = {11},
+	pages = {1153-1159},
+	title = {A Glimpse into Discrete Differential Geometry},
+	volume = {64},
+	journal = {Notices of the American Mathematical Society}
+}
+
+@article{rabi18,
+  title={Discrete Geodesic Nets for Modeling Developable Surfaces},
+  author={Rabinovich, Michael and Hoffmann, Tim and Sorkine-Hornung, Olga},
+  journal=j-TOG,
+  volume={37},
+  number={2},
+  pages={16},
+  year={2018},
+  publisher={ACM}
+}
+
+@article{more_on_paper,
+  title={More on paperfolding},
+  author={Fuchs, Dmitry and Tabachnikov, Serge},
+  journal={The American Mathematical Monthly},
+  volume={106},
+  number={1},
+  pages={27--35},
+  year={1999},
+  publisher={JSTOR}
+}
+@inproceedings{Mitani_ref,
+  title={Interactive design of planar curved folding by reflection},
+  author={Mitani, J and Igarashi, T},
+  booktitle = {Proc.\ Pacific Graphics, Short Papers},
+  year={2011}
+}
+@inproceedings{flows_desbrun,
+	title={Generalized surface flows for mesh processing},
+	author={Eckstein, Ilya and Pons, J-P and Tong, Yiying and Kuo, C-CJ and Desbrun, Mathieu},
+	booktitle={Proc.\ Symposium on Geometry Processing},
+	pages={183--192},
+	year={2007},
+}
+
+@book{nocedal,
+  title={Sequential quadratic programming},
+  author={Nocedal, Jorge and Wright, Stephen J},
+  year={2006},
+  publisher={Springer}
+}
+
+@article{cot_pink_polth,
+  title={Computing discrete minimal surfaces and their conjugates},
+  author={Pinkall, Ulrich and Polthier, Konrad},
+  journal={Experimental Mathematics},
+  volume={2},
+  number={1},
+  pages={15--36},
+  year={1993},
+  publisher={Taylor \& Francis}
+}
+
+@inproceedings{war_lunch,
+  title={Discrete Laplace operators: no free lunch},
+  author={Wardetzky, Max and Mathur, Saurabh and K{\"a}lberer, Felix and Grinspun, Eitan},
+  booktitle={Proc.\ Symposium on Geometry Processing},
+  pages={33--37},
+  year={2007}
+}
+
+@article{alexa_laplacian,
+  title={Discrete Laplacians on general polygonal meshes},
+  author={Alexa, Marc and Wardetzky, Max},
+  journal=j-TOG,
+  volume={30},
+  number={4},
+  year={2011},
+  publisher={ACM}
+}
+
+@phdthesis{war_thesis,
+  title={Discrete differential operators on polyhedral surfaces -- convergence and approximation},
+  author={Wardetzky, Max},
+  year={2007},
+  school={Freie Universit{\"a}t Berlin}
+}
+
+@inproceedings{desbrun_implicit,
+  title={Implicit fairing of irregular meshes using diffusion and curvature flow},
+  author={Desbrun, Mathieu and Meyer, Mark and Schr{\"o}der, Peter and Barr, Alan H},
+  booktitle={Proc.\ ACM SIGGRAPH},
+  pages={317--324},
+  year={1999},
+}
+@article{stein_dev,
+author = {Stein, Oded and Grinspun, Eitan and Crane, Keenan},
+title = {Developability of triangle meshes},
+journal = j-TOG,
+volume = {37},
+number = {4},
+year = {2018},
+publisher = {ACM},
+address = {New York, NY, USA},
+}
+
+@article{shape_kilian,
+  title={Geometric modeling in shape space},
+  author={Kilian, Martin and Mitra, Niloy J and Pottmann, Helmut},
+  journal=j-TOG,
+  volume={26},
+  number={3},
+  year={2007},
+}
+
+@article{shape_const,
+  title={Shape space exploration of constrained meshes},
+  author={Yang, Yong-Liang and Yang, Yi-Jun and Pottmann, Helmut and Mitra, Niloy J},
+  journal=j-TOG,
+  volume={30},
+  number={6},
+  year={2011}
+}
+
+@article{shape_shells,
+  title={Exploring the geometry of the space of shells},
+  author={Heeren, Behrend and Rumpf, Martin and Schr{\"o}der, Peter and Wardetzky, Max and Wirth, Benedikt},
+  journal=j-CGF,
+  volume={33},
+  number={5},
+  pages={247--256},
+  year={2014},
+}
+
+@ARTICLE{shape_splines,
+  title={Splines in the space of shells},
+  author={Heeren, Behrend and Rumpf, Martin and Schr{\"o}der, Peter and Wardetzky, Max and Wirth, Benedikt},
+  journal=j-CGF,
+  volume={35},
+  number={5},
+  pages={111--120},
+  year={2016},
+}
+
+@article{SYM07,
+  title={Sobolev active contours},
+  author={Sundaramoorthi, Ganesh and Yezzi, Anthony and Mennucci, Andrea C},
+  journal={International Journal of Computer Vision},
+  volume={73},
+  number={3},
+  pages={345--366},
+  year={2007},
+  publisher={Springer}
+}
+
+@article{StringActuated:2017,
+  title   = {String actuated curved folded surfaces},
+  author  = {Martin Kilian and Aron Monszpart and Niloy J. Mitra},
+  journal = j-TOG,
+  volume = {36},
+  number = {3},
+  year = {2017},
+  issn = {0730-0301},
+  pages = {25:1--25:13},
+  publisher = {ACM}
+}
+
+@article{crane_fairing,
+  title={Robust fairing via conformal curvature flow},
+  author={Crane, Keenan and Pinkall, Ulrich and Schr{\"o}der, Peter},
+  journal=j-TOG,
+  volume={32},
+  number={4},
+  year={2013},
+  publisher={ACM}
+}
+
+@article{kazhdan_flow,
+ author = {Kazhdan, Michael and Solomon, Jake and Ben-Chen, Mirela},
+ title = {Can mean-curvature flow be modified to be non-singular?},
+ journal = j-CGF,
+ volume = {31},
+ number = {5},
+ year = {2012},
+ issn = {0167-7055},
+ pages = {1745--1754},
+ acmid = {2346809},
+ }
+
+@article{milling,
+  title={5-axis flank milling: A state-of-the-art review},
+  author={Harik, Ramy F and Gong, Hu and Bernard, Alain},
+  journal={Computer-Aided Design},
+  volume={45},
+  number={3},
+  pages={796--808},
+  year={2013},
+  publisher={Elsevier}
+}
+
+@inproceedings{curved_review,
+  title={Curved crease folding: a review on art, design and mathematics},
+  author={Demaine, Erik D and Demaine, Martin L and Koschitz, Duks and Tachi, Tomohiro},
+  booktitle={Proceedings of the IABSE-IASS Symposium: Taller, Longer, Lighter},
+  pages={20--23},
+  year={2011},
+  }
+  
+  @article{hoffmann2009discrete,
+  title={Discrete differential geometry of curves and surfaces},
+  author={Hoffmann, Tim},
+  journal={COE Lecture Notes},
+  volume={18},
+  year={2009},
+  publisher={Kyushu University, Faculty of Mathematics Fukuoka}
+}
+
+@article{PARDISO1,
+	author={D. Kourounis and A. Fuchs and O. Schenk},
+	journal={IEEE Transactions on Power Systems},
+	title={Towards the Next Generation of Multiperiod Optimal Power Flow Solvers},
+	year={2018},
+	volume={PP},
+	number={99},
+	pages={1-10},
+	keywords={Artificial neural networks;Optimization;Planning;Multiperiod optimal power flow;interior point methods;power system planning},
+	doi={10.1109/TPWRS.2017.2789187},
+	url={https://doi.org/10.1109/TPWRS.2017.2789187},
+	ISSN={0885-8950},
+}
+
+@article{PARDISO2,
+	author = "Fabio Verbosio and Arne De Coninck and Drosos Kourounis and Olaf Schenk",
+	title = "Enhancing the scalability of selected inversion factorization algorithms in genomic prediction",
+	journal = "Journal of Computational Science",
+	volume = "22",
+	number = "Supplement C",
+	pages = "99 - 108",
+	year = "2017",
+	issn = "1877-7503",
+	url = "https://doi.org/10.1016/j.jocs.2017.08.013",
+}
+
+@article{PARDISO3,
+       author = {De Coninck, Arne and De Baets, Bernard and Kourounis, Drosos and Verbosio, Fabio and Schenk, Olaf and Maenhout, Steven and Fostier, Jan},
+        title = {Needles: Toward Large-Scale Genomic Prediction with Marker-by-Environment Interaction},
+        volume = {203},
+        number = {1},
+        pages = {543--555},
+        year = {2016},
+        doi = {10.1534/genetics.115.179887},
+        journal = {Genetics},
+        issn = {0016-6731},
+        url={http://dx.doi.org/10.1534/genetics.115.179887},
+        eprint = {http://www.genetics.org/content/203/1/543.full.pdf},
+}
+
+@article{SUITE_SPARSE,
+  title={Algorithm 915, SuiteSparseQR: Multifrontal multithreaded rank-revealing sparse QR factorization},
+  author={Davis, Timothy A},
+  journal={ACM Transactions on Mathematical Software (TOMS)},
+  volume={38},
+  number={1},
+  pages={8},
+  year={2011},
+  publisher={ACM}
+}
+
+@manual{MOSEK,
+author = "{MOSEK ApS}",
+title = "The {MOSEK} optimization toolbox for {MATLAB} manual. Version 8.1.",
+year = 2017,
+url = "http://docs.mosek.com/8.1/toolbox/index.html"}
+
+@article{shape_up,
+  title={Shape-up: Shaping discrete geometry with projections},
+  author={Bouaziz, Sofien and Deuss, Mario and Schwartzburg, Yuliy and Weise, Thibaut and Pauly, Mark},
+  journal=j-CGF,
+  volume={31},
+  number={5},
+  pages={1657--1667},
+  year={2012},
+}
+
+@article{projective_dynamics,
+  title={Projective dynamics: fusing constraint projections for fast simulation},
+  author={Bouaziz, Sofien and Martin, Sebastian and Liu, Tiantian and Kavan, Ladislav and Pauly, Mark},
+  journal=j-TOG,
+  volume={33},
+  number={4},
+  year={2014},
+  publisher={ACM}
+}
+
+@article{anderson_acceleration,
+ author = {Peng, Yue and Deng, Bailin and Zhang, Juyong and Geng, Fanyu and Qin, Wenjie and Liu, Ligang},
+ title = {Anderson Acceleration for Geometry Optimization and Physics Simulation},
+ journal = {ACM Trans. Graph.},
+ issue_date = {August 2018},
+ volume = {37},
+ number = {4},
+ month = jul,
+ year = {2018},
+ issn = {0730-0301},
+ pages = {42:1--42:14},
+ articleno = {42},
+ numpages = {14},
+ url = {http://doi.acm.org/10.1145/3197517.3201290},
+ doi = {10.1145/3197517.3201290},
+ acmid = {3201290},
  publisher = {ACM},
  address = {New York, NY, USA},
- keywords = {Wireless sensor networks, media access control, multi-channel, radio interference, time synchronization},
+ keywords = {fixed-point iterations, geometry processing, numerical optimization, parallel computing, projective dynamics},
 }
 
-
-@online{TUGInstmem,
-  key =          {TUG},
-  year  =        2017,
-  title =        "Institutional members of the {\TeX} Users Group",
-  url =          "http://wwtug.org/instmem.html",
-  lastaccessed = "May 27, 2017",
+@inproceedings{willmore_flow,
+ author = {Bobenko, Alexander I. and Schr\"{o}der, Peter},
+ title = {Discrete {W}illmore Flow},
+ booktitle = {Proc.\ Symposium on Geometry Processing},
+ year = {2005},
+ isbn = {3-905673-24-X},
+ url = {http://dl.acm.org/citation.cfm?id=1281920.1281937},
+ acmid = {1281937},
+ keywords = {Willmore energy, digital geometry processing, discrete differential geometry, geometric flow, variational surface modeling},
 }
 
-@online{CTANacmart,
-  author =    {Boris Veytsman},
-  title =  {acmart---{C}lass for typesetting publications of {ACM}},
-  url =    {http://www.ctan.org/pkg/acmart},
-  lastaccessed = {May 27, 2017}
-  }
-
-@ARTICLE{bowman:reasoning,
-    author = {Bowman, Mic and Debray, Saumya K. and Peterson, Larry L.},
-    title = {Reasoning About Naming Systems},
-    journal = {ACM Trans. Program. Lang. Syst.},
-    volume = {15},
-    number = {5},
-    pages = {795-825},
-    month = {November},
-    year = {1993},
-    doi = {10.1145/161468.161471},
+@phdthesis{josef_albers_thesis,
+  title={" A New Unity!" The Art and Pedagogy of Josef Albers},
+  author={Adler, Esther D},
+  year={2004}
 }
 
-@ARTICLE{braams:babel,
-    author = {Braams, Johannes},
-    title = {Babel, a Multilingual Style-Option System for Use with LaTeX's Standard Document Styles},
-    journal = {TUGboat},
-    volume = {12},
-    number = {2},
-    pages = {291-301},
-    month = {June},
-    year = {1991},
+@article{resch1974portfolio,
+  title={Portfolio of shaded computer images},
+  author={Resch, RONALD D},
+  journal={Proceedings of the IEEE},
+  volume={62},
+  number={4},
+  pages={496--502},
+  year={1974},
+  publisher={IEEE}
 }
 
-@INPROCEEDINGS{clark:pct,
-  AUTHOR = "Malcolm Clark",
-  TITLE = "Post Congress Tristesse",
-  BOOKTITLE = "TeX90 Conference Proceedings",
-  PAGES = "84-89",
-  ORGANIZATION = "TeX Users Group",
-  MONTH = "March",
-  YEAR = {1991}
+@article{huffmann_reconstructing,
+  title={Reconstructing David Huffman's legacy in curved-crease folding},
+  author={Demaine, Erik D and Demaine, Martin L and Koschitz, Duks},
+  journal={Origami},
+  volume={5},
+  pages={39--52},
+  year={2011}
 }
 
-@ARTICLE{herlihy:methodology,
-    author = {Herlihy, Maurice},
-    title = {A Methodology for Implementing Highly Concurrent Data Objects},
-    journal = {ACM Trans. Program. Lang. Syst.},
-    volume = {15},
-    number = {5},
-    pages = {745-770},
-    month = {November},
-    year = {1993},
-    doi = {10.1145/161468.161469},
-}
-
-@BOOK{salas:calculus,
-  AUTHOR = "S.L. Salas and Einar Hille",
-  TITLE = "Calculus: One and Several Variable",
-  PUBLISHER = "John Wiley and Sons",
-  ADDRESS = "New York",
-  YEAR = "1978"
-}
-
-@MANUAL{Fear05,
-  title =        {Publication quality tables in {\LaTeX}},
-  author =       {Simon Fear},
-  month =        {April},
-  year =         2005,
-  note =         {\url{http://www.ctan.org/pkg/booktabs}}
-}
-
-@Manual{Amsthm15,
-  title =        {Using the amsthm Package},
-  organization = {American Mathematical Society},
-  month =        {April},
-  year =         2015,
-  note =         {\url{http://www.ctan.org/pkg/amsthm}}
-}
