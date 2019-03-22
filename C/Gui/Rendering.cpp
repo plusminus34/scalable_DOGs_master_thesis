@@ -250,17 +250,19 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eige
   double cos_y = ey_f.dot(-ey_b)/(ey_f.norm()*ey_b.norm());
 
   cos_x = min(cos_x,1.);cos_x = max(cos_x,-1.);
-  cos_y = min(cos_x,1.);cos_y = max(cos_y,-1.);
+  cos_y = min(cos_y,1.);cos_y = max(cos_y,-1.);
 
   //cout << "cos_x = " << cos_x << endl;
   //cout << "cos_y = " << cos_y << endl;
   double alpha = acos(cos_x);
   double beta = acos(cos_y);
 
-  //cout << "alpha = " << alpha << " beta = " << beta << endl;
+  //double k_x = 2*sin(alpha)/(ex_f-ex_b).norm();
+  //double k_y = 2*sin(beta)/(ey_f-ey_b).norm();
 
-  double k_x = 2*sin(alpha)/(ex_f-ex_b).norm();
-  double k_y = 2*sin(beta)/(ey_f-ey_b).norm();
+  double k_x = 4*sin(alpha/2)/(ex_f.norm()+ex_b.norm());
+  double k_y = 4*sin(beta/2)/(ey_f.norm()+ey_b.norm());
+
 
   //cout << "k_x = " << k_x << " k_y = " << k_y << endl;
 
@@ -269,12 +271,21 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eige
   Eigen::RowVector3d normals_avg_intersection_r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
   // Planarity test
   if (normals_avg_intersection_r.norm()) {
-    double theta = atan2(sqrt(k_y),sqrt(k_x));
+    //double theta = atan(sqrt(k_y)/sqrt(k_x));//atan2(sqrt(k_y),sqrt(k_x));
+    double theta = M_PI/2-atan(sqrt(k_y)/sqrt(k_x));//atan2(sqrt(k_y),sqrt(k_x));
+    double deg_s = 180/M_PI;
     //cout << " theta = " << theta << endl;
+    //cout <<"--"<<endl;
+    //cout << "k_x = " << k_x << " k_y = " << k_y << std::endl;
+    //cout << " theta = " << deg_s*theta << " (PI - theta) = " << deg_s*(M_PI-theta) << " (M_PI/2-theta) = " << deg_s*(M_PI/2-theta) << "(M_PI/2+theta) = " << deg_s*(M_PI/2+theta) << endl;
+
     //theta = M_PI-theta;
     //cout << "changing theta to PI-theta = " << theta << endl;
     Eigen::RowVector3d t1 = (ex_f.normalized()-ex_b.normalized()).normalized();
     Eigen::RowVector3d t2 = (ey_f.normalized()-ey_b.normalized()).normalized();
+
+    //cout << "normal r angle = " << deg_s*atan2(-normals_avg_intersection_r.dot(t2),normals_avg_intersection_r.dot(t1)) << endl;
+    //cout <<"--"<<endl;
 
     //r = sin(theta)*t1+cos(t heta)*t2;
     //r = -sin(theta)*t1-cos(theta)*t2;
