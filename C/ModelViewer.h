@@ -10,6 +10,8 @@ enum ViewMode {
 	ViewModeCreases = 1,
 	ViewModeGauss = 2,
 	CreasesSVGReader = 3,
+	ViewRulingsOld = 4,
+	ViewRulingsNew = 5
 };
 
 class ModelViewer {

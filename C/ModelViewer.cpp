@@ -20,6 +20,7 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DeformationControll
 }
 
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
+	const Dog* dog = DC.getEditedSubmesh();
 	viewer.data().clear();
 	viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
 	switched_mode = ((viewMode != prevMode) || (first_rendering));
@@ -33,7 +34,14 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 		render_gauss_map(viewer);
 	} else if (viewMode == CreasesSVGReader) {
 		render_crease_pattern_svg_reader(viewer);
-	} 
+	} else if (viewMode == ViewRulingsOld) {
+		render_mesh_and_wireframe(viewer);
+		Eigen::MatrixXd VN; //igl::per_vertex_normals(Vren,Fren,VN);
+		double ruling_length = 1; int rulings_mod = 1;
+    	igl::per_vertex_normals(dog->getV(),dog->getFTriangular(),VN);
+		plot_vertex_based_rulings(viewer, dog->getV(), VN,
+						dog->getQuadTopology(), ruling_length, rulings_mod);
+	}
 
 	first_rendering = false;
 }
