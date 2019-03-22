@@ -143,7 +143,7 @@ void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN,
       
       Eigen::RowVector3d r;
       if (new_rulings) {
-        r = get_ruling_direction_new(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
+        r = get_ruling_direction_new(V,VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
       } else {
         r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
       }
@@ -240,7 +240,7 @@ Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& VN, int p_0_i, in
 }
 
 
-Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i, double rulings_planar_eps) {
+Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i, double rulings_planar_eps) {
   Eigen::RowVector3d ex_f = V.row(p_xf_i)-V.row(p_0_i);
   Eigen::RowVector3d ex_b = V.row(p_xb_i)-V.row(p_0_i);
   Eigen::RowVector3d ey_f = V.row(p_yf_i)-V.row(p_0_i);
@@ -252,8 +252,8 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
   cos_x = min(cos_x,1.);cos_x = max(cos_x,-1.);
   cos_y = min(cos_x,1.);cos_y = max(cos_y,-1.);
 
-  cout << "cos_x = " << cos_x << endl;
-  cout << "cos_y = " << cos_y << endl;
+  //cout << "cos_x = " << cos_x << endl;
+  //cout << "cos_y = " << cos_y << endl;
   double alpha = acos(cos_x);
   double beta = acos(cos_y);
 
@@ -262,7 +262,7 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
   double k_x = 2*sin(alpha)/(ex_f-ex_b).norm();
   double k_y = 2*sin(beta)/(ey_f-ey_b).norm();
 
-  cout << "k_x = " << k_x << " k_y = " << k_y << endl;
+  //cout << "k_x = " << k_x << " k_y = " << k_y << endl;
 
   Eigen::RowVector3d r; r.setZero();
   
@@ -272,15 +272,20 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
     cout << " theta = " << theta << endl;
     //theta = M_PI-theta;
     //cout << "changing theta to PI-theta = " << theta << endl;
+    Eigen::RowVector3d t1 = (ex_f.normalized()-ex_b.normalized()).normalized();
+    Eigen::RowVector3d t2 = (ey_f.normalized()-ey_b.normalized()).normalized();
 
-
-    Eigen::VectorXd t1 = (ex_f.normalized()-ex_b.normalized()).normalized();
-    Eigen::VectorXd t2 = (ey_f.normalized()-ey_b.normalized()).normalized();
-
-    //r = sin(theta)*t1+cos(theta)*t2;
+    //r = sin(theta)*t1+cos(t heta)*t2;
     //r = -sin(theta)*t1-cos(theta)*t2;
     //r = cos(M_PI/2 - theta)*t1+sin(M_PI/2 - theta)*t2;
     r = cos(theta)*t1+sin(theta)*t2;
+    /*
+    cout << "t1.norm() = " << t1.norm() << std::endl;
+    cout << "t2.norm() = " << t2.norm() << std::endl;
+    cout << "t1 = " << t1 << std::endl;
+    cout << "t2 = " << t2 << std::endl;
+    cout << "r = " << r << endl;
+    */
     //r = cos(M_PI-theta)*t1+sin(M_PI-theta)*t2;
     //r = 10*t2    ;
   }
