@@ -10,8 +10,7 @@ enum ViewMode {
 	ViewModeCreases = 1,
 	ViewModeGauss = 2,
 	CreasesSVGReader = 3,
-	ViewRulingsOld = 4,
-	ViewRulingsNew = 5
+	ViewRulings = 4
 };
 
 class ModelViewer {
@@ -24,6 +23,11 @@ public:
 	ViewMode viewMode;
 	bool render_pos_const;
 	bool render_curved_folding_properties = false;
+
+	double rulings_length = 1;
+	int rulings_mod = 1;
+	double rulings_planar_eps = 0.05;
+	bool new_rulings = false;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);

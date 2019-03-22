@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings Old\0Rulings New\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
@@ -205,6 +205,11 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Constraints deviation", &DC.constraints_deviation);
       ImGui::InputDouble("objective", &DC.objective);
       ImGui::Checkbox("Is optimizing?", &is_optimizing);
+
+      ImGui::Checkbox("New rulings", &modelViewer.new_rulings);
+      ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
+      ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
+      ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
       ImGui::End();
   };

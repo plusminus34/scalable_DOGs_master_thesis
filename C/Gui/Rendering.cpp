@@ -109,10 +109,10 @@ void render_dog_stitching_constraints(igl::opengl::glfw::Viewer& viewer, const D
 }
 
 void plot_vertex_based_rulings(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN, 
-    const QuadTopology& quadTop, double ruling_length, int rulings_mod) {
+    const QuadTopology& quadTop, bool new_rulings, double ruling_length, int rulings_mod, double rulings_planar_eps) {
 
   Eigen::MatrixXd E1(0,3); Eigen::MatrixXd E2(0,3);
-  get_rulings_edges(V, VN, quadTop, ruling_length, rulings_mod,E1, E2);
+  get_rulings_edges(V, VN, quadTop, ruling_length, rulings_planar_eps, rulings_mod,E1, E2);
   //viewer.data.add_edges(E1, E2, Eigen::RowVector3d(93./255,125./255,190./255));
   //viewer.data.add_edges(E1, E2, Eigen::RowVector3d(80./255,133./255,250./255));
   viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0/255,0./255,0./255));
@@ -120,7 +120,7 @@ void plot_vertex_based_rulings(igl::opengl::glfw::Viewer& viewer, const Eigen::M
 }
 
 void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN, 
-                        const QuadTopology& quadTop, double ruling_length, int rulings_mod,
+                        const QuadTopology& quadTop, double ruling_length, int rulings_mod, double rulings_planar_eps,
                         Eigen::MatrixXd& E1, Eigen::MatrixXd& E2) {
     int r_num = 0;
   for (int si = 0; si < quadTop.stars.rows(); si+=5) {
@@ -141,7 +141,7 @@ void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN,
       if (p_0_i%rulings_mod == 0) {
       
       Eigen::RowVector3d r;
-      r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i);
+      r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
       //r = get_ruling_direction(V, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i);
       double scale = ruling_length*(V.row(p_xf_i)-V.row(p_0_i)).norm();
       E1.row(c) << V(p_0_i,0)-scale*r(0), V(p_0_i,1)-scale*r(1), V(p_0_i,2)-scale*r(2);
@@ -193,7 +193,7 @@ void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN,
   */
 }
 
-Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& VN, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i) {
+Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& VN, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i, double rulings_planar_eps) {
    Eigen::RowVector3d n = VN.row(p_0_i);
   Eigen::RowVector3d nx_f = VN.row(p_xf_i);
   Eigen::RowVector3d nx_b = VN.row(p_xb_i);
@@ -220,9 +220,8 @@ Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& VN, int p_0_i, in
   */
   Eigen::RowVector3d r;
 
-  double eps = 0.05;
   // if we are flat
-  if ( (nx.norm() < eps) && (ny.norm() < eps) ) {
+  if ( (nx.norm() < rulings_planar_eps) && (ny.norm() < rulings_planar_eps) ) {
     r << 0,0,0; // don't plot any rulings
     //flat_inner_vertices++;
   } else {
