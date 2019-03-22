@@ -264,12 +264,13 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eige
 
   //cout << "k_x = " << k_x << " k_y = " << k_y << endl;
 
-  Eigen::RowVector3d r; r.setZero();
+  Eigen::RowVector3d r,r1,r2; r.setZero(); r1.setZero(); r2.setZero();
   
+  Eigen::RowVector3d normals_avg_intersection_r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
   // Planarity test
-  if ((k_x > rulings_planar_eps) || (k_y > rulings_planar_eps)) {
+  if (normals_avg_intersection_r.norm()) {
     double theta = atan2(sqrt(k_y),sqrt(k_x));
-    cout << " theta = " << theta << endl;
+    //cout << " theta = " << theta << endl;
     //theta = M_PI-theta;
     //cout << "changing theta to PI-theta = " << theta << endl;
     Eigen::RowVector3d t1 = (ex_f.normalized()-ex_b.normalized()).normalized();
@@ -278,7 +279,15 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eige
     //r = sin(theta)*t1+cos(t heta)*t2;
     //r = -sin(theta)*t1-cos(theta)*t2;
     //r = cos(M_PI/2 - theta)*t1+sin(M_PI/2 - theta)*t2;
-    r = cos(theta)*t1+sin(theta)*t2;
+    r1 = cos(theta)*t1+sin(theta)*t2;
+    r2 = cos(M_PI-theta)*t1+sin(M_PI-theta)*t2;
+
+    
+    if (abs(r1.dot(normals_avg_intersection_r)) > abs(r2.dot(normals_avg_intersection_r))) {
+      r = r1;
+    } else {
+      r = r2;
+    }
     /*
     cout << "t1.norm() = " << t1.norm() << std::endl;
     cout << "t2.norm() = " << t2.norm() << std::endl;
