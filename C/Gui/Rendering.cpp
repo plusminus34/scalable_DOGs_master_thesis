@@ -156,6 +156,7 @@ void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN,
       }
     }
   }
+  //if (new_rulings) {int wait; cin >> wait;}
   /*
   // go through flat vertices and plot edges
   c = 0; E1.resize(2*flat_inner_vertices,3); E2.resize(2*flat_inner_vertices,3);
@@ -245,8 +246,8 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
   Eigen::RowVector3d ey_f = V.row(p_yf_i)-V.row(p_0_i);
   Eigen::RowVector3d ey_b = V.row(p_yb_i)-V.row(p_0_i);
 
-  double cos_x = ex_f.dot(ex_b)/(ex_f.norm()*ex_b.norm());
-  double cos_y = ey_f.dot(ey_b)/(ey_f.norm()*ey_b.norm());
+  double cos_x = ex_f.dot(-ex_b)/(ex_f.norm()*ex_b.norm());
+  double cos_y = ey_f.dot(-ey_b)/(ey_f.norm()*ey_b.norm());
 
   cos_x = min(cos_x,1.);cos_x = max(cos_x,-1.);
   cos_y = min(cos_x,1.);cos_y = max(cos_y,-1.);
@@ -256,7 +257,7 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
   double alpha = acos(cos_x);
   double beta = acos(cos_y);
 
-  cout << "alpha = " << alpha << " beta = " << beta << endl;
+  //cout << "alpha = " << alpha << " beta = " << beta << endl;
 
   double k_x = 2*sin(alpha)/(ex_f-ex_b).norm();
   double k_y = 2*sin(beta)/(ey_f-ey_b).norm();
@@ -269,13 +270,18 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i,
   if ((k_x > rulings_planar_eps) || (k_y > rulings_planar_eps)) {
     double theta = atan2(sqrt(k_y),sqrt(k_x));
     cout << " theta = " << theta << endl;
+    //theta = M_PI-theta;
+    //cout << "changing theta to PI-theta = " << theta << endl;
+
 
     Eigen::VectorXd t1 = (ex_f.normalized()-ex_b.normalized()).normalized();
     Eigen::VectorXd t2 = (ey_f.normalized()-ey_b.normalized()).normalized();
 
     //r = sin(theta)*t1+cos(theta)*t2;
     //r = -sin(theta)*t1-cos(theta)*t2;
-    r = cos(M_PI/2 - theta)*t1+sin(M_PI/2 - theta)*t2;
+    //r = cos(M_PI/2 - theta)*t1+sin(M_PI/2 - theta)*t2;
+    r = cos(theta)*t1+sin(theta)*t2;
+    //r = cos(M_PI-theta)*t1+sin(M_PI-theta)*t2;
     //r = 10*t2    ;
   }
   return r;
