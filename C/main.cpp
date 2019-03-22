@@ -97,15 +97,15 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return DC.dogEditor->callback_mouse_down();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return DC.dogEditor->callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if (modelViewer.viewMode == ViewModeMesh) return  DC.dogEditor->callback_mouse_up();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return  DC.dogEditor->callback_mouse_up();
   return false;
 }
 

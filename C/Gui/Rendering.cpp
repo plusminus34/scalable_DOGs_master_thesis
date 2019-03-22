@@ -1,5 +1,7 @@
 #include "Rendering.h"
 
+using namespace std;
+
 void get_wireframe_edges(const Eigen::MatrixXd& V, const QuadTopology& quadTop, Eigen::MatrixXd& E1, Eigen::MatrixXd& E2,
     bool display_border) {
   /*
@@ -110,9 +112,8 @@ void render_dog_stitching_constraints(igl::opengl::glfw::Viewer& viewer, const D
 
 void plot_vertex_based_rulings(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN, 
     const QuadTopology& quadTop, bool new_rulings, double ruling_length, int rulings_mod, double rulings_planar_eps) {
-
   Eigen::MatrixXd E1(0,3); Eigen::MatrixXd E2(0,3);
-  get_rulings_edges(V, VN, quadTop, ruling_length, rulings_planar_eps, rulings_mod,E1, E2);
+  get_rulings_edges(V, VN, quadTop, new_rulings, ruling_length, rulings_mod, rulings_planar_eps, E1, E2);
   //viewer.data.add_edges(E1, E2, Eigen::RowVector3d(93./255,125./255,190./255));
   //viewer.data.add_edges(E1, E2, Eigen::RowVector3d(80./255,133./255,250./255));
   viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0/255,0./255,0./255));
@@ -120,7 +121,7 @@ void plot_vertex_based_rulings(igl::opengl::glfw::Viewer& viewer, const Eigen::M
 }
 
 void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN, 
-                        const QuadTopology& quadTop, double ruling_length, int rulings_mod, double rulings_planar_eps,
+                        const QuadTopology& quadTop, bool new_rulings, double ruling_length, int rulings_mod, double rulings_planar_eps,
                         Eigen::MatrixXd& E1, Eigen::MatrixXd& E2) {
     int r_num = 0;
   for (int si = 0; si < quadTop.stars.rows(); si+=5) {
@@ -141,7 +142,12 @@ void get_rulings_edges(const Eigen::MatrixXd& V, const Eigen::MatrixXd& VN,
       if (p_0_i%rulings_mod == 0) {
       
       Eigen::RowVector3d r;
-      r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
+      if (new_rulings) {
+        r = get_ruling_direction_new(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
+      } else {
+        r = get_ruling_direction(VN, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i, rulings_planar_eps);
+      }
+      
       //r = get_ruling_direction(V, p_0_i, p_xf_i, p_xb_i, p_yf_i, p_yb_i);
       double scale = ruling_length*(V.row(p_xf_i)-V.row(p_0_i)).norm();
       E1.row(c) << V(p_0_i,0)-scale*r(0), V(p_0_i,1)-scale*r(1), V(p_0_i,2)-scale*r(2);
@@ -232,8 +238,8 @@ Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& VN, int p_0_i, in
   return r;
 }
 
-/*
-Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& V, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i) {
+
+Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, int p_0_i, int p_xf_i, int p_xb_i, int p_yf_i, int p_yb_i, double rulings_planar_eps) {
   Eigen::RowVector3d ex_f = V.row(p_xf_i)-V.row(p_0_i);
   Eigen::RowVector3d ex_b = V.row(p_xb_i)-V.row(p_0_i);
   Eigen::RowVector3d ey_f = V.row(p_yf_i)-V.row(p_0_i);
@@ -258,9 +264,9 @@ Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& V, int p_0_i, int
   cout << "k_x = " << k_x << " k_y = " << k_y << endl;
 
   Eigen::RowVector3d r; r.setZero();
-  double eps = 1e-5;
+  
   // Planarity test
-  if ((k_x > eps) || (k_y > eps)) {
+  if ((k_x > rulings_planar_eps) || (k_y > rulings_planar_eps)) {
     double theta = atan2(sqrt(k_y),sqrt(k_x));
     cout << " theta = " << theta << endl;
 
@@ -274,4 +280,3 @@ Eigen::RowVector3d get_ruling_direction(const Eigen::MatrixXd& V, int p_0_i, int
   }
   return r;
 }
-*/
