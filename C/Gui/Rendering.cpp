@@ -272,8 +272,8 @@ Eigen::RowVector3d get_ruling_direction_new(const Eigen::MatrixXd& V, const Eige
   // Planarity test
   if (normals_avg_intersection_r.norm()) {
     //double theta = atan(sqrt(k_y)/sqrt(k_x));//atan2(sqrt(k_y),sqrt(k_x));
-    double theta = M_PI/2-atan(sqrt(k_y)/sqrt(k_x));//atan2(sqrt(k_y),sqrt(k_x));
-    double deg_s = 180/M_PI;
+    double theta = M_PI/2-atan(sqrt(k_y/k_x));//atan2(sqrt(k_y),sqrt(k_x));
+    //double deg_s = 180/M_PI;
     //cout << " theta = " << theta << endl;
     //cout <<"--"<<endl;
     //cout << "k_x = " << k_x << " k_y = " << k_y << std::endl;
