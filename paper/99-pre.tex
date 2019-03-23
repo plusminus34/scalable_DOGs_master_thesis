@@ -1,0 +1,131 @@
+% !TEX root =  ShapeSpaceDog.tex
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage[mathscr]{eucal}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{algorithmic}
+\usepackage{microtype}
+\usepackage{units}
+
+
+% compact bullet lists and enumeration environments
+\newenvironment{tight_enumerate}{
+\begin{enumerate}[topsep=4pt,itemindent=\parindent]
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+%\newenvironment{tight_itemize}{
+%\begin{itemize}[topsep=4pt]
+%  \setlength{\itemsep}{1pt}
+%  \setlength{\parskip}{0pt}
+%  \setlength{\parsep}{0pt}
+%}{\end{itemize}}
+
+
+\usepackage{dsfont}
+\usepackage{graphicx,wrapfig}
+
+\usepackage{mdframed}
+\mdfsetup{skipabove=\topskip,skipbelow=\topskip}
+\newmdenv[	linewidth=0.75pt,
+			leftline=false,
+			rightline=false,
+   			innerleftmargin=0pt,
+			innerrightmargin=0pt]{topbot}
+
+%\usepackage[mathcal]{euscript}
+
+%\usepackage{amsthm}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{corollary}{Corollary}
+\newtheorem{mydefinition}{Definition}
+
+\newcommand{\MiR}[1]{{\bf\textcolor{cyan}{MR: #1}}} % Michael
+\newcommand{\OSH}[1]{{\bf\textcolor{red}{OSH: #1}}} % Olga
+\newcommand{\TimH}[1]{{\bf\textcolor{blue}{TH: #1}}} % Tim 
+\newcommand{\Rev}[1]{{#1}} % Revision
+
+\newcommand{\todo}[1]{{\bf\textcolor{red}{TODO: #1}}}
+
+%\newcommand{\newt}[1]{{\textcolor{blue}{#1}}}
+\newcommand{\newt}[1]{{#1}}
+
+
+%Abbreviations
+\newcommand{\figref}[1]{Fig.\ \ref{#1}}
+\newcommand{\secref}[1]{Sec.\ \ref{#1}}
+\newcommand{\appref}[1]{Appendix \ref{#1}}
+\newcommand{\equref}[1]{Eq.\ \eqref{#1}}
+\newcommand{\defref}[1]{Def.\ \ref{#1}}
+\newcommand{\lemmaref}[1]{Lemma \ref{#1}}
+\newcommand{\theoremref}[1]{Theorem \ref{#1}}
+\newcommand{\corollaryref}[1]{Cor.\ \ref{#1}}
+
+
+% operators
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\Proj}{Proj}
+
+
+% Olga SH notation
+\newcommand{\set}[1]{\mathcal{#1}}
+% Transpose symbol
+\newcommand{\transposeSign}{\textsf{T}}
+\newcommand{\tr}{\transposeSign}
+
+
+\newcommand{\R}{\mathds{R}}
+\newcommand{\Z}{\mathds{Z}}
+\DeclareMathOperator{\atantwo}{atan2}
+
+\newcommand{\x}{x}
+\newcommand{\p}{p}
+
+\newcommand{\Fbo}{F_{\bar{1}}}
+\newcommand{\Fbt}{F_{\bar{2}}}
+
+\newcommand{\FAll}{\mathbf{F}}
+\newcommand{\II}{I\!I}
+\newcommand{\Atotal}{\mathcal{A}}
+
+
+%\renewcommand{\ra}{\rightarrow}
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\Norm}[1]{\lvert \! \lvert \! \lvert #1 \rvert \! \rvert \! \rvert}
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+\newcommand{\babs}[1]{\Big \vert#1 \Big \vert}
+\newcommand{\bra}[1]{\left\{#1\right\}}
+\newcommand{\parr}[1]{\left (#1\right )}
+\newcommand{\brac}[1]{\left [#1\right ]}
+\newcommand{\ip}[1]{\left \langle #1 \right \rangle }
+\newcommand{\eps}{\varepsilon}
+
+
+\newcommand{\alter}[1]{\textcolor{magenta}{[Alt: #1]}}
+\newcommand{\opt}[1]{\textcolor{magenta}{[Opt: #1]}}
+\newcommand{\rem}[1]{\textcolor{magenta}{[Rem: #1]}}
+
+\newcommand{\LP}{\mathbb{L}}
+\newcommand{\J}{\mathbf{J}}
+\newcommand{\K}{\mathbf{K}}
+\newcommand{\D}{\mathscr{D}}
+\newcommand{\GR}{{\mathcal{G}}}
+\newcommand{\I}{{\mathcal{I}}}
+\newcommand{\CO}{\mathcal{C}}
+\newcommand{\GI}{{\GR}_{\I}}
+\newcommand{\GC}{{\GR}_{\CO}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\Mevo}{{\M}_{evo}}
+\newcommand{\Mgen}{{\M}_{G}}
+%\newcommand{\u}{\mathscr{u}}
+%\newcommand{\v}{\mathscr{v}}
+\newcommand{\TD}{\ensuremath{T_{F}\D}}
+\newcommand{\ND}{\ensuremath{N_{V(t)}\D}}
