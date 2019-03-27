@@ -31,9 +31,10 @@ Curved folding is well understood locally, around a small part of a single curve
 Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is active, i.e. folded, or not (see \figref{fig:folded_and_not_folded} ). With this in mind, we note the following observation:
 
 \begin{theorem}\label{Thm:orth_geo_equiv}
-A crease is 'active' on a curved fold if and only if the osculating plane of the crease curve is locally a supporting plane for the surface (see \figref{fig:plane_side}).
+A crease is 'active' on a given point along a crease curve if and only if at that point its osculating plane is locally a supporting plane for the surface (see \figref{fig:plane_side}).
 \end{theorem}
-This follows directly from the fact that the tangent planes along a curved folded surface are reflections of one another through the curve's osculating plane.
+This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. As mentioned, there is often an extra combinatorial degree of freedom in choosing the type of fold, but generally only for one fold. We follow \cite{demaine_lens} to distinguish between the two type of folded configurations by calling one choice a \textit{Mountain} fold and the other a \textit{Valley} fold, distinguishing between a fold above and below the osculating plane for a given orientation. We note that by \cite{demaine_lens}, a fold always consistently stays mountain/valley throughout a bend curve, with a higher curvature than its flattening. %We also note that when the curvature of the curve is not larger than its geodesic curvature, one example being a flat patch, then the tangents from both sides are the same (we should maybe call it both active and not active for that configuration?
+
 
 % Motivated by homotopy stuff, we look for a function F(t). Once a crease is active, there's no need to take care of it.
 
@@ -44,7 +45,7 @@ This follows directly from the fact that the tangent planes along a curved folde
 % Problem in using it for a DOG is that we cannot hope to get it exactly. Then present binary representation. Say how it's really good (also goes to zero very fast).
 % The binary characterization in the smooth case, motivate more degrees of freedom, and add the algorithm. Then add control for dihedral angles and mountain valley fold.
 \subsection{Discretization}
-
+% Get a discrete picture for a fold, and then zoom in, to name the tangent.
 \subsection{Optimization}
 
 \begin{figure} [h]

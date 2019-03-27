@@ -1,6 +1,6 @@
 \section{Setup} \label{sec:pre}
 \subsection{Definitions}
-Throughout the paper we look at curved folded surfaces as piecewise $C^2$ developable surfaces, whose discontinuities are focused along creases. We assume that these creases are $C^2$ curves that may intersect one another, and we call these intersections \textit{crease vertices}. These curves segment the surface into various disconnected components, which we call curved patches. By our assumptions these curved patches remain $C^2$, i.e. though the folding operation creates discontinuities along patches, the patches viewed separately are deformed by $C^2$ deformations. Throughout the paper we will often visualize the crease pattern itself, i.e. the initial flatten surface together with its curved creases (\figref{fig:crease_pattern}).
+Throughout the paper we look at curved folded surfaces as piecewise $C^2$ developable surfaces, whose discontinuities are focused along creases. We assume that these creases are $C^2$ curves that may intersect one another, and we call these intersections \textit{crease vertices}. These curves segment the surface into various disconnected components, which we call curved patches. By our assumptions these curved patches remain $C^2$, i.e. though the folding operation creates discontinuities along patches, the patches viewed separately are deformed by $C^2$ deformations. Throughout the paper we will often visualize the crease pattern itself, i.e. the initial isometric flatten surface together with its curved creases (\figref{fig:crease_pattern}).
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/crease_patterns}
@@ -9,13 +9,20 @@ Throughout the paper we look at curved folded surfaces as piecewise $C^2$ develo
 \end{figure}
 
 \subsection{Model}
-We follow the work of \cite{rabi2018shape} by modeling each smooth patch as a discrete orthogonal geodesic net, and the entire surface by keeping appropriate boundary constraints between the patches and along the creases. We trivially extend it to support intersecting curves by adding grid lines at crease vertices.
+We follow the work of \cite{rabi2018shape} by modeling each smooth patch as a discrete orthogonal geodesic net, and the entire surface by keeping appropriate boundary constraints between the patches and along the creases. We trivially extend it to support intersecting curves by adding grid lines at crease vertices (see \figref{fig:piecewise_dog_from_crease} and \figref{fig:curve_on_dog}).
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/piecewise_dog_from_crease}
 	\caption{Given a crease pattern, we create a DOG for each segment (colored differently), and use the boundary constraints as done in \cite{rabi2018shape}.}
 	\label{fig:piecewise_dog_from_crease}
+\end{figure}
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=0.8\linewidth]{figures/curve_on_dog}
+	\caption{Picture taken from \cite{rabi2018shape}.}
+	\label{fig:curve_on_dog}
 \end{figure}
 
 \subsection{Desiredata}
