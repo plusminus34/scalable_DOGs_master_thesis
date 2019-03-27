@@ -19,7 +19,23 @@ The folding angle of a curved crease can vary along the curve, and the ruling pa
 %(there's the cone singularity case where a curved fold is more local (as focused on the cone point) but I think this requires the curve to be C^1.. should mention it?
 
 \subsection{The combinatorial parameters of multiple creases}
-Curved folding is well understood locally, around a small part of a single curve, as the tangent planes along the curves are reflections of one another through the folded curve osculating plane. Understanding crease patterns globally still remains a challenge. In essence, deforming one patch propagates a global deformation of the patch on the other side of the crease, a process that depends on the ruling patterns. The ruling patterns are formed as the intersections of the tangent planes, and as mentioned the ruling patterns can smoothly change during the deformation itself. When there are multiple creases this process further propagate and dictates the shape of other patches (see \figref{fig:multiple_crease_pattern}). The process becomes more complicated when some creases intersect due to compatibility constraints (see \figref{fig:multiple_crease_pattern}, right figure). Generally speaking, though one might be able to choose between 4 configurations of the surface at the first crease, but as this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is active, i.e. folded, or not (TODO: see figurebias-stuff).
+Curved folding is well understood locally, around a small part of a single curve, as the tangent planes along the curves are reflections of one another through the folded curve osculating plane. Understanding crease patterns globally still remains a challenge. In essence, deforming one patch propagates a global deformation of the patch on the other side of the crease, a process that depends on the ruling patterns. The ruling patterns are formed as the intersections of the tangent planes, and as mentioned the ruling patterns can smoothly change during the deformation itself. When there are multiple creases this process further propagate and dictates the shape of other patches (see \figref{fig:multiple_crease_pattern}). The process becomes more complicated when some creases intersect due to compatibility constraints (see \figref{fig:multiple_crease_pattern}, right figure). 
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figures/multiple_crease_patterns}
+	\caption{Curved and straight crease patterns, decomposing a pattern into multiple components and intersecting at vertices.}
+	\label{fig:multiple_crease_pattern}
+\end{figure}
+
+Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is active, i.e. folded, or not (see \figref{fig:folded_and_not_folded} ). With this in mind, we note the following observation:
+
+\begin{theorem}\label{Thm:orth_geo_equiv}
+A crease is 'active' on a curved fold if and only if the osculating plane of the crease curve is locally a supporting plane for the surface (see \figref{fig:plane_side}).
+\end{theorem}
+This follows directly from the fact that the tangent planes along a curved folded surface are reflections of one another through the curve's osculating plane.
+
+% Motivated by homotopy stuff, we look for a function F(t). Once a crease is active, there's no need to take care of it.
 
 % The pictures which will show are then discrete, though the smooth picture is the same. Maybe put the discrete picture in the setup as well.
 % A fold is active if nearby tangents are reflections of one another, and is not active if they are the same as there is no discontinuity. (have a figure that is discrete, but explain it is also the same drawing for the smooth case).
@@ -27,10 +43,13 @@ Curved folding is well understood locally, around a small part of a single curve
 % One can then view a folding-bending process as a smooth flow, i.e. a smooth deformation on a piecewise C^2 developable surface. The choice to make each fold active is only done during time t = 0, whereas otherwise discontinuties arise, and locally remains a curved fold as the equality.
 % Problem in using it for a DOG is that we cannot hope to get it exactly. Then present binary representation. Say how it's really good (also goes to zero very fast).
 % The binary characterization in the smooth case, motivate more degrees of freedom, and add the algorithm. Then add control for dihedral angles and mountain valley fold.
+\subsection{Discretization}
+
+\subsection{Optimization}
 
 \begin{figure} [h]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/multiple_crease_patterns}
-	\caption{Curved and straight crease patterns, decomposing a pattern into multiple components and intersecting at vertices.}
-	\label{fig:multiple_crease_pattern}
+	\includegraphics[width=0.5\linewidth]{figures/plane_side}
+	\caption{TODO: caption and better figure}
+	\label{fig:plane_side}
 \end{figure}
