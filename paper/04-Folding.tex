@@ -64,7 +64,7 @@ We discretize the condition by constraining tangents formed by the orthogonal gr
 
 In the notation of \figref{fig:osc_plane_discretization}, this constraint can be written as:
 \begin{equation} \label{eq:folding_const_normalized} 
-\text{sgn}(\langle t^1+t^2,B\rangle) = 0
+\text{sgn}(\langle t^1,B\rangle) = {sgn}(\langle t^2,B\rangle)
 \end{equation}
 with 
 \begin{equation} \label{cot_eq}
@@ -76,9 +76,16 @@ with
      \end{array}
    \right.
 \end{equation}
-There is in fact no need to normalize the tangents and binormal directions, as the following cubic constraint is equivalent to \eqref{eq:folding_const_normalized}:
+There is in fact no need to normalize the tangents and binormal directions, as the following constraint is equivalent to \eqref{eq:folding_const_normalized}:
 \begin{equation} \label{eq:folding_const}
-\text{sgn}(\langle e^1+e^2,e_f \times e_b \rangle) = 0
+\text{sgn}(\langle e^1,e_f \times e_b \rangle) = {sgn}(\langle e^2,e_f \times e_b\rangle)
 \end{equation}
 
 \subsection{Optimization}
+% Say that this constraint is satisfied 
+% combinatorial
+% we know that as in the smooth case this only affects once, so want this to vanish afterwards
+% we start feasible and we want to remain feasible as in the case of a smooth thing.
+% We want to effect it as minimally as possible.
+% We add a penalty method, given some energy we minimize the following
+% We use them on all inner points of curves besides vertices
