@@ -4,7 +4,7 @@ In this section, we explore the different ways one can fold a given crease patte
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/curved_fold_through_curve.pdf}
-	\caption{(TODO BETTER FIG) Left: A flattened curve in 2D. Right: A small neighbourhood around an embedding of the curve in $\mathbb{R}^3$, its osculating plane and two options to extend a the curve to developable surface by constructing the 2 planes containing the curve's tangent and making an angle of $\alpha(t)$  with the osculating plane. Choosing 2 different tangents along each 'side' of the curve creates discontinuities along the curve and a curved folded surface.}
+	\caption{(TODO BETTER FIG) In the future I'll place here a crease pattern and 4 different configuration for the same deformation of the curve. 2 of them will be 2 different smooth surfaces and the other two will be curved folds by picking 2 different ones from both sides. }
 	\label{fig:curved_fold_through_curve}
 \end{figure}
 
@@ -28,10 +28,10 @@ Curved folding is well understood locally, around a small part of a single curve
 	\label{fig:multiple_crease_pattern}
 \end{figure}
 
-Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is active, i.e. folded, or not (see \figref{fig:folded_and_not_folded} ). With this in mind, we note the following observation:
+Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is folded or not (see \figref{fig:folded_and_not_folded} ). With this in mind, we note the following observation:
 
 \begin{theorem}\label{Thm:orth_geo_equiv}
-A crease is 'active' on a given point along a crease curve if and only if at that point its osculating plane is locally a supporting plane for the surface (see \figref{fig:plane_side}).
+A crease curve is folded along a given point if and only if its osculating plane at that point is locally a supporting plane for the surface (see \figref{fig:plane_side}).
 \end{theorem}
 
 \begin{figure} [h]
@@ -53,12 +53,32 @@ This follows directly from the fact that the tangent planes along a crease are t
 % Problem in using it for a DOG is that we cannot hope to get it exactly. Then present binary representation. Say how it's really good (also goes to zero very fast).
 % The binary characterization in the smooth case, motivate more degrees of freedom, and add the algorithm. Then add control for dihedral angles and mountain valley fold.
 \subsection{Discretization}
+We discretize the condition by constraining tangents formed by the orthogonal grid parameter lines to lie on one side of the curve's discrete osculating plane (see \figref{fig:osc_plane_discretization} for the notations of the edges). The edges intersecting the crease can be considered as discrete tangents originating at crease points. In the notation of \figref{fig:osc_plane_discretization}, each connected component has its own edge $e^1,e^2$ intersecting the crease. At a starting flat configuration they are the same, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{t_1}{\|t_1\|}, t_2 = \frac{t_2}{\|t_2\|}$. We denote the curves binormal, i.e. its osculating plane's normal as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ are the same along both connected components.
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/osc_plane_discretization}
-	\caption{TODO: caption and better figure}
+	\caption{Notation for edges along a crease pattern. Left: An orthogonal grid with a crease curve. Center: Following \cite{rabi2018shape}, we represent such a part by duplicating quads along the grid, creating different connected components while positionally constraining the curve edge points to match. Right: Notation for a duplicated edge intersecting the curve at the blue points ($e_1,e_2$), and the forward and backwards crease edges at the blue points ($e_f,e_b$). }
 	\label{fig:osc_plane_discretization}
 \end{figure}
-% Get a discrete picture for a fold, and then zoom in, to name the tangent.
+
+In the notation of \figref{fig:osc_plane_discretization}, this constraint can be written as:
+\begin{equation} \label{eq:folding_const_normalized} 
+\text{sgn}(\langle t^1+t^2,B\rangle) = 0
+\end{equation}
+with 
+\begin{equation} \label{cot_eq}
+\text{sgn}(x) = \left\{
+     \begin{array}{@{}l@{\thinspace}l}
+       -1  &: \text{if } x > 0, \\
+       0 &: \text{if } x = 0, \\
+       1 &: \text{if } x > 0. \\
+     \end{array}
+   \right.
+\end{equation}
+There is in fact no need to normalize the tangents and binormal directions, as the following cubic constraint is equivalent to \eqref{eq:folding_const_normalized}:
+\begin{equation} \label{eq:folding_const}
+\text{sgn}(\langle e^1+e^2,e_f \times e_b \rangle) = 0
+\end{equation}
+
 \subsection{Optimization}
