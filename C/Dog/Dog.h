@@ -28,6 +28,9 @@ struct DogEdgeStitching  : public igl::Serializable {
 	// Use for cases when it's important to have a precise representation (usually it doesn't)
 	std::vector<CGAL::Exact_predicates_exact_constructions_kernel::FT> edge_coordinates_precise;
 
+	// For each submesh, hold the indices to edge-points (crease points) that are on that submesh. The indices point to edge_const_1 and edge_coordinates vectors
+	std::vector<std::vector<int>> submesh_to_edge_pt;
+
 	int get_vertex_edge_point_deg(Edge& edge) const;
 
 	// For now we don't serialize the exact CGAL coordinates

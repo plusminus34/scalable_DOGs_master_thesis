@@ -126,12 +126,13 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		std::vector<Point_2> pts; polyline_to_points(poly,pts);
 		constrained_pts.insert(pts.begin(),pts.end());
 	}
+	edgeStitching.submesh_to_edge_pt.resize(submeshFList.size());
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	int pt_const_i = 0; int edge_constraints_cnt = 0;
 	for (auto pt: constrained_pts) {
 
-		Number_type edge_t; std::vector<Edge> edge_v_indices;
-		pt_to_edge_coordinates(pt, creasePattern, submeshVList, edge_v_indices, edge_t);
+		Number_type edge_t; std::vector<Edge> edge_v_indices; std::vector<int> submeshes_with_pt;
+		pt_to_edge_coordinates(pt, creasePattern, submeshVList, edge_v_indices, edge_t, submeshes_with_pt);
 
 		edgeStitching.multiplied_edges_start.push_back(edge_constraints_cnt);
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
@@ -150,6 +151,10 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		for (int dup_edge_i = 0; dup_edge_i < edge_v_indices.size(); dup_edge_i++) {
 			edgeStitching.edge_to_duplicates[edge_v_indices[dup_edge_i]] = pt_const_i;
 		}
+		int index_to_one_of_the_edge_pts = edge_constraints_cnt-1; // doesn't matter which one who pick, they are equal
+		for (auto subm_i : submeshes_with_pt) {
+			edgeStitching.submesh_to_edge_pt[subm_i].push_back(index_to_one_of_the_edge_pts); // push one of the vertices
+		}
 		
 		pt_const_i++;
 	}
@@ -161,8 +166,8 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		std::vector<Point_2> pts; polyline_to_points(polylines[i],pts);
 		edgeStitching.stitched_curves[i].resize(pts.size());
 		for (int j = 0; j < pts.size(); j++) {
-			Number_type edge_t; std::vector<Edge> edge_v_indices;
-			pt_to_edge_coordinates(pts[j], creasePattern, submeshVList, edge_v_indices, edge_t);
+			Number_type edge_t; std::vector<Edge> edge_v_indices; std::vector<int> submeshes_with_pt;
+			pt_to_edge_coordinates(pts[j], creasePattern, submeshVList, edge_v_indices, edge_t, submeshes_with_pt);
 
 			auto edge_v = CGAL::to_double(edge_t)*V.row(edge_v_indices[0].v1)+(1-CGAL::to_double(edge_t))*V.row(edge_v_indices[0].v2);
 			// Choose one of the edges, don't need the duplicates and they are all (approximately) equal anyhow
@@ -328,7 +333,7 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
 }
 
 void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
-				std::vector<Edge>& edge_v_indices, Number_type& edge_t) {
+				std::vector<Edge>& edge_v_indices, Number_type& edge_t, std::vector<int>& submeshes_with_pt) {
 
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	std::pair<Point_2,Point_2> edge_pts; 
@@ -378,7 +383,8 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 			
 			if (pt_in_submesh) {
 				// Insert the (global V) indices
-				edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));	
+				edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
+				submeshes_with_pt.push_back(sub_i);
 			}
 			
 		}

@@ -30,7 +30,7 @@ Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern,
 			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const std::vector<Point_2>& constrained_pts_non_unique);
 
 void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
-				std::vector<Edge>& edge_v_indices, Number_type& t_precise);
+				std::vector<Edge>& edge_v_indices, Number_type& t_precise, std::vector<int>& submeshes_with_pt);
 
 bool is_closed_polyline(const Polyline_2& poly);
 
