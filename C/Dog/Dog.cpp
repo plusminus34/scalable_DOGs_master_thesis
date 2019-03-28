@@ -28,7 +28,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	quad_topology(V,F,quadTop);
 	setup_stitched_curves_initial_l_angles_length();
 }
-
+ 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(V), F_ren(Fsqr_to_F(F)) {
 	submeshVSize.push_back(V.rows()); submeshFSize.push_back(F.rows());
 	vi_to_submesh.assign(V.rows(),0);
@@ -91,11 +91,13 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
 	for (int i = 0; i < submeshV.rows(); i++) {V.row(submesh_v_min_i + i) = submeshV.row(i);}
-	update_rendering_v();
+	//update_rendering_v();
+	update_Vren2();
 }
 
 void Dog::update_rendering_v() {
-	V_ren_from_V_and_const(V,edgeStitching,V_ren);
+	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
+	update_Vren2();
 }
 
 void Dog::get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out) const {
@@ -121,6 +123,27 @@ void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitchin
 	}
 	V_ren.resize(V.rows()+consts_num,3);
 	V_ren << V,V_folds_polygons;
+}
+
+void Dog::update_Vren2() {
+	int subm_n = edgeStitching.submesh_to_edge_pt.size();
+	// Check if there is only 1 submesh
+	if (subm_n < 2) {
+		V_ren = V; return;
+	}
+	// go through the entire submeshes
+	int vi_cnt = 0;
+	for (int subi = 0; subi < subm_n; subi++) {
+		// First add the normal vertices, that are on the DOG but are not on the crease points
+		int subm_min,subm_max; get_submesh_min_max_i(subi, subm_min, subm_max);
+		for (int vi = subm_min; vi <= subm_max; vi++) V_ren.row(vi_cnt++) = V.row(vi);
+		// Then add the crease points
+		for (auto ei : edgeStitching.submesh_to_edge_pt[subi]) {
+			// Get the vertex
+			double t = edgeStitching.edge_coordinates[ei];
+			V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
+		}
+	}
 }
 
 void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices) {
