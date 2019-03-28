@@ -121,6 +121,7 @@ private:
 	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
+	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2;
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	std::vector<int> submeshVSize; std::vector<int> submeshFSize;
