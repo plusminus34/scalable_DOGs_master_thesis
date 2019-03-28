@@ -28,6 +28,9 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	Eigen::MatrixXd V_ren; Dog::V_ren_from_V_and_const(V, edgeStitching, V_ren);
 	Eigen::MatrixXi F_ren = generate_rendered_mesh_faces(creasePattern, submesh_polygons, submeshVList, V_ren, constrained_pts_non_unique);
+	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
+	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+									V_ren_list, edgeStitching, V_ren2, F_ren2);
 
 	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
 	for (int i = 0; i < submeshVList.size(); i++) {
@@ -415,4 +418,81 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 	for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
 		points[cnt++] = seg_i->target();
 	}
+}
+
+void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& submeshVList,DogEdgeStitching& eS, std::vector<Eigen::MatrixXd>& V_ren_list) {
+	V_ren_list.resize(submeshVList.size());
+	for (int i = 0; i < submeshVList.size(); i++) {
+		V_ren_list[i].resize(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size(),3);
+		// add normal points
+		for (int j = 0; j < submeshVList[i].rows(); j++) {V_ren_list[i].row(j) = submeshVList[i].row(j);}
+		// add crease points
+		for (int j = 0; j < eS.submesh_to_edge_pt[i].size(); j++) {
+			int ei = eS.submesh_to_edge_pt[i][j];
+			auto t = eS.edge_coordinates_precise[ei];
+			auto coord_x =  t*V(eS.edge_const_1[ei].v1,0) + (1-t)*V(eS.edge_const_1[ei].v2,0);
+			auto coord_y =  t*V(eS.edge_const_1[ei].v1,1) + (1-t)*V(eS.edge_const_1[ei].v2,1);
+			V_ren_list[i].row(submeshVList[i].rows() + j) << CGAL::to_double(coord_x), CGAL::to_double(coord_y),0;
+			//V_ren_list[i].row(submeshVList[i].rows() + j) = 
+			//double t = eS.edge_coordinates[ei];
+			//V_ren_list[i].row(submeshVList[i].rows() + j) = t*V.row(eS.edge_const_1[ei].v1) + (1-t)*V.row(eS.edge_const_1[ei].v2);
+		}
+	}
+}
+
+
+void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, 
+		const std::vector<SubmeshPoly>& submesh_polygons,
+		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,
+		Eigen::MatrixXd& V_ren,
+		Eigen::MatrixXi& F_ren) {
+	typedef std::pair<double,double> PointDouble;
+	// First create a list of F_ren
+	std::vector<Eigen::MatrixXi> F_ren_list(V_ren_list.size());
+	for (int subi = 0; subi < V_ren_list.size(); subi++) {
+		std::vector<std::vector<int> > polygons_v_ren_indices; int poly_n = 0;
+		// Create faces for every submesh
+		// We need to convert the submeshpolygons indices from coordinates to the ones in the Vlist
+		// We can search the closest to each one, but its better to just cache all points before
+		std::map<PointDouble, int> point_to_sub_V_ren;
+		// map normal points
+		for (int i = 0; i < V_ren_list[subi].rows(); i++) {
+			point_to_sub_V_ren[PointDouble(V_ren_list[subi](i,0),V_ren_list[subi](i,1))] = i;
+		}
+		// map points
+		// Now go through the submesh polygons
+		for (int poly_i = 0; poly_i < submesh_polygons.size(); poly_i++) {
+			auto submesh_i = submesh_polygons[poly_i].first; auto submesh_poly = submesh_polygons[poly_i].second;
+			// Update the interval [min_sub_i, max_sub_i) to the new submesh vertices indices in V_ren
+			if (submesh_i != subi) continue;
+			// every pt should have some cached indices to point_to_sub_V_ren
+			polygons_v_ren_indices.push_back(std::vector<int>(submesh_poly.size())); int poly_vi = 0;
+			for (auto vptr = submesh_poly.vertices_begin(); vptr != submesh_poly.vertices_end(); vptr++) {
+				PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
+				
+				if (point_to_sub_V_ren.count(pt)) {
+					polygons_v_ren_indices[poly_n][poly_vi] = point_to_sub_V_ren[pt];
+					std::cout << "Mapped point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
+				} else {
+					//std::cout << "Could not map point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
+					// find the closest point to it on Vsub. Just a bit slower but there's some rounding error
+					double min_dist = std::numeric_limits<double>::infinity();
+					Eigen::RowVector3d pt_3d(pt.first,pt.second,0); int closest_idx = 0;
+					for (int k = 0; k < V_ren_list[subi].rows(); k++) {
+						if ((pt_3d-V_ren_list[subi].row(k)).norm() < min_dist) {
+							min_dist = (pt_3d-V_ren_list[subi].row(k)).norm();
+							closest_idx = k;
+						}
+					}
+					//std::cout << "found point at idx = " << closest_idx << std::endl;
+					polygons_v_ren_indices[poly_n][poly_vi] = closest_idx;
+				}
+				poly_vi++;
+			}
+			poly_n++;
+		}
+		// Create the submesh
+		igl::polygon_mesh_to_triangle_mesh(polygons_v_ren_indices,F_ren_list[subi]);
+	}
+	igl::combine(V_ren_list,F_ren_list, V_ren, F_ren);
 }

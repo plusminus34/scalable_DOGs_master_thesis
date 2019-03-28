@@ -35,3 +35,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 bool is_closed_polyline(const Polyline_2& poly);
 
 void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);
+void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& submeshVList,DogEdgeStitching& eS,
+	 std::vector<Eigen::MatrixXd>& V_ren_list);
+void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, const std::vector<SubmeshPoly>& submesh_polygons,
+		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F_ren);
