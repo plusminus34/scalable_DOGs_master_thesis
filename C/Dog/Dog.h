@@ -93,7 +93,6 @@ public:
 
 	// Helper functinon to go from V to V_ren (rendering) vice-versa (used for the GUI and editor vertex picking)
 	static void V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitching& edgeStitching, Eigen::MatrixXd& V_ren);
-	bool is_v_ren_vertex_fold(int v_idx) const {return v_idx >= V.rows();}
 	int v_ren_idx_to_v_idx(int v_idx) const;
 	int v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const;
 

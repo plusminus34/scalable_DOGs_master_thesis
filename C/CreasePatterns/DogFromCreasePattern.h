@@ -24,11 +24,6 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons);
 
 
-// The rendered mesh V_ren = [Vlist[0];Vlist[1]..;Vlist[m];V_F] where V_F are the (non unique) folding points on the edges
-// Vlist is just needed to get indices inside V_ren (to know how many vertices are in)
-Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons,
-			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const std::vector<Point_2>& constrained_pts_non_unique);
-
 void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 				std::vector<Edge>& edge_v_indices, Number_type& t_precise, std::vector<int>& submeshes_with_pt);
 

@@ -168,6 +168,7 @@ int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 			return i;
 	}
 	// did not find matching point
+	std::cout << "could not find point!" << std::endl;
 	return -1;
 }
 
@@ -182,7 +183,6 @@ int Dog::v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const {
 		}
 	}
 	return -1;
-	std::vector<std::vector<EdgePoint>> stitched_curves;
 }
 
 bool Dog::is_crease_vertex_flat(int curve_i, int edge_i) const {

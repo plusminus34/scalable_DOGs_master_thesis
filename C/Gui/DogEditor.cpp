@@ -279,13 +279,13 @@ void DogEditor::select_positional_mouse_down() {
 
 int DogEditor::pick_vertex() {
 	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-	if ((vi>=0) && (!dog.is_v_ren_vertex_fold(vi)) ) return dog.v_ren_idx_to_v_idx(vi);
+	if (vi>=0) return dog.v_ren_idx_to_v_idx(vi);
 	return -1;
 }
 
 int DogEditor::pick_edge(EdgePoint& edgePoint) {
 	int vi = lasso.pickVertex(viewer.current_mouse_x, viewer.current_mouse_y);
-	if ((vi>=0) && (dog.is_v_ren_vertex_fold(vi)) ) return dog.v_ren_idx_to_edge(vi, edgePoint);
+	if (vi>=0) return dog.v_ren_idx_to_edge(vi, edgePoint);
 	return -1;	
 }
 
