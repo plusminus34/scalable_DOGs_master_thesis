@@ -105,7 +105,7 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
   }
-  std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
+  //std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
   return constVals;
 }
 

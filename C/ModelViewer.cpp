@@ -91,17 +91,20 @@ void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog)
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
 
-    Eigen::MatrixXd VN; //igl::per_vertex_normals(Vren,Fren,VN);
-    Eigen::MatrixXd corner_VN; igl::per_corner_normals(Vren,Fren,20,VN);
-    /*
-    // Set normals as corners on the folds
-    for (int i = 0; i < Vren.rows(); i++) {
-    	//std::cout << "i = " << i << " is_v_ren_vertex_fold(i) = " << dog.is_v_ren_vertex_fold(i) << std::endl;
-    	if (dog.is_v_ren_vertex_fold(i)) {
-    		VN.row(i) = corner_VN.row(i);
-    	}
-    }
-    */
+    Eigen::MatrixXd VN; igl::per_vertex_normals(Vren,Fren,VN);
+    //Eigen::MatrixXd corner_VN; igl::per_corner_normals(Vren,Fren,20,corner_VN);
+    
+    // Set normals as corners on the folds/
+    // Use vertex normals (as these look much better than per_corner which are face based)
+    // The only thing need to be done is set the normals at the creases to zero
+    // Hopefully the renderer or something else just averages it (I think it does)
+    if (new_rulings) {
+	    for (int i = 0; i < Vren.rows(); i++) {
+	    	if (dog.is_v_ren_vertex_fold(i)) {
+	    		VN.row(i) << 0,0,0;
+	    	}
+	    }
+	}
   	viewer.data().set_normals(VN);
 }
 

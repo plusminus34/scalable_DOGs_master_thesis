@@ -293,7 +293,7 @@ public:
 			std::cout << "MVTangentCreaseAngleConstraints: Error! ijv_cnt = " << ijv_cnt << " but IJV.size() " << IJV.size() << std::endl;
 			exit(1);
 		}
-		std::cout << "const_cnt = " << const_cnt << std::endl;
+		//std::cout << "const_cnt = " << const_cnt << std::endl;
 	}
 	
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
