@@ -122,3 +122,10 @@ f(x) + \alpha \sum_{c_i \in C_{I}} \theta_i(x)^2\\
 \end{equation}
 For some given $\alpha > 0$, where we set our initial $\alpha_0 = 100$. If our linesearch always return a point with unfeasible folding constraints $\phi_(x)$ we increase and set $\alpha = 2\alpha$ \MiR{add an algorithm here?}.
 We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantuees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/fold_bias_compare}
+	\caption{With and without bias. Same deformations. \MiR{todo caption.} }
+	\label{fig:fold_bias_compare}
+\end{figure}
