@@ -1,10 +1,10 @@
 \section{Folding crease patterns} \label{sec:folding}
-In this section, we explore the different ways one can fold a given crease pattern, and derive objectives to control them.
+In this section we explore the different ways one can fold a given crease pattern. Our result is a discrete combinatorial charecterization for a folding of a piecewise DOG alongside a simple algorithm to enforce folding along creases.
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/curved_fold_through_curve.pdf}
-	\caption{(TODO BETTER FIG) In the future I'll place here a crease pattern and 4 different configuration for the same deformation of the curve. 2 of them will be 2 different smooth surfaces and the other two will be curved folds by picking 2 different ones from both sides. }
+	\caption{(TODO BETTER FIG by Katja) In the future I'll place here a crease pattern and 4 different configuration for the same deformation of the curve. 2 of them will be 2 different smooth surfaces and the other two will be curved folds by picking 2 different ones from both sides. }
 	\label{fig:curved_fold_through_curve}
 \end{figure}
 
@@ -37,7 +37,7 @@ A crease curve is folded along a given point if and only if its osculating plane
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.5\linewidth]{figures/plane_side}
-	\caption{TODO: caption and better figure}
+	\caption{\MiR{TODO: caption and better figure}}
 	\label{fig:plane_side}
 \end{figure}
 
@@ -82,25 +82,43 @@ There is in fact no need to normalize the tangents and binormal directions, as t
 \text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
 \end{equation}
 \subsection{Discussion}
-In the smooth case there are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of eq. \eqref{eq:folding_const}. \\
+There are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint \eqref{eq:folding_const}, and briefly discuss how these are not satisfied by different constraint choices. \\
 \textbf{It is suitable for homotopy based optimization methods} as it is satisfied on a flat mesh. In this sense we consider a point along a curve with zero normal curvature as both folded and not folded. \\ 
 \textbf{It is minimal} and generally non-intrusive. Once a curved crease is folded on a piecewise smooth developable surface, one does not need to explicitly take extra care of folding. The discontinuity along the tangents caused by the folding means that in order for a curve to become unfolded one needs to first flatten it, and local deformations keep it folded. Conversely, a curved crease can only be folded from a flat configuration \cite{more_on_paper}. The effect of eq. \eqref{eq:folding_const} on an already-folded surface is null. \\
-One could for instance distinguish curved folded with non-curved folded configurations using discontinuties along the tangents $t_1,t_2$, but lose the feasibility of the flat models. Another option to distinguish between folded and unfolded configurations is the following similar but simpler smooth constraint:
+One could for instance distinguish curved folded with non-curved folded configurations using discontinuties along the tangents $t_1,t_2$, but lose the feasibility of the flat models. Moreover, in the discrete case a minor discontinuity can still arise even though there is no fold, i.e. where eq. \eqref{eq:folding_const_normalized} is not satisfied. Another option to distinguish between folded and unfolded configurations is the following similar but simpler smooth constraint:
 \begin{equation} \label{eq:folding_const_smooth} 
 \langle t^1,B\rangle + \langle t^2,B\rangle = 0
 \end{equation}
-This condition is satisfied exactly in flat model. Since tangent planes along a folded creased curve are reflections of one another in the osculating plane, the condition is satisfied exactly in a piecewise smooth orthogonal geodesic net), but not on every folded piecewise DOG unless the curved crease has zero torsion, in which case folds are just folds are simply formed as a global plane reflection. Enforcing constraint \eqref{eq:folding_const_smooth} as a hard constraint is too restrictive in practice, while enforcing it as a soft constraint creates a constraint that unlike the smooth case, does not vanish once a crease is folded and hence is not minimal.
+This condition is satisfied exactly in flat models. Since tangent planes along a folded creased curve are reflections of one another in the osculating plane, the condition is satisfied exactly in a piecewise smooth orthogonal geodesic net), but not on every folded piecewise DOG unless the curved crease has zero torsion, in which case folds are just folds are simply formed as a global plane reflection. Enforcing constraint \eqref{eq:folding_const_smooth} as a hard constraint is too restrictive in practice, while enforcing it as a soft constraint creates a constraint that unlike the smooth case, does not vanish once a crease is folded and hence is not minimal.
 
 \subsection{Optimization}
-We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while satisfying the DOG and patches constraints as in \cite{rabi2018shape}, while also ensuring the formation of folds along crease curves.
-Let $c_i$
+We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while satisfying the DOG and patches constraints as in \eqref{eq:const_opt} and also ensuring the formation of folds along crease curves. Let $C_{I}$ be all inner crease points, having two neighbours along a crease curve. Let $c_i(x) \in C_{I}$ be a crease point and $\phi_i(x) $ be the folding constraint \eqref{eq:folding_const} for this crease point. We replace \eqref{eq:const_opt} by the following following problem:
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x
+f(x) \\
+& \textrm{subject to} \\
+& & g_i(x) = 0, \ \  i = 1, \ldots, m. \\
+& & \phi_i(x) = 0, \ \  \forall c_i \in C_{I}
+\end{aligned}
+\end{equation}
 
-
-Let $f(x)$, composed for instance as a composition of bending,isometry and positional constraints and a set of constraints $g_i(x)$ over a piecewise DOG, composed of the DOG constraints and the edge stitching constraints as in \cite{rabi2018shape}, we would like to solve the following problem while enforcing the constraints eq.\eqref{eq:folding_const} over all inner points in the crease curves.
-% Say that this constraint is satisfied 
-% combinatorial
-% we know that as in the smooth case this only affects once, so want this to vanish afterwards
-% we start feasible and we want to remain feasible as in the case of a smooth thing.
-% We want to effect it as minimally as possible.
-% We add a penalty method, given some energy we minimize the following
-% We use them on all inner points of curves besides vertices
+Starting from a feasible flat mesh and motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model once a curve is bend, we strive to always satisfy $\phi_i(x)$ exactly. To that end we do not accept steps in the linesearch that violates $\phi(x)$, and add a penalty term encouraging folds. We replace the non-smooth terms in \eqref{eq:folding_const} by utilizing a smooth approximation for the sign function:
+\begin{equation} \label{eq:sign_smooth_approx}
+\text{sgn}(x) \approx \tanh(kx)
+\end{equation}
+For some $k >> 1$, which in practice we fix as $k = 1000$. Hence we replace $\phi_i$ by the approximation:
+\begin{equation} \label{eq:folding_const}
+\theta_i(x) = \tanh(k\langle e^1,e_f \times e_b \rangle) +  \tanh(k\langle e^2,e_f \times e_b\rangle)
+\end{equation}
+We then solve the problem:
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x
+f(x) + \alpha \sum_{c_i \in C_{I}} \theta_i(x)^2\\
+& \textrm{s.t.}
+\text{ } g_i(x) = 0, \ \  i = 1, \ldots, m.
+\end{aligned}
+\end{equation}
+For some given $\alpha > 0$, where we set our initial $\alpha_0 = 100$. If our linesearch always return a point with unfeasible folding constraints $\phi_(x)$ we increase and set $\alpha = 2\alpha$ \MiR{add an algorithm here?}.
+We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantuees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
