@@ -15,7 +15,7 @@ int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
 		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
 		const std::vector< std::vector<int> >& submesh_adjacency) :
-				V(V),F(F),edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
+				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
 				submesh_adjacency(submesh_adjacency) {
 
 	// set mesh_min_max_i;
@@ -29,16 +29,18 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	quad_topology(V,F,quadTop);
 	setup_stitched_curves_initial_l_angles_length();
 	setup_rendered_wireframe_edges_from_planar();
+	setup_boundary_curves_indices();
 }
  
-Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(V), F_ren(Fsqr_to_F(F)) {
+Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(V), V_ren(V), F_ren(Fsqr_to_F(F)) {
 	submeshVSize.push_back(V.rows()); submeshFSize.push_back(F.rows());
 	vi_to_submesh.assign(V.rows(),0);
 	quad_topology(V,F,quadTop);
 	setup_rendered_wireframe_edges_from_planar();
+	setup_boundary_curves_indices();
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
 						submeshVSize(d.submeshVSize), submeshFSize(d.submeshFSize),
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						stitched_curves_l(d.stitched_curves_l),stitched_curves_angles(d.stitched_curves_angles), stitched_curves_curvature(d.stitched_curves_curvature),
@@ -215,4 +217,81 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));
 		}
 	}
+}
+
+bool Dog::is_rectangular() {
+	return true; // Todo: implement
+}
+
+void Dog::setup_boundary_curves_indices() {
+	if (is_rectangular()) {
+		double min_x = flatV.col(0).minCoeff(); double max_x = flatV.col(0).maxCoeff();
+		double min_y = flatV.col(1).minCoeff(); double max_y = flatV.col(1).maxCoeff();
+		//std::cout << "min_x = " << min_x << " max_x = " << max_x << " min_y = " << min_y << " max_y = " << max_y << std::endl;
+		int left_lower_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,min_y,0));
+		int right_lower_i = find_v_idx(flatV,Eigen::RowVector3d(max_x,min_y,0));
+		int left_upper_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,max_y,0));
+		//std::cout << "At indices " << left_lower_i << "," << right_lower_i << "," << left_upper_i << std::endl;
+
+		//left_bnd,right_bnd,lower_bnd,upper_bnd;
+		get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(0,1,0), left_bnd);
+		get_all_curves_on_parameter_line(right_lower_i, Eigen::RowVector3d(0,1,0), right_bnd);
+		get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(1,0,0), lower_bnd);
+		get_all_curves_on_parameter_line(left_upper_i, Eigen::RowVector3d(1,0,0), upper_bnd);
+		/*
+		cout << "left ";for (auto idx: left_bnd ) cout << idx <<","; cout << endl;
+		cout << "right "; for (auto idx: right_bnd ) cout << idx <<","; cout << endl;
+		cout << "down "; for (auto idx: lower_bnd ) cout << idx <<","; cout << endl;
+		cout << "up "; for (auto idx: upper_bnd ) cout << idx <<","; cout << endl;
+		*/
+	}
+}
+
+int Dog::find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v) {
+	double eps = 1e-12;
+	for (int i = 0; i < Vertices.rows(); i++) {
+		if ((Vertices.row(i)-v).norm() < eps) return i;
+	}
+	return -1;
+}
+
+int Dog::find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v) {
+	double eps = 1e-12;
+	for (int i = 0; i < Vertices.rows(); i++) {
+		if (i == other_v_i) continue;
+		if ((Vertices.row(i)-v).norm() < eps) return i;
+	}
+	return -1;
+}
+
+void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices) {
+	double eps = 1e-10;
+	int prev_idx = -1; int cur_idx = v_idx;
+	indices.push_back(cur_idx);
+	bool more_to_go = true;
+	while (more_to_go) {
+		more_to_go = false;
+		for (int i = 0; i < quadTop.A[cur_idx].size(); i++) {
+			Eigen::RowVector3d edge_dir = V.row(quadTop.A[cur_idx][i])-V.row(cur_idx);
+			if (edge_dir.dot(direction) > eps) {
+				prev_idx = cur_idx;
+				cur_idx = quadTop.A[cur_idx][i];
+				indices.push_back(cur_idx);
+				more_to_go = true; 
+				continue;
+			}
+		}
+		if (!more_to_go) {
+			// Found the end of the curve, maybe we can go backwards and get the same vertex from another connected component
+			// Find another vertex with the same flattened location, but another component
+			int other_v_i = find_other_v_idx(flatV, prev_idx, flatV.row(prev_idx));
+			if (other_v_i != -1) {
+				prev_idx = cur_idx;
+				cur_idx = other_v_i;
+				indices.push_back(cur_idx);
+				more_to_go = true;
+			}
+		}
+	}
+	
 }
