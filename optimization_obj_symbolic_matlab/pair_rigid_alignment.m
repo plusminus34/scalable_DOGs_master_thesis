@@ -19,6 +19,8 @@ T = [t1,t2,t3];
 const = T+p1*R-p2;
 E = sum(const.^2);
 
+vars = [p1_x, p1_y, p1_z, p2_x, p2_y, p2_z];
+
 ccode(E,'file','pair_rigid_alignment_E');
-ccode(gradient(E),'file','pair_rigid_alignment_G');
-ccode(hessian(E),'file','pair_rigid_alignment_H');
+ccode(gradient(E,vars),'file','pair_rigid_alignment_G');
+ccode(hessian(E,vars),'file','pair_rigid_alignment_H');
