@@ -51,6 +51,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (render_curved_folding_properties) render_curved_folding_normals(viewer);
 	if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 		render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
+		render_dog_wireframe(viewer);
 	} else {
 		render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
 	}
@@ -201,4 +202,16 @@ void ModelViewer::center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::Matr
   double eps = 2e-1;
   double scale = sqrt((4-eps)*M_PI/area); // make it a little bit smaller so we could see the lines
   GV = GV * scale;
+}
+
+void ModelViewer::render_dog_wireframe(igl::opengl::glfw::Viewer& viewer) {
+	const std::vector<std::pair<int,int>>& wire_edges_i =  DC.getEditedSubmesh()->get_rendered_wireframe_edges();
+	const Eigen::MatrixXd& V_ren =  DC.getEditedSubmesh()->getVrendering();
+	int e_num = wire_edges_i.size();
+	Eigen::MatrixXd E1(e_num,3), E2(e_num,3);
+	for (int i = 0; i < e_num; i++) {
+		E1.row(i) = V_ren.row(wire_edges_i[i].first);
+		E2.row(i) = V_ren.row(wire_edges_i[i].second);
+	}
+	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0,0,0));
 }

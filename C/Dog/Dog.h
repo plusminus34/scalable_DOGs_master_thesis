@@ -96,6 +96,10 @@ public:
 	int v_ren_idx_to_v_idx(int v_idx) const;
 	int v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const;
 
+	bool is_rectangular() {return quadTop.bnd2.size() == 4;}
+	void setup_rendered_wireframe_edges_from_planar();
+	const std::vector< std::pair<int,int> >& get_rendered_wireframe_edges() const {return rendered_wireframe_edges;}
+
 	// The initial length/angles/curvatures of the initial stitched curves
 	std::vector<std::vector<double>> stitched_curves_l; std::vector<std::vector<double>> stitched_curves_angles; std::vector<std::vector<double>> stitched_curves_curvature;
 
@@ -124,6 +128,8 @@ private:
 	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
+	// The rendered quad wireframe
+	std::vector< std::pair<int,int> > rendered_wireframe_edges;
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	std::vector<int> submeshVSize; std::vector<int> submeshFSize;

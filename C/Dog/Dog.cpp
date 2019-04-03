@@ -1,6 +1,7 @@
 #include "Dog.h"
 
 #include <igl/boundary_loop.h>
+#include <igl/edges.h>
 
 using namespace std;
 
@@ -27,15 +28,18 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	}
 	quad_topology(V,F,quadTop);
 	setup_stitched_curves_initial_l_angles_length();
+	setup_rendered_wireframe_edges_from_planar();
 }
  
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),V_ren(V), F_ren(Fsqr_to_F(F)) {
 	submeshVSize.push_back(V.rows()); submeshFSize.push_back(F.rows());
 	vi_to_submesh.assign(V.rows(),0);
 	quad_topology(V,F,quadTop);
+	setup_rendered_wireframe_edges_from_planar();
 }
 
-Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), submeshVSize(d.submeshVSize), submeshFSize(d.submeshFSize),
+Dog::Dog(const Dog& d) : V(d.V),F(d.F),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
+						submeshVSize(d.submeshVSize), submeshFSize(d.submeshFSize),
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						stitched_curves_l(d.stitched_curves_l),stitched_curves_angles(d.stitched_curves_angles), stitched_curves_curvature(d.stitched_curves_curvature),
 						vi_to_submesh(d.vi_to_submesh) {
@@ -197,4 +201,18 @@ bool Dog::is_crease_vertex_flat(int curve_i, int edge_i) const {
 		}
 	}
 	return true;
+}
+
+void Dog::setup_rendered_wireframe_edges_from_planar() {
+	// Hack but will work for now
+	double eps = 1e-10;
+	Eigen::MatrixXi E; igl::edges(F_ren,E);
+	for (int i = 0; i < E.rows(); i++) {
+		// make sure the edge is an 'x' or 'y' edge
+		if ( abs(V_ren(E(i,0),0)-V_ren(E(i,1),0)) < eps ) {
+			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));	
+		} else if ( abs(V_ren(E(i,0),1)-V_ren(E(i,1),1)) < eps ) {
+			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));
+		}
+	}
 }
