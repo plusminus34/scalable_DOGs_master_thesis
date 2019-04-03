@@ -68,21 +68,29 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	std::vector<Eigen::MatrixXd> Vlist; std::vector<Eigen::MatrixXi> Flist;
-	const Dog* dog = DC.getEditedSubmesh(); Dog nextDog(*dog);
-	Vlist.push_back(dog->getVrendering()); Flist.push_back(dog->getFrendering());
+	const Dog* dog = DC.getEditedSubmesh(); Dog vertDog(*dog);
 	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
 	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
+	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
+	Eigen::Matrix3d R; Eigen::Vector3d T;
 
-	int wallpaper_res = 5;
 	// add meshes to the right
-	for (int i = 0; i < wallpaper_res; i++) {
-		Eigen::Matrix3d R; Eigen::Vector3d T;
-	//PointsRigidAlignmentObjective::update_rigid_motion(dog->getV_vector(), left_curve, right_curve,R, T);
-		PointsRigidAlignmentObjective::update_rigid_motion(nextDog.getV_vector(), left_curve, right_curve,R, T);
-		Eigen::MatrixXd newV = (nextDog.getV() * R).rowwise() + T.transpose();
-		nextDog.update_V(newV);
-		Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
+	for (int j = 0; j < wallpaper_res; j++) {
+		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
+		Dog nextDog(vertDog);
+		for (int i = 0; i < wallpaper_res; i++) {
+			PointsRigidAlignmentObjective::update_rigid_motion(nextDog.getV_vector(), left_curve, right_curve,R, T);
+			Eigen::MatrixXd newV = (nextDog.getV() * R).rowwise() + T.transpose();
+			nextDog.update_V(newV);
+			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
+		}
+		// add mesh up
+		PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,R, T);
+		Eigen::MatrixXd newV = (vertDog.getV() * R).rowwise() + T.transpose();
+		vertDog.update_V(newV);
+		
 	}
+	
 
 	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
 	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);

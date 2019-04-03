@@ -30,6 +30,7 @@ public:
 	int rulings_mod = 1;
 	double rulings_planar_eps = 0.05;
 	bool new_rulings = false;
+	int wallpaper_res = 5;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);

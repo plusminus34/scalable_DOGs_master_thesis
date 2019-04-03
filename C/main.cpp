@@ -213,6 +213,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
+      ImGui::InputInt("Walllpaper Resolution", &modelViewer.wallpaper_res);
 
       ImGui::End();
   };
