@@ -1,6 +1,8 @@
 #include "PointsRigidAlignmentObjective.h"
 #include <igl/procrustes.h>
 
+using namespace std;
+
 
 PointsRigidAlignmentObjective::PointsRigidAlignmentObjective(std::vector<int>& src_points, std::vector<int>& target_points) :
 		src_points(src_points), target_points(target_points) { 
@@ -9,7 +11,8 @@ PointsRigidAlignmentObjective::PointsRigidAlignmentObjective(std::vector<int>& s
 }
 
 void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x, 
-			Eigen::Matrix3d& R, Eigen::Vector3d& T) const {
+	const std::vector<int>& src_points, const std::vector<int>& target_points,
+			Eigen::Matrix3d& R, Eigen::Vector3d& T) {
 	if (src_points.size() < 3) return;
 	int vnum = x.rows()/3;
 	Eigen::MatrixXd src(src_points.size(),3); Eigen::MatrixXd target(target_points.size(),3);
@@ -17,15 +20,16 @@ void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x
 		src.row(i) << x(src_points[i]), x(src_points[i]+vnum), x(src_points[i]+2*vnum);
 		target.row(i) << x(target_points[i]), x(target_points[i]+vnum), x(target_points[i]+2*vnum);
 	}
-	
 	// call procrustes with includeScaling = false, includeReflections = false
 	double scale_dummy; igl::procrustes(src, target, false, false, scale_dummy,R,T);
+	//std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
+	//int wait; std::cin >> wait; exit(1);
 }
 
 double PointsRigidAlignmentObjective::obj(const Eigen::VectorXd& x) const {
 	if (src_points.size() < 3) return 0;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
-	update_rigid_motion(x,R,T);
+	update_rigid_motion(x,src_points,target_points,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));
 	double r11(R(0,0)),r12(R(0,1)),r13(R(0,2)),r21(R(1,0)),r22(R(1,1)),r23(R(1,2)),r31(R(2,0)),r32(R(2,1)),r33(R(2,2));
 
@@ -42,6 +46,7 @@ double PointsRigidAlignmentObjective::obj(const Eigen::VectorXd& x) const {
  		double t7 = -p2_z+t3+p1_x*r13+p1_y*r23+p1_z*r33;
 		e += t5*t5+t6*t6+t7*t7;
 	}
+	std::cout << "e rigid = " << e << std::endl;
 	return e;
 }
 
@@ -50,7 +55,7 @@ Eigen::VectorXd PointsRigidAlignmentObjective::grad(const Eigen::VectorXd& x) co
   	grad.resize(x.rows(),1); grad.setZero();
 	if (src_points.size() < 3) return grad;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
-	update_rigid_motion(x,R,T);
+	update_rigid_motion(x,src_points,target_points,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));
 	double r11(R(0,0)),r12(R(0,1)),r13(R(0,2)),r21(R(1,0)),r22(R(1,1)),r23(R(1,2)),r31(R(2,0)),r32(R(2,1)),r33(R(2,2));
 
@@ -78,9 +83,9 @@ Eigen::VectorXd PointsRigidAlignmentObjective::grad(const Eigen::VectorXd& x) co
 		grad(p_1_i) += r11*t8*2.0+r12*t12*2.0+r13*t16*2.0;
 		grad(p_1_i + vnum) += r21*t8*2.0+r22*t12*2.0+r23*t16*2.0;
 		grad(p_1_i + 2*vnum) += r31*t8*2.0+r32*t12*2.0+r33*t16*2.0;
-		grad(p_2_i) += p2_x*2.0-t1*2.0-p1_x*r11*2.0-p1_y*r21*2.0-p1_z*r31*2.0;
-		grad(p_2_i + vnum) += p2_y*2.0-t2*2.0-p1_x*r12*2.0-p1_y*r22*2.0-p1_z*r32*2.0;
-		grad(p_2_i + 2*vnum) += p2_z*2.0-t3*2.0-p1_x*r13*2.0-p1_y*r23*2.0-p1_z*r33*2.0;
+		//grad(p_2_i) += p2_x*2.0-t1*2.0-p1_x*r11*2.0-p1_y*r21*2.0-p1_z*r31*2.0;
+		//grad(p_2_i + vnum) += p2_y*2.0-t2*2.0-p1_x*r12*2.0-p1_y*r22*2.0-p1_z*r32*2.0;
+		//grad(p_2_i + 2*vnum) += p2_z*2.0-t3*2.0-p1_x*r13*2.0-p1_y*r23*2.0-p1_z*r33*2.0;
 	}
   	return grad;
 }
@@ -89,7 +94,7 @@ Eigen::VectorXd PointsRigidAlignmentObjective::grad(const Eigen::VectorXd& x) co
 void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 	if (src_points.size() < 3) return;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
-	update_rigid_motion(x,R,T);
+	update_rigid_motion(x,src_points,target_points,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));
 	double r11(R(0,0)),r12(R(0,1)),r13(R(0,2)),r21(R(1,0)),r22(R(1,1)),r23(R(1,2)),r31(R(2,0)),r32(R(2,1)),r33(R(2,2));
 
@@ -117,21 +122,29 @@ void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i, (r11*r11)*2.0+(r12*r12)*2.0+(r13*r13)*2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i+vnum, t5);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i+2*vnum, t9);
+		/*
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i, r11*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i+vnum, r12*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i+2*vnum, r13*-2.0);
+		*/
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i, t5);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i+vnum, (r21*r21)*2.0+(r22*r22)*2.0+(r23*r23)*2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i+2*vnum, t13);
+		/*
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i, r21*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i+vnum, r22*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i+2*vnum, r23*-2.0);
+		*/
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i, t9);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i+vnum, t13);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i+2*vnum, (r31*r31)*2.0+(r32*r32)*2.0+(r33*r33)*2.0);
+
+		/*
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i, r31*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i+vnum, r32*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i+2*vnum, r33*-2.0);
+
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i,p_1_i, r11*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i,p_1_i+vnum, r21*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i,p_1_i+2*vnum, r31*-2.0);
@@ -144,5 +157,6 @@ void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_1_i+vnum, r23*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_1_i+2*vnum, r33*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_2_i+2*vnum, 2.0);
+		*/
 	}
 }

@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "MeshWire\0Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "MeshWire\0Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0ViewWallpaper\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();

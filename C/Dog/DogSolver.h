@@ -56,6 +56,7 @@ public:
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
 		std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
+		std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 		std::ofstream* time_measurements_log = NULL);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
@@ -97,11 +98,13 @@ public:
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
+	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
 	  	PointsRigidAlignmentObjective pointsRigidAlignmentY;
+	  	PointsRigidAlignmentObjective pointsRigidAlignmentX;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;

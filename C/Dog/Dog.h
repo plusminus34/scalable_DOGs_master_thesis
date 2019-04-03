@@ -124,6 +124,7 @@ public:
 	
 	// The initial length/angles/curvatures of the initial stitched curves
 	std::vector<std::vector<double>> stitched_curves_l; std::vector<std::vector<double>> stitched_curves_angles; std::vector<std::vector<double>> stitched_curves_curvature;
+	std::vector<int> left_bnd,right_bnd,lower_bnd,upper_bnd;
 
 private:
 	void update_rendering_v();
@@ -137,7 +138,6 @@ private:
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
 	Eigen::MatrixXd flatV;
 	// Indices of boundary curves (also when there are creases). Only relevant for square patches and used for wallpapers.
-	std::vector<int> left_bnd,right_bnd,lower_bnd,upper_bnd;
 	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;

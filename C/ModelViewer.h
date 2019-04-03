@@ -11,7 +11,8 @@ enum ViewMode {
 	ViewModeCreases = 2,
 	ViewModeGauss = 3,
 	CreasesSVGReader = 4,
-	ViewRulings = 5
+	ViewRulings = 5,
+	ViewWallpaper = 6
 };
 
 class ModelViewer {
@@ -41,7 +42,8 @@ private:
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 
-	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog);
+	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren);
+	void render_wallpaper(igl::opengl::glfw::Viewer& viewer);
 
 	const ModelState& state;
 	const DeformationController& DC;

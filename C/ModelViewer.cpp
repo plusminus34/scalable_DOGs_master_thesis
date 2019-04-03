@@ -1,6 +1,7 @@
 #include "ModelViewer.h"
 
 #include "Gui/Rendering.h"
+#include <igl/combine.h>
 #include <igl/slice.h>
 #include <igl/per_vertex_normals.h>
 #include <igl/per_corner_normals.h>
@@ -10,7 +11,7 @@ using namespace std;
 
 ModelViewer::ModelViewer(const ModelState& modelState, const DeformationController& DC) : 
 									state(modelState), DC(DC) {
-	viewMode = ViewModeMesh; 
+	viewMode = ViewModeMeshWire; 
 	prevMode = viewMode;
 	first_rendering = true;
 	render_pos_const = true;
@@ -40,6 +41,8 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
     	igl::per_vertex_normals(dog->getV(),dog->getFTriangular(),VN);
 		plot_vertex_based_rulings(viewer, dog->getV(), VN,
 						dog->getQuadTopology(), new_rulings, rulings_length, rulings_mod, rulings_planar_eps);
+	} else if (viewMode == ViewWallpaper) {
+		render_wallpaper(viewer);
 	}
 
 	first_rendering = false;
@@ -60,7 +63,30 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_edge_points_constraints(viewer);
 		DC.dogEditor->render_pairs();
 	}
-	render_mesh(viewer, *dog);
+	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
+}
+
+void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
+	std::vector<Eigen::MatrixXd> Vlist; std::vector<Eigen::MatrixXi> Flist;
+	const Dog* dog = DC.getEditedSubmesh(); Dog nextDog(*dog);
+	Vlist.push_back(dog->getVrendering()); Flist.push_back(dog->getFrendering());
+	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
+	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
+
+	int wallpaper_res = 5;
+	// add meshes to the right
+	for (int i = 0; i < wallpaper_res; i++) {
+		Eigen::Matrix3d R; Eigen::Vector3d T;
+	//PointsRigidAlignmentObjective::update_rigid_motion(dog->getV_vector(), left_curve, right_curve,R, T);
+		PointsRigidAlignmentObjective::update_rigid_motion(nextDog.getV_vector(), left_curve, right_curve,R, T);
+		Eigen::MatrixXd newV = (nextDog.getV() * R).rowwise() + T.transpose();
+		nextDog.update_V(newV);
+		Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
+	}
+
+	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
+	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);
+	render_mesh(viewer,VWallpaper,FWallpaper);
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
@@ -82,8 +108,7 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
-void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
-	auto Vren = dog.getVrendering(); auto Fren = dog.getFrendering();
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren) {
 	viewer.data().set_mesh(Vren, Fren);
 
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;

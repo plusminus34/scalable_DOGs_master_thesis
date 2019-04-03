@@ -62,6 +62,9 @@ public:
 	double constraints_deviation;
 	double objective;
 
+	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_x;
+	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
+
 	std::vector<EdgePoint> dihedral_constrained; // used for also plotting the dihedral constraints
 	WallapaperType wallpaperType;
 
@@ -90,8 +93,7 @@ private:
 	// MV dihedral angle folds data (typically used for straight creases but sometimes for dihedral angle with an M/V assignment)
 	std::vector<MVTangentCreaseFold> mvTangentCreaseAngleParams; std::vector<double> mv_cos_angles;
 
-	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_x;
-	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
+
 
 	Eigen::VectorXd init_x0;
 	// This needs to reset sometimes. 
