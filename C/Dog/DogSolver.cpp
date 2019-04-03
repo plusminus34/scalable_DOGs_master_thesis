@@ -10,6 +10,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
         std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
         std::vector<std::pair<int,int>>& pairs,
+        std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
         std::ofstream* time_measurements_log) :
 
           dog(dog),
@@ -17,7 +18,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
           init_x0(init_x0), p(p),
           constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
-          obj(dog, init_x0, constraints, foldingBinormalBiasConstraints, p),
+          obj(dog, init_x0, constraints, foldingBinormalBiasConstraints, matching_curve_pts_y, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
@@ -53,8 +54,10 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           EdgesAngleConstraints& edgeAnglesConst,
           PointPairConstraints& ptPairConst,*/
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+          std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
+        pointsRigidAlignmentY(matching_curve_pts_y.first, matching_curve_pts_y.second),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
         edgePosSoftConstraints(constraints.edgePtConst, init_x0),
         edgeAnglesSoftConstraints(constraints.edgeAngleConst, init_x0),

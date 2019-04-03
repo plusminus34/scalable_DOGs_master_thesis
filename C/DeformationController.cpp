@@ -25,7 +25,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, 
-				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, opt_measurements_log);
+				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, matching_curve_pts_y, opt_measurements_log);
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
@@ -195,8 +195,14 @@ void DeformationController::reset_dog_solver() {
 	if (dogSolver) delete dogSolver;
 	cout << "reseting dog solver" << endl;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
-		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, opt_measurements_log);
+		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, matching_curve_pts_y, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
 	//int wait; cin >> wait;
 	has_new_constraints = false;
+}
+
+void DeformationController::set_wallpaper_constraints() {
+
+	has_new_constraints = true;
+	reset_new_editor_constraint();
 }

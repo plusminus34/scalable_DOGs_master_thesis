@@ -6,12 +6,12 @@
 #include <igl/opengl/glfw/Viewer.h>
 
 enum ViewMode {
-	ViewModeMesh = 0,
-	ViewModeMeshWire = 1,
-	ViewModeCreases = 1,
-	ViewModeGauss = 2,
-	CreasesSVGReader = 3,
-	ViewRulings = 4
+	ViewModeMeshWire = 0,
+	ViewModeMesh = 1,
+	ViewModeCreases = 2,
+	ViewModeGauss = 3,
+	CreasesSVGReader = 4,
+	ViewRulings = 5
 };
 
 class ModelViewer {
