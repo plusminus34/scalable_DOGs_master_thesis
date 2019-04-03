@@ -38,6 +38,7 @@ public:
 	void update_time_deformations() {update_edge_curve_constraints();update_dihedral_constraints();}
 	void update_edge_curve_constraints();
 	void update_dihedral_constraints();
+	void set_wallpaper_constraints();
 
 	void reset_constraints();
 	bool is_folded();

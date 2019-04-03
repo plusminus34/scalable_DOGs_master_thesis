@@ -10,6 +10,7 @@ PointsRigidAlignmentObjective::PointsRigidAlignmentObjective(std::vector<int>& s
 
 void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x, 
 			Eigen::Matrix3d& R, Eigen::Vector3d& T) const {
+	if (src_points.size() < 3) return;
 	int vnum = x.rows()/3;
 	Eigen::MatrixXd src(src_points.size(),3); Eigen::MatrixXd target(target_points.size(),3);
 	for (int i = 0; i < src_points.size(); i++) {
@@ -22,6 +23,7 @@ void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x
 }
 
 double PointsRigidAlignmentObjective::obj(const Eigen::VectorXd& x) const {
+	if (src_points.size() < 3) return 0;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
 	update_rigid_motion(x,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));
@@ -44,13 +46,14 @@ double PointsRigidAlignmentObjective::obj(const Eigen::VectorXd& x) const {
 }
 
 Eigen::VectorXd PointsRigidAlignmentObjective::grad(const Eigen::VectorXd& x) const {
+	Eigen::VectorXd grad;
+  	grad.resize(x.rows(),1); grad.setZero();
+	if (src_points.size() < 3) return grad;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
 	update_rigid_motion(x,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));
 	double r11(R(0,0)),r12(R(0,1)),r13(R(0,2)),r21(R(1,0)),r22(R(1,1)),r23(R(1,2)),r31(R(2,0)),r32(R(2,1)),r33(R(2,2));
 
-	Eigen::VectorXd grad;
-  	grad.resize(x.rows(),1); grad.setZero();
   	int vnum = x.rows()/3;
 
   	#pragma clang loop vectorize(enable)
@@ -84,6 +87,7 @@ Eigen::VectorXd PointsRigidAlignmentObjective::grad(const Eigen::VectorXd& x) co
 
 
 void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
+	if (src_points.size() < 3) return;
 	Eigen::Matrix3d R; Eigen::Vector3d T;
 	update_rigid_motion(x,R,T);
 	double t1(T(0)),t2(T(1)),t3(T(2));

@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0MeshWire\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "MeshWire\0Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
@@ -173,14 +173,17 @@ int main(int argc, char *argv[]) {
       
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 MV Dihedral Angle\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
+      ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
+      if (ImGui::Button("Set wallpaper constraints", ImVec2(-1,0))) {DC.set_wallpaper_constraints();}
       ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
       
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
