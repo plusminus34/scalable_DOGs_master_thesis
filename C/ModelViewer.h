@@ -7,6 +7,7 @@
 
 enum ViewMode {
 	ViewModeMesh = 0,
+	ViewModeMeshWire = 1,
 	ViewModeCreases = 1,
 	ViewModeGauss = 2,
 	CreasesSVGReader = 3,

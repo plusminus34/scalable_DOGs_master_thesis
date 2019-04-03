@@ -97,15 +97,15 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return DC.dogEditor->callback_mouse_down();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return DC.dogEditor->callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings)) return  DC.dogEditor->callback_mouse_up();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  DC.dogEditor->callback_mouse_up();
   return false;
 }
 
@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     );
 
       // Expose an enumeration type
-      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
+      ImGui::Combo("View mode", (int *)(&modelViewer.viewMode), "Mesh\0MeshWire\0Crease pattern\0Gauss Map\0SVG Reader\0Rulings\0\0");
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
