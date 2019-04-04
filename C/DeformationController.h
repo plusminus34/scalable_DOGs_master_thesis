@@ -6,6 +6,14 @@
 #include "Dog/Objectives/MVFoldingDihedralAngleConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
+
+enum WallapaperType {
+	XY = 0,
+	UXY = 1,
+	UXUY = 2,
+	XUY = 3
+};
+
 class DeformationController {
 public:
 	DeformationController();
@@ -30,6 +38,7 @@ public:
 	void update_time_deformations() {update_edge_curve_constraints();update_dihedral_constraints();}
 	void update_edge_curve_constraints();
 	void update_dihedral_constraints();
+	void set_wallpaper_constraints();
 
 	void reset_constraints();
 	bool is_folded();
@@ -53,7 +62,11 @@ public:
 	double constraints_deviation;
 	double objective;
 
+	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_x;
+	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
+
 	std::vector<EdgePoint> dihedral_constrained; // used for also plotting the dihedral constraints
+	WallapaperType wallpaperType;
 
 private:
 	void reset_dog_solver();
@@ -79,6 +92,8 @@ private:
 	std::vector<std::pair<Edge,Edge>> edge_angle_pairs; std::vector<double> edge_cos_angles;
 	// MV dihedral angle folds data (typically used for straight creases but sometimes for dihedral angle with an M/V assignment)
 	std::vector<MVTangentCreaseFold> mvTangentCreaseAngleParams; std::vector<double> mv_cos_angles;
+
+
 
 	Eigen::VectorXd init_x0;
 	// This needs to reset sometimes. 

@@ -6,11 +6,13 @@
 #include <igl/opengl/glfw/Viewer.h>
 
 enum ViewMode {
-	ViewModeMesh = 0,
-	ViewModeCreases = 1,
-	ViewModeGauss = 2,
-	CreasesSVGReader = 3,
-	ViewRulings = 4
+	ViewModeMeshWire = 0,
+	ViewModeMesh = 1,
+	ViewModeCreases = 2,
+	ViewModeGauss = 3,
+	CreasesSVGReader = 4,
+	ViewRulings = 5,
+	ViewWallpaper = 6
 };
 
 class ModelViewer {
@@ -28,6 +30,7 @@ public:
 	int rulings_mod = 1;
 	double rulings_planar_eps = 0.05;
 	bool new_rulings = false;
+	int wallpaper_res = 5;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
@@ -35,11 +38,13 @@ private:
 	void render_gauss_map(igl::opengl::glfw::Viewer& viewer);
 	void render_positional_constraints(igl::opengl::glfw::Viewer& viewer);
 	void render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer);
+	void render_dog_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 
-	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog);
+	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren);
+	void render_wallpaper(igl::opengl::glfw::Viewer& viewer);
 
 	const ModelState& state;
 	const DeformationController& DC;

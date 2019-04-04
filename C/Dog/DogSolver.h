@@ -23,8 +23,11 @@
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
+#include "Objectives/PointsRigidAlignmentObjective.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
+
+using std::vector;
 
 
 class DogSolver {
@@ -36,6 +39,7 @@ public:
 		double soft_pos_weight = 10;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
+		double wallpaper_curve_weight = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
 		int max_newton_iters = 5;
@@ -51,6 +55,8 @@ public:
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
+		std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
+		std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 		std::ofstream* time_measurements_log = NULL);
 	
 	void single_iteration(double& constraints_deviation, double& objective);
@@ -91,10 +97,14 @@ public:
 	  			EdgesAngleConstraints& edgeAngleConst,
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
+	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
+	  	PointsRigidAlignmentObjective pointsRigidAlignmentY;
+	  	PointsRigidAlignmentObjective pointsRigidAlignmentX;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;

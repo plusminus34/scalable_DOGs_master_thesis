@@ -11,10 +11,11 @@ public:
 	
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
+
+	static void update_rigid_motion(const Eigen::VectorXd& x, const std::vector<int>& src_points, const std::vector<int>& target_points,
+				Eigen::Matrix3d& R, Eigen::Vector3d& T);
 private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
-
-	void update_rigid_motion(const Eigen::VectorXd& x, Eigen::Matrix3d& R, Eigen::Vector3d& T) const;
 	
 	std::vector<int> src_points; std::vector<int> target_points;
 };

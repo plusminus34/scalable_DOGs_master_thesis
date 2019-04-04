@@ -96,15 +96,22 @@ public:
 	int v_ren_idx_to_v_idx(int v_idx) const;
 	int v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const;
 
-	// The initial length/angles/curvatures of the initial stitched curves
-	std::vector<std::vector<double>> stitched_curves_l; std::vector<std::vector<double>> stitched_curves_angles; std::vector<std::vector<double>> stitched_curves_curvature;
+	bool is_rectangular();
+	void setup_rendered_wireframe_edges_from_planar();
+	const std::vector< std::pair<int,int> >& get_rendered_wireframe_edges() const {return rendered_wireframe_edges;}
 
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
+      Add(F,std::string("_flatV"));
+      Add(left_bnd,std::string("_left_bnd"));
+      Add(right_bnd,std::string("_right_bnd"));
+      Add(lower_bnd,std::string("_lower_bnd"));
+      Add(upper_bnd,std::string("_upper_bnd"));
       Add(quadTop,std::string("_quadTop"));
       Add(V_ren,std::string("_V_ren"));
       Add(F_ren,std::string("_F_ren"));
+      Add(rendered_wireframe_edges,std::string("_rendered_wireframe_edgesn"));
       Add(submeshVSize,std::string("_submeshVSize"));
       Add(submeshFSize,std::string("_submeshFSize"));
       Add(submesh_adjacency,std::string("_submesh_adjacency"));
@@ -115,15 +122,27 @@ public:
       Add(vi_to_submesh,std::string("_vi_to_submesh"));
     }
 	
+	// The initial length/angles/curvatures of the initial stitched curves
+	std::vector<std::vector<double>> stitched_curves_l; std::vector<std::vector<double>> stitched_curves_angles; std::vector<std::vector<double>> stitched_curves_curvature;
+	std::vector<int> left_bnd,right_bnd,lower_bnd,upper_bnd;
+
 private:
 	void update_rendering_v();
 	void setup_stitched_curves_initial_l_angles_length();
+	void setup_boundary_curves_indices();
+	void get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices);
+	static int find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v);
+	static int find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v);
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	Eigen::MatrixXd flatV;
+	// Indices of boundary curves (also when there are creases). Only relevant for square patches and used for wallpapers.
 	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
+	// The rendered quad wireframe
+	std::vector< std::pair<int,int> > rendered_wireframe_edges;
 
 	// Edge stitching along multiple connected components in the DOG. Used to represent a piecewise developable mesh and in particular allow for folds.
 	std::vector<int> submeshVSize; std::vector<int> submeshFSize;
