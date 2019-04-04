@@ -197,8 +197,14 @@ bool OrthogonalGrid::is_point_on_grid(const Point_2& pt) const {
 }
 
 bool OrthogonalGrid::pt_in_vec(const std::vector<Number_type>& vec, const Number_type& pt) const {
-  auto it = std::lower_bound(vec.begin(),vec.end(),pt);
-  return (it != vec.end() && *it == pt);
+  //auto it = std::lower_bound(vec.begin(),vec.end(),pt);
+  //return (it != vec.end() && *it == pt);
+  // works up to epsilon (rounding error from CGAL to double)
+  double eps = 1e-10;
+  for (auto val : vec) {
+     if (std::abs(CGAL::to_double(pt-val)) < eps) return true;
+  }
+  return false;
 }
 
 bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, Number_type& t) const {
