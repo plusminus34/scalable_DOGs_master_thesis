@@ -34,7 +34,7 @@ void OrthogonalGrid::regularize_grid() {
 }
 void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::vector<Number_type>& axis_vec,
   std::vector<Number_type>& added_coords) {
-
+  std::sort(added_coords.begin(), added_coords.end());
   int start_i = 1;
   for (auto added_pt : added_coords) {
       // find the index of the closest point (but don't replace the first or last point)
@@ -50,6 +50,7 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
       // now fix backwards all of the values
       Number_type min_pt = axis_vec[start_i-1];
       Number_type spacing = (added_pt-min_pt)/(vertex_i-start_i+1);
+      //std::cout << "Using spacing = " << spacing << std::endl;
       //std::cout << "min_pt = " << min_pt << std::endl;
       int spacing_idx = 1;
       for (int i = start_i; i < vertex_i; i++) {
@@ -73,7 +74,6 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
     spacing_idx++;
   }
   //std::cout << "last pt = " << last_pt << std::endl;
-  //exit(1);
 }
 void OrthogonalGrid::initialize_grid() {
   regularize_grid();
