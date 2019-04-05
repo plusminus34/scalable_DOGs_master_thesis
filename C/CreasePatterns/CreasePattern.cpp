@@ -48,116 +48,131 @@ CreasePattern::CreasePattern(const CreasePattern& cP) : initial_polylines(cP.ini
 	// empty
 }
 
+bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& polylines_intersections, Number_type threshold,
+	 std::map<Point_2, Point_2>& vertices_to_snapped_vertices) {
+	std::cout << "getting snapped vertices locations" << std::endl;
+  	// Find nearby intersection groups and have a map between original vertices and a new coordinate
+  	bool should_snap = false;
+  	std::vector<std::set<int> > indices_groups; std::vector<bool> in_group(polylines_intersections.size(), false);
+  	for (int i = 0; i < polylines_intersections.size(); i++) {
+  		std::cout << "vertex at: " << polylines_intersections[i] << std::endl;
+  		std::set<int> nearby_points; nearby_points.insert(i);
+  		for (int j = i+1; j < polylines_intersections.size(); j++) {
+  			auto diff = polylines_intersections[i]-polylines_intersections[j];
+  			if ( (diff.x()*diff.x()+diff.y()*diff.y()) < threshold) {
+  				nearby_points.insert(j);
+  				should_snap = true;
+  			}
+  		}
+  		// see if j was already added somewhere
+  		bool new_set = true;
+  		for (int k = 0; k < indices_groups.size(); k++) {
+  			if (indices_groups[k].count(i)) {
+  				new_set = false;
+  				for (auto idx: nearby_points) indices_groups[k].insert(idx);
+  				continue;
+  			}
+  		}
+  		if (new_set) indices_groups.push_back(nearby_points);
+  		// 
+  		/*
+  		if (!in_group[i]) {
+  			indices_groups.push_back()
+  			in_group[i] = true;
+  		}
+  		*/
+  	}
+
+	for (int k = 0; k < indices_groups.size(); k++) {
+		// Compute the average of the points there
+		Point_2 new_v(0,0);
+		for (auto pt_i : indices_groups[k]) {new_v = Point_2(new_v.x() + polylines_intersections[pt_i].x(), new_v.y() + polylines_intersections[pt_i].y());}
+		new_v = Point_2(new_v.x() / Number_type(indices_groups[k].size()),new_v.y() / Number_type(indices_groups[k].size()));
+
+		std::cout << "Vertices group " << k << ": "; 
+		for (auto pt_i : indices_groups[k]) {
+			std::cout << polylines_intersections[pt_i] << ",";
+			vertices_to_snapped_vertices[polylines_intersections[pt_i]] = new_v;
+		}
+		std::cout << "  \t moving to " << new_v << std::endl;
+
+	}
+
+  	return should_snap;
+}
+
 void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
 	// Create an arrangement with a boundary box polygon and the polylines
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
 	//std::cout << "boundary_poly = " << boundary_poly << std::endl;
 	// init tmp polylines with the boundary poly and tmp polylines
-	std::vector<Polyline_2> tmp_polylines; tmp_polylines.push_back(boundary_poly); for (auto p: polylines) tmp_polylines.push_back(p);
-	if (!snap_rounding) {
-		initial_polylines = tmp_polylines;
-	} else {
-/*
-		typedef CGAL::Quotient<CGAL::MP_Float>           Number_type2;
-		typedef CGAL::Cartesian<Number_type2>             Kernel2;
-		typedef CGAL::Snap_rounding_traits_2<Kernel2>     Traits2;
-		typedef Kernel2::Segment_2                        Segment_22;
-		typedef Kernel2::Point_2                          Point_22;
-		typedef std::list<Segment_22>                     Segment_list_22;
-		typedef std::list<Point_22>                       Polyline_22;
-		typedef std::list<Polyline_22>                    Polyline_list_22;
-		typedef CGAL::Snap_rounding_traits_2<Kernel2>     Snap_Traits2;
-
-		std::list<Segment_22>  seg_list2;
-  		Polyline_list_22 output_list;
-  		seg_list2.push_back(Segment_22(Point_22(0, 0), Point_22(10, 10)));
-  		seg_list2.push_back(Segment_22(Point_22(0, 10), Point_22(10, 0)));
-  		seg_list2.push_back(Segment_22(Point_22(3, 0), Point_22(3, 10)));
-  		seg_list2.push_back(Segment_22(Point_22(7, 0), Point_22(7, 10)));
-  // Generate an iterated snap-rounding representation, where the centers of
-  // the hot pixels bear their original coordinates, using 5 kd trees:
-  		std::cout << "before" << std::endl;
-  CGAL::snap_rounding_2<Snap_Traits2,std::list<Segment_22>::const_iterator,Polyline_list_22>
-    (seg_list2.begin(), seg_list2.end(), output_list, 1.0, true, false, 5);
-    std::cout << "after" << std::endl;
-    	exit(1);*/
-
-    	//typedef CGAL::Quotient<CGAL::MP_Float>           Number_type2;
-		//typedef CGAL::Cartesian<Number_type2>             Kernel2;
-		//typedef CGAL::Snap_rounding_traits_2<Kernel>     Traits2;
-		//typedef Kernel::Segment_2                        Segment_22;
-		//typedef Kernel::Point_2                          Point_22;
-		//typedef std::list<Segment_2>                     Segment_list_2;
-		
-		//typedef CGAL::Snap_rounding_traits_2<Kernel>     Snap_Traits2;
-		//typedef CGAL::Arr_segment_traits_2<Kernel>                Segment_traits_22;
-		//typedef CGAL::Arr_polyline_traits_2<Segment_traits_2>     Geom_traits_22;
-    	
-		// Call snap rounding with a small pixel size
-		auto pixel_size = 1e-8*CGAL::min(bbox.xmax()-bbox.xmin(),bbox.ymax()-bbox.ymax());
-
-		std::list<Segment_2> seg_list;
-		for (auto poly: tmp_polylines) {
-			//for (auto subcurve = poly.subcurves_begin(); subcurve != poly.subcurves_end(); subcurve++) 
-			for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-				seg_list.push_back(*seg_i);
-				//seg_list.push_back(Segment_22(CGAL::to_double(seg_i->source()),CGAL::to_double(seg_i->target())));
-				/*
-				Point_22 pt1(CGAL::to_double(seg_i->source().x()) ,CGAL::to_double(seg_i->source().y()) );
-				Point_22 pt2(CGAL::to_double(seg_i->target().x()),CGAL::to_double(seg_i->target().y()) );
-				seg_list.push_back(Segment_22(pt1,pt2));
-				*/
-			}
-		}
-
-		std::vector<Point_2> polylines_intersections;
-		
-		Geom_traits_2 geom_traits_2;
-  		CGAL::compute_intersection_points(seg_list.begin(), seg_list.end(),
-                                    std::back_inserter(polylines_intersections), false, geom_traits_2);
-        
-  		std::cout << "Segments polylines_intersections.size() = " << polylines_intersections.size() << std::endl; 
-  		for (auto p : polylines_intersections) {
-  			std::cout << "Intersection at " << p << std::endl;
-  		}
-		//for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-  		
-		/**/
-		// TODO: 
-		// 		1) Convert initial polylines to segment lists, where you save the number of segments each one has.
-		// 		2) Concatenate the segments list into a big one.
-		//		3) Call snap rounding to get the same amount of output polylines.
-		//		4) Create new polylines from each one of the previous ones.
-		//
-		//
-		// First check it on easy input. Maybe 1_poly.svg. What happens to the border? 
-		//	(I guess whatever snapping happens it's ok since a rectangle will remain a rectangle, but this might require updating the bbox itself.
-		//	Actually not because the boundary polygon is already here and its all we need)
-		
-		PointVecVec out_poly_point_list;
-		CGAL::snap_rounding_2<Snap_Traits,Segment_list_2::const_iterator,PointVecVec>(seg_list.begin(), seg_list.end(), out_poly_point_list, 
-																			1, false, false, 5);
-		polylines_intersections.clear();
-		std::cout << "out_poly_point_list.size() = " << out_poly_point_list.size() << std::endl;
-		Geom_traits_2::Construct_curve_2 polyline_construct = geom_traits_2.construct_curve_2_object();
-		std::vector<Segment_2> snapped_seg;
-		for (int i = 0; i < out_poly_point_list.size(); i++) {
-			//std::cout << "out_poly_point_list[i].size() = " << out_poly_point_list[i].size() << std::endl;
-			//snapped_seg.push_back(Segment_2(out_poly_point_list[i].begin(), out_poly_point_list[i].end()));
-			initial_polylines.push_back(polyline_construct(out_poly_point_list[i].begin(), out_poly_point_list[i].end()));
-		}
-		
-		CGAL::compute_intersection_points(initial_polylines.begin(), initial_polylines.end(),
-                                    std::back_inserter(polylines_intersections), false, geom_traits_2);
-		std::cout << "After snapped rounding: segments polylines_intersections.size() = " << polylines_intersections.size() << std::endl; 
-  		for (auto p : polylines_intersections) {
-  			std::cout << "Intersection at " << p << std::endl;
-  		}
-  		
-  		std::cout << "after snapping" << std::endl;
-  		//exit(1);
-	}
+	std::vector<Polyline_2> tmp_polylines; /*tmp_polylines.push_back(boundary_poly);*/ for (auto p: polylines) tmp_polylines.push_back(p);
 	
+	// First find the vertices intersections
+	std::vector<Point_2> polylines_intersections;
+	Geom_traits_2 geom_traits_2;
+  	CGAL::compute_intersection_points(tmp_polylines.begin(), tmp_polylines.end(),
+                                    std::back_inserter(polylines_intersections), false, geom_traits_2);
+
+
+
+  	double bbox_max_len = std::max(abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
+	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
+	/*
+	do () {
+
+	} while ()
+	*/
+  	std::map<Point_2, Point_2> vertices_to_snapped_vertices; get_snapped_vertices_locations(polylines_intersections, dist_threshold_pow2, vertices_to_snapped_vertices);
+
+  	Geom_traits_2::Construct_curve_2 polyline_construct = geom_traits_2.construct_curve_2_object();
+  	// Add the intersection points to each curve that they are on
+	// Go through segments, if the point is on the segment then split the segment, and then create 2 new segments
+	// with the new snapped vertex
+	int curve_i = 0;
+	initial_polylines.push_back(boundary_poly);
+	for (auto poly: tmp_polylines) {
+		//for (auto subcurve = poly.subcurves_begin(); subcurve != poly.subcurves_end(); subcurve++) 
+		std::list<Segment_2> seg_list;
+		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+			bool sing_on_segment = false;
+			// This is a different type of cgal segement class, that supports "has_on" queries 
+			//		(but for some reasone doesn't work with arrangements)
+			CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
+			//int sing_num = 0;
+			//for (auto v: polylines_intersections) {
+			for (int sing_num = 0; sing_num < polylines_intersections.size(); sing_num++) {
+				Point_2 v = polylines_intersections[sing_num];
+				if (tmp_seg.collinear_has_on(v)) {
+					std::cout << "curve number " << curve_i << " with singularity number " << sing_num << " since vertex " << v << " is on segment " << *seg_i << std::endl; 
+					//std::cout << "vertex " << v << " is on segment " << *seg_i << std::endl;
+					//std::cout << "replacing it with " << Segment_2(seg_i->source(), v) << " and " << Segment_2(v, seg_i->target()) << std::endl;
+					sing_on_segment = true;
+					// TODO translate v to the snapped vertex
+					// split the segment and add the new snipped v to it
+					auto snipped_v = vertices_to_snapped_vertices[v];
+					seg_list.push_back(Segment_2(seg_i->source(), v));
+					seg_list.push_back(Segment_2(v, seg_i->target()));
+					//seg_list.push_back(*seg_i);
+					continue;
+				}
+			}
+			if (!sing_on_segment) {
+				//std::cout << "adding segment" << std::endl;
+				seg_list.push_back(*seg_i);
+			}
+			//seg_list.push_back(Segment_22(CGAL::to_double(seg_i->source()),CGAL::to_double(seg_i->target())));
+			/*
+			Point_22 pt1(CGAL::to_double(seg_i->source().x()) ,CGAL::to_double(seg_i->source().y()) );
+			Point_22 pt2(CGAL::to_double(seg_i->target().x()),CGAL::to_double(seg_i->target().y()) );
+			seg_list.push_back(Segment_22(pt1,pt2));
+			*/
+		}
+		initial_polylines.push_back(polyline_construct(seg_list.begin(), seg_list.end()));
+		curve_i++;
+	}
+	//initial_polylines = tmp_polylines;
+	int wait; std::cin >> wait;
 	// Set up the initial arrangement
 	std::cout << "adding " << initial_polylines.size() << " polylines" << std::endl;
 	initial_arrangement.add_polylines(initial_polylines);

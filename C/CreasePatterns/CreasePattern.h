@@ -23,6 +23,7 @@ public:
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding);
+	bool get_snapped_vertices_locations(const std::vector<Point_2>& polylines_int, Number_type threshold, std::map<Point_2, Point_2>& vertices_to_snapped_vertices);
 	void bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline);
 
 

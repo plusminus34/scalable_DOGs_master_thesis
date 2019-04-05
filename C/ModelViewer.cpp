@@ -77,6 +77,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	// add meshes to the right
 	for (int j = 0; j < wallpaper_res; j++) {
 		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
+		/*
 		Dog nextDog(vertDog);
 		for (int i = 0; i < wallpaper_res; i++) {
 			PointsRigidAlignmentObjective::update_rigid_motion(nextDog.getV_vector(), left_curve, right_curve,R, T);
@@ -84,6 +85,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 			nextDog.update_V(newV);
 			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
 		}
+		*/
 		// add mesh up
 		PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,R, T);
 		Eigen::MatrixXd newV = (vertDog.getV() * R).rowwise() + T.transpose();
