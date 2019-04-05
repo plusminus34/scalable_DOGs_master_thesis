@@ -44,7 +44,7 @@ def svg_creases_to_bounding_box_and_polylines(svg_file):
 		else:
 			try:
 				print 'Reading fold'
-				vertices = handle_fold(path,2,bounds)
+				vertices = handle_fold(path,500,bounds)
 				#print 'vertices = ', vertices
 				path_lines.append(vertices)
 			except:

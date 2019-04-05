@@ -116,7 +116,7 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 
 
 
-  	double bbox_max_len = std::max(abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
+  	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
 	/*
 	do () {
@@ -150,11 +150,13 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 					sing_on_segment = true;
 					// TODO translate v to the snapped vertex
 					// split the segment and add the new snipped v to it
+					/*
 					auto snipped_v = vertices_to_snapped_vertices[v];
 					seg_list.push_back(Segment_2(seg_i->source(), v));
 					seg_list.push_back(Segment_2(v, seg_i->target()));
-					//seg_list.push_back(*seg_i);
-					continue;
+					*/
+					seg_list.push_back(*seg_i);
+					break;
 				}
 			}
 			if (!sing_on_segment) {
