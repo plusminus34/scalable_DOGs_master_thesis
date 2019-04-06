@@ -118,11 +118,6 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 
   	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
-	/*
-	do () {
-
-	} while ()
-	*/
   	std::map<Point_2, Point_2> vertices_to_snapped_vertices; get_snapped_vertices_locations(polylines_intersections, dist_threshold_pow2, vertices_to_snapped_vertices);
 
   	Geom_traits_2::Construct_curve_2 polyline_construct = geom_traits_2.construct_curve_2_object();
@@ -143,38 +138,25 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 			//for (auto v: polylines_intersections) {
 			for (int sing_num = 0; sing_num < polylines_intersections.size(); sing_num++) {
 				Point_2 v = polylines_intersections[sing_num];
-				if (tmp_seg.collinear_has_on(v)) {
+				// Don't split if its at the boundary of the segment
+				if ((v == tmp_seg.source()) || (v == tmp_seg.target()) ) continue;
+				if (tmp_seg.has_on(v)) {
 					std::cout << "curve number " << curve_i << " with singularity number " << sing_num << " since vertex " << v << " is on segment " << *seg_i << std::endl; 
-					//std::cout << "vertex " << v << " is on segment " << *seg_i << std::endl;
-					//std::cout << "replacing it with " << Segment_2(seg_i->source(), v) << " and " << Segment_2(v, seg_i->target()) << std::endl;
 					sing_on_segment = true;
-					// TODO translate v to the snapped vertex
-					// split the segment and add the new snipped v to it
-					/*
+					
 					auto snipped_v = vertices_to_snapped_vertices[v];
-					seg_list.push_back(Segment_2(seg_i->source(), v));
-					seg_list.push_back(Segment_2(v, seg_i->target()));
-					*/
-					seg_list.push_back(*seg_i);
+					seg_list.push_back(Segment_2(seg_i->source(), snipped_v));
+					seg_list.push_back(Segment_2(snipped_v, seg_i->target()));
 					break;
 				}
 			}
 			if (!sing_on_segment) {
-				//std::cout << "adding segment" << std::endl;
 				seg_list.push_back(*seg_i);
 			}
-			//seg_list.push_back(Segment_22(CGAL::to_double(seg_i->source()),CGAL::to_double(seg_i->target())));
-			/*
-			Point_22 pt1(CGAL::to_double(seg_i->source().x()) ,CGAL::to_double(seg_i->source().y()) );
-			Point_22 pt2(CGAL::to_double(seg_i->target().x()),CGAL::to_double(seg_i->target().y()) );
-			seg_list.push_back(Segment_22(pt1,pt2));
-			*/
 		}
 		initial_polylines.push_back(polyline_construct(seg_list.begin(), seg_list.end()));
 		curve_i++;
 	}
-	//initial_polylines = tmp_polylines;
-	int wait; std::cin >> wait;
 	// Set up the initial arrangement
 	std::cout << "adding " << initial_polylines.size() << " polylines" << std::endl;
 	initial_arrangement.add_polylines(initial_polylines);
