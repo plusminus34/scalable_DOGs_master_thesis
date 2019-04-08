@@ -101,12 +101,11 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   // Go through all polyline points
   for (auto it = polyline.subcurves_begin(); it != polyline.subcurves_end(); it++) {
     pt = it->target();
-    //std::cout << "point = " << pt << std::endl;
-    std::cout << "segment length = " << CGAL::squared_distance(prevPt,pt) << " from " << prevPt << "," << pt << std::endl;
+    
     //std::cout << "number_of_segments = " << it->number_of_subcurves() << std::endl;
     int new_x_coord(get_coord_range(pt.x(), x_coords)),new_y_coord(get_coord_range(pt.y(), y_coords));
     
-    cout << "pt = " << pt << " new_x_coord = " << new_x_coord << " new_y_coord = " << new_y_coord << std::endl;
+    //cout << "pt = " << pt << " new_x_coord = " << new_x_coord << " new_y_coord = " << new_y_coord << std::endl;
     // Detect intersection
     if ( (x_coord != new_x_coord) || (y_coord != new_y_coord) ) {
       std::cout << "Intersection found from " << prevPt << " to " << pt << std::endl;
@@ -155,7 +154,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       }
       */
     }
-    std::cout << "checking if " << pt << " is on the grid" << std::endl;
+    //std::cout << "checking if " << pt << " is on the grid" << std::endl;
     // Checking that the last point added is not the same as well (can happen when snapping singularities)
     if ( (is_point_on_grid(pt)) && (new_poly_points.back()!= pt) ) {
       new_poly_points.push_back(pt);
@@ -165,6 +164,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     prevPt = pt;
   }
   //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl;
+  //Polygon_2 poly2(new_poly_points.begin(),new_poly_points.end()-1); std::cout << "poly.is_simple() = " << poly2.is_simple()<< std::endl;
+  //std::cout << "poly_area = " << poly2.area() << std::endl;
   //std::cout << "Ran the new one" << std::endl; int wait; cin >> wait;
   Geom_traits_2 traits;
   Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();

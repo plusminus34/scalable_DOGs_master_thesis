@@ -2,14 +2,11 @@
 
 #include "OrthogonalGrid.h"
 
-#include <CGAL/Snap_rounding_traits_2.h>
-#include <CGAL/Snap_rounding_2.h>
-
 #include <igl/combine.h>
 
-CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding) :
+CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
-	init_initial_arrangement_and_polylines(bbox, polylines, snap_rounding);
+	init_initial_arrangement_and_polylines(bbox, polylines);
 	// get poly lines intersections
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
@@ -32,7 +29,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 		clipped_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
 	}
 	
-	clipped_grid_arrangement.add_polyline(initial_polylines[0]); // add the border polygon (no need to call "clip on that")
+	clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(initial_polylines[0])); // add the border polygon (no need to call "clip on that")
 	clipped_grid_arrangement.add_polylines(clipped_polylines);
 
 
@@ -100,7 +97,7 @@ bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& p
   	return should_snap;
 }
 
-void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding) {
+void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines) {
 	// Create an arrangement with a boundary box polygon and the polylines
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
 	//std::cout << "boundary_poly = " << boundary_poly << std::endl;
@@ -179,5 +176,6 @@ void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyl
 	std::list<Point_2> pts = {pt1,pt2,pt3,pt4,pt1}; // circular list
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+	//std::list<Point_2> pts2 = {pt1,pt2,pt3,Point_2(0.5*(pt3.x()+pt4.x()),0.5*(pt3.x()+pt4.x())),pt4,pt1}; // circular list
 	polyline = polyline_construct(pts.begin(), pts.end());
 }

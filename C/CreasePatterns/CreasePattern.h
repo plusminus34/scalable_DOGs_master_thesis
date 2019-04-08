@@ -4,12 +4,13 @@
 
 #include "PlanarArrangement.h"
 #include "OrthogonalGrid.h"
+#include "PatternBoundary.h"
 
 
 class CreasePattern {
   
 public:
-	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res, bool snap_rounding = false);
+	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res);
 	CreasePattern(const CreasePattern& CreasePattern);
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 
@@ -22,7 +23,7 @@ public:
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
-	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines, bool snap_rounding);
+	void init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines);
 	bool get_snapped_vertices_locations(const std::vector<Point_2>& polylines_int, Number_type threshold, std::map<Point_2, Point_2>& vertices_to_snapped_vertices);
 	void bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline);
 
