@@ -96,8 +96,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
 	// Find the initial vertex on the polyline
 	Vertex_const_handle v;
 	bool is_on_v = grid_arr.locate_point_on_vertex(p1,v);
-	if (!is_on_v) std::cout << "Error! Point not on grid!" << std::endl;
-
+	if (!is_on_v) {std::cout << "Error! Point not on grid!" << std::endl; exit(1);}
+  std::cout << "New poly" << std::endl << std::endl;
 	// Find the edge of the curve by going through all edges emenating from that vertex and checking for collinearity with the input
 	Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
   	first = curr = v->incident_halfedges();
@@ -127,22 +127,42 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   	// For now assume that this edge has only one originating curve (todo this can be false)
   	
     // We now have all the edges induced by the original input, the problem is that they are not ordered.
-    // CGAL guy said they might add this functionality, but for now we need to arrange tit
+    // CGAL guy said they might add this functionality, but for now we need to arrange it
     // The following code just does that by tracing the curve along the new arrangement
 
     // We first the input curve's induces segments and save the points degree 
   	std::map<Point_2,int> point_to_deg; std::map<std::pair<Point_2,Point_2>,bool> seg_on_curve;
   	for ( auto input_edge = grid_arr.get_arrangement_internal()->induced_edges_begin(ocit); 
   			input_edge != grid_arr.get_arrangement_internal()->induced_edges_end(ocit); input_edge++) {
+      auto curve_first_pt = (*input_edge)->curve();//subcurves_begin()->source();
+      /*
+      std::vector<Segment_2> edge_polyline_segments((*input_edge)->curve().subcurves_begin(),(*input_edge)->curve().subcurves_end());
+
+      for (auto edge_seg: edge_polyline_segments) {
+        //auto src = (*input_edge)->source(), target = (*input_edge)->target();
+        //auto seg = Segment_2(src->point(),target->point());
+
+        std::cout << "Edge = " << edge_seg << std::endl;
+        auto src = edge_seg.source(); auto target = edge_seg.target();
+
+        point_to_deg[src.point()] = src->degree();
+        point_to_deg[target->point()] = target->degree();
+        seg_on_curve[std::pair<Point_2,Point_2>(src->point(),target->point())] = true;
+        seg_on_curve[std::pair<Point_2,Point_2>(target->point(),src->point())] = true;
+      }
+      */
+      std::vector<Segment_2> edge_polyline_segments((*input_edge)->curve().subcurves_begin(),(*input_edge)->curve().subcurves_end());
       auto src = (*input_edge)->source(), target = (*input_edge)->target();
       auto seg = Segment_2(src->point(),target->point());
 
-      //std::cout << "Edge = " << seg << std::endl;
+      std::cout << "Edge = " << seg << std::endl;
+      std::cout << "edge_polyline_segments.size() = " << edge_polyline_segments.size() << std::endl;
 
       point_to_deg[src->point()] = src->degree();
       point_to_deg[target->point()] = target->degree();
       seg_on_curve[std::pair<Point_2,Point_2>(src->point(),target->point())] = true;
       seg_on_curve[std::pair<Point_2,Point_2>(target->point(),src->point())] = true;
+      
   	}
 
     // traverse the graph, choosing the next vertex has one in the key of the map, and adding it in case its degree > 2
@@ -169,7 +189,10 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
             point_to_deg[cur_pt_ptr->point()] = 0;
             cur_pt_ptr = u;
             found_next_pt = true;
+            std::cout << "looking at point " << u->point() << std::endl;
+            std::cout << "point_to_deg[u->point()]  = " << point_to_deg[u->point()]  << std::endl;
             if (point_to_deg[u->point()] > 2) {
+              std::cout << "adding point " << u->point() << std::endl;
               new_poly_points.push_back(u->point());
             }
             
@@ -178,6 +201,9 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       
 
     } while (found_next_pt);
+    if (p1.x() == Number_type(301.5)) {
+      std::cout << "p1  = " << p1 << " p2 = " << p2 << std::endl; int wait; std::cin >> wait;
+    }
     Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
     return polyline_construct(new_poly_points.begin(), new_poly_points.end());
