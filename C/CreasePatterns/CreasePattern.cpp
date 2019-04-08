@@ -19,8 +19,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	for (auto p : polylines_intersections) {
   		std::cout << "Intersection at " << p << std::endl;
   	}
-  	int wait; std::cin >> wait;
-  	//exit(1);
+  	//int wait; std::cin >> wait;
   	//for (auto pt: polylines_intersections) {std::cout << "singular pt at " << pt << std::endl;} int wait; std::cin >> wait;
   	// Create an orthogonal grid with singularities
   	orthogonalGrid.add_additional_grid_points(polylines_intersections);
