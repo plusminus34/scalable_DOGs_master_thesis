@@ -94,15 +94,10 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   // Get the first polyline point
   Point_2 pt(polyline.subcurves_begin()->source());
   if (is_point_on_grid(pt)) new_poly_points.push_back(pt);
-  else {cout << "first point " << pt << " not on grid" << endl; exit(1);}
+  else {cout << "Error in OrthogonalGrid::single_polyline_to_segments_on_grid- first point " << pt << " not on grid" << endl; exit(1);}
   int x_coord,y_coord; x_coord = get_coord_range(pt.x(), x_coords); y_coord = get_coord_range(pt.y(), y_coords);
   Point_2 prevPt(pt);
 
-  std::cout << "First pt = " << pt << std::endl;
-  std::cout << "x_coords = ";
-  for (auto x: x_coords) std::cout << x << ","; std::cout << endl;
-  std::cout << "y_coords = ";
-  for (auto y: y_coords) std::cout << y << ","; std::cout << endl;
   // Go through all polyline points
   for (auto it = polyline.subcurves_begin(); it != polyline.subcurves_end(); it++) {
     pt = it->target();
@@ -118,13 +113,13 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       std::cout << "\t From coords (" << x_coord << "," << y_coord << ") to (" << new_x_coord << "," << new_y_coord << ")" << std::endl;
 
       std::vector<Point_2> intersections;
-      if (1) { //(x_coord != new_x_coord) {
+      if (x_coord != new_x_coord) {
         std::vector<Segment_2> int_segments; int_segments.push_back(Segment_2(prevPt,pt));
         int_segments.insert( int_segments.end(), grid_x_segments.begin(), grid_x_segments.end() );
         CGAL::compute_intersection_points(int_segments.begin(), int_segments.end(),
                                   std::back_inserter(intersections), false, geom_traits_2);
       }
-      if (1){//(y_coord != new_y_coord) {
+      if (y_coord != new_y_coord) {
         std::vector<Segment_2> int_segments; int_segments.push_back(Segment_2(prevPt,pt));
         int_segments.insert( int_segments.end(), grid_y_segments.begin(), grid_y_segments.end() );
         CGAL::compute_intersection_points(int_segments.begin(), int_segments.end(),
@@ -136,6 +131,15 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       }
       for (auto s: intersections) std::cout << "int = " << s << std::endl;
       int int_n = intersections.size();
+      // sort them by distances
+      std::vector<std::pair<int,Number_type>> int_dist;
+      for (int int_i = 0; int_i < intersections.size(); int_i++) {
+        int_dist.push_back(std::pair<int,Number_type>(int_i,CGAL::squared_distance(prevPt, intersections[int_i])));
+      }
+      std::sort(int_dist.begin(), int_dist.end(), [](const std::pair<int,Number_type>& p1, const std::pair<int,Number_type>& p2){return p1.second < p2.second;});
+      for (auto i_dist : int_dist) new_poly_points.push_back(intersections[i_dist.first]);
+
+      /*
       if (int_n == 1) {
         new_poly_points.push_back(intersections[0]);
       } else if(int_n == 2) {
@@ -149,6 +153,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
         for (auto seg_int : intersections) std::cout << seg_int << endl;
         exit(1);
       }
+      */
     }
     std::cout << "checking if " << pt << " is on the grid" << std::endl;
     // Checking that the last point added is not the same as well (can happen when snapping singularities)
