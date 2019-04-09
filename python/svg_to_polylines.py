@@ -72,6 +72,7 @@ if __name__ == "__main__":
 		for poly in polylines:
 			save_polyline(poly,out_folder+"/"+"poly-"+str(cnt)+".obj")
 			cnt +=1
+		cnt = 1
 		for border in border_poly:
 			print 'saving border ', border
 			save_polyline(border,out_folder+"/"+"borderpoly-"+str(cnt)+".obj")
