@@ -6,7 +6,13 @@
 
 CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
-	init_initial_arrangement_and_polylines(bbox, polylines);
+
+	polylines = merge_nearby_polylines_intersections(polylines);
+
+	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
+	initial_polylines.push_back(boundary_poly); initial_polylines.insert(initial_polylines.end(),polylines.begin(),polylines.end());
+	initial_arrangement.add_polylines(initial_polylines);
+
 	// get poly lines intersections
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
@@ -97,17 +103,12 @@ bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& p
   	return should_snap;
 }
 
-void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& bbox, std::vector<Polyline_2>& polylines) {
-	// Create an arrangement with a boundary box polygon and the polylines
-	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
-	//std::cout << "boundary_poly = " << boundary_poly << std::endl;
-	// init tmp polylines with the boundary poly and tmp polylines
-	std::vector<Polyline_2> tmp_polylines; /*tmp_polylines.push_back(boundary_poly);*/ for (auto p: polylines) tmp_polylines.push_back(p);
-	
+std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines) {
+	std::vector<Polyline_2> new_polylines;
 	// First find the vertices intersections
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
-  	CGAL::compute_intersection_points(tmp_polylines.begin(), tmp_polylines.end(),
+  	CGAL::compute_intersection_points(polylines.begin(), polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
 
 
@@ -121,8 +122,7 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 	// Go through segments, if the point is on the segment then split the segment, and then create 2 new segments
 	// with the new snapped vertex
 	int curve_i = 0;
-	initial_polylines.push_back(boundary_poly);
-	for (auto poly: tmp_polylines) {
+	for (auto poly: polylines) {
 		//for (auto subcurve = poly.subcurves_begin(); subcurve != poly.subcurves_end(); subcurve++) 
 		std::list<Segment_2> seg_list;
 		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
@@ -150,12 +150,10 @@ void CreasePattern::init_initial_arrangement_and_polylines(const CGAL::Bbox_2& b
 				seg_list.push_back(*seg_i);
 			}
 		}
-		initial_polylines.push_back(polyline_construct(seg_list.begin(), seg_list.end()));
+		new_polylines.push_back(polyline_construct(seg_list.begin(), seg_list.end()));
 		curve_i++;
 	}
-	// Set up the initial arrangement
-	std::cout << "adding " << initial_polylines.size() << " polylines" << std::endl;
-	initial_arrangement.add_polylines(initial_polylines);
+	return new_polylines;
 }
 
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
