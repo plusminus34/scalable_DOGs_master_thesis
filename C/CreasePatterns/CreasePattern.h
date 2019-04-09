@@ -38,4 +38,5 @@ private:
 	//PlanarArrangement grid_with_snapped;
 	PlanarArrangement clipped_grid_arrangement;
 	const CGAL::Bbox_2 bbox;
+	PatternBoundary* patternBoundary;
 };

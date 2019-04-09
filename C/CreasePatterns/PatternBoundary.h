@@ -8,11 +8,15 @@
 
 class PatternBoundary {
 public:
-	PatternBoundary(std::vector<Polygon_2> boundary_polygons);
-	void cut_and_snap_polylines_to_boundary(std::vector<Polyline_2>& polylines);
+	PatternBoundary(const std::vector<Polygon_2>& boundary_polygons);
+	PatternBoundary(const std::vector<Polyline_2>& boundary_polylines);
+	Polyline_2 clip_and_snap(Polyline_2& polyline);
 private:
-	Polyline_2 cut_and_snap_single_polyline_to_boundary(Polyline_2& polyline);
+	
 	bool inside_boundary(const Point_2& pt);
+
+	static std::vector<Polygon_2> polylines_to_polygons(const std::vector<Polyline_2>& boundary_polylines);
+	static void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);
 
 	Polygon_2 outer_boundary;
 	std::vector<Polygon_2> holes;
