@@ -14,6 +14,7 @@ PatternBoundary::PatternBoundary(const std::vector<Polygon_2>& boundary_polygons
 			boundary_poly_i = i;
 		}
 	}
+	//std::cout << "max_area = " << max_area << std::endl; int wait; std::cin >> wait;
 	outer_boundary = boundary_polygons[boundary_poly_i];
 	for (int i = 0; i < boundary_polygons.size(); i++) {
 		if (i!= boundary_poly_i) {holes.push_back(Polygon_2(boundary_polygons[i]));}

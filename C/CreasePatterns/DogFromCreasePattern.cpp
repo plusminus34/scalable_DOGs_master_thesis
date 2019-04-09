@@ -205,12 +205,14 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	// Get orth grid and add it the polylines
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	PlanarArrangement grid_with_snapped(orthGrid);
-	grid_with_snapped.add_polylines(creasePattern.get_clipped_fold_polylines());
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_fold_polylines()); 
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_bnd_polylines());
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
 
 	std::vector<Polygon_2> submeshBnd; 
 	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
+	std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
 
 	// The rendered mesh faces will be the polygons in grid_with_snapped (meaning faces_polygons) after triangulation.
 	// Here we'll find which submesh has them, and then translate the point indices to the correct point in something
@@ -233,7 +235,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 			submesh_i++;
 		}
 
-		if (face_to_submesh[f_i] == -1) {std::cout << "Error, couldn't find a submesh for face = " << face_polygon << std::endl; exit(1); /*nothing to do but debug*/}
+		//if (face_to_submesh[f_i] == -1) {std::cout << "Error, couldn't find a submesh for face = " << face_polygon << std::endl; exit(1); /*nothing to do but debug*/}
 		//std::cout << "face in submesh = " << face_to_submesh[f_i] << std::endl;
 
 	}
@@ -415,10 +417,12 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 	}
 	//std::cout << "global_edge_indices.size() = " << global_edge_indices.size() << std::endl;
 	// We then need to map it to the global V which just have the submeshes concatenated
+	/*
 	if (!edge_v_indices.size()){
 		std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
 		exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
-	}	
+	}
+	*/	
 }
 
 bool is_closed_polyline(const Polyline_2& poly) {

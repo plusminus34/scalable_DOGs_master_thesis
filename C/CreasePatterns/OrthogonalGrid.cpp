@@ -83,9 +83,14 @@ void OrthogonalGrid::initialize_grid() {
   for (auto x : x_coords) {grid_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
   for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
   add_segments(grid_segments);
+/*
+  for (auto x : x_coords) std::cout << "x = " << x <<std::endl;
+  for (auto y : y_coords) std::cout << "y = " << y <<std::endl;
+  exit(1);
+*/
 }
 
-Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline) {
+Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline, bool closed_poly) {
    std::vector<Segment_2> grid_x_segments, grid_y_segments;
   for (auto x : x_coords) {grid_x_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
   for (auto y : y_coords) {grid_y_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
@@ -128,7 +133,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
         intersections.erase(std::remove(intersections.begin(), intersections.end(), prevPt), intersections.end());
         intersections.erase(std::remove(intersections.begin(), intersections.end(), pt), intersections.end());
       }
-      for (auto s: intersections) std::cout << "int = " << s << std::endl;
       int int_n = intersections.size();
       // sort them by distances
       std::vector<std::pair<int,Number_type>> int_dist;
@@ -163,6 +167,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     x_coord = new_x_coord; y_coord = new_y_coord;
     prevPt = pt;
   }
+  if ( closed_poly && (new_poly_points[0]!=new_poly_points.back()) ) new_poly_points.push_back(new_poly_points[0]);
   //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl; int wait; std::cin >> wait;
   //Polygon_2 poly2(new_poly_points.begin(),new_poly_points.end()-1); std::cout << "poly.is_simple() = " << poly2.is_simple()<< std::endl;
   //std::cout << "poly_area = " << poly2.area() << std::endl;
