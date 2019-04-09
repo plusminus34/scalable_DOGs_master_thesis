@@ -46,12 +46,12 @@ void ModelState::init_from_planar(int square_h, int square_w) {
 
 void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res) {
 	CGAL::Bbox_2 bbox;
-  	std::vector<Polyline_2> polylines;
+  	std::vector<Polyline_2> polylines, border_polylines;
 
 	std::cout << "Reading svg " << svg_path << endl;
-	read_svg_crease_pattern(svg_path, bbox, polylines);
+	read_svg_crease_pattern(svg_path, bbox, polylines, border_polylines);
 
-	CreasePattern creasePattern(bbox, polylines, x_res, y_res);
+	CreasePattern creasePattern(bbox, polylines, border_polylines, x_res, y_res);
 	dog = dog_from_crease_pattern(creasePattern);
 
   	creasePattern.get_visualization_mesh_and_edges(creasesVisualization.V_arr, creasesVisualization.F_arr, 

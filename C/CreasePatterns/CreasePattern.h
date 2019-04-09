@@ -10,7 +10,8 @@
 class CreasePattern {
   
 public:
-	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res);
+	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
+							 int x_res, int y_res);
 	CreasePattern(const CreasePattern& CreasePattern);
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 
@@ -21,6 +22,8 @@ public:
 
 	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
+
+	const PatternBoundary* boundary() const {return patternBoundary;}
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	bool get_snapped_vertices_locations(const std::vector<Point_2>& polylines_int, Number_type threshold, std::map<Point_2, Point_2>& vertices_to_snapped_vertices);

@@ -11,6 +11,8 @@ public:
 	PatternBoundary(const std::vector<Polygon_2>& boundary_polygons);
 	PatternBoundary(const std::vector<Polyline_2>& boundary_polylines);
 	Polyline_2 filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold);
+
+	std::vector<Point_2> get_all_boundary_points() const;
 private:
 	Point_2 snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold);
 	bool inside(const Point_2& pt);

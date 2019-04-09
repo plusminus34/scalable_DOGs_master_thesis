@@ -30,6 +30,7 @@ struct DogEdgeStitching  : public igl::Serializable {
 
 	// For each submesh, hold the indices to edge-points (crease points) that are on that submesh. The indices point to edge_const_1 and edge_coordinates vectors
 	std::vector<std::vector<int>> submesh_to_edge_pt;
+	std::vector<std::vector<EdgePoint>> submesh_to_bnd_edge;
 
 	int get_vertex_edge_point_deg(Edge& edge) const;
 
@@ -42,6 +43,8 @@ struct DogEdgeStitching  : public igl::Serializable {
       Add(multiplied_edges_num,std::string("multiplied_edges_num"));
       Add(edge_to_duplicates,std::string("edge_to_duplicates"));
       Add(stitched_curves,std::string("stitched_curves"));
+      Add(submesh_to_edge_pt,std::string("submesh_to_edge_pt"));
+      Add(submesh_to_bnd_edge,std::string("submesh_to_bnd_edge"));
     }
 };
 
@@ -57,8 +60,7 @@ public:
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi, Eigen::MatrixXi& Fi) {Vi = V_ren; Fi = F_ren;}
 	//void get_rendering_mesh(Eigen::MatrixXd& Vi) {Vi = V_ren;}
 	
-	void update_Vren() {update_rendering_v();}
-	void update_Vren2();
+	void update_Vren();
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 	void update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV);

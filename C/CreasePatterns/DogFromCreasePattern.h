@@ -20,6 +20,10 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique,const Eigen::MatrixXd& V);
 
+void save_submesh_bnd_edge_points(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList,
+				DogEdgeStitching& edgeStitching);
+//submesh_to_bnd_edge
+
 // return a sorted list of submesh to polygons (so the polygons in the first submesh are first, then in the second, etc)
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons);
 

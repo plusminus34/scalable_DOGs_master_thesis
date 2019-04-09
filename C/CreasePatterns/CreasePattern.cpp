@@ -4,15 +4,16 @@
 
 #include <igl/combine.h>
 
-CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res) :
+CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
+							int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 
 	// Handle polyline intersections
 	initial_fold_polylines = merge_nearby_polylines_intersections(polylines);
 
 	// Setup initial boundary (for now just a boundary box)
-	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
-	initial_bnd_polylines.push_back(boundary_poly);
+	//Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
+	initial_bnd_polylines = bnd_polylines;
 	/*initial_fold_polylines.push_back(boundary_poly);*/ 
 
 	// The following is just for visualization

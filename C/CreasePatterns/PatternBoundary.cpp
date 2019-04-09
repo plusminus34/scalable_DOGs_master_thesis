@@ -32,6 +32,13 @@ PatternBoundary::PatternBoundary(const std::vector<Polyline_2>& boundary_polylin
 	// empty on purpose
 }
 
+std::vector<Point_2> PatternBoundary::get_all_boundary_points() const {
+	std::vector<Point_2> boundary_vertices(outer_boundary.vertices_begin(),outer_boundary.vertices_end());
+	for (auto h : holes) boundary_vertices.insert(boundary_vertices.end(), h.vertices_begin(), h.vertices_end());
+	std::unique(boundary_vertices.begin(),boundary_vertices.end());
+	return boundary_vertices;
+}
+
 Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold) {
 	std::vector<Point_2> pts; polyline_to_points(polyline, pts);
 	std::vector<Point_2> filtered_pts;
