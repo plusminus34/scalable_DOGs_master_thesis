@@ -132,11 +132,7 @@ void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitchin
 }
 
 void Dog::update_Vren() {
-	int subm_n = edgeStitching.submesh_to_edge_pt.size();
-	// Check if there is only 1 submesh
-	if (subm_n < 2) {
-		V_ren = V; return;
-	}
+	int subm_n = submeshVSize.size();
 	// go through the entire submeshes
 	int vi_cnt = 0;
 	for (int subi = 0; subi < subm_n; subi++) {
@@ -144,16 +140,19 @@ void Dog::update_Vren() {
 		int subm_min,subm_max; get_submesh_min_max_i(subi, subm_min, subm_max);
 		for (int vi = subm_min; vi <= subm_max; vi++) V_ren.row(vi_cnt++) = V.row(vi);
 		// Then add the crease points
-		for (auto ei : edgeStitching.submesh_to_edge_pt[subi]) {
-			// Get the vertex
-			double t = edgeStitching.edge_coordinates[ei];
-			V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
-		}
-		for (int j = 0; j < edgeStitching.submesh_to_bnd_edge[subi].size(); j++) {
-			EdgePoint ep = edgeStitching.submesh_to_bnd_edge[subi][j];
-			V_ren.row(vi_cnt++) = ep.getPositionInMesh(V);
+		if (edgeStitching.submesh_to_edge_pt.size()){
+			for (auto ei : edgeStitching.submesh_to_edge_pt[subi]) {
+				// Get the vertex
+				double t = edgeStitching.edge_coordinates[ei];
+				V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
+			}
+			for (int j = 0; j < edgeStitching.submesh_to_bnd_edge[subi].size(); j++) {
+				EdgePoint ep = edgeStitching.submesh_to_bnd_edge[subi][j];
+				V_ren.row(vi_cnt++) = ep.getPositionInMesh(V);
 			//std::cout << "Added row = " << V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j)  << std::endl;
+			}
 		}
+		
 	}
 }
 

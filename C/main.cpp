@@ -218,9 +218,10 @@ int main(int argc, char *argv[]) {
       ImGui::End();
   };
   clear_all_and_set_default_params(viewer);
+  
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
   viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
-
+  
   viewer.callback_key_down = callback_key_down;
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
   viewer.core.is_animating = true;
