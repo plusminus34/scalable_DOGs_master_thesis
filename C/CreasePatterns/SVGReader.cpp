@@ -40,17 +40,6 @@ void read_svg_crease_pattern(const std::string& path, CGAL::Bbox_2& bbox, std::v
 	system(std::string(std::string("rm -r ")+tmp_folder).c_str());
 }
 
-CGAL::Bbox_2 bbox_from_svg_crease_pattern(const std::string& path) {
-	CGAL::Bbox_2 bbox; std::vector<Polyline_2> polylines;
-	read_svg_crease_pattern(path,bbox,polylines);
-	return bbox;
-}
-std::vector<Polyline_2> polylines_from_svg_crease_pattern(const std::string& path) {
-	CGAL::Bbox_2 bbox; std::vector<Polyline_2> polylines;
-	read_svg_crease_pattern(path,bbox,polylines);
-	return polylines;
-}
-
 Polyline_2 points_to_polylines_snapped_at_start_end(const Eigen::MatrixXd& p, const CGAL::Bbox_2& bbox) {
 	std::vector<Point_2> points(p.rows());
 	for (int i = 0; i < p.rows(); i++) {points[i] = Point_2(p(i,0),p(i,1));}

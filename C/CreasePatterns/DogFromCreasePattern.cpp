@@ -497,7 +497,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 				
 				if (point_to_sub_V_ren.count(pt)) {
 					polygons_v_ren_indices[poly_n][poly_vi] = point_to_sub_V_ren[pt];
-					std::cout << "Mapped point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
+					//std::cout << "Mapped point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
 				} else {
 					//std::cout << "Could not map point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
 					// find the closest point to it on Vsub. Just a bit slower but there's some rounding error
