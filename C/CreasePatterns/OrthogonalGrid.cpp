@@ -163,7 +163,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     x_coord = new_x_coord; y_coord = new_y_coord;
     prevPt = pt;
   }
-  //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl;
+  //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl; int wait; std::cin >> wait;
   //Polygon_2 poly2(new_poly_points.begin(),new_poly_points.end()-1); std::cout << "poly.is_simple() = " << poly2.is_simple()<< std::endl;
   //std::cout << "poly_area = " << poly2.area() << std::endl;
   //std::cout << "Ran the new one" << std::endl; int wait; cin >> wait;

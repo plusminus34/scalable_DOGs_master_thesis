@@ -38,11 +38,14 @@ Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_t
 	for (auto pt: pts) {
 		if (inside(pt)) filtered_pts.push_back(pt);
 		else {std::cout << "filtered pt " << pt << std::endl;}
+		//filtered_pts.push_back(pt);
 	}
 	filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold);
 	filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold);
 	Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+
+
     return polyline_construct(filtered_pts.begin(), filtered_pts.end());
 }
 
@@ -65,8 +68,6 @@ Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_d
 		if (squared_dist < min(squared_dist_threshold,min_dist)) {
 			min_dist = squared_dist;
 			snappedPt = proj_pt;
-			std::cout << "snapped pt " << pt << " to " << snappedPt << std::endl;
-			int wait; std::cin >> wait;
 		}
 	}
 	return snappedPt;

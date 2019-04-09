@@ -43,8 +43,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2));  	
 	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
-		auto clipped_to_grid = orthogonalGrid.single_polyline_to_segments_on_grid(*poly);
-		clipped_fold_polylines.push_back(patternBoundary->filter_and_snap(clipped_to_grid,dist_threshold_pow2));
+		auto filtered_and_snapped = patternBoundary->filter_and_snap(*poly,dist_threshold_pow2);
+		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(filtered_and_snapped));
 	}
 
 	clipped_grid_arrangement.add_polylines(clipped_fold_polylines);
@@ -169,7 +169,9 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 	grid_with_snapped.add_polylines(clipped_fold_polylines); grid_with_snapped.add_polylines(clipped_bnd_polylines);
 	
 	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly};
-	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
+	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
+	//std::vector<PlanarArrangement*> arrangements = {&grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
+	std::vector<PlanarArrangement*> arrangements = {&grid_with_snapped ,&clipped_grid_arrangement};
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
 	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
