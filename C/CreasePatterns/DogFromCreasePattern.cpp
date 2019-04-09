@@ -8,12 +8,16 @@
 
 #include "../QuadMesh/Quad.h"
 
+using namespace std;
+
 Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<Polygon_2> gridPolygons;
 	init_grid_polygons(creasePattern, gridPolygons);
+	cout << "init grid polygons done" << endl;
 	// Per polygon contains a flag (whether face 'i' intersects that polygon)
 	std::vector<std::vector<bool>> sqr_in_polygon;
 	set_sqr_in_polygon(creasePattern, gridPolygons, sqr_in_polygon);
+	cout << "set sqr in polygone done" << endl;
 
 	// Generated mesh
 	std::vector<Eigen::MatrixXd> submeshVList; std::vector<Eigen::MatrixXi> submeshFList;
@@ -27,6 +31,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<Point_2> constrained_pts_non_unique;
 	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique,V);
 	save_submesh_bnd_edge_points(creasePattern, submeshVList, edgeStitching);
+	cout << "saved submesh bnd edge points" << endl;
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
 									V_ren_list, edgeStitching, V_ren2, F_ren2);
@@ -37,8 +42,10 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 		submeshVSize[i] = submeshVList[i].rows();
 		submeshFSize[i] = submeshFList[i].rows();
 	}
-	std::vector< std::vector<int> > submesh_adjacency;
+	cout << "Have set submeshVSize and Fsize" << endl;
+	vector< vector<int> > submesh_adjacency;
 	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
+	cout << "got submesh_adjacency" << endl;
 
 	//return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submeshFSize, submesh_adjacency);
 	return Dog(V,F,edgeStitching,V_ren2,F_ren2, submeshVSize, submeshFSize, submesh_adjacency);
@@ -49,6 +56,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 	// Get the faces' polygons and find their intersections with the faces
 	std::vector<Polygon_2> facePolygons; 
 	creasePattern.get_clipped_arrangement().get_faces_polygons(facePolygons);
+	std::cout << "facePolygons.size() = " << facePolygons.size() << std::endl;
 
 	sqr_in_polygon.resize(facePolygons.size());
 	// Iterate over the polygons and add faces that intersect
@@ -58,12 +66,18 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 		//std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
 
 		for (int f_i = 0; f_i < gridPolygons.size(); f_i++) {
+			//std::cout << "before" << std::endl;
+			//std::cout << "poly = " << poly << std::endl;
+			//std::cout << "gridPolygons[f_i] = " << gridPolygons[f_i] << std::endl;
 			bool face_intersection = CGAL::do_intersect(poly, gridPolygons[f_i]);
+			//std::cout << "after" << std::endl;
+			//exit(1);
 
 			// NOTE: Minor inaccuracies (in CGAL??) cause vertex intersections to sometime return a polygon with a very small area (1e-28)
 			// This could be do the inaccuracies converting CGAL to double? (I think there's no conversion here so this is weird)
 			// If we do intersect, we filter those numerical errors
 			if (face_intersection) {
+				cout << "got face intersection" << endl;
 				Polygon_set R;
 				CGAL::intersection(poly, gridPolygons[f_i], std::back_inserter(R));
 				bool all_areas_are_zero = true;
@@ -212,7 +226,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 
 	std::vector<Polygon_2> submeshBnd; 
 	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
-	std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
+	//std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
 
 	// The rendered mesh faces will be the polygons in grid_with_snapped (meaning faces_polygons) after triangulation.
 	// Here we'll find which submesh has them, and then translate the point indices to the correct point in something
