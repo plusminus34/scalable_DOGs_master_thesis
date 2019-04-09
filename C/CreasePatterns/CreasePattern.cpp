@@ -7,21 +7,24 @@
 CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 
-	polylines = merge_nearby_polylines_intersections(polylines);
+	// Handle polyline intersections
+	initial_fold_polylines = merge_nearby_polylines_intersections(polylines);
 
+	// Setup initial boundary (for now just a boundary box)
 	Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
-	initial_polylines.push_back(boundary_poly); initial_polylines.insert(initial_polylines.end(),polylines.begin(),polylines.end());
-	initial_arrangement.add_polylines(initial_polylines);
+	initial_bnd_polylines.push_back(boundary_poly);
+	/*initial_fold_polylines.push_back(boundary_poly);*/ 
+
+	// The following is just for visualization
+	initial_arrangement.add_polylines(initial_fold_polylines); initial_arrangement.add_polylines(initial_bnd_polylines);
 
 	// get poly lines intersections
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
-  	CGAL::compute_intersection_points(initial_polylines.begin(), initial_polylines.end(),
+  	CGAL::compute_intersection_points(initial_fold_polylines.begin(), initial_fold_polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
   	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl; 
-  	for (auto p : polylines_intersections) {
-  		std::cout << "Intersection at " << p << std::endl;
-  	}
+  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;}
   	//int wait; std::cin >> wait;
   	//for (auto pt: polylines_intersections) {std::cout << "singular pt at " << pt << std::endl;} int wait; std::cin >> wait;
   	// Create an orthogonal grid with singularities
@@ -31,11 +34,11 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	
 	// get new polylines
 	//for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
-	for (auto poly = initial_polylines.begin()+1; poly != initial_polylines.end(); poly++) {
+	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
 		clipped_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
 	}
-	
-	clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(initial_polylines[0])); // add the border polygon (no need to call "clip on that")
+	for (auto poly : initial_bnd_polylines) clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(poly));
+	//clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(boundary_poly)); // add the border polygon (no need to call "clip on that")
 	clipped_grid_arrangement.add_polylines(clipped_polylines);
 
 
@@ -44,7 +47,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	
 }
 
-CreasePattern::CreasePattern(const CreasePattern& cP) : initial_polylines(cP.initial_polylines), initial_arrangement(cP.initial_arrangement),
+CreasePattern::CreasePattern(const CreasePattern& cP) : initial_fold_polylines(cP.initial_fold_polylines), initial_bnd_polylines(cP.initial_bnd_polylines), initial_arrangement(cP.initial_arrangement),
 					orthogonalGrid(cP.orthogonalGrid), clipped_polylines(cP.clipped_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
 					bbox(cP.bbox) {
 	// empty
@@ -158,7 +161,7 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
-	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_polylines);
+	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_polylines);
 	

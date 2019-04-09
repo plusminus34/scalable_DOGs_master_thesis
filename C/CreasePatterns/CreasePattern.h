@@ -29,7 +29,8 @@ private:
 	std::vector<Polyline_2> merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines);
 
 
-	std::vector<Polyline_2> initial_polylines; // The boundary is the first one
+	std::vector<Polyline_2> initial_fold_polylines;
+	std::vector<Polyline_2> initial_bnd_polylines;
 	PlanarArrangement initial_arrangement;
 	OrthogonalGrid orthogonalGrid;
 	std::vector<Polyline_2> clipped_polylines;
