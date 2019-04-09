@@ -60,8 +60,8 @@ Polyline_2 points_to_polylines_snapped_at_start_end(const Eigen::MatrixXd& p, co
 	int l_idx = p.rows()-1;
 
 	
-	points[0] = snap_pt_to_bbox(points[0], bbox);
-	points[l_idx] = snap_pt_to_bbox(points[l_idx], bbox);
+	//points[0] = snap_pt_to_bbox(points[0], bbox);
+	//points[l_idx] = snap_pt_to_bbox(points[l_idx], bbox);
 	
 	Polyline_2 poly =  polyline_construct(points.begin(),points.end());
 	/*
