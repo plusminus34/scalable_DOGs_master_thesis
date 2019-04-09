@@ -17,7 +17,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 		const std::vector< std::vector<int> >& submesh_adjacency) :
 				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
 				submesh_adjacency(submesh_adjacency) {
-
+	cout << "Dog::Dog" << endl;
 	// set mesh_min_max_i;
 	vi_to_submesh.resize(V.rows());
 	int min_idx = 0;
@@ -26,10 +26,15 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 		for (int subm_vi = min_idx; subm_vi <= max_idx; subm_vi++) vi_to_submesh[subm_vi] = sub_i;
 		min_idx += submesh_vn;
 	}
+	cout << "setting neighborhood structures" << endl;
 	quad_topology(V,F,quadTop);
+	cout << "setting curve stuff" << endl;
 	setup_stitched_curves_initial_l_angles_length();
+	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
-	setup_boundary_curves_indices();
+	cout << "setting boundary curves" << endl;
+	//setup_boundary_curves_indices();
+	cout << "DOG setup complete" << endl;
 }
  
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(V), V_ren(V), F_ren(Fsqr_to_F(F)) {

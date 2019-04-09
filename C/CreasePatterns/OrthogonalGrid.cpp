@@ -99,7 +99,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
   // Get the first polyline point
   Point_2 pt(polyline.subcurves_begin()->source());
   if (is_point_on_grid(pt)) new_poly_points.push_back(pt);
-  else {cout << "Error in OrthogonalGrid::single_polyline_to_segments_on_grid- first point " << pt << " not on grid" << endl; exit(1);}
+  else if (!closed_poly) {cout << "Error in OrthogonalGrid::single_polyline_to_segments_on_grid- first point " << pt << " not on grid" << endl; exit(1);}
+  // If the polygon is closed we don't need the first point on the grid
   int x_coord,y_coord; x_coord = get_coord_range(pt.x(), x_coords); y_coord = get_coord_range(pt.y(), y_coords);
   Point_2 prevPt(pt);
 
