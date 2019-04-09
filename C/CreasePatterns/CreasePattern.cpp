@@ -35,7 +35,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	
 	// Clip boundary polylines to grid
 	for (auto poly = initial_bnd_polylines.begin(); poly != initial_bnd_polylines.end(); poly++) {
-		clipped_bnd_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
+		bool closed_polyline = true;
+		clipped_bnd_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly, closed_polyline));
 	}
 	// Create boundary
 	patternBoundary = new PatternBoundary(clipped_bnd_polylines);
@@ -47,7 +48,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 		auto filtered_and_snapped = patternBoundary->filter_and_snap(*poly,dist_threshold_pow2);
 		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(filtered_and_snapped));
 	}
-
+	std::cout << "clipped polylines to boundary" << std::endl;
 
 	clipped_grid_arrangement.add_polylines(clipped_fold_polylines);
 	clipped_grid_arrangement.add_polylines(clipped_bnd_polylines);
