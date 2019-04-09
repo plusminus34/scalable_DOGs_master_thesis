@@ -4,6 +4,7 @@
 #include <CGAL/Arr_polyline_traits_2.h>
 
 //#include <map.h>
+using namespace std;
 
 OrthogonalGrid::OrthogonalGrid(const CGAL::Bbox_2& bbox, int x_res, int y_res) : x_res(x_res), y_res(y_res), bbox(bbox) {
 	// Create x line and y coodrinates
@@ -85,6 +86,94 @@ void OrthogonalGrid::initialize_grid() {
 }
 
 Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline) {
+   std::vector<Segment_2> grid_x_segments, grid_y_segments;
+  for (auto x : x_coords) {grid_x_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
+  for (auto y : y_coords) {grid_y_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
+  Geom_traits_2 geom_traits_2;
+  std::vector<Point_2> new_poly_points;
+  // Get the first polyline point
+  Point_2 pt(polyline.subcurves_begin()->source());
+  if (is_point_on_grid(pt)) new_poly_points.push_back(pt);
+  else {cout << "Error in OrthogonalGrid::single_polyline_to_segments_on_grid- first point " << pt << " not on grid" << endl; exit(1);}
+  int x_coord,y_coord; x_coord = get_coord_range(pt.x(), x_coords); y_coord = get_coord_range(pt.y(), y_coords);
+  Point_2 prevPt(pt);
+
+  // Go through all polyline points
+  for (auto it = polyline.subcurves_begin(); it != polyline.subcurves_end(); it++) {
+    pt = it->target();
+    
+    //std::cout << "number_of_segments = " << it->number_of_subcurves() << std::endl;
+    int new_x_coord(get_coord_range(pt.x(), x_coords)),new_y_coord(get_coord_range(pt.y(), y_coords));
+    
+    //cout << "pt = " << pt << " new_x_coord = " << new_x_coord << " new_y_coord = " << new_y_coord << std::endl;
+    // Detect intersection
+    if ( (x_coord != new_x_coord) || (y_coord != new_y_coord) ) {
+      std::cout << "Intersection found from " << prevPt << " to " << pt << std::endl;
+      std::cout << "\t From coords (" << x_coord << "," << y_coord << ") to (" << new_x_coord << "," << new_y_coord << ")" << std::endl;
+
+      std::vector<Point_2> intersections;
+      if (x_coord != new_x_coord) {
+        std::vector<Segment_2> int_segments; int_segments.push_back(Segment_2(prevPt,pt));
+        int_segments.insert( int_segments.end(), grid_x_segments.begin(), grid_x_segments.end() );
+        CGAL::compute_intersection_points(int_segments.begin(), int_segments.end(),
+                                  std::back_inserter(intersections), false, geom_traits_2);
+      }
+      if (y_coord != new_y_coord) {
+        std::vector<Segment_2> int_segments; int_segments.push_back(Segment_2(prevPt,pt));
+        int_segments.insert( int_segments.end(), grid_y_segments.begin(), grid_y_segments.end() );
+        CGAL::compute_intersection_points(int_segments.begin(), int_segments.end(),
+                                  std::back_inserter(intersections), false, geom_traits_2);
+      }
+      for (int j = 0; j < 2; j++) {
+        intersections.erase(std::remove(intersections.begin(), intersections.end(), prevPt), intersections.end());
+        intersections.erase(std::remove(intersections.begin(), intersections.end(), pt), intersections.end());
+      }
+      for (auto s: intersections) std::cout << "int = " << s << std::endl;
+      int int_n = intersections.size();
+      // sort them by distances
+      std::vector<std::pair<int,Number_type>> int_dist;
+      for (int int_i = 0; int_i < intersections.size(); int_i++) {
+        int_dist.push_back(std::pair<int,Number_type>(int_i,CGAL::squared_distance(prevPt, intersections[int_i])));
+      }
+      std::sort(int_dist.begin(), int_dist.end(), [](const std::pair<int,Number_type>& p1, const std::pair<int,Number_type>& p2){return p1.second < p2.second;});
+      for (auto i_dist : int_dist) new_poly_points.push_back(intersections[i_dist.first]);
+
+      /*
+      if (int_n == 1) {
+        new_poly_points.push_back(intersections[0]);
+      } else if(int_n == 2) {
+        Point_2 pt1(intersections[0]), pt2(intersections[1]);
+         if (CGAL::squared_distance(prevPt, intersections[0]) > CGAL::squared_distance(prevPt, intersections[1])) std::swap(pt1,pt2);
+         new_poly_points.push_back(pt1); new_poly_points.push_back(pt2);
+         //std::cout << "pt1 = " << pt1 << " pt2 = " << pt2 << std::endl;
+      } else if (int_n != 0) {
+        std::cout << "Error at single_polyline_to_segments_on_grid: Intersections number needs to be 1 or 2 but is " << intersections.size() << std::endl;
+        std::cout << "Intersections:" << std::endl;
+        for (auto seg_int : intersections) std::cout << seg_int << endl;
+        exit(1);
+      }
+      */
+    }
+    //std::cout << "checking if " << pt << " is on the grid" << std::endl;
+    // Checking that the last point added is not the same as well (can happen when snapping singularities)
+    if ( (is_point_on_grid(pt)) && (new_poly_points.back()!= pt) ) {
+      new_poly_points.push_back(pt);
+      std::cout << "adding pt on grid: " << pt << std::endl;
+    }
+    x_coord = new_x_coord; y_coord = new_y_coord;
+    prevPt = pt;
+  }
+  //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl; int wait; std::cin >> wait;
+  //Polygon_2 poly2(new_poly_points.begin(),new_poly_points.end()-1); std::cout << "poly.is_simple() = " << poly2.is_simple()<< std::endl;
+  //std::cout << "poly_area = " << poly2.area() << std::endl;
+  //std::cout << "Ran the new one" << std::endl; int wait; cin >> wait;
+  Geom_traits_2 traits;
+  Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+  return polyline_construct(new_poly_points.begin(), new_poly_points.end());
+}
+
+Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid_old(const Polyline_2& polyline) {
+  //single_polyline_to_segments_on_grid2(polyline);
 	// Create a copy of the grid arrangement and add the polyline to it
 	PlanarArrangement grid_arr(*this);
 	grid_arr.add_polyline(polyline);
@@ -204,6 +293,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     if (p1.x() == Number_type(301.5)) {
       std::cout << "p1  = " << p1 << " p2 = " << p2 << std::endl; int wait; std::cin >> wait;
     }
+    cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl;
+    std::cout << "Ran the old one" << std::endl; int wait; cin >> wait;
     Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
     return polyline_construct(new_poly_points.begin(), new_poly_points.end());
@@ -231,6 +322,15 @@ bool OrthogonalGrid::pt_in_vec(const std::vector<Number_type>& vec, const Number
      if (std::abs(CGAL::to_double(pt-val)) < eps) return true;
   }
   return false;
+}
+
+int OrthogonalGrid::get_coord_range(const Number_type& pt, const std::vector<Number_type>& coords) {
+  if (pt < coords[0]) return 0;
+  if (pt > coords.back()) return coords.size()+1;
+  // The point is somewhere along the grid, find the edge indices
+  auto upper_bound = std::upper_bound(coords.begin(),coords.end(),pt);
+  if (upper_bound == coords.end()) return coords.size();
+  return upper_bound-coords.begin();
 }
 
 bool OrthogonalGrid::get_pt_edge_coordinates(const Point_2& pt, std::pair<Point_2,Point_2>& edge_pts, Number_type& t) const {

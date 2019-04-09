@@ -63,7 +63,14 @@ Polyline_2 points_to_polylines_snapped_at_start_end(const Eigen::MatrixXd& p, co
 	points[0] = snap_pt_to_bbox(points[0], bbox);
 	points[l_idx] = snap_pt_to_bbox(points[l_idx], bbox);
 	
-	return polyline_construct(points.begin(),points.end());
+	Polyline_2 poly =  polyline_construct(points.begin(),points.end());
+	/*
+	std::cout << "printing poly with poly points: " << std::endl; for (auto v: points) std::cout << "v = " << v << std::endl;
+	std::cout << "printing poly with poly: " << std::endl; std::cout << "v = " << poly.subcurves_begin()->source() << std::endl; 
+	for (auto it = poly.subcurves_begin(); it != poly.subcurves_end(); it++) std::cout << it->target() << std::endl;
+	int wait; cin >> wait;
+	*/
+	return poly;
 }
 
 Point_2 snap_pt_to_bbox(const Point_2& pt, const CGAL::Bbox_2& bbox) {

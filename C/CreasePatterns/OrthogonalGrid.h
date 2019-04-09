@@ -21,6 +21,7 @@ public:
 	// multiple polylines
 	//std::vector<Polyline_2> polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines);
 	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline);
+	Polyline_2 single_polyline_to_segments_on_grid_old(const Polyline_2& polyline);
 
 	const std::vector<Number_type>& get_x_coords() const {return x_coords;}
 	const std::vector<Number_type>& get_y_coords() const {return y_coords;}
@@ -42,6 +43,8 @@ private:
 
 	void polyline_to_segments(const Polyline_2& polyline, std::vector<Segment_2>& segments);
 	bool pt_in_vec(const std::vector<Number_type>& vec, const Number_type& pt) const;
+
+	static int get_coord_range(const Number_type& pt, const std::vector<Number_type>& coords);
 	//Number_type lower_bound(const Point_2& pt, int axis);
 	// Holds only the grid, as there's no need to have multiple intersected polylines calculation all the time
 	

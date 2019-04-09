@@ -1,5 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from svgpathtools import svg2paths, wsvg
 from svg_utils import *
 from shapely.geometry import *
