@@ -42,7 +42,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	// Clip fold polylines to grid, clip and snap them to the boudnary
 	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
 		auto clipped_to_grid = orthogonalGrid.single_polyline_to_segments_on_grid(*poly);
-		clipped_fold_polylines.push_back(patternBoundary->clip_and_snap(clipped_to_grid));
+		clipped_fold_polylines.push_back(patternBoundary->filter_and_snap(clipped_to_grid));
 	}
 
 	clipped_grid_arrangement.add_polylines(clipped_fold_polylines);

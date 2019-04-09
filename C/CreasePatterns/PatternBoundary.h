@@ -10,9 +10,10 @@ class PatternBoundary {
 public:
 	PatternBoundary(const std::vector<Polygon_2>& boundary_polygons);
 	PatternBoundary(const std::vector<Polyline_2>& boundary_polylines);
-	Polyline_2 clip_and_snap(Polyline_2& polyline);
+	Polyline_2 filter_and_snap(Polyline_2& polyline);
 private:
-	
+	Polyline_2 filter(Polyline_2& polyline);
+	Polyline_2 snap(Polyline_2& polyline);
 	bool inside_boundary(const Point_2& pt);
 
 	static std::vector<Polygon_2> polylines_to_polygons(const std::vector<Polyline_2>& boundary_polylines);

@@ -25,9 +25,17 @@ PatternBoundary::PatternBoundary(const std::vector<Polyline_2>& boundary_polylin
 	// empty on purpose
 }
 
-Polyline_2 PatternBoundary::clip_and_snap(Polyline_2& polyline) {
+Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline) {
 	// Get polyline points
-	return polyline; // todo implement
+	//return snap(filter(polyline)); // todo implement
+	return polyline;
+}
+
+Polyline_2 PatternBoundary::filter(Polyline_2& polyline) {
+	return polyline;
+}
+Polyline_2 PatternBoundary::snap(Polyline_2& polyline) {
+	return polyline;
 }
 
 bool PatternBoundary::inside_boundary(const Point_2& pt) {
