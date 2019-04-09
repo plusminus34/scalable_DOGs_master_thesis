@@ -123,7 +123,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
 	// Get all the polylines unique points (vertices will appear twice with each polyline)
 	std::set<Point_2> constrained_pts;
-	const std::vector<Polyline_2>& polylines = creasePattern.get_clipped_polylines();
+	const std::vector<Polyline_2>& polylines = creasePattern.get_clipped_fold_polylines();
 	for (auto poly : polylines) {
 		//std::cout << "new poly"<<std::endl;
 		std::vector<Point_2> pts; polyline_to_points(poly,pts);
@@ -185,7 +185,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	// Get orth grid and add it the polylines
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	PlanarArrangement grid_with_snapped(orthGrid);
-	grid_with_snapped.add_polylines(creasePattern.get_clipped_polylines());
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_fold_polylines());
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
 

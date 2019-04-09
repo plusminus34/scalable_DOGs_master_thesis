@@ -17,7 +17,7 @@ public:
 	const PlanarArrangement& get_clipped_arrangement() const {return clipped_grid_arrangement;}
 	const OrthogonalGrid& get_orthogonal_grid() const {return orthogonalGrid;}
 	//const PlanarArrangement& get_grid_with_snapped() const {return grid_with_snapped;}
-	const std::vector<Polyline_2>& get_clipped_polylines() const {return clipped_polylines;}
+	const std::vector<Polyline_2>& get_clipped_fold_polylines() const {return clipped_fold_polylines;}
 
 	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
@@ -33,7 +33,8 @@ private:
 	std::vector<Polyline_2> initial_bnd_polylines;
 	PlanarArrangement initial_arrangement;
 	OrthogonalGrid orthogonalGrid;
-	std::vector<Polyline_2> clipped_polylines;
+	std::vector<Polyline_2> clipped_fold_polylines;
+	std::vector<Polyline_2> clipped_bnd_polylines;
 	//PlanarArrangement grid_with_snapped;
 	PlanarArrangement clipped_grid_arrangement;
 	const CGAL::Bbox_2 bbox;

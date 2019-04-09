@@ -32,23 +32,24 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	orthogonalGrid.initialize_grid();
   	
   	
-	// get new polylines
-	//for (int j = 1; j < initial_polylines.size(); j++) clipped_polylines.push_back(initial_polylines[j]); // don't copy the border polygon
-	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
-		clipped_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
+	// Clip boundary polylines to grid
+	for (auto poly = initial_bnd_polylines.begin(); poly != initial_bnd_polylines.end(); poly++) {
+		clipped_bnd_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
 	}
-	for (auto poly : initial_bnd_polylines) clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(poly));
-	//clipped_grid_arrangement.add_polyline(orthogonalGrid.single_polyline_to_segments_on_grid(boundary_poly)); // add the border polygon (no need to call "clip on that")
-	clipped_grid_arrangement.add_polylines(clipped_polylines);
+	// Create boundary
 
+	// Clip fold polylines to grid
+	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
+		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly));
+	}
 
-	//grid_with_snapped = orthogonalGrid;
-	//grid_with_snapped.add_polylines(clipped_polylines);
+	clipped_grid_arrangement.add_polylines(clipped_fold_polylines);
+	clipped_grid_arrangement.add_polylines(clipped_bnd_polylines);
 	
 }
 
 CreasePattern::CreasePattern(const CreasePattern& cP) : initial_fold_polylines(cP.initial_fold_polylines), initial_bnd_polylines(cP.initial_bnd_polylines), initial_arrangement(cP.initial_arrangement),
-					orthogonalGrid(cP.orthogonalGrid), clipped_polylines(cP.clipped_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
+					orthogonalGrid(cP.orthogonalGrid), clipped_fold_polylines(cP.clipped_fold_polylines), clipped_bnd_polylines(cP.clipped_bnd_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
 					bbox(cP.bbox) {
 	// empty
 }
@@ -163,7 +164,7 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
-	grid_with_snapped.add_polylines(clipped_polylines);
+	grid_with_snapped.add_polylines(clipped_fold_polylines); grid_with_snapped.add_polylines(clipped_bnd_polylines);
 	
 	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly};
 	std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
