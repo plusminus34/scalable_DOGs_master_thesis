@@ -46,6 +46,9 @@ void read_svg_crease_pattern(const std::string& path, CGAL::Bbox_2& bbox, std::v
 		boundary_polylines.push_back(polyline_construct(pts.begin(), pts.end()));
 	} else {
 		// Set boundary box from boundary polylines
+		bbox = boundary_polylines[0].bbox();
+		for (int i = 1; i < boundary_polylines.size(); i++) bbox += boundary_polylines[i].bbox();
+		std::cout << "bbox = " << bbox << std::endl; exit(1);
 	}
 	
 	system(std::string(std::string("rm -r ")+tmp_folder).c_str());
