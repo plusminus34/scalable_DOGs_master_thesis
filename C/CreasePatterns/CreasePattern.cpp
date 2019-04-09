@@ -40,9 +40,11 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	patternBoundary = new PatternBoundary(clipped_bnd_polylines);
 
 	// Clip fold polylines to grid, clip and snap them to the boudnary
+	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
+	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2));  	
 	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
 		auto clipped_to_grid = orthogonalGrid.single_polyline_to_segments_on_grid(*poly);
-		clipped_fold_polylines.push_back(patternBoundary->filter_and_snap(clipped_to_grid));
+		clipped_fold_polylines.push_back(patternBoundary->filter_and_snap(clipped_to_grid,dist_threshold_pow2));
 	}
 
 	clipped_grid_arrangement.add_polylines(clipped_fold_polylines);
@@ -116,8 +118,6 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(polylines.begin(), polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
-
-
 
   	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
