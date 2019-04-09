@@ -98,12 +98,12 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
 	for (int i = 0; i < submeshV.rows(); i++) {V.row(submesh_v_min_i + i) = submeshV.row(i);}
 	//update_rendering_v();
-	update_Vren2();
+	update_Vren();
 }
 
 void Dog::update_rendering_v() {
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
-	update_Vren2();
+	update_Vren();
 }
 
 void Dog::get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out) const {
@@ -131,7 +131,7 @@ void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitchin
 	V_ren << V,V_folds_polygons;
 }
 
-void Dog::update_Vren2() {
+void Dog::update_Vren() {
 	int subm_n = edgeStitching.submesh_to_edge_pt.size();
 	// Check if there is only 1 submesh
 	if (subm_n < 2) {
@@ -148,6 +148,11 @@ void Dog::update_Vren2() {
 			// Get the vertex
 			double t = edgeStitching.edge_coordinates[ei];
 			V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
+		}
+		for (int j = 0; j < edgeStitching.submesh_to_bnd_edge[subi].size(); j++) {
+			EdgePoint ep = edgeStitching.submesh_to_bnd_edge[subi][j];
+			V_ren.row(vi_cnt++) = ep.getPositionInMesh(V);
+			//std::cout << "Added row = " << V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j)  << std::endl;
 		}
 	}
 }

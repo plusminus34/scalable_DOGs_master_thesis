@@ -21,6 +21,8 @@ public:
 
 	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
+
+	const PatternBoundary* boundary() const {return patternBoundary;}
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	bool get_snapped_vertices_locations(const std::vector<Point_2>& polylines_int, Number_type threshold, std::map<Point_2, Point_2>& vertices_to_snapped_vertices);

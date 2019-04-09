@@ -26,6 +26,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	std::vector<Point_2> constrained_pts_non_unique;
 	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique,V);
+	save_submesh_bnd_edge_points(creasePattern, submeshVList, edgeStitching);
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
 									V_ren_list, edgeStitching, V_ren2, F_ren2);
@@ -177,6 +178,25 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			edgeStitching.stitched_curves[i][j] = EdgePoint(edge_v_indices[0],CGAL::to_double(edge_t));
 		}
 	}
+}
+
+void save_submesh_bnd_edge_points(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList,
+				DogEdgeStitching& edgeStitching) {
+	edgeStitching.submesh_to_bnd_edge.resize(submeshVList.size());
+
+	std::vector<Point_2> boundary_vertices = creasePattern.boundary()->get_all_boundary_points();
+	for (auto pt: boundary_vertices) {
+		Number_type edge_t; std::vector<Edge> edge_v_indices; std::vector<int> submeshes_with_pt;
+		pt_to_edge_coordinates(pt, creasePattern, submeshVList, edge_v_indices, edge_t, submeshes_with_pt);
+		//for (auto subm_i : submeshes_with_pt) {
+		for (int i = 0; i < submeshes_with_pt.size(); i++) {
+			int subm_i = submeshes_with_pt[i];
+			EdgePoint edgePoint(edge_v_indices[i], CGAL::to_double(edge_t));
+			edgeStitching.submesh_to_bnd_edge[subm_i].push_back(edgePoint); // push one of the vertices
+			//std::cout << "t = " << edge_t << std::endl;
+		}
+	}
+	//int wait; std::cin >> wait;
 }
 
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons) {
@@ -423,7 +443,7 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& submeshVList,DogEdgeStitching& eS, std::vector<Eigen::MatrixXd>& V_ren_list) {
 	V_ren_list.resize(submeshVList.size());
 	for (int i = 0; i < submeshVList.size(); i++) {
-		V_ren_list[i].resize(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size(),3);
+		V_ren_list[i].resize(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size()+eS.submesh_to_bnd_edge[i].size(),3);
 		// add normal points
 		for (int j = 0; j < submeshVList[i].rows(); j++) {V_ren_list[i].row(j) = submeshVList[i].row(j);}
 		// add crease points
@@ -436,6 +456,11 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 			//V_ren_list[i].row(submeshVList[i].rows() + j) = 
 			//double t = eS.edge_coordinates[ei];
 			//V_ren_list[i].row(submeshVList[i].rows() + j) = t*V.row(eS.edge_const_1[ei].v1) + (1-t)*V.row(eS.edge_const_1[ei].v2);
+		}
+		for (int j = 0; j < eS.submesh_to_bnd_edge[i].size(); j++) {
+			EdgePoint ep = eS.submesh_to_bnd_edge[i][j];
+			V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j) = ep.getPositionInMesh(V);
+			//std::cout << "Added row = " << V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j)  << std::endl;
 		}
 	}
 }
