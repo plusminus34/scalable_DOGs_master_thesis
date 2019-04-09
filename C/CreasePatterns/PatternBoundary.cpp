@@ -54,6 +54,9 @@ bool PatternBoundary::inside(const Point_2& pt) {
 }
 
 Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold) {
+	if (outer_boundary.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
+	for (auto poly: holes) if (poly.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
+
 	Point_2 snappedPt = pt;
 	int closest_seg = 0; Number_type min_dist = CGAL::squared_distance(pt, all_polygons_edges[0].source());
 	for (auto seg: all_polygons_edges) {
