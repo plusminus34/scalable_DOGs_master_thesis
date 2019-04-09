@@ -1,5 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from svgpathtools import svg2paths, wsvg
 from svg_utils import *
 from shapely.geometry import *
@@ -27,7 +27,8 @@ def svg_creases_to_polygonal_data(svg_file):
 		else:
 			try:
 				print 'Reading fold'
-				vertices = handle_fold(path,100)
+				raw_input('am i here')
+				vertices = handle_fold(path,5)
 				path_lines.append(LineString(vertices))
 			except:
 				print 'Error handling a fold'
@@ -74,6 +75,7 @@ def handle_fold(path,sampling,bounds):
 		#print 'line points = ', points
 	else:
 		print 'bezier curve!'
+		print 'sampling = ', sampling
 		points = sample_bezier_path_sampling(path, sampling)
 		#print 'bezier points = ', points
 	return points

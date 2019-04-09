@@ -10,7 +10,8 @@
 class CreasePattern {
   
 public:
-	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, int x_res, int y_res);
+	CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
+							 int x_res, int y_res);
 	CreasePattern(const CreasePattern& CreasePattern);
 	// TODO constructor from polygon (requiring to support removal of faces from the grid)
 

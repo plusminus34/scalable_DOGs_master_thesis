@@ -40,7 +40,7 @@ def svg_creases_to_bounding_box_and_polylines(svg_file):
 		print 'path = ', path
 		if is_border(attrib, style_classes):
 			print 'Reading border polygon'
-			border_poly = handle_border(path)
+			border_poly.append(handle_border(path))
 		else:
 			try:
 				print 'Reading fold'
@@ -65,11 +65,14 @@ if __name__ == "__main__":
 
 		print 'boundingBox = ', boundingBox
 		save_bounding_box(boundingBox, out_folder+"/bbox.obj")
-		open(out_folder+"/"+str(len(polylines)),'w') # write a file with number of polylines
+		#open(out_folder+"/"+str(len(polylines)),'w') # write a file with number of polylines
 		#save_polyline(out_folder+"//"+"border_poly.obj")
 		cnt = 1
 		for poly in polylines:
 			save_polyline(poly,out_folder+"/"+"poly-"+str(cnt)+".obj")
+			cnt +=1
+		for border in border_poly:
+			save_polyline(poly,out_folder+"/"+"borderpoly-"+str(cnt)+".obj")
 			cnt +=1
 	else:
 		print 'Usage: svg_to_polylines.py out_folder'
