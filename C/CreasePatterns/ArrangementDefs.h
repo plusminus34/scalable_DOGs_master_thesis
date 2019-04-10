@@ -4,8 +4,8 @@
 #include <CGAL/Arr_segment_traits_2.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 #include <CGAL/Arrangement_2.h>
-#include <CGAL/Arrangement_on_surface_with_history_2.h>
-#include <CGAL/Arrangement_with_history_2.h>
+//#include <CGAL/Arrangement_on_surface_with_history_2.h>
+//#include <CGAL/Arrangement_with_history_2.h>
 #include <CGAL/Arr_simple_point_location.h>
 
 #include <CGAL/Snap_rounding_traits_2.h>
@@ -31,8 +31,8 @@ typedef Geom_traits_2::X_monotone_curve_2         		  Polyline_2_Monotone;
 typedef std::vector<Point_2>                       PointVec;
 typedef std::vector<PointVec>                    PointVecVec;
 
-//typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
-typedef CGAL::Arrangement_with_history_2<Geom_traits_2> 	Arrangement_2; // Use arrangement with history to keep track of old polylines
+typedef CGAL::Arrangement_2<Geom_traits_2>                Arrangement_2;
+//typedef CGAL::Arrangement_with_history_2<Geom_traits_2> 	Arrangement_2; // Use arrangement with history to keep track of old polylines
 typedef CGAL::Arr_simple_point_location<Arrangement_2>  Point_location;
 typedef typename Arrangement_2::Vertex_const_handle   Vertex_const_handle;
 

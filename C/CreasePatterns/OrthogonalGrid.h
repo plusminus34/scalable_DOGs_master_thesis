@@ -21,7 +21,6 @@ public:
 	// multiple polylines
 	//std::vector<Polyline_2> polylines_to_segments_on_grid(const std::vector<Polyline_2>& polylines);
 	Polyline_2 single_polyline_to_segments_on_grid(const Polyline_2& polyline, bool closed_poly = false);
-	Polyline_2 single_polyline_to_segments_on_grid_old(const Polyline_2& polyline);
 
 	const std::vector<Number_type>& get_x_coords() const {return x_coords;}
 	const std::vector<Number_type>& get_y_coords() const {return y_coords;}
