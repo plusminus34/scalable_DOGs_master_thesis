@@ -232,6 +232,35 @@ void PlanarArrangement::get_faces_polygons(std::vector<Polygon_2>& polygons) con
 	for (int i = 0; i < facePts.size();i++) {polygons[i] = Polygon_2(facePts[i].begin(), facePts[i].end());}
 }
 
+void PlanarArrangement::get_faces_polygons_with_holes(std::vector<Polygon_with_holes_2>& polygons) const {
+	// Build faces polygons
+	Arrangement_2::Face_const_iterator fit;
+	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
+		if (!fit->is_unbounded()) {
+			// Get outer face points
+			Eigen::MatrixXd p; get_face_vertices(fit,p);
+			std::vector<Point_2> face_pts(p.rows());
+			for (int i = 0; i < p.rows(); i++) face_pts[i] = Point_2(p(i,0),p(i,1));
+			//Polygon_with_holes_2 polygon(Polygon_2(face_pts.begin(), face_pts.end()), fit->holes_begin(),fit->holes_end());
+			Polygon_2 outer_bnd(face_pts.begin(), face_pts.end());
+			std::vector<Polygon_2> holes;	
+			for (auto hole_fit  = fit->holes_begin(); hole_fit != fit->holes_end(); hole_fit++) {
+				Eigen::MatrixXd hole_p;
+				// TODO: got the other code from the ccb thing
+				//get_face_vertices(hole_fit,hole_p);
+				/*
+				std::vector<Point_2> hole_face_points(hole_p.rows());
+				hole_face_points.resize(hole_p.rows());
+				for (int i = 0; i < p.rows(); i++) hole_face_points[i] = Point_2(hole_p(i,0),hole_p(i,1));
+				holes.push_back(Polygon_2(hole_face_points.begin(),hole_face_points.end()));
+				*/
+			}
+			Polygon_with_holes_2 polygon(outer_bnd,holes.begin(),holes.end());
+			
+		}
+	}
+}
+
 void get_multiple_arrangements_visualization_mesh(std::vector<PlanarArrangement*> arrangements, double spacing,
 							Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors) {
 	// Visualize all
