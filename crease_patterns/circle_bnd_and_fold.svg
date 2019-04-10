@@ -4,9 +4,9 @@
 	 viewBox="0 0 768 768" style="enable-background:new 0 0 768 768;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
-	.st1{fill:#FFFFFF;stroke:#EF0C0C;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#EF0C0C;stroke-miterlimit:10;}
 </style>
 <path class="st0" d="M699.8,350.2c9.7,184.4-132,341.7-316.3,351.3S41.8,569.6,32.2,385.2s132-341.7,316.3-351.3
 	S690.2,165.9,699.8,350.2z"/>
-<path class="st1" d="M210.3,670.8c-17.8-119.2,36.7-256.7,134.5-323.6c105.6-72.3,247.4-71.3,355,3"/>
+<path class="st1" d="M31.7,741c4.6-62.6,28.6-315.3,193.6-509.9C437.7-19.2,705.5,36.4,739,44.1"/>
 </svg>
