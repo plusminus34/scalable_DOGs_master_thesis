@@ -3,11 +3,15 @@
 
 
 PatternBoundary::PatternBoundary(const std::vector<Polygon_2>& boundary_polygons) {
+	std::cout << std::endl << "Polygon: " << std::endl << boundary_polygons[0] << std::endl; //exit(1);
 	std::vector<Number_type> areas; Number_type max_area(0); int boundary_poly_i = 0;
 	for (int i = 0; i < boundary_polygons.size(); i++) {
 		if (!boundary_polygons[i].is_simple()) {
+
+			//std::cout << std::endl << std::endl << "Polygon:" << std::endl << boundary_polygons[i] << std::endl;
 			std::cout << "Error at PatternBoundary: Polygon " << i << " is not simple" << std::endl;
 			exit(1);
+			
 		}
 		if (abs(boundary_polygons[i].area()) > max_area) {
 			max_area = abs(boundary_polygons[i].area());
@@ -40,7 +44,8 @@ std::vector<Point_2> PatternBoundary::get_all_boundary_points() const {
 	return boundary_vertices;
 }
 
-Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold) {
+Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold,
+		Point_2& firstPt, Point_2& lastPt, bool& snappedFirst, bool& snappedLast) {
 	std::vector<Point_2> pts; polyline_to_points(polyline, pts);
 	std::vector<Point_2> filtered_pts;
 	for (auto pt: pts) {
@@ -48,11 +53,12 @@ Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_t
 		else {std::cout << "filtered pt " << pt << std::endl;}
 		//filtered_pts.push_back(pt);
 	}
-	filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold);
-	filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold);
+	filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold, snappedFirst);
+	filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold, snappedLast);
 	Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 
+    firstPt = filtered_pts[0]; lastPt = filtered_pts.back();
 
     return polyline_construct(filtered_pts.begin(), filtered_pts.end());
 }
@@ -64,7 +70,7 @@ bool PatternBoundary::inside(const Point_2& pt) {
 	return true;
 }
 
-Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold) {
+Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold, bool& has_snapped) {
 	if (outer_boundary.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
 	for (auto poly: holes) if (poly.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
 
@@ -76,6 +82,7 @@ Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_d
 		if (squared_dist < min(squared_dist_threshold,min_dist)) {
 			min_dist = squared_dist;
 			snappedPt = proj_pt;
+			has_snapped = true;
 		}
 	}
 	return snappedPt;
