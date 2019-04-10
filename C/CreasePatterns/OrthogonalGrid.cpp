@@ -74,6 +74,8 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
     axis_vec[i] = min_pt+spacing_idx*spacing;
     spacing_idx++;
   }
+  //axis_vec[0] = axis_vec[1] + (axis_vec[1]-axis_vec[2]);
+  //axis_vec[last_idx] = axis_vec[last_idx-1] + (axis_vec[last_idx-1]-axis_vec[last_idx-2]);
   //std::cout << "last pt = " << last_pt << std::endl;
 }
 void OrthogonalGrid::initialize_grid() {
@@ -83,11 +85,11 @@ void OrthogonalGrid::initialize_grid() {
   for (auto x : x_coords) {grid_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
   for (auto y : y_coords) {grid_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}
   add_segments(grid_segments);
-/*
+
   for (auto x : x_coords) std::cout << "x = " << x <<std::endl;
   for (auto y : y_coords) std::cout << "y = " << y <<std::endl;
-  exit(1);
-*/
+  //exit(1);
+
 }
 
 Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline, bool closed_poly) {
@@ -136,6 +138,7 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       intersections.erase(std::remove(intersections.begin(), intersections.end(), pt), intersections.end());
 
       int int_n = intersections.size();
+
       // sort them by distances
       std::vector<std::pair<int,Number_type>> int_dist;
       for (int int_i = 0; int_i < intersections.size(); int_i++) {
@@ -143,17 +146,14 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       }
       std::sort(int_dist.begin(), int_dist.end(), [](const std::pair<int,Number_type>& p1, const std::pair<int,Number_type>& p2){return p1.second < p2.second;});
       for (auto i_dist : int_dist) {
-        if (CGAL::squared_distance(new_poly_points.back(),intersections[i_dist.first]) < Number_type(1e-16)) {
-            std::cout << "here with " << new_poly_points.back() << " and " << intersections[i_dist.first] << std::endl;
-            bool are_equal  = new_poly_points.back() == intersections[i_dist.first];
-            std::cout << "new_poly_points.back() == intersections[i_dist.first] is " << are_equal << std::endl;
-            int b; std::cin >> b;
+        if (new_poly_points.size() && (CGAL::squared_distance(new_poly_points.back(),intersections[i_dist.first]) < Number_type(1e-16)) ) {
+            //bool are_equal  = new_poly_points.back() == intersections[i_dist.first];
+            //int b; std::cin >> b;
         } else {
           new_poly_points.push_back(intersections[i_dist.first]);
         }        
       }
-
-      std::cout << "added pts: "; for (auto pt: intersections) {std::cout << pt <<",";} std::cout <<endl;
+      //std::cout << "added pts: "; for (auto pt: intersections) {std::cout << pt <<",";} std::cout <<endl;
       /*
       if (int_n == 1) {
         new_poly_points.push_back(intersections[0]);
@@ -179,7 +179,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
     x_coord = new_x_coord; y_coord = new_y_coord;
     prevPt = pt;
   }
-  int wait; std::cin >> wait;
   if ( closed_poly && (new_poly_points[0]!=new_poly_points.back()) ) new_poly_points.push_back(new_poly_points[0]);
   //cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl; int wait; std::cin >> wait;
   //Polygon_2 poly2(new_poly_points.begin(),new_poly_points.end()-1); std::cout << "poly.is_simple() = " << poly2.is_simple()<< std::endl;
@@ -308,9 +307,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid_old(const Polylin
       
 
     } while (found_next_pt);
-    if (p1.x() == Number_type(301.5)) {
-      std::cout << "p1  = " << p1 << " p2 = " << p2 << std::endl; int wait; std::cin >> wait;
-    }
     cout<<"Points:"<<endl;for (auto pt: new_poly_points) std::cout << pt << endl;
     std::cout << "Ran the old one" << std::endl; int wait; cin >> wait;
     Geom_traits_2 traits;
