@@ -54,8 +54,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
 						std::vector<std::vector<bool>>& sqr_in_polygon) {
 	// Get the faces' polygons and find their intersections with the faces
-	std::vector<Polygon_2> facePolygons; 
-	creasePattern.get_clipped_arrangement().get_faces_polygons(facePolygons);
+	std::vector<Polygon_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
 	std::cout << "facePolygons.size() = " << facePolygons.size() << std::endl;
 
 	sqr_in_polygon.resize(facePolygons.size());
@@ -224,8 +223,8 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
 
-	std::vector<Polygon_2> submeshBnd; 
-	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
+	std::vector<Polygon_2> submeshBnd;
+	creasePattern.get_submeshes_faces_polygons(submeshBnd);
 	//std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
 
 	// The rendered mesh faces will be the polygons in grid_with_snapped (meaning faces_polygons) after triangulation.
@@ -381,7 +380,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 		exit(1); // Should never get here, and if so all is lost
 	}
 	std::vector<Polygon_2> submeshBnd; 
-	creasePattern.get_clipped_arrangement().get_faces_polygons(submeshBnd);
+	creasePattern.get_submeshes_faces_polygons(submeshBnd);
 	//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 	// Now find the indices of both points and add them as constraints
 	// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.

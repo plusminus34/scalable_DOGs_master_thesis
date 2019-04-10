@@ -24,6 +24,10 @@ public:
 	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
 
+	//void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const;
+	void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const {
+		get_clipped_arrangement().get_faces_polygons(polygons);}
+
 	const PatternBoundary* boundary() const {return patternBoundary;}
 private:
 	// snap rounding (and possibly later project initial curves to boundary)
@@ -43,4 +47,5 @@ private:
 	PlanarArrangement clipped_grid_arrangement;
 	const CGAL::Bbox_2 bbox;
 	PatternBoundary* patternBoundary;
+	std::vector<Point_2> submeshes_mass_center;
 };

@@ -14,9 +14,9 @@ public:
 			Point_2& firstPt, Point_2& lastPt, bool& snappedFirst, bool& snappedLast);
 
 	std::vector<Point_2> get_all_boundary_points() const;
+	bool inside(const Point_2& pt);
 private:
 	Point_2 snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold, bool& has_snapped);
-	bool inside(const Point_2& pt);
 
 	static std::vector<Polygon_2> polylines_to_polygons(const std::vector<Polyline_2>& boundary_polylines);
 	static void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);
