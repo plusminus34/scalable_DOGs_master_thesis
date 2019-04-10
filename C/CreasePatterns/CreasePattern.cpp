@@ -7,6 +7,9 @@
 CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
 							int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
+	// Threshold used for snapping
+	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
+	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2));
 
 	// Handle polyline intersections
 	initial_fold_polylines = merge_nearby_polylines_intersections(polylines);
@@ -29,9 +32,24 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	
   	//for (auto pt: polylines_intersections) {std::cout << "singular pt at " << pt << std::endl;} int wait; std::cin >> wait;
   	// Create an orthogonal grid with singularities
-  	orthogonalGrid.add_additional_grid_points(polylines_intersections);
+  	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
+  	std::vector<Point_2> crease_vertices = polylines_intersections;
+
   	// add additional interesction points at the start and end of every curve, after snapping
-  	//std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines
+  	PatternBoundary origPatternBoundary(initial_bnd_polylines);
+  	std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines;
+  	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
+  		Point_2 firstPt,lastPt; bool snappedFirst,snappedLast;
+  		filtered_and_clipped_to_boundary_polylines.push_back(
+  				origPatternBoundary.filter_and_snap(*poly,dist_threshold_pow2, firstPt, lastPt, snappedFirst, snappedLast));
+  		// todo check what was snapped at output
+  		// Add the first and last point to the grid
+  		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
+  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
+  		//std::cout << "snapped first = " << snappedFirst << " snapped last = " << snappedLast << std::endl;
+  		int wait; std::cin >> wait;
+  	}
+  	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
   	
   	
@@ -41,14 +59,14 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 		clipped_bnd_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly, closed_polyline));
 	}
 	// Create boundary
-	patternBoundary = new PatternBoundary(clipped_bnd_polylines);
+	std::cout << "clipped_bnd_polylines[0] = " << std::endl << clipped_bnd_polylines[0] << std::endl; int wait; std::cin >> wait;
+	patternBoundary = new PatternBoundary(clipped_bnd_polylines);//exit(1);
 
-	// Clip fold polylines to grid, clip and snap them to the boudnary
-	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
-	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2));  	
-	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
-		auto filtered_and_snapped = patternBoundary->filter_and_snap(*poly,dist_threshold_pow2);
-		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(filtered_and_snapped));
+	// Clip fold polylines to grid, clip and snap them to the boudnary 	
+	//for (auto poly = filtered_and_clipped_to_boundary_polylines.begin(); poly != filtered_and_clipped_to_boundary_polylines.end(); poly++) {
+	for (auto poly :filtered_and_clipped_to_boundary_polylines) {
+		//auto filtered_and_snapped = patternBoundary->filter_and_snap(*poly,dist_threshold_pow2);
+		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly));
 	}
 	std::cout << "clipped polylines to boundary" << std::endl;
 

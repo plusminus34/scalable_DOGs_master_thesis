@@ -10,11 +10,12 @@ class PatternBoundary {
 public:
 	PatternBoundary(const std::vector<Polygon_2>& boundary_polygons);
 	PatternBoundary(const std::vector<Polyline_2>& boundary_polylines);
-	Polyline_2 filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold);
+	Polyline_2 filter_and_snap(Polyline_2& polyline, const Number_type& squared_dist_threshold,
+			Point_2& firstPt, Point_2& lastPt, bool& snappedFirst, bool& snappedLast);
 
 	std::vector<Point_2> get_all_boundary_points() const;
 private:
-	Point_2 snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold);
+	Point_2 snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold, bool& has_snapped);
 	bool inside(const Point_2& pt);
 
 	static std::vector<Polygon_2> polylines_to_polygons(const std::vector<Polyline_2>& boundary_polylines);
