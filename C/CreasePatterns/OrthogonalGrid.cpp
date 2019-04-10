@@ -91,6 +91,7 @@ void OrthogonalGrid::initialize_grid() {
 }
 
 Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2& polyline, bool closed_poly) {
+  std::cout << "snapping polyline to grid with closed_poly = " << closed_poly << std::endl;
    std::vector<Segment_2> grid_x_segments, grid_y_segments;
   for (auto x : x_coords) {grid_x_segments.push_back(Segment_2(Point_2(x,bbox.ymin()),Point_2(x,bbox.ymax())));}
   for (auto y : y_coords) {grid_y_segments.push_back(Segment_2(Point_2(bbox.xmin(),y),Point_2(bbox.xmax(),y)));}

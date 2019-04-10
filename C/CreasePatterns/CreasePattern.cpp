@@ -30,6 +30,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	//for (auto pt: polylines_intersections) {std::cout << "singular pt at " << pt << std::endl;} int wait; std::cin >> wait;
   	// Create an orthogonal grid with singularities
   	orthogonalGrid.add_additional_grid_points(polylines_intersections);
+  	// add additional interesction points at the start and end of every curve, after snapping
+  	//std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines
   	orthogonalGrid.initialize_grid();
   	
   	
@@ -167,7 +169,7 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
-	/*
+	
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_fold_polylines); grid_with_snapped.add_polylines(clipped_bnd_polylines);
@@ -179,7 +181,7 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
 	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
-	*/
+	
 }
 
 void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
