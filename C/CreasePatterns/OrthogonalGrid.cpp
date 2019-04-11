@@ -138,8 +138,6 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       intersections.erase(std::remove(intersections.begin(), intersections.end(), pt), intersections.end());
 
       int int_n = intersections.size();
-      std::cout << "int_n = " << int_n << std::endl;
-      if (!int_n) continue;
       // sort them by distances
       std::vector<std::pair<int,Number_type>> int_dist;
       for (int int_i = 0; int_i < intersections.size(); int_i++) {
@@ -154,26 +152,10 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
           new_poly_points.push_back(intersections[i_dist.first]);
         }        
       }
-      //std::cout << "added pts: "; for (auto pt: intersections) {std::cout << pt <<",";} std::cout <<endl;
-      /*
-      if (int_n == 1) {
-        new_poly_points.push_back(intersections[0]);
-      } else if(int_n == 2) {
-        Point_2 pt1(intersections[0]), pt2(intersections[1]);
-         if (CGAL::squared_distance(prevPt, intersections[0]) > CGAL::squared_distance(prevPt, intersections[1])) std::swap(pt1,pt2);
-         new_poly_points.push_back(pt1); new_poly_points.push_back(pt2);
-         //std::cout << "pt1 = " << pt1 << " pt2 = " << pt2 << std::endl;
-      } else if (int_n != 0) {
-        std::cout << "Error at single_polyline_to_segments_on_grid: Intersections number needs to be 1 or 2 but is " << intersections.size() << std::endl;
-        std::cout << "Intersections:" << std::endl;
-        for (auto seg_int : intersections) std::cout << seg_int << endl;
-        exit(1);
-      }
-      */
     }
     //std::cout << "checking if " << pt << " is on the grid" << std::endl;
     // Checking that the last point added is not the same as well (can happen when snapping singularities)
-    if ( (is_point_on_grid(pt)) && (new_poly_points.back()!= pt) ) {
+    if ( (is_point_on_grid(pt)) && new_poly_points.size() && (new_poly_points.back()!= pt) ) {
       new_poly_points.push_back(pt);
       std::cout << "adding pt on grid: " << pt << std::endl;
     }
