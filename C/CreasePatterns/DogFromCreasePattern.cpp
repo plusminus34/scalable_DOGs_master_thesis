@@ -540,6 +540,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 }
 
 bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt) {
+	//if (poly.bounded_side(pt) == CGAL::ON_UNBOUNDED_SIDE) return false;
 	if (poly.outer_boundary().bounded_side(pt) == CGAL::ON_UNBOUNDED_SIDE) return false;
 	for (auto hole = poly.holes_begin(); hole != poly.holes_end(); hole++) if (hole->bounded_side(pt) == CGAL::ON_BOUNDED_SIDE) return false;
 	return true;
