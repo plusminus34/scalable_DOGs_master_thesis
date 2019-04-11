@@ -41,3 +41,6 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 
 
 bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt);
+
+std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern);
+Number_type bbox_diff(const CGAL::Bbox_2& bbox1, const CGAL::Bbox_2& bbox2);

@@ -11,6 +11,7 @@
 using namespace std;
 
 Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
+	std::vector<bool> is_polygon_hold = submesh_is_hole(creasePattern);
 	std::vector<Polygon_2> gridPolygons;
 	init_grid_polygons(creasePattern, gridPolygons);
 	cout << "init grid polygons done" << endl;
@@ -544,4 +545,32 @@ bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt) {
 	if (poly.outer_boundary().bounded_side(pt) == CGAL::ON_UNBOUNDED_SIDE) return false;
 	for (auto hole = poly.holes_begin(); hole != poly.holes_end(); hole++) if (hole->bounded_side(pt) == CGAL::ON_BOUNDED_SIDE) return false;
 	return true;
+}
+
+Number_type bbox_diff(const CGAL::Bbox_2& bbox1, const CGAL::Bbox_2& bbox2) {
+	auto max_diff_x = max(CGAL::abs(bbox1.xmax()-bbox2.xmax()),CGAL::abs(bbox1.xmin()-bbox2.xmin()));
+	auto max_diff_y = max(CGAL::abs(bbox1.ymax()-bbox2.ymax()),CGAL::abs(bbox1.ymin()-bbox2.ymin()));
+	return max(max_diff_x, max_diff_y);
+}
+
+Number_type bbox_max_edge(const CGAL::Bbox_2& bbox) {
+	return max(CGAL::abs(bbox.xmax()-bbox.xmin()),CGAL::abs(bbox.ymax()-bbox.ymin()));
+}
+
+std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
+	auto holes = creasePattern.boundary()->get_holes();
+	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);	
+	std::vector<bool> submesh_is_hole(facePolygons.size(), false); int poly_i = 0;
+	for (auto poly : facePolygons) {
+		auto bbox_error_threshold = Number_type(1e-2)*bbox_max_edge(poly.bbox());
+		for (auto hole : holes) {
+			if (bbox_diff(poly.outer_boundary().bbox(), hole.bbox()) < bbox_error_threshold) {
+				submesh_is_hole[poly_i] = true;
+			}
+		}
+		if (submesh_is_hole[poly_i]) std::cout << "found a hole" << std::endl;
+		else std::cout << "not a hole" << std::endl;
+		poly_i++;
+	}
+	return submesh_is_hole;
 }
