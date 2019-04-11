@@ -35,6 +35,8 @@ public:
 
 private:
 	void get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) const;
+  static void get_face_vertices_from_circulator_iter(Arrangement_2::Ccb_halfedge_const_circulator circ, 
+            std::vector<Point_2>& p);
 
 	Geom_traits_2 traits;
 	Arrangement_2 arr;

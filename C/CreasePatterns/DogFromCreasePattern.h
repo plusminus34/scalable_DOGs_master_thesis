@@ -38,3 +38,6 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 	 std::vector<Eigen::MatrixXd>& V_ren_list);
 void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, const std::vector<SubmeshPoly>& submesh_polygons,
 		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F_ren);
+
+
+bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt);

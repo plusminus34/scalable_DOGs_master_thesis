@@ -25,8 +25,12 @@ public:
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
 
 	//void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const;
-	void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const {
-		get_clipped_arrangement().get_faces_polygons(polygons);}
+	void get_submeshes_faces_polygons(std::vector<Polygon_with_holes_2>& polygons) const {
+		std::vector<Polygon_with_holes_2> tmp;
+		get_clipped_arrangement().get_faces_polygons_with_holes(tmp);
+		polygons.clear(); polygons.push_back(tmp.back());
+
+	}
 
 	const PatternBoundary* boundary() const {return patternBoundary;}
 private:

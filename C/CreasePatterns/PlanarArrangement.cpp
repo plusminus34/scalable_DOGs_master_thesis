@@ -133,6 +133,48 @@ void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Ei
 	} while (curr != circ);
 }
 
+void PlanarArrangement::get_face_vertices_from_circulator_iter(Arrangement_2::Ccb_halfedge_const_circulator circ, 
+						std::vector<Point_2>& p) {
+	//typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+	// switch edge direction if not ordered as the segments
+	//if (curr->curve().subcurves_begin()->source()!= curr->source()->point()) {curr = curr->twin();}
+
+	// count number of vertices
+	int v_num = 0;
+	do {
+		// count also polyline edges (that are not necessarily ones in the graph)
+		//v_num += curr->curve().subcurves_end()-curr->curve().subcurves_begin();
+		for (auto it = curr->curve().subcurves_begin(); it != curr->curve().subcurves_end(); it++) {
+			v_num++;
+		}
+		curr++;
+	} while (curr != circ);
+	//std::cout << "vnum = "  << v_num << std::endl;
+	// Fill up p with the vertices
+	p.resize(v_num);
+	int ri = 0; curr = circ;
+	do {
+		//std::cout << "Edge from " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+		std::vector<Segment_2> polyline_segments(curr->curve().subcurves_begin(),curr->curve().subcurves_end());
+		bool flipped_order = false;
+		if (curr->curve().subcurves_begin()->source()!= curr->source()->point()) {flipped_order = true;}
+		if (flipped_order) {
+			std::reverse(std::begin(polyline_segments), std::end(polyline_segments));
+		}
+		for (auto seg: polyline_segments) {
+			if (!flipped_order) {
+				p[ri] = seg.source();
+			} else {
+				p[ri] = seg.target();
+			}
+			
+			ri++;
+		}
+		curr++;
+	} while (curr != circ);
+}
+
 void PlanarArrangement::get_faces_pts(std::vector<std::vector<Point_2>>& pts) const {
 	pts.clear();
 	// Build faces polygons
@@ -238,25 +280,16 @@ void PlanarArrangement::get_faces_polygons_with_holes(std::vector<Polygon_with_h
 	for (fit = arr.faces_begin(); fit != arr.faces_end(); ++fit) {
 		if (!fit->is_unbounded()) {
 			// Get outer face points
-			Eigen::MatrixXd p; get_face_vertices(fit,p);
-			std::vector<Point_2> face_pts(p.rows());
-			for (int i = 0; i < p.rows(); i++) face_pts[i] = Point_2(p(i,0),p(i,1));
+			std::vector<Point_2> face_pts; get_face_vertices_from_circulator_iter(fit->outer_ccb(), face_pts);
 			//Polygon_with_holes_2 polygon(Polygon_2(face_pts.begin(), face_pts.end()), fit->holes_begin(),fit->holes_end());
 			Polygon_2 outer_bnd(face_pts.begin(), face_pts.end());
 			std::vector<Polygon_2> holes;	
 			for (auto hole_fit  = fit->holes_begin(); hole_fit != fit->holes_end(); hole_fit++) {
-				Eigen::MatrixXd hole_p;
-				// TODO: got the other code from the ccb thing
-				//get_face_vertices(hole_fit,hole_p);
-				/*
-				std::vector<Point_2> hole_face_points(hole_p.rows());
-				hole_face_points.resize(hole_p.rows());
-				for (int i = 0; i < p.rows(); i++) hole_face_points[i] = Point_2(hole_p(i,0),hole_p(i,1));
-				holes.push_back(Polygon_2(hole_face_points.begin(),hole_face_points.end()));
-				*/
+				std::vector<Point_2> hole_pts; get_face_vertices_from_circulator_iter(*hole_fit, hole_pts);
+				holes.push_back(Polygon_2(hole_pts.begin(), hole_pts.end()));
 			}
-			Polygon_with_holes_2 polygon(outer_bnd,holes.begin(),holes.end());
-			
+			Polygon_with_holes_2 polygon_with_holes(outer_bnd,holes.begin(),holes.end());
+			polygons.push_back(polygon_with_holes);
 		}
 	}
 }

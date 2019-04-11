@@ -54,7 +54,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
 						std::vector<std::vector<bool>>& sqr_in_polygon) {
 	// Get the faces' polygons and find their intersections with the faces
-	std::vector<Polygon_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
+	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
 	std::cout << "facePolygons.size() = " << facePolygons.size() << std::endl;
 
 	sqr_in_polygon.resize(facePolygons.size());
@@ -223,7 +223,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
 
-	std::vector<Polygon_2> submeshBnd;
+	std::vector<Polygon_with_holes_2> submeshBnd;
 	creasePattern.get_submeshes_faces_polygons(submeshBnd);
 	//std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
 
@@ -240,7 +240,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 			bool is_in_submesh = true;
 			//std::cout << "checking if its in polygon = " << submeshBnd[submesh_i] << std::endl;
 			for (auto vptr = face_polygon.vertices_begin(); vptr != face_polygon.vertices_end(); vptr++) {
-				auto pt_in_face = ! (submeshBnd[submesh_i].bounded_side(*vptr) == CGAL::ON_UNBOUNDED_SIDE);
+				auto pt_in_face = pt_inside_polygon(submeshBnd[submesh_i],*vptr);
 				//std::cout << "pt " << *vptr << " in face = " << pt_in_face << std::endl;
 				is_in_submesh = is_in_submesh & (pt_in_face);
 			}
@@ -379,7 +379,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 		std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
 		exit(1); // Should never get here, and if so all is lost
 	}
-	std::vector<Polygon_2> submeshBnd; 
+	std::vector<Polygon_with_holes_2> submeshBnd; 
 	creasePattern.get_submeshes_faces_polygons(submeshBnd);
 	//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 	// Now find the indices of both points and add them as constraints
@@ -391,7 +391,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 	// Go through every submesh
 	int global_idx_base = 0;
 	for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
-		bool pt_in_submesh = (submeshBnd[sub_i].bounded_side(pt) != CGAL::ON_UNBOUNDED_SIDE);
+		bool pt_in_submesh = pt_inside_polygon(submeshBnd[sub_i],pt);
 
 		// Find the indices of the pts in the submesh (if they exist)
 		int pt1_idx = -1, pt2_idx = -1;
@@ -410,10 +410,10 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 			Point_2 offset_yplus = Point_2(pt.x(),pt.y()+Number_type(step_size));
 			Point_2 offset_yminus = Point_2(pt.x()-Number_type(step_size),pt.y()-+Number_type(step_size));
 			
-			bool pos_eps_insidex = (submeshBnd[sub_i].bounded_side(offset_xplus) == CGAL::ON_BOUNDED_SIDE);
-			bool pos_m_eps_insidex = (submeshBnd[sub_i].bounded_side(offset_xminus) == CGAL::ON_BOUNDED_SIDE);
-			bool pos_eps_insidey = (submeshBnd[sub_i].bounded_side(offset_yplus) == CGAL::ON_BOUNDED_SIDE);
-			bool pos_m_eps_insidey = (submeshBnd[sub_i].bounded_side(offset_yminus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xplus);//(submeshBnd[sub_i].bounded_side(offset_xplus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_m_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xminus);//(submeshBnd[sub_i].bounded_side(offset_xminus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_eps_insidey = pt_inside_polygon(submeshBnd[sub_i],offset_yplus);//(submeshBnd[sub_i].bounded_side(offset_yplus) == CGAL::ON_BOUNDED_SIDE);
+			bool pos_m_eps_insidey = pt_inside_polygon(submeshBnd[sub_i],offset_yminus);//(submeshBnd[sub_i].bounded_side(offset_yminus) == CGAL::ON_BOUNDED_SIDE);
 
 			pt_in_submesh = pt_in_submesh | pos_eps_insidex | pos_m_eps_insidex | pos_eps_insidey | pos_m_eps_insidey;
 
@@ -537,4 +537,10 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 		igl::polygon_mesh_to_triangle_mesh(polygons_v_ren_indices,F_ren_list[subi]);
 	}
 	igl::combine(V_ren_list,F_ren_list, V_ren, F_ren);
+}
+
+bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt) {
+	if (poly.outer_boundary().bounded_side(pt) == CGAL::ON_UNBOUNDED_SIDE) return false;
+	for (auto hole = poly.holes_begin(); hole != poly.holes_end(); hole++) if (hole->bounded_side(pt) == CGAL::ON_BOUNDED_SIDE) return false;
+	return true;
 }
