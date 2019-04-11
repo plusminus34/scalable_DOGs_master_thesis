@@ -62,7 +62,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& i
 	// Iterate over the polygons and add faces that intersect
 	int face_i = 0;
 	for (auto poly: facePolygons) {
-		if (is_polygon_hole[face_i]) {face_i++; continue;}
+		//if (is_polygon_hole[face_i]) {face_i++; continue;}
 		sqr_in_polygon[face_i] = std::vector<bool>(gridPolygons.size(), false);
 		//std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
 
@@ -239,7 +239,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 		//std::cout << "----- Checking face " << face_polygon << " ---------" << std::endl;
 		int submesh_i = 0;
 		while ( (submesh_i < submeshBnd.size()) && (face_to_submesh[f_i] == -1) ) {
-			if (is_polygon_hole[submesh_i]) {submesh_i++; continue;}
+			//if (is_polygon_hole[submesh_i]) {submesh_i++; continue;}
 			bool is_in_submesh = true;
 			//std::cout << "checking if its in polygon = " << submeshBnd[submesh_i] << std::endl;
 			for (auto vptr = face_polygon.vertices_begin(); vptr != face_polygon.vertices_end(); vptr++) {
