@@ -31,9 +31,11 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	std::vector<Point_2> constrained_pts_non_unique;
 	generate_constraints(creasePattern, submeshVList, submeshFList, edgeStitching, constrained_pts_non_unique,V);
+	std::cout << "submeshVList.size() = " << submeshVList.size() << std::endl;
 	save_submesh_bnd_edge_points(creasePattern, submeshVList, edgeStitching);
 	cout << "saved submesh bnd edge points" << endl;
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
+	std::cout << "generated v ren list" << std::endl;
 	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
 									V_ren_list, edgeStitching, V_ren2, F_ren2);
 	std::cout << "Generated constraints" << std::endl;
@@ -411,7 +413,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 			Point_2 offset_xplus = Point_2(pt.x()+Number_type(step_size),pt.y());
 			Point_2 offset_xminus = Point_2(pt.x()-Number_type(step_size),pt.y());
 			Point_2 offset_yplus = Point_2(pt.x(),pt.y()+Number_type(step_size));
-			Point_2 offset_yminus = Point_2(pt.x()-Number_type(step_size),pt.y()-+Number_type(step_size));
+			Point_2 offset_yminus = Point_2(pt.x(),pt.y()-Number_type(step_size));
 			
 			bool pos_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xplus);//(submeshBnd[sub_i].bounded_side(offset_xplus) == CGAL::ON_BOUNDED_SIDE);
 			bool pos_m_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xminus);//(submeshBnd[sub_i].bounded_side(offset_xminus) == CGAL::ON_BOUNDED_SIDE);
@@ -463,12 +465,16 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& submeshVList,DogEdgeStitching& eS, std::vector<Eigen::MatrixXd>& V_ren_list) {
 	V_ren_list.resize(submeshVList.size());
 	for (int i = 0; i < submeshVList.size(); i++) {
+		std::cout << "mesh i = " << i << std::endl;
 		V_ren_list[i].resize(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size()+eS.submesh_to_bnd_edge[i].size(),3);
 		// add normal points
 		for (int j = 0; j < submeshVList[i].rows(); j++) {V_ren_list[i].row(j) = submeshVList[i].row(j);}
 		// add crease points
 		for (int j = 0; j < eS.submesh_to_edge_pt[i].size(); j++) {
 			int ei = eS.submesh_to_edge_pt[i][j];
+			if (ei == -1) {
+				std::cout <<"oh" << std::endl; exit(1);
+			}
 			auto t = eS.edge_coordinates_precise[ei];
 			auto coord_x =  t*V(eS.edge_const_1[ei].v1,0) + (1-t)*V(eS.edge_const_1[ei].v2,0);
 			auto coord_y =  t*V(eS.edge_const_1[ei].v1,1) + (1-t)*V(eS.edge_const_1[ei].v2,1);
@@ -477,6 +483,7 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 			//double t = eS.edge_coordinates[ei];
 			//V_ren_list[i].row(submeshVList[i].rows() + j) = t*V.row(eS.edge_const_1[ei].v1) + (1-t)*V.row(eS.edge_const_1[ei].v2);
 		}
+		std::cout << "adding submesh to bnd" << std::endl;
 		for (int j = 0; j < eS.submesh_to_bnd_edge[i].size(); j++) {
 			EdgePoint ep = eS.submesh_to_bnd_edge[i][j];
 			V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j) = ep.getPositionInMesh(V);
@@ -577,6 +584,6 @@ std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 		else std::cout << "not a hole" << std::endl;
 		poly_i++;
 	}
-	int wait; std::cin>>wait;
+	//int wait; std::cin>>wait;
 	return submesh_is_hole;
 }
