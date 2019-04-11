@@ -26,13 +26,7 @@ public:
 
 	//void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const;
 	void get_submeshes_faces_polygons(std::vector<Polygon_with_holes_2>& polygons) const {
-		//std::vector<Polygon_with_holes_2> tmp;
-		//get_clipped_arrangement().get_faces_polygons_with_holes(tmp);
-		//polygons.clear(); polygons.push_back(tmp.back());
-		//get_clipped_arrangement().get_faces_polygons_with_holes(polygons);
-		std::vector<Polygon_2> tmp;
-		get_clipped_arrangement().get_faces_polygons(tmp);
-		for (auto poly: tmp) polygons.push_back(Polygon_with_holes_2(poly));
+		get_clipped_arrangement().get_faces_polygons_with_holes(polygons);
 	}
 
 	const PatternBoundary* boundary() const {return patternBoundary;}
