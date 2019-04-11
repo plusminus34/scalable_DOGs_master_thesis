@@ -138,7 +138,8 @@ Polyline_2 OrthogonalGrid::single_polyline_to_segments_on_grid(const Polyline_2&
       intersections.erase(std::remove(intersections.begin(), intersections.end(), pt), intersections.end());
 
       int int_n = intersections.size();
-
+      std::cout << "int_n = " << int_n << std::endl;
+      if (!int_n) continue;
       // sort them by distances
       std::vector<std::pair<int,Number_type>> int_dist;
       for (int int_i = 0; int_i < intersections.size(); int_i++) {

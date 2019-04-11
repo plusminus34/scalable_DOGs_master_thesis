@@ -62,7 +62,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& i
 	// Iterate over the polygons and add faces that intersect
 	int face_i = 0;
 	for (auto poly: facePolygons) {
-		//if (is_polygon_hole[face_i]) {face_i++; continue;}
+		if (is_polygon_hole[face_i]) {face_i++; continue;}
 		sqr_in_polygon[face_i] = std::vector<bool>(gridPolygons.size(), false);
 		//std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
 
@@ -239,7 +239,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 		//std::cout << "----- Checking face " << face_polygon << " ---------" << std::endl;
 		int submesh_i = 0;
 		while ( (submesh_i < submeshBnd.size()) && (face_to_submesh[f_i] == -1) ) {
-			//if (is_polygon_hole[submesh_i]) {submesh_i++; continue;}
+			if (is_polygon_hole[submesh_i]) {submesh_i++; continue;}
 			bool is_in_submesh = true;
 			//std::cout << "checking if its in polygon = " << submeshBnd[submesh_i] << std::endl;
 			for (auto vptr = face_polygon.vertices_begin(); vptr != face_polygon.vertices_end(); vptr++) {
@@ -561,6 +561,7 @@ Number_type bbox_max_edge(const CGAL::Bbox_2& bbox) {
 
 std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 	auto holes = creasePattern.boundary()->get_holes();
+	std::cout << "holes.size() = " << holes.size() << std::endl;
 	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);	
 	std::vector<bool> submesh_is_hole(facePolygons.size(), false); int poly_i = 0;
 	for (auto poly : facePolygons) {
@@ -569,10 +570,13 @@ std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 			if (bbox_diff(poly.outer_boundary().bbox(), hole.bbox()) < bbox_error_threshold) {
 				submesh_is_hole[poly_i] = true;
 			}
+			std::cout << "bbox_diff(poly.outer_boundary().bbox(), hole.bbox()) = " << bbox_diff(poly.outer_boundary().bbox(), hole.bbox()) << std::endl;
+			std::cout << "bbox_error_threshold = " << bbox_error_threshold << std::endl;
 		}
 		if (submesh_is_hole[poly_i]) std::cout << "found a hole" << std::endl;
 		else std::cout << "not a hole" << std::endl;
 		poly_i++;
 	}
+	int wait; std::cin>>wait;
 	return submesh_is_hole;
 }
