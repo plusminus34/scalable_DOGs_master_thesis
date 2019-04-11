@@ -11,13 +11,13 @@
 using namespace std;
 
 Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
-	std::vector<bool> is_polygon_hold = submesh_is_hole(creasePattern);
+	std::vector<bool> is_polygon_hole = submesh_is_hole(creasePattern);
 	std::vector<Polygon_2> gridPolygons;
 	init_grid_polygons(creasePattern, gridPolygons);
 	cout << "init grid polygons done" << endl;
 	// Per polygon contains a flag (whether face 'i' intersects that polygon)
 	std::vector<std::vector<bool>> sqr_in_polygon;
-	set_sqr_in_polygon(creasePattern, gridPolygons, sqr_in_polygon);
+	set_sqr_in_polygon(creasePattern, is_polygon_hole, gridPolygons, sqr_in_polygon);
 	cout << "set sqr in polygone done" << endl;
 
 	// Generated mesh
@@ -26,7 +26,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	Eigen::MatrixXd V; Eigen::MatrixXi F; DogEdgeStitching edgeStitching;
 	generate_mesh(creasePattern, gridPolygons, sqr_in_polygon, submeshVList, submeshFList, submeshV_is_inner, V, F);
 	std::vector<SubmeshPoly> submesh_polygons;
-	get_faces_partitions_to_submeshes(creasePattern, submesh_polygons);
+	get_faces_partitions_to_submeshes(creasePattern, is_polygon_hole, submesh_polygons);
 	std::cout << "partitioned faces to submeshes" << std::endl;
 
 	std::vector<Point_2> constrained_pts_non_unique;
@@ -52,7 +52,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	return Dog(V,F,edgeStitching,V_ren2,F_ren2, submeshVSize, submeshFSize, submesh_adjacency);
 }
 
-void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, 
+void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, 
 						std::vector<std::vector<bool>>& sqr_in_polygon) {
 	// Get the faces' polygons and find their intersections with the faces
 	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
@@ -62,6 +62,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_
 	// Iterate over the polygons and add faces that intersect
 	int face_i = 0;
 	for (auto poly: facePolygons) {
+		if (is_polygon_hole[face_i]) {face_i++; continue;}
 		sqr_in_polygon[face_i] = std::vector<bool>(gridPolygons.size(), false);
 		//std::cout << "Polygon number " << face_i << " with " << poly.size() << " vertices" << std::endl;
 
@@ -213,7 +214,7 @@ void save_submesh_bnd_edge_points(const CreasePattern& creasePattern, const std:
 	//int wait; std::cin >> wait;
 }
 
-void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons) {
+void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<SubmeshPoly>& submesh_polygons) {
 	std::vector<Polygon_2> faces_polygons; std::vector<int> faces_to_submesh;
 
 	// Get orth grid and add it the polylines
@@ -238,6 +239,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 		//std::cout << "----- Checking face " << face_polygon << " ---------" << std::endl;
 		int submesh_i = 0;
 		while ( (submesh_i < submeshBnd.size()) && (face_to_submesh[f_i] == -1) ) {
+			if (is_polygon_hole[submesh_i]) {submesh_i++; continue;}
 			bool is_in_submesh = true;
 			//std::cout << "checking if its in polygon = " << submeshBnd[submesh_i] << std::endl;
 			for (auto vptr = face_polygon.vertices_begin(); vptr != face_polygon.vertices_end(); vptr++) {

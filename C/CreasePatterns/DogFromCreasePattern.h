@@ -9,7 +9,7 @@ typedef std::pair<int, Polygon_2> SubmeshPoly;
 
 Dog dog_from_crease_pattern(const CreasePattern& dogCreasePattern);
 void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2>& gridPolygons);
-void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<Polygon_2>& gridPolygons, std::vector<std::vector<bool>>& sqr_in_polygon);
+void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, std::vector<std::vector<bool>>& sqr_in_polygon);
 void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon_2>& gridPolygons,
 					 const std::vector<std::vector<bool>>& sqr_in_polygon, 
 					 std::vector<Eigen::MatrixXd>& submeshVList, std::vector<Eigen::MatrixXi>& submeshFList, 
@@ -25,7 +25,7 @@ void save_submesh_bnd_edge_points(const CreasePattern& creasePattern, const std:
 //submesh_to_bnd_edge
 
 // return a sorted list of submesh to polygons (so the polygons in the first submesh are first, then in the second, etc)
-void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons);
+void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<SubmeshPoly>& submesh_polygons);
 
 
 void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
@@ -42,5 +42,9 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 
 bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt);
 
+void get_faces_polygons_without_holes(const CreasePattern& creasePattern, const std::vector<bool>& is_polygon_hole,
+	 std::vector<Polygon_with_holes_2>& polygons);
+
 std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern);
 Number_type bbox_diff(const CGAL::Bbox_2& bbox1, const CGAL::Bbox_2& bbox2);
+Number_type bbox_max_edge(const CGAL::Bbox_2& bbox);
