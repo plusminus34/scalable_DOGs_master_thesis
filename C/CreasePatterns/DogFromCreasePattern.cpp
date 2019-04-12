@@ -140,6 +140,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
 	// Get all the polylines unique points (vertices will appear twice with each polyline)
+	std::cout << "here" << std::endl;
 	std::set<Point_2> constrained_pts;
 	const std::vector<Polyline_2>& polylines = creasePattern.get_clipped_fold_polylines();
 	for (auto poly : polylines) {
@@ -147,13 +148,15 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		std::vector<Point_2> pts; polyline_to_points(poly,pts);
 		constrained_pts.insert(pts.begin(),pts.end());
 	}
+	std::cout << "there" << std::endl;
 	edgeStitching.submesh_to_edge_pt.resize(submeshFList.size());
 	// For each pt, perform a query on the orthogoanl grid arrangement. It can be on a vertex or an edge.
 	int pt_const_i = 0; int edge_constraints_cnt = 0;
 	for (auto pt: constrained_pts) {
-
+		std::cout << "pt to coord" << std::endl;
 		Number_type edge_t; std::vector<Edge> edge_v_indices; std::vector<int> submeshes_with_pt;
 		pt_to_edge_coordinates(pt, creasePattern, submeshVList, edge_v_indices, edge_t, submeshes_with_pt);
+		std::cout << "after pt to coord" << std::endl;
 
 		edgeStitching.multiplied_edges_start.push_back(edge_constraints_cnt);
 		// We got 'n' different vertex pairs, hence we need n-1 (circular) constraints
@@ -179,7 +182,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		
 		pt_const_i++;
 	}
-	
+	std::cout << "am i here?" << std::endl;
 	// set stitched_curves (once per edge, even if it is duplicated)
 	edgeStitching.stitched_curves.resize(polylines.size());
 	

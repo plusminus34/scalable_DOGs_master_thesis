@@ -9,7 +9,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 	// Threshold used for snapping
 	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
-	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2));
+	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2)); Number_type is_closed_threshold(pow(bbox_max_len/500,2));
 
 	// Handle polyline intersections
 	initial_fold_polylines = merge_nearby_polylines_intersections(polylines);
@@ -38,15 +38,19 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	PatternBoundary origPatternBoundary(initial_bnd_polylines);
   	std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines;
   	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
-  		Point_2 firstPt,lastPt; bool snappedFirst,snappedLast;
-  		filtered_and_clipped_to_boundary_polylines.push_back(
-  				origPatternBoundary.filter_and_snap(*poly,dist_threshold_pow2, firstPt, lastPt, snappedFirst, snappedLast));
-  		// todo check what was snapped at output
-  		// Add the first and last point to the grid
-  		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
-  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
-  		//std::cout << "snapped first = " << snappedFirst << " snapped last = " << snappedLast << std::endl;
-  		//int wait; std::cin >> wait;
+  		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
+  		if (!closed_polyline) {
+  			Point_2 firstPt,lastPt; bool snappedFirst,snappedLast;
+	  		filtered_and_clipped_to_boundary_polylines.push_back(
+	  				origPatternBoundary.filter_and_snap(*poly,dist_threshold_pow2, firstPt, lastPt, snappedFirst, snappedLast));
+	  		// todo check what was snapped at output
+	  		// Add the first and last point to the grid
+	  		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
+	  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
+	  		std::cout << "snapped first = " << snappedFirst << " snapped last = " << snappedLast << std::endl;
+  		} else {
+  			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
+  		}
   	}
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
@@ -64,8 +68,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	// Clip fold polylines to grid, clip and snap them to the boudnary 	
 	//for (auto poly = filtered_and_clipped_to_boundary_polylines.begin(); poly != filtered_and_clipped_to_boundary_polylines.end(); poly++) {
 	for (auto poly :filtered_and_clipped_to_boundary_polylines) {
-		Number_type is_closed_threshold(pow(bbox_max_len/500,2));
-		bool closed_polyline = is_polyline_closed_with_tolerance(poly, dist_threshold_pow2);
+		bool closed_polyline = is_polyline_closed_with_tolerance(poly, is_closed_threshold);
 		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly,closed_polyline));
 	}
 	std::cout << "clipped polylines to boundary" << std::endl;
