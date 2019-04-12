@@ -46,6 +46,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
   		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
   		//std::cout << "snapped first = " << snappedFirst << " snapped last = " << snappedLast << std::endl;
+  		//int wait; std::cin >> wait;
   	}
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
@@ -63,8 +64,9 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	// Clip fold polylines to grid, clip and snap them to the boudnary 	
 	//for (auto poly = filtered_and_clipped_to_boundary_polylines.begin(); poly != filtered_and_clipped_to_boundary_polylines.end(); poly++) {
 	for (auto poly :filtered_and_clipped_to_boundary_polylines) {
-		//auto filtered_and_snapped = patternBoundary->filter_and_snap(*poly,dist_threshold_pow2);
-		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly));
+		Number_type is_closed_threshold(pow(bbox_max_len/500,2));
+		bool closed_polyline = is_polyline_closed_with_tolerance(poly, dist_threshold_pow2);
+		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly,closed_polyline));
 	}
 	std::cout << "clipped polylines to boundary" << std::endl;
 
@@ -207,4 +209,11 @@ void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyl
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 	//std::list<Point_2> pts2 = {pt1,pt2,pt3,Point_2(0.5*(pt3.x()+pt4.x()),0.5*(pt3.x()+pt4.x())),pt4,pt1}; // circular list
 	polyline = polyline_construct(pts.begin(), pts.end());
+}
+
+bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Number_type threshold) {
+	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
+	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
+	bool is_closed = (CGAL::squared_distance(first_pt,last_pt) < threshold);
+	return is_closed;
 }

@@ -34,6 +34,7 @@ private:
 	// snap rounding (and possibly later project initial curves to boundary)
 	bool get_snapped_vertices_locations(const std::vector<Point_2>& polylines_int, Number_type threshold, std::map<Point_2, Point_2>& vertices_to_snapped_vertices);
 	void bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline);
+	bool is_polyline_closed_with_tolerance(const Polyline_2& polyline, Number_type threshold);
 
 	std::vector<Polyline_2> merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines);
 

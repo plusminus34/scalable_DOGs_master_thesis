@@ -185,6 +185,9 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 	
 	for (int i = 0; i < polylines.size(); i++) {
 		std::vector<Point_2> pts; polyline_to_points(polylines[i],pts);
+		bool is_closed = is_closed_polyline(polylines[i]);
+		if (is_closed) edgeStitching.stitched_curves[i].resize(pts.size()+1);
+		else edgeStitching.stitched_curves[i].resize(pts.size());
 		edgeStitching.stitched_curves[i].resize(pts.size());
 		for (int j = 0; j < pts.size(); j++) {
 			Number_type edge_t; std::vector<Edge> edge_v_indices; std::vector<int> submeshes_with_pt;
@@ -194,6 +197,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 			// Choose one of the edges, don't need the duplicates and they are all (approximately) equal anyhow
 			edgeStitching.stitched_curves[i][j] = EdgePoint(edge_v_indices[0],CGAL::to_double(edge_t));
 		}
+		if (is_closed) edgeStitching.stitched_curves[i].back() = edgeStitching.stitched_curves[i][0];
 	}
 }
 
@@ -213,7 +217,6 @@ void save_submesh_bnd_edge_points(const CreasePattern& creasePattern, const std:
 			//std::cout << "t = " << edge_t << std::endl;
 		}
 	}
-	//int wait; std::cin >> wait;
 }
 
 void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<SubmeshPoly>& submesh_polygons) {
@@ -229,7 +232,6 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 
 	std::vector<Polygon_with_holes_2> submeshBnd;
 	creasePattern.get_submeshes_faces_polygons(submeshBnd);
-	//std::cout << "submeshBnd.size() = " << submeshBnd.size() << std::endl; int wait; std::cin >> wait;
 
 	// The rendered mesh faces will be the polygons in grid_with_snapped (meaning faces_polygons) after triangulation.
 	// Here we'll find which submesh has them, and then translate the point indices to the correct point in something
@@ -458,7 +460,7 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 	points.resize(points_n); int cnt = 0;
 	points[cnt++] = poly.subcurves_begin()->source();
 	for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-		points[cnt++] = seg_i->target();
+		if (cnt < points.size()) points[cnt++] = seg_i->target();
 	}
 }
 
