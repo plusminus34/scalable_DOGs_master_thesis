@@ -12,7 +12,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2)); Number_type is_closed_threshold(pow(bbox_max_len/500,2));
 
 	// Handle polyline intersections
-	initial_fold_polylines = merge_nearby_polylines_intersections(polylines);
+	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines);
+	initial_fold_polylines = merge_nearby_polylines_intersections(merged_starting_point_polylines);
 
 	// Setup initial boundary (for now just a boundary box)
 	//Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
@@ -52,6 +53,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
   		}
   	}
+  	//for (auto pt: crease_vertices) {std::cout << "adding vertex = " << pt << std::endl;} exit(1);
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
   	
@@ -186,6 +188,10 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 		curve_i++;
 	}
 	return new_polylines;
+}
+
+std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines) {
+	return polylines;
 }
 
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
