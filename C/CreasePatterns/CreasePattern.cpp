@@ -12,13 +12,14 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	Number_type dist_threshold_pow2(pow(bbox_max_len/50,2)); Number_type is_closed_threshold(pow(bbox_max_len/500,2));
 
 	// Handle polyline intersections
-	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines);
+	std::vector<Point_2> endpoints_intersections;
+	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines, endpoints_intersections);
+	// TODO: There might be a situation where an intersection has a similar coordinate to the starting point/ending point of a curve
+	// At that point just make sure to snap the 'x' and 'y' coordinates of the intersections to one of them first
 	initial_fold_polylines = merge_nearby_polylines_intersections(merged_starting_point_polylines);
 
 	// Setup initial boundary (for now just a boundary box)
-	//Polyline_2 boundary_poly; bbox_to_polyline(bbox, boundary_poly);
 	initial_bnd_polylines = bnd_polylines;
-	/*initial_fold_polylines.push_back(boundary_poly);*/ 
 
 	// The following is just for visualization
 	initial_arrangement.add_polylines(initial_fold_polylines); initial_arrangement.add_polylines(initial_bnd_polylines);
@@ -28,7 +29,10 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(initial_fold_polylines.begin(), initial_fold_polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
-  	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl; 
+  	polylines_intersections.insert(polylines_intersections.end(), endpoints_intersections.begin(), endpoints_intersections.end());
+  	std::unique(polylines_intersections.begin(),polylines_intersections.end());
+  	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
+  	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl;
   	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;}
   	
   	// Create an orthogonal grid with singularities
@@ -53,24 +57,28 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
   		}
   	}
-  	//for (auto pt: crease_vertices) {std::cout << "adding vertex = " << pt << std::endl;} exit(1);
+  	for (auto pt: crease_vertices) {std::cout << "adding vertex = " << pt << std::endl;}// exit(1);
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
-  	
+  	std::cout << "here" << std::endl; int wait; std::cin >> wait;
   	
 	// Clip boundary polylines to grid
 	for (auto poly = initial_bnd_polylines.begin(); poly != initial_bnd_polylines.end(); poly++) {
 		bool closed_polyline = true;
 		clipped_bnd_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(*poly, closed_polyline));
 	}
+	
 	// Create boundary
-	std::cout << "clipped_bnd_polylines[0] = " << std::endl << clipped_bnd_polylines[0] << std::endl;
-	patternBoundary = new PatternBoundary(clipped_bnd_polylines);//exit(1);
-
+	patternBoundary = new PatternBoundary(clipped_bnd_polylines);
+	std::cout << "number of polylines = " << filtered_and_clipped_to_boundary_polylines.size() << std::endl;
+	std::cout << "before" << std::endl; std::cin >> wait;
+	
 	// Clip fold polylines to grid, clip and snap them to the boudnary 	
 	//for (auto poly = filtered_and_clipped_to_boundary_polylines.begin(); poly != filtered_and_clipped_to_boundary_polylines.end(); poly++) {
 	for (auto poly :filtered_and_clipped_to_boundary_polylines) {
+		std::cout << "before??" << std::endl; std::cin >> wait;
 		bool closed_polyline = is_polyline_closed_with_tolerance(poly, is_closed_threshold);
+		std::cout << "closed_polyline = " << closed_polyline << std::endl; std::cin >> wait;
 		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly,closed_polyline));
 	}
 	std::cout << "clipped polylines to boundary" << std::endl;
@@ -146,6 +154,7 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(polylines.begin(), polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
+  	std::cout << "initial number of intersections = " << polylines_intersections.size() << std::endl;
 
   	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
@@ -190,8 +199,81 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 	return new_polylines;
 }
 
-std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines) {
-	return polylines;
+std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines, 
+							std::vector<Point_2>& intersections) {
+	std::vector<std::vector<Point_2>> poly_pts;
+	for (auto poly: polylines) {std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts); poly_pts.push_back(pts);}
+	std::vector<Number_type> x_coords(2*polylines.size()); std::vector<Number_type> y_coords(2*polylines.size());
+	int cnt = 0;
+	for (auto pts : poly_pts) {
+		x_coords[cnt] = pts[0].x(); y_coords[cnt] = pts[0].y(); cnt++;
+		x_coords[cnt] = pts.back().x(); y_coords[cnt] = pts.back().y(); cnt++;
+	}
+	// Save for every x point (and y point) a mapping from their number to a possibly snapped one, and then go through these points and change them
+	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
+	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
+	std::map<Number_type, Number_type> coord_to_snapped_x = snap_coords(x_coords, dist_threshold_pow2);
+	std::map<Number_type, Number_type> coord_to_snapped_y = snap_coords(y_coords, dist_threshold_pow2);
+
+	Geom_traits_2 traits;
+	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+	std::vector<Polyline_2> snapped_poly; std::vector<Point_2> endpoints;
+	for (auto pts : poly_pts) {
+		pts[0].x() = coord_to_snapped_x[pts[0].x()]; pts[0].y() = coord_to_snapped_y[pts[0].y()];
+		pts.back().x() = coord_to_snapped_x[pts.back().x()]; pts.back().y() = coord_to_snapped_y[pts.back().y()];
+		endpoints.push_back(pts[0]); endpoints.push_back(pts.back());
+		snapped_poly.push_back(polyline_construct(pts.begin(), pts.end()));
+	}
+
+	// pretty inefficient but we don't have many endpoints
+	for (int i = 0; i < endpoints.size(); i++) {
+		for (int j = i+1; j < endpoints.size(); j++) {
+			if (endpoints[i] == endpoints[j]) intersections.push_back(endpoints[i]);
+		}
+	}
+	std::unique(intersections.begin(),intersections.end());
+	return snapped_poly;
+}
+
+std::map<Number_type, Number_type> CreasePattern::snap_coords(std::vector<Number_type>& coords, Number_type threshold) {
+	std::map<Number_type, Number_type> vertices_to_snapped_vertices;
+	std::vector<std::set<int> > indices_groups; std::vector<bool> in_group(coords.size(), false);
+  	for (int i = 0; i < coords.size(); i++) {
+  		//std::cout << "vertex at: " << polylines_intersections[i] << std::endl;
+  		std::set<int> nearby_points; nearby_points.insert(i);
+  		for (int j = i+1; j < coords.size(); j++) {
+  			auto diff = coords[i]-coords[j];
+  			if ( diff*diff < threshold) {
+  				nearby_points.insert(j);
+  				//should_snap = true;
+  			}
+  		}
+  		// see if j was already added somewhere
+  		bool new_set = true;
+  		for (int k = 0; k < indices_groups.size(); k++) {
+  			if (indices_groups[k].count(i)) {
+  				new_set = false;
+  				for (auto idx: nearby_points) indices_groups[k].insert(idx);
+  				continue;
+  			}
+  		}
+  		if (new_set) indices_groups.push_back(nearby_points);
+  	}
+
+  	for (int k = 0; k < indices_groups.size(); k++) {
+		// Compute the average of the points there
+		Number_type new_v(0);
+		for (auto pt_i : indices_groups[k]) {new_v += coords[pt_i];}
+		new_v = new_v / Number_type(indices_groups[k].size());
+
+		std::cout << "Vertices group " << k << ": "; 
+		for (auto pt_i : indices_groups[k]) {
+			std::cout << coords[pt_i] << ",";
+			vertices_to_snapped_vertices[coords[pt_i]] = new_v;
+		}
+		std::cout << "  \t moving to " << new_v << std::endl;
+	}
+	return vertices_to_snapped_vertices;
 }
 
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
@@ -222,7 +304,10 @@ void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyl
 
 bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Number_type threshold) {
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
+	std::cout << "what what " << std::endl; std::cout << "seg_n = " << seg_n << std::endl;
+	auto s = poly.subcurves_begin(); std::cout << "seg = " << *s << std::endl;
 	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
+	std::cout << "l what " << std::endl;
 	bool is_closed = (CGAL::squared_distance(first_pt,last_pt) < threshold);
 	return is_closed;
 }
