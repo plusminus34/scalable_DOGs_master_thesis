@@ -56,7 +56,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
   		}
   	}
-  	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size());
+  	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size(), dist_threshold_pow2);
 
 
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
@@ -306,6 +306,32 @@ bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Nu
 }
 
 std::vector<Point_2> CreasePattern::align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
-								const std::vector<Point_2>& crease_vertices, int number_of_poly_int) {
-	return crease_vertices;
+								const std::vector<Point_2>& crease_vertices, int number_of_poly_intersections,
+								 Number_type& threshold) {
+	std::vector<Point_2> snapped_crease_vertices = crease_vertices; std::vector<bool> has_snapped(crease_vertices.size());
+	for (int i = 0; i < snapped_crease_vertices.size(); i++) {
+		for (int j = i+1; j < snapped_crease_vertices.size(); j++) {
+			// Get intersections from vertical and horizontal rays eminating from the pt
+			auto pt = snapped_crease_vertices[i];
+			std::vector<Point_2> vertical_horizontal_int = patternBounary.get_vertical_and_horizontal_intersections(pt);
+			if (j < number_of_poly_intersections) {
+				// This is an intersection point, so snapping should be done just by setting x and y
+				auto pt2 = snapped_crease_vertices[j]; auto diff_x = pt.x()-pt2.x(); auto diff_y = pt.y()-pt2.y();
+				Number_type snapped_x = pt2.x(); Number_type snapped_y = pt2.y();
+				if (diff_x*diff_x < threshold) snapped_x  = pt.x();
+				if (diff_y*diff_y < threshold) snapped_y  = pt.y();
+				snapped_crease_vertices[j] = Point_2(snapped_x,snapped_y);
+			} else {
+				for (auto intersection : vertical_horizontal_int) {
+					if (CGAL::squared_distance(pt, intersection) < threshold) {
+						std::cout << "snapping " << snapped_crease_vertices[j] << " to " << intersection << std::endl; int wait; std::cin >> wait;
+						snapped_crease_vertices[j] = intersection;
+						break;
+					}
+				}
+			}
+		}
+		has_snapped[i] = true;
+	}
+	return snapped_crease_vertices;
 }

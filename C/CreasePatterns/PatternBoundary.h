@@ -15,6 +15,7 @@ public:
 
 	std::vector<Point_2> get_all_boundary_points() const;
 	bool inside(const Point_2& pt);
+	std::vector<Point_2> get_vertical_and_horizontal_intersections(Point_2& pt);
 
 	std::vector<Polygon_2> get_holes() const {return holes;}
 	static void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);

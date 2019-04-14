@@ -94,6 +94,10 @@ Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_d
 	return snappedPt;
 }
 
+std::vector<Point_2> PatternBoundary::get_vertical_and_horizontal_intersections(Point_2& pt) {
+	std::vector<Point_2> pt_intersections;
+	return pt_intersections;
+}
 
 std::vector<Polygon_2> PatternBoundary::polylines_to_polygons(const std::vector<Polyline_2>& boundary_polylines) {
 	std::vector<Polygon_2> polygons;

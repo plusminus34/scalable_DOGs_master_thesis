@@ -41,7 +41,7 @@ private:
 	std::map<Number_type, Number_type> snap_coords(std::vector<Number_type>& coords, Number_type threshold);
 
 	std::vector<Point_2> align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
-								const std::vector<Point_2>& crease_vertices, int number_of_poly_int);
+								const std::vector<Point_2>& crease_vertices, int number_of_poly_int, Number_type& threshold);
 
 
 	std::vector<Polyline_2> initial_fold_polylines;
