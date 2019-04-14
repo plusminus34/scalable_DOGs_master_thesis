@@ -96,6 +96,21 @@ Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_d
 
 std::vector<Point_2> PatternBoundary::get_vertical_and_horizontal_intersections(Point_2& pt) {
 	std::vector<Point_2> pt_intersections;
+	// Create a segment whose length depends on the bounding box of the boundary polygon
+	// Compute the intersection of this segment with the entire segments of the polylines
+	// 	CGAL::compute_intersection_points(int_segments.begin(), int_segments.end(), std::back_inserter(intersections), false, geom_traits_2);	
+	//Segment_2 seg_x(pt, CGAL::Direction_2<Kernel>(1,0)), seg_y(pt, CGAL::Direction_2<Kernel>(0,1));
+	//CGAL::Ray_2<Kernel> ray_x(pt, CGAL::Direction_2<Kernel>(1,0)), ray_y(pt, CGAL::Direction_2<Kernel>(0,1));
+
+	Geom_traits_2 geom_traits_2;
+	std::vector<Segment_2> segments_and_x = all_polygons_edges; segments_and_x.push_back(Segment_2(Point_2(pt.x()-10000,pt.y()),Point_2(pt.x()+10000,pt.y())));
+	CGAL::compute_intersection_points(segments_and_x.begin(), segments_and_x.end(),
+                                    std::back_inserter(pt_intersections), false, geom_traits_2);
+
+	std::vector<Segment_2> segments_and_y = all_polygons_edges; segments_and_y.push_back(Segment_2(Point_2(pt.x(),pt.y()-10000),Point_2(pt.x(),pt.y()+10000)));
+	CGAL::compute_intersection_points(segments_and_y.begin(), segments_and_y.end(),
+                                    std::back_inserter(pt_intersections), false, geom_traits_2);
+
 	return pt_intersections;
 }
 

@@ -87,7 +87,7 @@ void OrthogonalGrid::initialize_grid() {
   add_segments(grid_segments);
 
   for (auto x : x_coords) std::cout << "x = " << x <<std::endl;
-  for (auto y : y_coords) std::cout << "y = " << y <<std::endl; int wait; std::cin >> wait;
+  for (auto y : y_coords) std::cout << "y = " << y <<std::endl; //int wait; std::cin >> wait;
   //exit(1);
 
 }
