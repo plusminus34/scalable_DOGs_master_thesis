@@ -52,15 +52,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	  		// Add the first and last point to the grid
 	  		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
 	  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
-	  		std::cout << "snapped first = " << snappedFirst << " snapped last = " << snappedLast << std::endl;
   		} else {
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
   		}
   	}
-  	for (auto pt: crease_vertices) {std::cout << "adding vertex = " << pt << std::endl;}// exit(1);
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
-  	std::cout << "here" << std::endl; int wait; std::cin >> wait;
   	
 	// Clip boundary polylines to grid
 	for (auto poly = initial_bnd_polylines.begin(); poly != initial_bnd_polylines.end(); poly++) {
@@ -70,15 +67,11 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	
 	// Create boundary
 	patternBoundary = new PatternBoundary(clipped_bnd_polylines);
-	std::cout << "number of polylines = " << filtered_and_clipped_to_boundary_polylines.size() << std::endl;
-	std::cout << "before" << std::endl; std::cin >> wait;
 	
 	// Clip fold polylines to grid, clip and snap them to the boudnary 	
 	//for (auto poly = filtered_and_clipped_to_boundary_polylines.begin(); poly != filtered_and_clipped_to_boundary_polylines.end(); poly++) {
 	for (auto poly :filtered_and_clipped_to_boundary_polylines) {
-		std::cout << "before??" << std::endl; std::cin >> wait;
 		bool closed_polyline = is_polyline_closed_with_tolerance(poly, is_closed_threshold);
-		std::cout << "closed_polyline = " << closed_polyline << std::endl; std::cin >> wait;
 		clipped_fold_polylines.push_back(orthogonalGrid.single_polyline_to_segments_on_grid(poly,closed_polyline));
 	}
 	std::cout << "clipped polylines to boundary" << std::endl;
@@ -304,10 +297,7 @@ void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyl
 
 bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Number_type threshold) {
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
-	std::cout << "what what " << std::endl; std::cout << "seg_n = " << seg_n << std::endl;
-	auto s = poly.subcurves_begin(); std::cout << "seg = " << *s << std::endl;
 	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
-	std::cout << "l what " << std::endl;
 	bool is_closed = (CGAL::squared_distance(first_pt,last_pt) < threshold);
 	return is_closed;
 }

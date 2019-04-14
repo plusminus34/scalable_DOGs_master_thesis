@@ -48,10 +48,15 @@ Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_t
 		Point_2& firstPt, Point_2& lastPt, bool& snappedFirst, bool& snappedLast) {
 	std::vector<Point_2> pts; polyline_to_points(polyline, pts);
 	std::vector<Point_2> filtered_pts;
-	for (auto pt: pts) {
-		if (inside(pt)) filtered_pts.push_back(pt);
-		else {std::cout << "filtered pt " << pt << std::endl;}
-		//filtered_pts.push_back(pt);
+	// special case for one segment
+	if (pts.size() > 2 ) {
+		for (auto pt: pts) {
+			if (inside(pt)) filtered_pts.push_back(pt);
+			else {std::cout << "filtered pt " << pt << std::endl;}
+			//filtered_pts.push_back(pt);
+		}
+	} else {
+		filtered_pts = pts;
 	}
 	filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold, snappedFirst);
 	filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold, snappedLast);
@@ -71,6 +76,7 @@ bool PatternBoundary::inside(const Point_2& pt) {
 }
 
 Point_2 PatternBoundary::snap_pt(const Point_2& pt, const Number_type& squared_dist_threshold, bool& has_snapped) {
+	has_snapped = false;
 	if (outer_boundary.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
 	for (auto poly: holes) if (poly.bounded_side(pt) == CGAL::ON_BOUNDARY) return pt;
 
