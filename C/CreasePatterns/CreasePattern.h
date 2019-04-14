@@ -40,6 +40,9 @@ private:
 	std::vector<Polyline_2> snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines, std::vector<Point_2>& intersections);
 	std::map<Number_type, Number_type> snap_coords(std::vector<Number_type>& coords, Number_type threshold);
 
+	std::vector<Point_2> align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
+								const std::vector<Point_2>& crease_vertices, int number_of_poly_int);
+
 
 	std::vector<Polyline_2> initial_fold_polylines;
 	std::vector<Polyline_2> initial_bnd_polylines;

@@ -56,6 +56,9 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
   		}
   	}
+  	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size());
+
+
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
   	orthogonalGrid.initialize_grid();
   	
@@ -300,4 +303,9 @@ bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Nu
 	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
 	bool is_closed = (CGAL::squared_distance(first_pt,last_pt) < threshold);
 	return is_closed;
+}
+
+std::vector<Point_2> CreasePattern::align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
+								const std::vector<Point_2>& crease_vertices, int number_of_poly_int) {
+	return crease_vertices;
 }
