@@ -36,40 +36,30 @@ ep_f_v2 = [ep_f_v2_x,ep_f_v2_y,ep_f_v2_z];
 ep_f_t = sym('ep_f_t', 'real'); assume(ep_f_t > 0);
 ep_f = ep_f_v1*ep_f_t+(1-ep_f_t)*ep_f_v2;
 
-% Fold edge point
-ep_0_v1_x = sym('ep_0_v1_x', 'real');
-ep_0_v1_y = sym('ep_0_v1_y', 'real');
-ep_0_v1_z = sym('ep_0_v1_z', 'real');
-ep_0_v1 = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z];
+% Folded points
+v1_x = sym('v1_x', 'real');
+v1_y = sym('v1_y', 'real');
+v1_z = sym('v1_z', 'real');
+v1 = [v1_x,v1_y,v1_z];
 
-ep_0_v2_x = sym('ep_0_v2_x', 'real');
-ep_0_v2_y = sym('ep_0_v2_y', 'real');
-ep_0_v2_z = sym('ep_0_v2_z', 'real');
-ep_0_v2 = [ep_0_v2_x,ep_0_v2_y,ep_0_v2_z];
+v2_x = sym('v2_x', 'real');
+v2_y = sym('v2_y', 'real');
+v2_z = sym('v2_z', 'real');
+v2 = [v2_x,v2_y,v2_z];
 
 ep_0_t = sym('ep_0_t', 'real'); assume(ep_0_t > 0);
-ep_0 = ep_0_t*ep_0_v1+(1-ep_0_t)*ep_0_v2;
+ep_0 = ep_0_t*v1+(1-ep_0_t)*v2;
 
-% Folded point
-folded_v_x = sym('folded_v_x', 'real');
-folded_v_y = sym('folded_v_y', 'real');
-folded_v_z = sym('folded_v_z', 'real');
-folded_v = [folded_v_x,folded_v_y,folded_v_z];
-
-lambda = sym('lambda', 'real');
-
-% If there's an isometry energy these should be around the same length
-edge = folded_v-ep_0;
-
-% curve binormal vec, not normalized because it's the same from both sides
+e1 = v1-v2;
 B = simplify(cross(ep_0-ep_b,ep_f-ep_0));
-const = dot(B,edge);
 
-vars = [ep_0_v1_x,ep_0_v1_y,ep_0_v1_z,ep_0_v2_x,ep_0_v2_y,ep_0_v2_z,ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z,folded_v_x,folded_v_y,folded_v_z];
+alpha = sym('alpha', 'real'); assume(ep_0_t > 0);
 
-ccode(const ,'file','V_fold_vals');
-ccode(gradient(const,vars),'file','V_fold_G');
+% We want <e1,B> = - <e2,B> or <e1,B>+<e2,B> = 0
+%curve_fold_const = simplify(tanh(alpha*dot(e1,B)) + tanh(alpha*dot(e2,B)));
+mv_const = 0.5 + 0.5*tanh(alpha*dot(e1,B));
 
-ccode(lambda*hessian(const,vars),'file','V_fold_H');
+vars = [ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z];
 
-ccode(lambda*hessian(log(const),vars),'file','V_fold_E_H');
+ccode(mv_const  ,'file','MV_fold_const');
+ccode(gradient(mv_const,vars),'file','MV_fold_G');
