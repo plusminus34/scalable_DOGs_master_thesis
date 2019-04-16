@@ -1,0 +1,72 @@
+\section{Implementation} \label{sec:implementation}
+\subsection{Input}
+\subsection{Folding constraints}
+We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while satisfying the DOG and patches constraints as in \eqref{eq:const_opt} and also ensuring the formation of folds along crease curves. Let $C_{I}$ be all inner crease points, having two neighbours along a crease curve. Let $c_i(x) \in C_{I}$ be a crease point and $\phi_i(x) $ be the folding constraint \eqref{eq:folding_const} for this crease point. We replace \eqref{eq:const_opt} by the following following problem:
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x
+f(x) \\
+& \textrm{subject to} \\
+& & g_i(x) = 0, \ \  i = 1, \ldots, m. \\
+& & \phi_i(x) = 0, \ \  \forall c_i \in C_{I}
+\end{aligned}
+\end{equation}
+
+Starting from a feasible flat mesh and motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model once a curve is bend, we strive to always satisfy $\phi_i(x)$ exactly. To that end we do not accept steps in the linesearch that violates $\phi(x)$, and add a penalty term encouraging folds. We replace the non-smooth terms in \eqref{eq:folding_const} by utilizing a smooth approximation for the sign function:
+\begin{equation} \label{eq:sign_smooth_approx}
+\text{sgn}(x) \approx \tanh(kx)
+\end{equation}
+For some $k >> 1$, which in practice we fix as $k = 1000$. Hence we replace $\phi_i$ by the approximation:
+\begin{equation} \label{eq:folding_const}
+\theta_i(x) = \tanh(k\langle e^1,e_f \times e_b \rangle) +  \tanh(k\langle e^2,e_f \times e_b\rangle)
+\end{equation}
+We then solve the problem:
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x
+f(x) + \alpha \sum_{c_i \in C_{I}} \theta_i(x)^2\\
+& \textrm{s.t.}
+\text{ } g_i(x) = 0, \ \  i = 1, \ldots, m.
+\end{aligned}
+\end{equation}
+For some given $\alpha > 0$, where we set our initial $\alpha_0 = 100$. If our linesearch always return a point with unfeasible folding constraints $\phi_(x)$ we increase and set $\alpha = 2\alpha$ \MiR{add an algorithm here?}.
+We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantuees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/fold_bias_compare}
+	\caption{With and without bias. Same deformations. \MiR{todo caption.} }
+	\label{fig:fold_bias_compare}
+\end{figure}
+\subsection{Optimization}
+\subsection{Optimization}
+\MiR{
+TODO: Explain here about what we do, flows similar to \cite{rabi2018shape}, just use lagrangian where the hessian is first convexified such that (called $H^*$) instead of the DOG Laplacian , which is basically SQP. Use the same strategy to minimally petrubate $J$ to $J^*$ as done in \cite{rabi2018shape}. Quickly go through the details such as merit functions (no need in the "projection" operator with lbfgs), and refer to the appendix for more technical things such as convexification of simple energies. 
+At the end we write down our minimization as
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x
+& & f(x) \\
+& \textrm{subject to}
+& & g_i(x) = 0, \ \  i = 1, \ldots, m.
+\end{aligned}
+\end{equation}
+}
+By subsequently solving KKT systems of the form for a given mesh $x^k$, finding the step direction $d^{k+1}$:
+\begin{equation} \label{eq:KKT_eps}
+\begin{gathered}
+{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
+{K}=\begin{pmatrix}
+{H^*(x)+\sum\lambda_i^{k} \nabla g_i(x)} & {J^{*\tr}(x)}\\
+{J^*(x)} &  0 \\
+\end{pmatrix}, \ \ 
+\mathbf{b}=\begin{pmatrix}
+{\nabla f(x^k)} \\ 
+\boldsymbol{-g(x^k)}\\
+\end{pmatrix}.
+\end{gathered}
+\end{equation}
+\MiR{
+and use a linesearch with a merit function. Say that hard constraints are only dog + edge stitching as in \cite{rabi18} whereas other constraints throughout the paper are enforced by penalizing them, using a convex hessian approximation of gauss-newton (besides the length which are easy to convexify).
+}
+
