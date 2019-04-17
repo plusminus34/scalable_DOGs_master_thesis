@@ -18,13 +18,13 @@ Straight creases are rather boring, mathematically speaking. Straight lines can 
 %(there's the cone singularity case where a curved fold is more local (as focused on the cone point) but I think this requires the curve to be C^1.. should mention it?
 
 \subsection{The combinatorial parameters of multiple creases}
-The previous analysis explains the local behaviour of curved folding around a small part of a single curve, as the reflection of tangent planes along the curve osculating plane. Understanding crease patterns globally still remains a challenge. In essence, deforming one patch propagates a global deformation of the patch on the other side of the crease, a process that depends on the fixed creases and the possibly changing ruling patterns. When there are multiple creases this process further propagate and dictates the shape of other patches (see \figref{fig:multiple_crease_pattern}). The process becomes more complicated when some creases intersect due to compatibility constraints (see \figref{fig:multiple_crease_pattern}, right figure). 
+The previous analysis explains the local behaviour of curved folding around a small part of a single curve, as the reflection of tangent planes along the curve osculating plane. Understanding crease patterns globally still remains a challenge. In essence, deforming one patch propagates a global deformation of the patch on the other side of the crease, a process that depends on the fixed creases and the possibly changing ruling patterns. When there are multiple creases this process further propagate and dictates the shape of other patches The process becomes more complicated when some creases intersect due to compatibility constraints (see \figref{fig:multiple_crease_patterns}). 
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figures/multiple_crease_patterns}
 	\caption{\MiR{Todo caption: propagation of constraints from A to B to C, and a star.}}
-	\label{fig:multiple_crease_pattern}
+	\label{fig:multiple_crease_patterns}
 \end{figure}
 
 Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is folded or not (see \figref{fig:folded_and_not_folded} ). With this in mind, we note the following observation:
@@ -40,7 +40,7 @@ A crease curve is folded along a given point if and only if its osculating plane
 	\label{fig:plane_side}
 \end{figure}
 
-This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. As mentioned, there is often an extra combinatorial degree of freedom in choosing the type of fold, but generally only for one fold. We follow \cite{demaine_lens} to distinguish between the two type of folded configurations by calling one choice a \textit{Mountain} fold and the other a \textit{Valley} fold, distinguishing between a fold above and below the osculating plane for a given orientation. %We also note that when the curvature of the curve is not larger than its geodesic curvature, one example being a flat patch, then the tangents from both sides are the same (we should maybe call it both active and not active for that configuration?
+This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. %We also note that when the curvature of the curve is not larger than its geodesic curvature, one example being a flat patch, then the tangents from both sides are the same (we should maybe call it both active and not active for that configuration?
 
 
 % Motivated by homotopy stuff, we look for a function F(t). Once a crease is active, there's no need to take care of it.
@@ -76,12 +76,19 @@ with
      \end{array}
    \right.
 \end{equation}
-There is in fact no need to normalize the tangents and binormal directions, as the following constraint is equivalent to \eqref{eq:folding_const_normalized}:
-\begin{equation} \label{eq:folding_const}
-\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
-\end{equation}
+
+As mentioned, there is often an extra combinatorial degree of freedom in choosing the type of fold, i.e. the choice of surfaces from each side of the curve (see \figref{fig:folding_combinatorics}) but generally only for one fold, as this choice is determined by the propagation of the constraints (see \figref{fig:multiple_crease_patterns}). We follow \cite{demaine_lens} to distinguish between the two type of folded configurations by calling one choice a \textit{Mountain} fold and the other a \textit{Valley} fold, distinguishing between a fold above and below the osculating plane for a given orientation, determined by the sign of $\langle t^1,B\rangle$ or $\langle t^2,B\rangle$. 
+%There is in fact no need to normalize the tangents and binormal directions, as the following constraint is equivalent to \eqref{eq:folding_const_normalized}:
+%\begin{equation} \label{eq:folding_const}
+%\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
+%\end{equation}
+
+%\begin{equation} \label{eq:folding_const}
+%\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
+%\end{equation}
+
 \subsection{Discussion}
-There are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint, i.e. \eqref{eq:folding_const}, and briefly discuss how these are not satisfied by different constraint choices. \\
+There are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint, i.e. \eqref{eq:folding_const_normalized}, and briefly discuss how these are not satisfied by different constraint choices. \\
 \textbf{It is suitable for homotopy based optimization methods} as it is satisfied on a flat mesh. In this sense we consider a point along a curve with zero normal curvature as both folded and not folded. \\ 
 \textbf{It is minimal} and generally non-intrusive. Once a curved crease is folded on a piecewise smooth developable surface, one does not need to explicitly take extra care of folding. The effect of eq. \eqref{eq:folding_const} on an already-folded surface is null. The discontinuity along the tangents caused by the folding implies that a folded crease remain folded under local deformations, and in order for it to become unfolded one need to first flatten it, as this is the case for a piecewise smooth curved folded surface. It also captures the converse: a curved crease can only be folded from a point with zero normal curvature \cite{more_on_paper}. \\
 One could for instance distinguish curved folded with non-curved folded configurations using discontinuties along the tangents $t_1,t_2$, but lose the feasibility of the flat models. Moreover, in the discrete case a minor discontinuity can still arise even though there is no fold, i.e. where eq. \eqref{eq:folding_const_normalized} is not satisfied, thus numerically giving the impression of a fold when visually there is none. Another option is to define folded configurations as those satisfying the similar but simpler smooth constraint:
