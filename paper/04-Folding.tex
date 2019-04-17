@@ -108,9 +108,14 @@ In this section we build tools to control a deformations folding angles and thei
 \end{lemma}
 \begin{proof}{Let $\{t,n,b\}$ be the Frenet frame of the curved crease at the point. An angle $\alpha$ means that at the flat isometric configuration both tangents can be written as $cos(\alpha)t + sin(\alpha)n$. A folding angle of $\theta$ at a given point means that relative to the Frenet frame of the curve, tangents on one surface where rotated in angle $\frac{\theta}{2}$ around the crease's tangent $t$, while on the other surface they were rotated in an angle  $-\frac{\theta}{2}$. Thus w.l.o.g $t_1 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n+sin(\frac{\theta}{2})b)$ and $t_2 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n-sin(\frac{\theta}{2})b)$. The proof ends by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $cos(\theta) = cos^2(\frac{\theta}{2})-sin^2(\frac{\theta}{2})$.}\end{proof}
 
-Under an isometry eq.\eqref{eq:tangents_dihedral} is quadratic, as the edge length and angle $\alpha$ stays the same.
+See \figref{fig:fold_angle_and_tangent_angles}. Under an isometry eq.\eqref{eq:tangents_dihedral} is quadratic, as the edge length and angle $\alpha$ stays the same.
 
-\MiR{add figure for dihedral fold and for M/V assignment}
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/fold_angle_and_tangent_angles}
+	\caption{Left: A flattened configuration of a curve (gray) with edges $e_f,e_b$ and its tangent $t$, forming an angle $\alpha$ with the DOG tangents $t_1,t_2$ which are equal. Right: A folded isometric configuration with a discontinuty between $t_1,t_2$. \lemmaref{lem:tangents_dihedral} shows the connection between the tangents angles and the folding angle $\theta$ in the smooth case, stating that $\langle t_1, t_2 \rangle = cos(\alpha)^2 + sin^2(\alpha) cos(\theta)$. }
+	\label{fig:fold_angle_and_tangent_angles}
+\end{figure}
 
 \subsection{Mountain/Valley assignments} As mentioned, there are a few combinatorial degrees of freedom in choosing the type of fold, i.e. the choice of surfaces from each side of the curve (see \figref{fig:folding_combinatorics}). We follow \cite{demaine_lens} to distinguish between the two type of folded configurations in \figref{fig:folding_combinatorics} by calling one choice a \textit{Mountain} fold and the other a \textit{Valley} fold. We would like to emphasis that for straight folds this degree of freedom always exists, but around curved creases it often doesn't. In fact, in many crease patterns its often only possible to choose  one Mountain/Valley (M/V) assignment, and the rest are determined by the propagation of the rulings (\MiR{point to figure, should be better than I have now}), leaving the only combinatorial degrees of freedom  as the choice to fold or not fold, as embedded in eq. \eqref{eq:folding_const_normalized}.
   We distinguish between M/V folds by looking at whether a tangent of one surface is above or below the tangent plane of the second surface at the point of the crease. These too cases can be differentiated by looking at the sign of the following term:
@@ -118,10 +123,4 @@ Under an isometry eq.\eqref{eq:tangents_dihedral} is quadratic, as the edge leng
 \langle t_1, t \times t_2 \rangle 
 \end{equation}
 where $t$ is the tangent of the creases curve, and $t \times t_2$ is the tangent plane of the surface with $t_2$ as a tangent vector. By the cyclic property of the triple product \eqref{eq:mountain_valley} is also equal to $\langle t_2, t_1 \times t \rangle$.
-Using the notation of figure \figref{fig:osc_plane_discretization}, we discretize the tangent of the crease curve as $t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\|\|e_b\|e_f + \|e_f\|e_b\|}$, which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry. 
-%\begin{figure} [h]
-%	\centering
-%	\includegraphics[width=\linewidth]{figures/crease_tangent_notation}
-%	\caption{Notation for the discretization of a crease curve tangent asthe tangent of the circle passing through }
-%	\label{fig:crease_tangent_notation}
-%\end{figure}
+Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve as $t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\|\|e_b\|e_f + \|e_f\|e_b\|}$, which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry. 
