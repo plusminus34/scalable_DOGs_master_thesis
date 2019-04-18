@@ -1,14 +1,26 @@
 \section{Implementation} \label{sec:implementation}
-\subsection{Input}
-We model each patch as a DOG quad mesh based on a crease pattern taken from an SVG file containing polylines specifying creases and boundary loops. We use CGAL's arrangement model \cite{cgal} to compute the decomposition induced by the polylines and place an orthogonal grid of a given mesh resolution on top of the entire model, where quads that appear on multiple components are duplicated (see \figref{fig:piecewise_dog_from_crease}). We snap nearby intersections or starting points of non-closed polylines to one another. To get a correct arrangement topology, every curve intersection with other curves or boundary loops needs to be on the orthogonal grid line, i.e. on an edge or a vertex, and we snap their x and y coordinates to prevent the grid from having very thin squares.
+We model each patch as a quad mesh, with a different connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align, or stitch, along the crease as detailed at \ref{sec:model} enforced by simple linear constraints. For convenience we denote both of the DOG angle constraints as well as the patch stitching constraints defined at \cite{rabi2018shape} by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$. For rendering purposes, we keep another mesh where the extraneous parts of the duplicated faces are culled. 
+
+We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const}. Defined on a given crease point, this equation requires the crease points be an "inner" crease point, having 2 neighbours along the curve. We enforce these constraints for every inner crease point, and write these fold constraints as $\phi_{f_i}(\x) = 1 \leq i \leq k$.
+%We also push for folding deformations by  modeling we would like to enforce a folding movement along all crease points
 
 \subsection{Optimization problem}
+The problems we solve in this paper can be written in the form:
+\begin{equation} \label{eq:const_opt}
+\begin{aligned}
+& \argmin_x f(x) \\
+& \textrm{subject to} \\
+& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\
+& \phi_{f_i}(\x) = 0, \ \  i = 1, \ldots, k.
+\end{aligned}
+\end{equation}
+With $f$ as an objective, composed of a weighted sum of a bending objective, isometric objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 \MiR{What we want to solve (general phrasing, with all constraints taken from before). How we are an in an interesting situation where everything is active and we know nothing should be. We want to stay feasible (motivated by the smooth case) and also not have any linear dependence problem. Adding penalty and also filter out of feasibility. Then approximate the other ones with a smooth functions (and keep the filter). So talk about the heaveside function and the second one.}
 
 \subsection{Equality constrainted SQP}
 \MiR{Write down the thing, but make sure to convexify stuff. Use the Jacobian and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian, and also convexification is better, and get rid of the lbfgs in porjection. Especially better for higher resolution models.}
 
-\subsection{Objectives and constraints}
+\subsection{Objectives and constraints} \label{sec:dog_obj}
 \MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
 
 \subsection{Folding constraints}
@@ -80,3 +92,6 @@ By subsequently solving KKT systems of the form for a given mesh $x^k$, finding 
 and use a linesearch with a merit function. Say that hard constraints are only dog + edge stitching as in \cite{rabi18} whereas other constraints throughout the paper are enforced by penalizing them, using a convex hessian approximation of gauss-newton (besides the length which are easy to convexify).
 }
 
+
+\subsection{Input generation}
+We generate our piecewise DOG quad mesh based on an input SVG file specifying the crease pattern. The input file contains polylines for creases and boundary loops. We use CGAL's arrangement model \cite{cgal} to compute the decomposition induced by the polylines and place an orthogonal grid of a given mesh resolution on top of the entire model, where quads that appear on multiple components are duplicated (see \figref{fig:piecewise_dog_from_crease}). We snap nearby intersections or starting points of non-closed polylines to one another. To get a correct arrangement topology, every curve intersection with other curves or boundary loops needs to be on the orthogonal grid line, i.e. on an edge or a vertex, and we snap their x and y coordinates to prevent the grid from having very thin squares.
