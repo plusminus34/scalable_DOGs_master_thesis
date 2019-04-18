@@ -81,11 +81,6 @@ with
 \text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
 \end{equation}
 
-%There is in fact no need to normalize the tangents and binormal directions, as the following constraint is equivalent to \eqref{eq:folding_const_normalized}:
-%\begin{equation} \label{eq:folding_const}
-%\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
-%\end{equation}
-
 \subsection{Discussion}
 There are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint, i.e. \eqref{eq:folding_const_normalized}, and briefly discuss how these are not satisfied by different constraint choices. \\
 \textbf{It is suitable for homotopy based optimization methods} as it is satisfied on a flat mesh. In this sense we consider a point along a curve with zero normal curvature as both folded and not folded. \\ 
@@ -118,9 +113,22 @@ Under an isometry eq.\eqref{eq:tangents_dihedral} is quadratic, as the edge leng
 \end{figure}
 
 \subsection{Mountain/Valley assignments} As mentioned, there are a few combinatorial degrees of freedom in choosing the type of fold, i.e. the choice of surfaces from each side of the curve (see \figref{fig:folding_combinatorics}). We follow \cite{demaine_lens} to distinguish between the two type of folded configurations in \figref{fig:folding_combinatorics} by calling one choice a \textit{Mountain} fold and the other a \textit{Valley} fold. We would like to emphasis that for straight folds this degree of freedom always exists, but around curved creases it often doesn't. In fact, in many crease patterns its often only possible to choose  one Mountain/Valley (M/V) assignment, and the rest are determined by the propagation of the rulings leaving the only combinatorial degrees of freedom  as the choice to fold or not fold, as embedded in eq. \eqref{eq:folding_const_normalized}. For instance, in \cite{demaine_lens} the authors proved how segments on the convex side of a crease  bend mountain/valley the same as the crease, while segments on the concave side of a crease bend mountain/valley opposite from the crease. This can be seen in \figref{fig:multiple_crease_patterns}, where the left crease pattern has a mountain and valley fold while the center one has only valleys.
-  We distinguish between M/V folds by looking at whether a tangent of one surface is above or below the tangent plane of the second surface at the point of the crease, for a consistent choice of orientation. These too cases can be differentiated by looking at the sign of the following term:
-\begin{equation} \label{eq:mountain_valley}
-\langle t_1, t \times t_2 \rangle 
+  We distinguish between M/V folds by looking at whether a tangent of one surface is above or below the tangent plane of the second surface at the point of the crease, for a consistent choice of orientation. This can be achieved by the following constraint:
+\begin{equation} \label{eq:mountain_valley_ineq}
+\langle t_1, t \times t_2 \rangle \leq 0
 \end{equation}
-where $t$ is the tangent of the creases curve, and $t \times t_2$ is the tangent plane of the surface with $t_2$ as a tangent vector. By the cyclic property of the triple product \eqref{eq:mountain_valley} is also equal to $\langle t_2, t_1 \times t \rangle$.
-Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve as $t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\|\|e_b\|e_f + \|e_f\|e_b\|}$, which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry. 
+where $t$ is the tangent of the creases curve oriented, and $t \times t_2$ is the tangent plane of the surface with $t_2$ as a tangent vector. The orientation of $t$ determines whether a mountain or valley fold is chosen. By the cyclic property of the triple product \eqref{eq:mountain_valley} is also equal to $\langle t_2, t_1 \times t \rangle$.
+Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve as $t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\|\|e_b\|e_f + \|e_f\|e_b\|}$, which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry.
+To ease up notation in \secref{sec:implementation}, we reformulate \eqref{eq:mountain_valley_ineq} in an equivalent formulation with equalities by using the Heaviside step function:
+\begin{equation} \label{eq:heaviside}
+\text{H}(x) = \left\{
+     \begin{array}{@{}l@{\thinspace}l}
+       0  &: \text{if } x \leq 0, \\
+       1 &: \text{if } x = 0. \\
+     \end{array}
+   \right.
+\end{equation}
+and write down the mountain valley condition as:
+\begin{equation} \label{eq:mountain_valley}
+H(\langle t_1, t \times t_2 \rangle) = 0
+\end{equation}
