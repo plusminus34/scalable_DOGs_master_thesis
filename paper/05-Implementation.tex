@@ -1,5 +1,16 @@
 \section{Implementation} \label{sec:implementation}
 \subsection{Input}
+We model each patch as a DOG quad mesh based on a crease pattern taken from an SVG file containing polylines specifying creases and boundary loops. We use CGAL's arrangement model \cite{cgal} to compute the decomposition induced by the polylines and place an orthogonal grid of a given mesh resolution on top of the entire model, where quads that appear on multiple components are duplicated (see \figref{fig:piecewise_dog_from_crease}). We snap nearby intersections or starting points of non-closed polylines to one another. To get a correct arrangement topology, every curve intersection with other curves or boundary loops needs to be on the orthogonal grid line, i.e. on an edge or a vertex, and we snap their x and y coordinates to prevent the grid from having very thin squares.
+
+\subsection{Optimization problem}
+\MiR{What we want to solve (general phrasing, with all constraints taken from before). How we are an in an interesting situation where everything is active and we know nothing should be. We want to stay feasible (motivated by the smooth case) and also not have any linear dependence problem. Adding penalty and also filter out of feasibility. Then approximate the other ones with a smooth functions (and keep the filter). So talk about the heaveside function and the second one.}
+
+\subsection{Equality constrainted SQP}
+\MiR{Write down the thing, but make sure to convexify stuff. Use the Jacobian and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian, and also convexification is better, and get rid of the lbfgs in porjection. Especially better for higher resolution models.}
+
+\subsection{Objectives and constraints}
+\MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
+
 \subsection{Folding constraints}
 We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while satisfying the DOG and patches constraints as in \eqref{eq:const_opt} and also ensuring the formation of folds along crease curves. Let $C_{I}$ be all inner crease points, having two neighbours along a crease curve. Let $c_i(x) \in C_{I}$ be a crease point and $\phi_i(x) $ be the folding constraint \eqref{eq:folding_const} for this crease point. We replace \eqref{eq:const_opt} by the following following problem:
 \begin{equation} \label{eq:const_opt}
@@ -30,7 +41,7 @@ f(x) + \alpha \sum_{c_i \in C_{I}} \theta_i(x)^2\\
 \end{aligned}
 \end{equation}
 For some given $\alpha > 0$, where we set our initial $\alpha_0 = 100$. If our linesearch always return a point with unfeasible folding constraints $\phi_(x)$ we increase and set $\alpha = 2\alpha$ \MiR{add an algorithm here?}.
-We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantuees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
+We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
 
 \begin{figure} [h]
 	\centering
