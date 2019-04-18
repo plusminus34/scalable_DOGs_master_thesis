@@ -32,7 +32,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
   	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl;
-  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;}
+  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;} //int wait; std::cin >> wait;
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
