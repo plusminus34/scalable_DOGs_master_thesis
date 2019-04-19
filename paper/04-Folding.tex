@@ -26,28 +26,23 @@ The previous analysis explains the local behaviour of curved folding around a si
 	\label{fig:multiple_crease_patterns}
 \end{figure}
 
-Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is folded or not (see \figref{fig:folded_and_not_folded} ). The difficulty in modeling folding of a flat surface stems from the fact that these combinatorial choices often needs to be enforced at the beginning of the folding process, as explained by the following lemma:% combinatorial degree of freedom is often only available at the start of a deformation of a flat surface, as detailed in the following lemma:
+Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is folded or not (see \figref{fig:folded_and_not_folded} ). The difficulty in modeling folding of a planar surface stems from the fact that these combinatorial choices often needs to be enforced at the beginning of the folding process, as explained by the following theorem:% combinatorial degree of freedom is often only available at the start of a deformation of a flat surface, as detailed in the following lemma:
 
-\begin{lemma}\label{Thm:curved_folding_open_condition}
-Let $S(t)$ be a curved folding flow and lets $p(t)$ be a crease point lying on two patches $P_1,P_2$ then 
-Let $\gamma(t)$ be a crease on a curved folded surface $S$ separating between two patches $S_1,S_2$. Let $k(t)$ be its curvature and $k_g(t)$ the curve's geodesic curvature. Assuming the crease is further curved in space and satisfies $k(t) > k_g(t)$, 
-\begin{enumerate} \label{const_graph}
-	\item If the tangent 
-	\item w
+\begin{theorem}\label{Thm:curved_folding_open_condition}
+Let $S(t)$ be a curved folding flow and let $p(t_k)$ be some crease point on a crease of $S(t)$ lying on two patches $P_1,P_2$ in a given time in the flow $t=t_k$. Assuming $p(t_k)$ is not a planar point on $P_1$ (or equivalently on $P_2$), then there exists an $\epsilon > 0$ such that one of the following holds:
+\begin{enumerate}
+	\item $S(t)$ is folded along $p(t)$ for every $t$ with $t_k-\epsilon < t < t_k+\epsilon$
+	\item $S(t)$ is \emph{not} folded along $p(t)$ for every $t$ with  $t_k-\epsilon < t < t_k+\epsilon$
 \end{enumerate}
-\end{lemma}
+\end{theorem}
+\begin{proof}
+Let $k(p(t))$ be the crease curvature at the the point, and let $k_g(p(t)) = k(p(t))cos\alpha(p(t))$ be the crease flattened geodesic curvature. If $\alpha \neq 0$ then the claim follows from the discontinuity of the two possible tangent planes along $p(t)$: a folding corresponds to a different choice of the tangent planes, whose angle is $2\alpha(p(t)$, and any small continuous transformation cannot move from a folded to a non folded configuration or vice-versa. Finally, the non planarity of $p(t_k)$ implies $\alpha \neq 0$, as the other option would be that the tangent of the crease curve is parallel to the ruling direction which by Lemma 12 and Corollary 16 in \cite{demaine_lens} implies that curve is kinked $p(t)$, thus the deformation is not piecewise $C^2$.
+\end{proof}
 
-
-
-It is generally impossible to move from a folded to a non-folded model once a curve is bend.  If a crease is locally already folded then any small deformation keeps it that way, and conversely if a crease is not folded then any small deformation doesn't change that. Hence, folding is usually an open condition, satisfied in some neighbourhood. The exception to this rule is when a point on a crease have zero normal curvature. An important case where this occurs is a flat surface, which can be seen as a bifurcation point from folded and not folded configuration. \MiR{say how to choose at time zero}.
-
-
-we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. This is the general case both for a smooth curved folded surface, and for a piecewise DOG using eq. \eqref{eq:folding_const}.\MiR{should this important fact be stated earlier? in the discretization?}.  The exception to this rule, both in the smooth case and in our discretization, is the tangents of the surfaces lie on the osculating plane of the curve, which in the smooth case is equal to the point having zero normal curvature. An important case where this occurs is a flat surface, which is our typical starting point.
-
- With this in mind, we note the following observation:
+Therefore it is impossible to fold a crease point that is non-planar. On a non-planar point that is not folded any small deformation keep it that way. Folding can only happen after flattening the point, and if a surface is already folded any small deformation keep it that way. Thus, it is crucial to enforce this for flat points, while no extra should be taken care for already folded creases. With this in mind, we note the following observation:
 
 \begin{theorem}\label{Thm:supporting_plane}
-A crease curve is folded along a given point if and only if its osculating plane at that point is locally a supporting plane for the surface (see \figref{fig:plane_side}).
+A non-planar crease point is folded if and only if its osculating plane at that point is locally a supporting plane for the surface (see \figref{fig:plane_side}).
 \end{theorem}
 
 \begin{figure} [h]
@@ -57,9 +52,7 @@ A crease curve is folded along a given point if and only if its osculating plane
 	\label{fig:plane_side}
 \end{figure}
 
-This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. %We also note that when the curvature of the curve is not larger than its geodesic curvature, one example being a flat patch, then the tangents from both sides are the same (we should maybe call it both active and not active for that configuration?
-
-
+This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. Lastly, around planar regions the tangent planes are exactly the same as the osculating planes such that it is also locally a supporting plane for the surface.
 % Motivated by homotopy stuff, we look for a function F(t). Once a crease is active, there's no need to take care of it.
 
 % The pictures which will show are then discrete, though the smooth picture is the same. Maybe put the discrete picture in the setup as well.
