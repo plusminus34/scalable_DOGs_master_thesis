@@ -4,7 +4,7 @@ We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:
 \subsection{Problem setup}
 We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the crease as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
-We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all inner crease points, which are points on crease curves having two neighbours. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the inner crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
+We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all crease points, which are points on crease curves having two neighbours. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the inner crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
@@ -18,60 +18,37 @@ The problems we solve in this paper can be written in the form:
 With $f$ as an objective, composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 
 \subsection{Folding constraints}
-Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model once a curve is bend, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. If a crease is locally already folded then any small deformation keeps it that way, and conversely if a crease is not folded then any small deformation doesn't change that. This is the general case both for a smooth curved folded surface, and for a piecewise DOG using eq. \eqref{eq:folding_const}.\MiR{should this important fact be stated earlier? in the discretization?}. Hence, folding is usually an open condition, satisfied in some neighbourhood. The exception to this rule, both in the smooth case and in our discretization, is the tangents of the surfaces lie on the osculating plane of the curve, which in the smooth case is equal to the point having zero normal curvature. An important case where this occurs is a flat surface, which is our typical starting point.
+Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative SQP solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
+\begin{enumerate}
+	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
+	\item Use linesearch method that does not except meshes deviating from the constraints $\phi_{d_i}(\x)$.
+\end{enumerate}
+As the functions involved in the constraints $\phi_{d_i}(\x)$ are not continuous, we replace them by the analytic approximations:
 
- We note that we could have formulated our folding constraints using \emph{non-strict} inequalities. For instance the constraint \eqref{eq:folding_const} could be replaced by:
-
- Using an inequality formulation, a flat piecewise DOG is a bifurcation point in any optimization. At a flat configuration, the set of constraints are all "active", i.e. the osculating plane of the creases exactly
-Bending a single patch on a piecewise smooth developable surface
-
-Starting from a feasible flat mesh and 
-\MiR{How we are an in an interesting situation where everything is active and we know nothing should be. Bifurcation point. We want to stay feasible (motivated by the smooth case) and also not have any linear dependence problem. Adding penalty and also filter out of feasibility. Then approximate the other ones with a smooth functions (and keep the filter). So talk about the heaveside function and the second one.}
-
- We replace \eqref{eq:const_opt} by the following following problem:
-\begin{equation} \label{eq:const_opt}
-\begin{aligned}
-& \argmin_x
-f(x) \\
-& \textrm{subject to} \\
-& & g_i(x) = 0, \ \  i = 1, \ldots, m. \\
-& & \phi_i(x) = 0, \ \  \forall c_i \in C_{I}
-\end{aligned}
-\end{equation}
-
- To that end we do not accept steps in the linesearch that violates $\phi(x)$, and add a penalty term encouraging folds. We replace the non-smooth terms in \eqref{eq:folding_const} by utilizing a smooth approximation for the sign function:
-\begin{equation} \label{eq:sign_smooth_approx}
+\begin{align} 
+\begin{split}\label{eq:const_inner}
+\tanh(hx) \approx \text{sgn}(x) \\
+\frac{1+\tanh(hx)}{2} \approx H(x)\\
+\end{split}
+\end{align}
+using a fix parameter $h=1000$.
+\begin{equation}
 \text{sgn}(x) \approx \tanh(kx)
 \end{equation}
-For some $k >> 1$, which in practice we fix as $k = 1000$. Hence we replace $\phi_i$ by the approximation:
-\begin{equation} \label{eq:folding_const_smooth}
-\theta_i(x) = \tanh(k\langle e^1,e_f \times e_b \rangle) +  \tanh(k\langle e^2,e_f \times e_b\rangle)
-\end{equation}
-We then solve the problem:
+We refer to the approximated constraints as $\phi^*_i(\x)$.
+
+Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt}
 \begin{aligned}
-& \argmin_x
-f(x) + \alpha \sum_{c_i \in C_{I}} \theta_i(x)^2\\
-& \textrm{s.t.}
-\text{ } g_i(x) = 0, \ \  i = 1, \ldots, m.
+& \argmin_x f(x) + \alpha \sum \phi^*_i(\x)^2 \\
+& \textrm{subject to} \\
+& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
 \end{equation}
-For some given $\alpha > 0$, where we set our initial $\alpha_0 = 100$. If our linesearch always return a point with unfeasible folding constraints $\phi_(x)$ we increase and set $\alpha = 2\alpha$ \MiR{add an algorithm here?}.
-We note that the approximation constraints are also satisfied exactly at the starting point for a flat mesh. Since for a smooth DOG satisfies also the smooth condition \eqref{eq:folding_const_smooth} approximately, the symmetriy of $\tanh$ guarantees us that as long as we model isometries or transformations keeping duplicated edge lengths similar, the constraint $\theta_i(x)$ will approach even faster to zero, even when the curves is slightly bend.
-
+Where $\alpha$ is a metaparameter starting at $\alpha_0 = 1$ that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
 \subsection{Equality constrainted SQP}
 \MiR{Write down the thing, but make sure to convexify stuff. Use the Jacobian and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian, and also convexification is better, and get rid of the lbfgs in porjection. Especially better for higher resolution models.}
 
-\subsection{Objectives and constraints} \label{sec:dog_obj}
-\MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
-
-\begin{figure} [h]
-	\centering
-	\includegraphics[width=\linewidth]{figures/fold_bias_compare}
-	\caption{With and without bias. Same deformations. \MiR{todo caption.} }
-	\label{fig:fold_bias_compare}
-\end{figure}
-\subsection{Optimization}
 \MiR{
 TODO: Explain here about what we do, flows similar to \cite{rabi2018shape}, just use lagrangian where the hessian is first convexified such that (called $H^*$) instead of the DOG Laplacian , which is basically SQP. Use the same strategy to minimally petrubate $J$ to $J^*$ as done in \cite{rabi2018shape}. Quickly go through the details such as merit functions (no need in the "projection" operator with lbfgs), and refer to the appendix for more technical things such as convexification of simple energies. 
 At the end we write down our minimization as
@@ -101,3 +78,13 @@ By subsequently solving KKT systems of the form for a given mesh $x^k$, finding 
 \MiR{
 and use a linesearch with a merit function. Say that hard constraints are only dog + edge stitching as in \cite{rabi18} whereas other constraints throughout the paper are enforced by penalizing them, using a convex hessian approximation of gauss-newton (besides the length which are easy to convexify).
 }
+
+\subsection{Objectives and constraints} \label{sec:dog_obj}
+\MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/fold_bias_compare}
+	\caption{With and without bias. Same deformations. \MiR{todo caption.} }
+	\label{fig:fold_bias_compare}
+\end{figure}
