@@ -4,7 +4,7 @@ We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:
 \subsection{Problem setup}
 We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the crease as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
-We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all crease points, which are points on crease curves having two neighbours. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the inner crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
+We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all crease points, which are points on crease curves having two neighbours. \MiR{We should remove it for two kind of points, one those with zero curvature, as they always stay curvature (points at inflection point example, also add a figure) and a second where the grid tangents are too close to the curve tangent, then its basically degenerate, which is proabbly the problem with the circle thing..)}. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the inner crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
@@ -40,12 +40,12 @@ We refer to the approximated constraints as $\phi^*_i(\x)$.
 Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt}
 \begin{aligned}
-& \argmin_x f(x) + \alpha \sum \phi^*_i(\x)^2 \\
+& \argmin_x f(x) + \alpha \sum \|\phi^*_i(\x)\|_2^2 \\
 & \textrm{subject to} \\
 & \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
 \end{equation}
-Where $\alpha$ is a metaparameter starting at $\alpha_0 = 1$ that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
+Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
 \subsection{Equality constrainted SQP}
 \MiR{Write down the thing, but make sure to convexify stuff. Use the Jacobian and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian, and also convexification is better, and get rid of the lbfgs in porjection. Especially better for higher resolution models.}
 
