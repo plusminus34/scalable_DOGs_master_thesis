@@ -10,7 +10,7 @@ This definition is suitable for various topologies, such as a cylinder, although
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/crease_patterns}
-	\caption{Curved and straight crease patterns, decomposing a pattern into multiple components and intersecting at crease vertices.}
+	\caption{Curved crease patterns, decomposing a pattern into multiple components $P_i$ and intersecting at crease vertices. Boundary curves in black, crease curves in blue.}
 	\label{fig:crease_pattern}
 \end{figure}
 We are interested in deformations on curved folded surfaces that keeps them curved folded. Viewed separately on each patch $P_i$, these deformation are $C^2$, though they often introduce tangent discontinuities along the patches intersections. In particular we are interested in such continuous deformations, or deformation flows \cite{rabi2018shape}, which we refer to as curved folding flows. We denote these flows by a continuous map $S(t), 0 \leq t \leq 1$, where each $S(t)$ is a curved folded surface and the flow is $C^2$ when limited to each patch. We often look at the case where the starting point $S(0)$ planar. In this paper we focus on modeling isometric curved flows, which we also refer to as \emph{folding}. These flows can can be used to model physical paper or metal folding, though most of our observations and tools can also be used to model curved folding flows that are not isometries. The latter, just as modeling general intrinsic developable deformations \cite{rabi18,rabi2018shape} can be useful for design tasks where the a-priori flattened shape is unknown.
