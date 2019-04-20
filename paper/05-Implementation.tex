@@ -40,7 +40,7 @@ We refer to the approximated constraints as $\phi^*_i(\x)$.
 Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
-& \argmin_x f(x) + \alpha \sum \|\phi^*_i(\x)\|_2^2 \\
+& \argmin_x f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
 & \textrm{subject to} \\
 & \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
@@ -50,7 +50,7 @@ Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that double
 \subsection{Equality constrainted SQP}
 For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
 \begin{equation}
-f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_i(\x)\|_2^2
+f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*{f_i}(\x)\|_2^2
 \end{equation}
 We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linsearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 
@@ -77,7 +77,7 @@ Given our current variables $x^k$, we find a direction for our linesearch by sol
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_i(x)} & {J^{*\tr}(x)}\\
+{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_{f_i(x)} & {J^{*\tr}(x)}\\
 {J^*(x)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
