@@ -18,7 +18,7 @@ The problems we solve in this paper can be written in the form:
 With $f$ as an objective, composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 
 \subsection{Folding constraints}
-Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative SQP solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
+Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
 \begin{enumerate}
 	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
 	\item Use linesearch method that does not except meshes deviating from the constraints $\phi_{d_i}(\x)$.
@@ -38,7 +38,7 @@ using a fix parameter $h=1000$.
 We refer to the approximated constraints as $\phi^*_i(\x)$.
 
 Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
-\begin{equation} \label{eq:const_opt}
+\begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
 & \argmin_x f(x) + \alpha \sum \|\phi^*_i(\x)\|_2^2 \\
 & \textrm{subject to} \\
@@ -46,20 +46,50 @@ Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following
 \end{aligned}
 \end{equation}
 Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
+
 \subsection{Equality constrainted SQP}
-\MiR{Write down the thing, but make sure to convexify stuff. Use the Jacobian and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian, and also convexification is better, and get rid of the lbfgs in porjection. Especially better for higher resolution models.}
+For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
+\begin{equation}
+f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_i(\x)\|_2^2
+\end{equation}
+We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linsearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
+
+\begin{equation} \label{eq:KKT_eps}
+\begin{gathered}
+{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
+{K}=\begin{pmatrix}
+{\Delta^2_{xx}\mathcal{L}(x^k,\lambda^k)} & {J^\tr}(x)\\
+{J(x)} &  0 \\
+\end{pmatrix}, \ \ 
+\mathbf{b}=\begin{pmatrix}
+{\nabla f(x^k)} \\ 
+-\phi_{d_i}(x^k)\\
+\end{pmatrix}.
+\end{gathered}
+\end{equation}
+
+Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\alpha}(\x)$ is the Hessian of $f_\alpha(\x)$.
+
+\MiR{ convexify stuff.  Jacobian change to make the system solveable and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian in rabi18shape, and also convexification is better, and get rid of the lbfgs in projection. Especially better for higher resolution models. Talk about the merit function, and discuss the convexcifications in the next section or appendix. Then write the new form with the stars and stuff. Then talk about the merit function.}
+ 
+Given our current variables $x^k$, we find a direction for our linesearch by solving a system of the form:
+\begin{equation} \label{eq:KKT_eps}
+\begin{gathered}
+{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
+{K}=\begin{pmatrix}
+{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_i(x)} & {J^{*\tr}(x)}\\
+{J^*(x)} &  0 \\
+\end{pmatrix}, \ \ 
+\mathbf{b}=\begin{pmatrix}
+{\nabla f(x^k)} \\ 
+-\phi^*_i(x^k)\\
+\end{pmatrix}.
+\end{gathered}
+\end{equation}
 
 \MiR{
 TODO: Explain here about what we do, flows similar to \cite{rabi2018shape}, just use lagrangian where the hessian is first convexified such that (called $H^*$) instead of the DOG Laplacian , which is basically SQP. Use the same strategy to minimally petrubate $J$ to $J^*$ as done in \cite{rabi2018shape}. Quickly go through the details such as merit functions (no need in the "projection" operator with lbfgs), and refer to the appendix for more technical things such as convexification of simple energies. 
 At the end we write down our minimization as
-\begin{equation} \label{eq:const_opt}
-\begin{aligned}
-& \argmin_x
-& & f(x) \\
-& \textrm{subject to}
-& & g_i(x) = 0, \ \  i = 1, \ldots, m.
-\end{aligned}
-\end{equation}
 }
 By subsequently solving KKT systems of the form for a given mesh $x^k$, finding the step direction $d^{k+1}$:
 \begin{equation} \label{eq:KKT_eps}
