@@ -87,7 +87,6 @@ bool DogSolver::is_folded() {
   auto eS = dog.getEdgeStitching();
   for (int fold_curve_idx = 0; fold_curve_idx < eS.stitched_curves.size(); fold_curve_idx++) {
     const vector<EdgePoint>& foldingCurve = eS.stitched_curves[fold_curve_idx];
-
     for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
       auto ep_b = foldingCurve[e_idx-1]; auto ep_f = foldingCurve[e_idx+1];
       auto edge_pt = foldingCurve[e_idx]; double edge_t = edge_pt.t;
@@ -102,9 +101,17 @@ bool DogSolver::is_folded() {
       //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
       double sign1 = B.dot(e1), sign2 = B.dot(e2); double flat_tolerance = 1e-12; // ignore flat points..
       //if ( (sign1*sign2 > 0) && (((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() > flat_tolerance) ) {
+      if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) > 0.9) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())>0.9) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
+      //if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) < 0.1) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())<0.1) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
       if ( sign1*sign2 > 0) {
         is_folded = false;
         //cout << "Change!" << endl;
+        cout << "(ep_p-ep_b_p).norm() = " << (ep_p-ep_b_p).norm()  << std::endl;
+        cout << "(ep_f_p-ep_p).norm() = " << (ep_f_p-ep_p).norm()  << std::endl;
+        cout << "(ep_p-ep_b_p).normalized().dot(e1.normalized()) " << (ep_p-ep_b_p).normalized().dot(e1.normalized()) << std::endl;
+        cout << "(ep_f_p-ep_p).normalized().dot(e1.normalized()) " << (ep_f_p-ep_p).normalized().dot(e1.normalized()) << std::endl;
+        cout << "(ep_p-ep_b_p).normalized().dot(e2.normalized()) " << (ep_p-ep_b_p).normalized().dot(e2.normalized()) << std::endl;
+        cout << "(ep_f_p-ep_p).normalized().dot(e2.normalized()) " << (ep_f_p-ep_p).normalized().dot(e2.normalized()) << std::endl;
         std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
         cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;

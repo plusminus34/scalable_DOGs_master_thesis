@@ -70,6 +70,7 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 			double edges_dot = (e1).dot(e2); double l_normalization = e1.norm()*e2.norm();
 			double angle = acos(edges_dot/l_normalization);
 			double k = sin(angle)/(pt_f-pt_b).norm();
+			//std::cout << "i = " << edge_idx << " with angle = " << angle << ", curvature " << k << " l1 = " << e1.norm() << " l2 = " << e2.norm() << std::endl;
 
 			curve_a.push_back(angle);
 			curve_k.push_back(k);
