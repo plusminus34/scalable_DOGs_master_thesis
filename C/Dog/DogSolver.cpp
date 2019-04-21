@@ -101,11 +101,13 @@ bool DogSolver::is_folded() {
       //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
       double sign1 = B.dot(e1), sign2 = B.dot(e2); double flat_tolerance = 1e-12; // ignore flat points..
       //if ( (sign1*sign2 > 0) && (((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() > flat_tolerance) ) {
-      if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) > 0.9) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())>0.9) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
+      if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) > 0.95) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())>0.95) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
+      if ( (edge_t < 0.05 ) || ( edge_t > 0.95) ) continue;
       //if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) < 0.1) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())<0.1) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
       if ( sign1*sign2 > 0) {
         is_folded = false;
         //cout << "Change!" << endl;
+        cout << "edge_t = " << edge_t << std::endl;
         cout << "(ep_p-ep_b_p).norm() = " << (ep_p-ep_b_p).norm()  << std::endl;
         cout << "(ep_f_p-ep_p).norm() = " << (ep_f_p-ep_p).norm()  << std::endl;
         cout << "(ep_p-ep_b_p).normalized().dot(e1.normalized()) " << (ep_p-ep_b_p).normalized().dot(e1.normalized()) << std::endl;
