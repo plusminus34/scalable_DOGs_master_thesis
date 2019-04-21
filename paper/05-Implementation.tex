@@ -2,9 +2,9 @@
 We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while keeping the DOG constraints and ensuring the formation of folds along all crease curves.
 
 \subsection{Problem setup}
-We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the crease as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
+We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the creases as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
-We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all crease points, which are points on crease curves that are not crease vertices. \MiR{We should remove the constraints for two kind of points, one those with zero curvature, as they always stay curvature (points at inflection point example, also add a figure) and a second where the grid tangents are too close to the curve tangent, then its basically degenerate, which is proabbly the problem with the circle thing..)}. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the inner crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
+We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const} on all crease points, which are points on crease curves that are not crease vertices. \MiR{We should remove the constraints for some kind of points:1) those with zero curvature, oscullating plane is not even defined (add an at inflection point figure) 2) When the grid tangents are too close to the curve tangent, then its basically degenerate for instance that always happens in a circlular/close crease 3) When the edge is split between a part that is very short and one that is very long (edge case is that the edge point is exactly on a vertex, as there is no way to fold along a single point)}. Let $\phi_{f_i}(\x) = 0, 1 \leq i \leq k$ be the folding constraint \eqref{eq:folding_const} for the crease points, together with a few optional M/V assignment constraints \eqref{eq:mountain_valley}.
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
@@ -50,7 +50,7 @@ Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that double
 \subsection{Equality constrainted SQP}
 For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
 \begin{equation}
-f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*{f_i}(\x)\|_2^2
+f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2
 \end{equation}
 We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linsearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 
@@ -77,7 +77,7 @@ Given our current variables $x^k$, we find a direction for our linesearch by sol
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_{f_i(x)} & {J^{*\tr}(x)}\\
+{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_{f_i}(\x)} & {J^{*\tr}(x)}\\
 {J^*(x)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
