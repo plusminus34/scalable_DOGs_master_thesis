@@ -70,44 +70,31 @@ We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic
 
 Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\alpha}(\x)$ is the Hessian of $f_\alpha(\x)$.
 
-\MiR{ convexify stuff.  Jacobian change to make the system solveable and stuff from that paper, but note that its much better with hessian and lagrangian rather than laplacian in rabi18shape, and also convexification is better, and get rid of the lbfgs in projection. Especially better for higher resolution models. Talk about the merit function, and discuss the convexcifications in the next section or appendix. Then write the new form with the stars and stuff. Then talk about the merit function.}
- 
-Given our current variables $x^k$, we find a direction for our linesearch by solving a system of the form:
-\begin{equation} \label{eq:KKT_eps}
+Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\alpha}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
+
+\begin{equation} \label{eq:KKT_us}
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{H^*(x)+\sum\lambda_i^{k} \nabla \phi^*_{f_i}(\x)} & {J^{*\tr}(x)}\\
+{ H^*_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x)} & {J^{*^\tr}(x)}\\
 {J^*(x)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
 {\nabla f(x^k)} \\ 
--\phi^*_i(x^k)\\
+-\phi_{d_i}(x^k)\\
 \end{pmatrix}.
 \end{gathered}
 \end{equation}
 
-\MiR{
-TODO: Explain here about what we do, flows similar to \cite{rabi2018shape}, just use lagrangian where the hessian is first convexified such that (called $H^*$) instead of the DOG Laplacian , which is basically SQP. Use the same strategy to minimally petrubate $J$ to $J^*$ as done in \cite{rabi2018shape}. Quickly go through the details such as merit functions (no need in the "projection" operator with lbfgs), and refer to the appendix for more technical things such as convexification of simple energies. 
-At the end we write down our minimization as
-}
-By subsequently solving KKT systems of the form for a given mesh $x^k$, finding the step direction $d^{k+1}$:
-\begin{equation} \label{eq:KKT_eps}
-\begin{gathered}
-{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
-{K}=\begin{pmatrix}
-{H^*(x)+\sum\lambda_i^{k} \nabla g_i(x)} & {J^{*\tr}(x)}\\
-{J^*(x)} &  0 \\
-\end{pmatrix}, \ \ 
-\mathbf{b}=\begin{pmatrix}
-{\nabla f(x^k)} \\ 
-\boldsymbol{-g(x^k)}\\
-\end{pmatrix}.
-\end{gathered}
+We note that at \cite{rabi2018shape} the authors discretized Laplacian metric flows by solving a similar system with a Laplacian instead of the objectives' Lagrangian, however we found that replacing the Laplacian by the Lagrangian followed by convexifying the Hessian performs significantly better, especially on larger models. As common in SQP algorithms, our linesearch used a merit function defined as a combination of the objective and the constraints, thus the linesearch chooses step sizes that both reduce the objective and keep the constraints numerically feasible. This removed the need of the slower LBFGS constraints projection used by \cite{rabi18,rabi2018shape}. We used the L2 merit function \cite{nocedal}:
+\begin{equation}
+\psi(\x;\mu) = f_\alpha(\x)+\mu\sum\|\phi_{d_i}(x)\|_2
 \end{equation}
-\MiR{
-and use a linesearch with a merit function. Say that hard constraints are only dog + edge stitching as in \cite{rabi18} whereas other constraints throughout the paper are enforced by penalizing them, using a convex hessian approximation of gauss-newton (besides the length which are easy to convexify).
-}
+where we update the parameter $\mu^k$ at each iteration by:
+\begin{equation}
+\max(c_\mu \max(\abs{\lambda_i^k}, \mu_0)	
+\end{equation}
+with $c\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
 \MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}

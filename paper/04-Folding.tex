@@ -29,7 +29,7 @@ The previous analysis explains the local behaviour of curved folding around a si
 Generally speaking, one might be able to choose between 4 configurations of the surface at the first crease, but this choice already fixes a patch for nearby creases. The combinatorial degrees of freedom that then remain are whether each crease is folded or not (see \figref{fig:folded_and_not_folded} ). The difficulty in modeling folding of a planar surface stems from the fact that these combinatorial choices often needs to be enforced at the beginning of the folding process, as explained by the following theorem:% combinatorial degree of freedom is often only available at the start of a deformation of a flat surface, as detailed in the following lemma:
 
 \begin{theorem}\label{Thm:curved_folding_open_condition}
-Let $S(t)$ be a curved folding flow and let $p(t_k)$ be some crease point on a crease of $S(t)$ lying on two patches $P_1,P_2$ in a given time in the flow $t=t_k$. Assuming $p(t_k)$ is not a planar point on $P_1$ (or equivalently on $P_2$), then there exists an $\epsilon > 0$ such that one of the following holds:
+Let $S(t)$ be a curved folding flow and let $p(t_k)$ be some crease point on a curved crease of $S(t)$ lying on two patches $P_1,P_2$ in a given time in the flow $t=t_k$. Assuming $p(t_k)$ is not a planar point on $P_1$ (or equivalently on $P_2$), then there exists an $\epsilon > 0$ such that one of the following holds:
 \begin{enumerate}
 	\item $S(t)$ is folded along $p(t)$ for every $t$ with $t_k-\epsilon < t < t_k+\epsilon$
 	\item $S(t)$ is \emph{not} folded along $p(t)$ for every $t$ with  $t_k-\epsilon < t < t_k+\epsilon$
@@ -42,7 +42,7 @@ Let $k(p(t))$ be the crease curvature at the point, and let $k_g(p(t)) = k(p(t))
 Therefore it is impossible to fold a crease point that is non-planar. On a non-planar point that is not folded any small deformation keep it that way. Folding can only happen after flattening the point, and if a surface is already folded any small deformation keep it that way. Thus, the decision to fold or not to fold can only be done when the crease points are planar, while no extra care should be taken if the crease is already folded. With this in mind, we note the following observation:
 
 \begin{theorem}\label{Thm:supporting_plane}
-A non-planar crease point on a curved folded surface $S$ is folded if and only if the osculating plane of the crease  at that point is locally a supporting plane for the surfaces $P_1,P_2$ intersecting at the point (see \figref{fig:plane_side}).
+A non-planar curved crease point on a curved folded surface $S$ is folded if and only if the osculating plane of the crease at that point is locally a supporting plane for the surfaces $P_1,P_2$ intersecting at the point (see \figref{fig:plane_side}).
 \end{theorem}
 
 \begin{figure} [h]
