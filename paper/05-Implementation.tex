@@ -96,11 +96,11 @@ We note that at \cite{rabi2018shape} the authors discretized Laplacian metric fl
 \begin{equation}
 \psi(\x;\mu) = f_\alpha(\x)+\mu\sum\|\phi_{d_i}(x)\|_2
 \end{equation}
-where we update the parameter $\mu^k$ at each iteration by:
+where we update the parameter $\mu^k$ at each iteration using the absolute values of the Lagrange multiplier by:
 \begin{equation}
 \max(c_\mu \max(\abs{\lambda_i^k}, \mu_0)	
 \end{equation}
-with $c\mu = 1.1$ and $\mu_0 = 0.05$.
+with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
 \MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
