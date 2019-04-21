@@ -9,9 +9,9 @@
 class CurveInterpolationConstraintsBuilder {
 public:
 	CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const DogEdgeStitching& eS, int curve_idx,
-			const double& timestep, double k_translation, double k_addition, double t_addition);
-	CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const std::vector<int>& v_indices,
-			const double& timestep);
+			const double& timestep, double k_translation, double k_addition, double t_addition, int max_curve_points);
+	//CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const std::vector<int>& v_indices,
+	//		const double& timestep);
 	~CurveInterpolationConstraintsBuilder();
 	void get_curve_constraints(SurfaceCurve& surfaceCurve_out, Eigen::MatrixXd& bc);
 private:
@@ -25,5 +25,5 @@ private:
 	Eigen::RowVector3d T; Eigen::Matrix3d F;
 	// between 0 and 1
 	const double& timestep;
-
+	int max_curve_points;
 };

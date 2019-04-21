@@ -48,6 +48,7 @@ public:
 
 	int deformed_curve_idx = 0;
 	double curve_k_translation = 0; double curve_k_mult = 2; double curve_t_addition = 0;
+	int max_curve_points = 1000; // maximum constrained curve points
 	bool z_only_editing = false;
 
 	bool has_new_constraints = false;
