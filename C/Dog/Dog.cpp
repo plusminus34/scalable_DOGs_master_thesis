@@ -33,7 +33,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting boundary curves" << endl;
-	//setup_boundary_curves_indices();
+	setup_boundary_curves_indices();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -230,7 +230,7 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 }
 
 bool Dog::is_rectangular() {
-	return true; // Todo: implement
+	return (edgeStitching.submesh_to_edge_pt.size() == 0);
 }
 
 void Dog::setup_boundary_curves_indices() {

@@ -21,7 +21,10 @@ void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x
 		target.row(i) << x(target_points[i]), x(target_points[i]+vnum), x(target_points[i]+2*vnum);
 	}
 	// call procrustes with includeScaling = false, includeReflections = false
-	double scale_dummy; igl::procrustes(src, target, false, false, scale_dummy,R,T);
+	//double scale_dummy; igl::procrustes(src, target, false, false, scale_dummy,R,T);
+	// Only rotation and translation
+	R.setIdentity();
+	T = target.colwise().mean()-src.colwise().mean();
 	//std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
 	//int wait; std::cin >> wait; exit(1);
 }
@@ -122,24 +125,24 @@ void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i, (r11*r11)*2.0+(r12*r12)*2.0+(r13*r13)*2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i+vnum, t5);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_1_i+2*vnum, t9);
-		/*
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i, r11*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i+vnum, r12*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i,p_2_i+2*vnum, r13*-2.0);
-		*/
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i, t5);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i+vnum, (r21*r21)*2.0+(r22*r22)*2.0+(r23*r23)*2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_1_i+2*vnum, t13);
-		/*
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i, r21*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i+vnum, r22*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+vnum,p_2_i+2*vnum, r23*-2.0);
-		*/
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i, t9);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i+vnum, t13);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_1_i+2*vnum, (r31*r31)*2.0+(r32*r32)*2.0+(r33*r33)*2.0);
 
-		/*
+		
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i, r31*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i+vnum, r32*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_1_i+2*vnum,p_2_i+2*vnum, r33*-2.0);
@@ -157,6 +160,5 @@ void PointsRigidAlignmentObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_1_i+vnum, r23*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_1_i+2*vnum, r33*-2.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_2_i+2*vnum,p_2_i+2*vnum, 2.0);
-		*/
 	}
 }

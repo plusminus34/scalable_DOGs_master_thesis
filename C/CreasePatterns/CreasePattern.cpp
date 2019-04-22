@@ -38,8 +38,13 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
   	std::vector<Point_2> crease_vertices = polylines_intersections;
 
-  	// add additional interesction points at the start and end of every curve, after snapping
-  	PatternBoundary origPatternBoundary(initial_bnd_polylines);
+  	// add additional interesction points at the start and end of every curve, after snapping to both boundary and closed loops
+  	std::vector<Polyline_2> polylines_to_snap = initial_bnd_polylines;
+  	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
+  		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
+  		if (closed_polyline) polylines_to_snap.push_back(*poly);
+  	}
+  	PatternBoundary origPatternBoundary(polylines_to_snap);
   	std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines;
   	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
   		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
