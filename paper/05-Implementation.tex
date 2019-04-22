@@ -72,8 +72,8 @@ We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{\Delta^2_{xx}\mathcal{L}(x^k,\lambda^k)} & {J^\tr}(x)\\
-{J(x)} &  0 \\
+{\Delta^2_{xx}\mathcal{L}(x^k,\lambda^k)} & {J^\tr}(\x^k)\\
+{J(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
 {\nabla f(x^k)} \\ 
@@ -90,8 +90,8 @@ Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{ H^*_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x)} & {J^{*^\tr}(x)}\\
-{J^*(x)} &  0 \\
+{ H^*_{f_\alpha}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
+{J^*(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
 {\nabla f(x^k)} \\ 
@@ -104,11 +104,11 @@ We note that at \cite{rabi2018shape} the authors discretized Laplacian metric fl
 \begin{equation}
 \psi(\x;\mu) = f_\alpha(\x)+\mu\sum\|\phi_{d_i}(x)\|_2
 \end{equation}
-where we update the parameter $\mu^k$ at each iteration using the absolute values of the Lagrange multiplier by:
+where we update the parameter $\mu^k$ at each iteration using the absolute values of the Lagrange multipliers \cite{nocedal}:
 \begin{equation}
-\max(c_\mu \max(\abs{\lambda_i^k}, \mu_0)	
+\max(c_\mu \max(\{\abs{\lambda_i^k}\}), \mu_0)	
 \end{equation}
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-\MiR{Gauss-newton hessian for constraint stuff. Convexification for others if needed (maybe write it down in appendix).}
+\MiR{Mean curvature is quadratic under isometry (or even under same ratio, similar to Wardetzky's observance but true for the shape2018 paper as well), then iso energy (convex hessian). Then positional constraints by linear constraints (which are sometimes build as a curve constrained flow by slowly interpolating it). Then dihedral angle and fold bias are all written down as constraints and used as a quadratic objective with a Gauss-newton hessian. They also all start with zero deviation.}
