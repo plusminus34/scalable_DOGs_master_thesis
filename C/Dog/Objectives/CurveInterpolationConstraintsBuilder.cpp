@@ -13,18 +13,17 @@ CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const
 	 }
 }
 
-/*
 CurveInterpolationConstraintsBuilder::CurveInterpolationConstraintsBuilder(const Eigen::MatrixXd& V, const std::vector<int>& v_indices,
-			const double& timestep) : timestep(timestep) {
+			const double& timestep, double k_addition, double k_mult, double t_addition) : timestep(timestep) {
 	surfaceCurve.edgePoints.resize(v_indices.size());
 	int vi_cnt = 0;
 	for (auto& edgePt: surfaceCurve.edgePoints) {
 		edgePt.edge.v1 = edgePt.edge.v2 = v_indices[vi_cnt++];
 		edgePt.t = 1;
 	}
-	init_from_surface_curve(V,0,2,0);
+	init_from_surface_curve(V, k_addition, k_mult, t_addition);
 }
-*/
+
 void CurveInterpolationConstraintsBuilder::init_from_surface_curve(const Eigen::MatrixXd& V, 
 		double k_addition, double k_mult, double t_addition) {
 	auto initCoords = surfaceCurve.get_curve_coords(V);
