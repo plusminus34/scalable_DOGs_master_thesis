@@ -4,13 +4,21 @@ We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:
 \subsection{Problem setup}
 We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the creases as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
-We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const}. We enforce these constraints on all crease points, which are points on crease curves that are not crease vertices, besides crease points that have the following degeneracy on the flattened mesh:
+We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const}. We enforce these constraints on all crease points, which are points on crease curves that are not crease vertices, besides crease points that have the following degeneracy on the flattened mesh (see \figref{fig:fold_const_degeneracies}):
 \begin{enumerate}
 	\item Degenerate osculating plane  - Crease points with a curvature smaller than a threshold $k_\eps$. \label{item:deg_osc}
 	\item Degenerate edge - Crease points along an edge, splitting it to two parts where one is shorter than $\eps_{r}$\% of the other. \label{item:deg_edge}
 	\item Degenerate angle with the intersecting DOG tangent - Crease points where the tangent directions $t_1,t_2$ form an angle with one of the edges $e_f,e_b$ that is smaller than $\eps_\alpha$. \label{item:deg_tan_angle}
 \end{enumerate}
 Throughout the paper we use the constants $k_\epsilon=1e-5, \eps_r=5\%, \eps_\alpha=3^{\circ}$.
+
+\begin{figure} [h]
+	\centering
+	\includegraphics[width=\linewidth]{figures/fold_const_degeneracies}
+	\caption{A folding edge constraint defined on a blue crease point splitting the blue edge and degenerate cases where we do not enforce the constraint. From left to right: A regular folding edge constraint, degenerate osculating plane as $e_b,e_f$ are almost collinear, degenerate edges as one part of the edge split by the blue crease point is comparably very short, and lastly a degenerate angle between $e_b$ and the DOG edge crossing the blue point. An angle degeneracy often occurs before or after an edge degeneracy.}
+	\label{fig:fold_const_degeneracies}
+\end{figure}
+We are intere
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
