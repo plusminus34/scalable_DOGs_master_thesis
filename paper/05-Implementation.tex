@@ -15,10 +15,9 @@ Throughout the paper we use the constants $k_\epsilon=1e-5, \eps_r=5\%, \eps_\al
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/fold_const_degeneracies}
-	\caption{A folding edge constraint defined on a blue crease point splitting the blue edge and degenerate cases where we do not enforce the constraint. From left to right: A regular folding edge constraint, degenerate osculating plane as $e_b,e_f$ are almost collinear, degenerate edges as one part of the edge split by the blue crease point is comparably very short, and lastly a degenerate angle between $e_b$ and the DOG edge crossing the blue point. An angle degeneracy often occurs before or after an edge degeneracy.}
+	\caption{A folding edge constraint defined on a blue crease point splitting the blue edge and degenerate cases where we do not enforce the constraint. From left to right: A regular folding edge constraint, instabilities in the osculating plane's normal as $\frac{e_b \times e_f}{\|e_b \times e_f\|}$ caused by $e_b,e_f$ being almost collinear, degenerate edges as one part of the edge split by the blue crease point is comparably very short, and lastly a very small angle between $e_b$ and the DOG edge crossing the blue point. An angle degeneracy often occurs before or after an edge degeneracy.}
 	\label{fig:fold_const_degeneracies}
 \end{figure}
-We are intere
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
@@ -111,4 +110,4 @@ where we update the parameter $\mu^k$ at each iteration using the absolute value
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-\MiR{Mean curvature is quadratic under isometry (or even under same ratio, similar to Wardetzky's observance but true for the shape2018 paper as well), then iso energy (convex hessian). Then positional constraints by linear constraints (which are sometimes build as a curve constrained flow by slowly interpolating it). Then dihedral angle and fold bias are all written down as constraints and used as a quadratic objective with a Gauss-newton hessian. They also all start with zero deviation.}
+\MiR{Mean curvature is quadratic under isometry (or even under same ratio, similar to Wardetzky's observance but true for the shape2018 paper as well), then iso energy (convex hessian). Then positional edge/point constraints by linear constraints (which are sometimes build as a curve constrained flow by slowly interpolating it). Then dihedral angle and fold bias are all written down as constraints and used as a quadratic objective with a Gauss-newton hessian. They also all start with zero deviation.}

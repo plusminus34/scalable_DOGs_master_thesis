@@ -48,25 +48,14 @@ Let $k(p(t))$ be the crease curvature at the point, and let $k_g(p(t)) = k(p(t))
 Therefore it is impossible to fold a crease point that is non-planar. On a non-planar point that is not folded any small deformation keep it that way. Folding can only happen after flattening the point, and if a surface is already folded any small deformation keep it that way. Thus, the decision to fold or not to fold can only be done when the crease points are planar, while no extra care should be taken if the crease is already folded. With this in mind, we note the following observation:
 
 \begin{theorem}\label{Thm:supporting_plane}
-A non-planar curved crease point on a curved folded surface $S$ is folded if and only if the osculating plane of the crease at that point is locally a supporting plane for the surfaces $P_1,P_2$ intersecting at the point (see \figref{fig:plane_side}).
+A non-planar curved crease point on a curved folded surface $S$ is folded if and only if the osculating plane of the crease at that point is locally a supporting plane for the surfaces $P_1,P_2$ intersecting at the point (see inset).
 \end{theorem}
-
-\begin{figure} [h]
-	\centering
-	\includegraphics[width=0.5\linewidth]{figures/plane_side}
-	\caption{\MiR{TODO: caption and better figure}}
-	\label{fig:plane_side}
-\end{figure}
-
-This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. Lastly, around planar regions the tangent planes are exactly the same as the osculating planes such that it is also locally a supporting plane for the surface.
-% Motivated by homotopy stuff, we look for a function F(t). Once a crease is active, there's no need to take care of it.
-
-% The pictures which will show are then discrete, though the smooth picture is the same. Maybe put the discrete picture in the setup as well.
-% A fold is active if nearby tangents are reflections of one another, and is not active if they are the same as there is no discontinuity. (have a figure that is discrete, but explain it is also the same drawing for the smooth case).
-% Write down the formula. Write down a flow. State it is inequality hence folding should be done at time = 0 when it is flat, but nevertheless a binary decision. We characterize it by the sign. 
-% One can then view a folding-bending process as a smooth flow, i.e. a smooth deformation on a piecewise C^2 developable surface. The choice to make each fold active is only done during time t = 0, whereas otherwise discontinuties arise, and locally remains a curved fold as the equality.
-% Problem in using it for a DOG is that we cannot hope to get it exactly. Then present binary representation. Say how it's really good (also goes to zero very fast).
-% The binary characterization in the smooth case, motivate more degrees of freedom, and add the algorithm. Then add control for dihedral angles and mountain valley fold.
+\setlength{\columnsep}{8pt}%
+\begin{wrapfigure}{r}{0.3\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{figures/plane_side}
+\end{wrapfigure}
+This follows directly from the fact that the tangent planes along a crease are the same if it is smooth along it, but along a folded crease they are reflections of one another through the curve's osculating plane. Planar crease points along a curve crease, while not folded, still satisfy this constraint as around these points the tangent planes are exactly the same as the osculating plane of the curve, though even the slightest surface deformation might change that. 
 
 \subsection{Discretization}
 We discretize the condition by constraining tangents formed by the orthogonal grid parameter lines to lie on one side of the curve's discrete osculating plane (see \figref{fig:osc_plane_discretization} for the notations of the edges). The edges intersecting the crease can be considered as discrete tangents originating at crease points. In the notation of \figref{fig:osc_plane_discretization}, each connected component has its own edge $e^1,e^2$ intersecting the crease. At a starting flat configuration they are the same, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{t_1}{\|t_1\|}, t_2 = \frac{t_2}{\|t_2\|}$. We denote the curves binormal, i.e. its osculating plane's normal as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ are the same along both connected components.
