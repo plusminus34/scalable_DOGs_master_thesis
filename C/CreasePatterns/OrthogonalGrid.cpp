@@ -3,6 +3,8 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 
+#include <iostream>
+
 //#include <map.h>
 using namespace std;
 
@@ -38,6 +40,7 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
   std::sort(added_coords.begin(), added_coords.end());
   int start_i = 1;
   for (auto added_pt : added_coords) {
+      std::cout << "added_pt = " << added_pt << std::endl;
       // find the index of the closest point (but don't replace the first or last point)
       double closest_dist = std::numeric_limits<double>::infinity(); int vertex_i = -1;
       for (int i = start_i; i < axis_vec.size()-1; i++) {
@@ -45,32 +48,33 @@ void OrthogonalGrid::add_vertices_to_axis_and_keep_as_regular_as_possible(std::v
         if (dist < closest_dist) {closest_dist = dist; vertex_i = i;}
         else break;
       }
-      //std::cout << "Closest point to " << CGAL::to_double(added_pt) << " is " << axis_vec[vertex_i] << " with index = " << vertex_i << std::endl;
+      std::cout << "Closest point to " << CGAL::to_double(added_pt) << " is " << axis_vec[vertex_i] << " with index = " << vertex_i << std::endl;
       // set this index as the vertex
       axis_vec[vertex_i] = added_pt;
       // now fix backwards all of the values
       Number_type min_pt = axis_vec[start_i-1];
       Number_type spacing = (added_pt-min_pt)/(vertex_i-start_i+1);
-      //std::cout << "Using spacing = " << spacing << std::endl;
-      //std::cout << "min_pt = " << min_pt << std::endl;
+      std::cout << "Using spacing = " << spacing << std::endl;
+      std::cout << "min_pt = " << min_pt << std::endl;
       int spacing_idx = 1;
       for (int i = start_i; i < vertex_i; i++) {
-        //std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+        std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
         axis_vec[i] = min_pt+spacing_idx*spacing;
         spacing_idx++;
       }
       // start the next search with another index
       start_i = vertex_i+1;
-      //std::cout << "next start_i = " << start_i << std::endl;
+      std::cout << "next start_i = " << start_i << std::endl;
   }
   
   // Make the rest regular
   Number_type min_pt = axis_vec[start_i-1]; int last_idx = axis_vec.size()-1; Number_type last_pt = axis_vec[last_idx];
   Number_type spacing = (last_pt-min_pt)/(last_idx-start_i+1);
-  //std::cout << "min_pt = " << min_pt << std::endl;
+  std::cout << "min_pt = " << min_pt << std::endl;
   int spacing_idx = 1;
   for (int i = start_i; i < last_idx; i++) {
-    //std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+    std::cout << "Setting index i =  " << i << " with " <<  CGAL::to_double(min_pt+spacing_idx*spacing) << " instead of " << axis_vec[i] << std::endl;
+    std::cout << "axis_vec.size() = " << axis_vec.size() << std::endl;
     axis_vec[i] = min_pt+spacing_idx*spacing;
     spacing_idx++;
   }
@@ -87,7 +91,7 @@ void OrthogonalGrid::initialize_grid() {
   add_segments(grid_segments);
 
   for (auto x : x_coords) std::cout << "x = " << x <<std::endl;
-  for (auto y : y_coords) std::cout << "y = " << y <<std::endl; //int wait; std::cin >> wait;
+  for (auto y : y_coords) std::cout << "y = " << y <<std::endl;
   //exit(1);
 
 }

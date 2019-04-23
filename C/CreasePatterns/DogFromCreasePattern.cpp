@@ -178,7 +178,7 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		
 		pt_const_i++;
 	}
-	std::cout << "am i here?" << std::endl;
+	
 	// set stitched_curves (once per edge, even if it is duplicated)
 	edgeStitching.stitched_curves.resize(polylines.size());
 	

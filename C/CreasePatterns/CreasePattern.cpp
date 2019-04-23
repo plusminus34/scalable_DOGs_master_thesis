@@ -32,7 +32,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
   	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl;
-  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;} //int wait; std::cin >> wait;
+  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;}
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
@@ -61,9 +61,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	}
   	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size(), dist_threshold_pow2);
   	auto preprocessed_polylines = snap_polylines_start_end_to_vertices(filtered_and_clipped_to_boundary_polylines, crease_vertices, dist_threshold_pow2);
+  	std::cout << "before" << std::endl;
 
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
+  	std::cout << "after before" << std::endl;
   	orthogonalGrid.initialize_grid();
+  	std::cout << "after" << std::endl;
   	
 	// Clip boundary polylines to grid
 	for (auto poly = initial_bnd_polylines.begin(); poly != initial_bnd_polylines.end(); poly++) {
@@ -328,7 +331,7 @@ std::vector<Point_2> CreasePattern::align_crease_vertices_x_y_with_boundary(Patt
 				snapped_crease_vertices[j] = Point_2(snapped_x,snapped_y);
 			} else {
 				for (auto intersection : vertical_horizontal_int) {
-					std::cout << "snapped_crease_vertices[j] = " << snapped_crease_vertices[j] << " intersection = " << intersection << " CGAL::squared_distance(pt, intersection) = " << CGAL::squared_distance(pt, intersection) << std::endl;
+					//std::cout << "snapped_crease_vertices[j] = " << snapped_crease_vertices[j] << " intersection = " << intersection << " CGAL::squared_distance(pt, intersection) = " << CGAL::squared_distance(pt, intersection) << std::endl;
 					if (CGAL::squared_distance(snapped_crease_vertices[j], intersection) < threshold) {
 						std::cout << "snapping " << snapped_crease_vertices[j] << " to " << intersection << std::endl;
 						snapped_crease_vertices[j] = intersection;
