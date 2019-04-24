@@ -22,7 +22,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 	//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 		// Should flip the binormal only if is_mountain xor flip_binormal is true
 		EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-		if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
+		//if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
 		int v1,v2,w1,w2;
 		dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
 
@@ -96,7 +96,7 @@ void FoldingMVBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 	//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
 		// Should flip the binormal only if is_mountain xor flip_binormal is true
 		EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
-		if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
+		//if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
 		
 		int v1,v2,w1,w2;
 		dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
