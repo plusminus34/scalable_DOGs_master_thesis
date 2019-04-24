@@ -26,6 +26,7 @@
 #include "Objectives/PointsRigidAlignmentObjective.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
+#include "../Folding/FoldingMVBiasConstraints.h"
 
 using std::vector;
 
@@ -39,6 +40,7 @@ public:
 		double soft_pos_weight = 10;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
+		double mv_bias_weight = 0;
 		double wallpaper_curve_weight = 1;
 		int penalty_repetitions = 1;
 		double merit_p = 10;
@@ -97,6 +99,7 @@ public:
 	  			EdgesAngleConstraints& edgeAngleConst,
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
 	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
 	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 	  			const DogSolver::Params& p);
@@ -111,6 +114,7 @@ public:
       	QuadraticConstraintsSumObjective mvTangentCreaseSoftConstraints;
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
+      	QuadraticConstraintsSumObjective foldingMVBiasObj;
       	//QuadraticConstraintsSumObjective allConstQuadraticObj;
       	CompositeObjective compObj;
 	};
@@ -119,6 +123,7 @@ private:
 	Dog& dog;
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
+	FoldingMVBiasConstraints foldingMVBiasConstraints;
 
 	// Optimization parameters
 	Eigen::VectorXd init_x0;

@@ -16,10 +16,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
 
           dog(dog),
           foldingBinormalBiasConstraints(dog),
+          foldingMVBiasConstraints(dog),
           init_x0(init_x0), p(p),
           constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
-          obj(dog, init_x0, constraints, foldingBinormalBiasConstraints, matching_curve_pts_y, matching_curve_pts_x, p),
+          obj(dog, init_x0, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, matching_curve_pts_y, matching_curve_pts_x, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
@@ -55,6 +56,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           EdgesAngleConstraints& edgeAnglesConst,
           PointPairConstraints& ptPairConst,*/
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
+          FoldingMVBiasConstraints& foldingMVBiasConstraints,
           std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
           std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
           const DogSolver::Params& p) : 
@@ -67,6 +69,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         mvTangentCreaseSoftConstraints(constraints.mvTangentCreaseAngleConst, init_x0),
         ptPairSoftConst(constraints.ptPairConst, init_x0),
         foldingBinormalBiasObj(foldingBinormalBiasConstraints, init_x0),
+        foldingMVBiasObj(foldingMVBiasConstraints, init_x0),
         //allConstQuadraticObj(constraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
         
