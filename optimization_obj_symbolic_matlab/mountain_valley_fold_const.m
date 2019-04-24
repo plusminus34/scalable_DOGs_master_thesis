@@ -74,7 +74,8 @@ tangent_tangent_plane_dot = dot(t1, cross(curve_t,t2));
 
 % We want <e1,B> = - <e2,B> or <e1,B>+<e2,B> = 0
 %curve_fold_const = simplify(tanh(alpha*dot(e1,B)) + tanh(alpha*dot(e2,B)));
-mv_const = 0.5 + 0.5*tanh(1000*tangent_tangent_plane_dot);
+%mv_const = 0.5 + 0.5*tanh(1000*tangent_tangent_plane_dot);
+mv_const = tanh(1000*log(0.5*(exp(tangent_tangent_plane_dot)+1)));
 
 vars = [ep_b_v1_x, ep_b_v1_y, ep_b_v1_z, ep_b_v2_x, ep_b_v2_y, ep_b_v2_z, ep_f_v1_x, ep_f_v1_y, ep_f_v1_z, ep_f_v2_x, ep_f_v2_y, ep_f_v2_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, w1_x, w1_y, w1_z, w2_x, w2_y, w2_z];
 
