@@ -83,6 +83,7 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	const Eigen::MatrixXd& getFlatV() const {return flatV;}
 	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
