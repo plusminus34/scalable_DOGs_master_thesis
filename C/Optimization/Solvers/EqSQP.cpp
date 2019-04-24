@@ -41,7 +41,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
         double ret = one_iter(x,f,constraints,x,current_merit_p);
         double const_dev = constraints.Vals(x).norm();
         iter++;
-        std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
+        //std::cout << "KKT error = " << error << ", const_dev = " << const_dev << " after " << iter  << " iters" << std::endl;
         error = kkt_error(x, f, constraints);
         //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2; iter--;/*do another iter*/} prev_x = x;
         //current_merit_p *=2;
@@ -225,7 +225,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //double what = 0.5*d.transpose()*A*d; double negative_thing = min(0.,what);
     //current_merit = max(0.1,min(1000.,(-g.dot(d)-negative_thing)/(0.1)*constraints_deviation.lpNorm<1>()));
 
-    cout << "current_merit = " << current_merit << endl;
+    //cout << "current_merit = " << current_merit << endl;
     //new_e = exact_l1_merit_linesearch(x,d,step_size,f,constraints,current_merit);
     //new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit,1);
     new_e = exact_l2_merit_linesearch(x,d,step_size,f,constraints,current_merit);
@@ -301,7 +301,7 @@ double EqSQP::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& e
     auto jacobian = eq_constraints.Jacobian(x);
     
     auto g = obj.grad(x);
-    std::cout << "g.norm() = " << g.norm() << std::endl;
+    //std::cout << "g.norm() = " << g.norm() << std::endl;
     double grad_error = (g-jacobian.transpose()*lambda).norm();
     double eq_const_error = eq_constraints.Vals(x).norm();
     

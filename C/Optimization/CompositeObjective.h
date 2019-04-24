@@ -42,13 +42,17 @@ public:
 
 	virtual double obj(const Eigen::VectorXd& x) const {
 		double obj = 0;
-		for (int i = 0; i < objectives.size(); i++) {obj+=weights[i]*objectives[i]->obj(x);}
+		for (int i = 0; i < objectives.size(); i++) {
+			if (weights[i]>0) obj+=weights[i]*objectives[i]->obj(x);
+		}
 		return obj;
 	}
 
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd grad(x.rows()); grad.setZero();
-		for (int i = 0; i < objectives.size(); i++) {grad+=weights[i]*objectives[i]->grad(x);}
+		for (int i = 0; i < objectives.size(); i++) {
+			if (weights[i]>0) grad+=weights[i]*objectives[i]->grad(x);
+		}
 		return grad;
 	};
 

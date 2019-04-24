@@ -16,7 +16,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
 
           dog(dog),
           foldingBinormalBiasConstraints(dog),
-          foldingMVBiasConstraints(dog),
+          foldingMVBiasConstraints(dog, p.flip_sign),
           init_x0(init_x0), p(p),
           constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),

@@ -49,6 +49,7 @@ public:
 		double infeasability_filter = 1e-1;
 		double convergence_threshold = 1e-6;
 		bool folding_mode = false;
+		bool flip_sign = false;
 	};
 
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p,

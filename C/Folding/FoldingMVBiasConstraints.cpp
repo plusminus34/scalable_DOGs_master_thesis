@@ -2,10 +2,11 @@
 
 using namespace std;
 
-FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, int curve_i): dog(dog), eS(dog.getEdgeStitching()), curve_i(curve_i) {
+FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, bool flip_sign, int curve_i): dog(dog), eS(dog.getEdgeStitching()), curve_i(curve_i) {
 	int inner_v_n = eS.stitched_curves[curve_i].size()-2;
 	const_n = inner_v_n;
 	IJV.resize(24*const_n);
+	if (flip_sign) flip_sign_mult = -1;
 }
 
 Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
@@ -41,7 +42,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
 		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
 
-		double l1 = dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = dog.stitched_curves_l[curve_i][edge_idx];
+		double l1 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx];
 
 		double t2 = ep_0_t-1.0;
 		double t3 = t2*v2_x;
@@ -81,7 +82,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
   }
-  //std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
+  std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
   return constVals;
 }
 
@@ -116,7 +117,7 @@ void FoldingMVBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
 		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
 
-		double l1 = dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = dog.stitched_curves_l[curve_i][edge_idx];
+		double l1 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx];
 
 		double t2 = 1.0/l1;
 		double t3 = w1_y-w2_y;
