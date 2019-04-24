@@ -3,13 +3,6 @@
 using namespace std;
 
 FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, int curve_i): dog(dog), eS(dog.getEdgeStitching()), curve_i(curve_i) {
-	const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
-	for (int edge_idx = 0; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
-		EdgePoint ep = foldingCurve[edge_idx];
-		EdgePoint ep_f = foldingCurve[edge_idx];
-		double len = (ep.getPositionInMesh(dog.getFlatV())-ep_f.getPositionInMesh(dog.getFlatV())).norm();
-		curve_l.push_back(len);
-	}
 	int inner_v_n = eS.stitched_curves[curve_i].size()-2;
 	const_n = inner_v_n;
 	IJV.resize(24*const_n);
@@ -48,7 +41,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
 		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
 
-		double l1 = curve_l[edge_idx-1]; double l2 = curve_l[edge_idx];
+		double l1 = dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = dog.stitched_curves_l[curve_i][edge_idx];
 
 		double t2 = ep_0_t-1.0;
 		double t3 = t2*v2_x;
@@ -82,6 +75,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 		double t31 = t15+t25-t26-ep_f_v2_z*t7;
 		double t32 = l2*t24-l1*t31;
 		constVals(const_cnt++) = tanh((v1_y-v2_y)*(t4*t5*t14*t32-t4*t5*t16*t30)*1.0E3+(v1_x-v2_x)*(t4*t5*t16*t28-t4*t5*t22*t32)*1.0E3-(v1_z-v2_z)*(t4*t5*t14*t28-t4*t5*t22*t30)*1.0E3)*(-1.0/2.0)+1.0/2.0;
+		//std::cout << "constVals(const_cnt--) = " << constVals(const_cnt-1) << std::endl;
 	}
   if (const_cnt != const_n) {
 		cout << "error in Vals, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
@@ -122,7 +116,7 @@ void FoldingMVBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 		const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
 		const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
 
-		double l1 = curve_l[edge_idx-1]; double l2 = curve_l[edge_idx];
+		double l1 = dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = dog.stitched_curves_l[curve_i][edge_idx];
 
 		double t2 = 1.0/l1;
 		double t3 = w1_y-w2_y;

@@ -16,5 +16,4 @@ private:
 	const Dog& dog;
 	const DogEdgeStitching& eS;
 	int curve_i;
-	std::vector<double> curve_l;
 };
