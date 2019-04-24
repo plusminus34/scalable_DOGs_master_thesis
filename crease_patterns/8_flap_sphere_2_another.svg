@@ -3,11 +3,10 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 279.7 162.2" style="enable-background:new 0 0 279.7 162.2;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;stroke:#F90D0D;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:500;stroke-dasharray:4,4;}
-	.st1{fill:none;stroke:#F90D0D;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:500;}
+	.st0{fill:none;stroke:#F90D0D;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:500;}
 </style>
-<line class="st0" x1="-2.5" y1="43.7" x2="279.6" y2="43.7"/>
-<polyline class="st1" points="279.2,90.5 264,96.7 254,100.9 244.1,105 234,108.9 223.9,112.5 213.7,116 203.4,119 192.9,121.7 
+<polyline class="st0" points="279.2,90.5 264,96.7 254,100.9 244.1,105 234,108.9 223.9,112.5 213.7,116 203.4,119 192.9,121.7 
 	182.4,124 171.8,125.9 161.1,127.3 150.3,128 139.6,128.3 128.8,128 118.1,127.3 107.4,125.9 96.7,124 86.2,121.7 75.8,119 
 	65.5,116 55.2,112.5 45.1,108.9 35.1,105 25.1,100.9 15.1,96.7 -0.1,90.5 "/>
+<line class="st0" x1="0" y1="36" x2="279.7" y2="36"/>
 </svg>
