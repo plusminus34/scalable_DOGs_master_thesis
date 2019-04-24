@@ -28,7 +28,7 @@ FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) :
 	std::cout << "const_n = " << const_n << " and eS.edge_coordinates.size()-2*eS.stitched_curves.size() = " << eS.edge_coordinates.size()-2*eS.stitched_curves.size()  << std::endl;
 	//exit(1);
 	IJV.resize(24*const_n);
-	lambda_hessian_IJV.resize(300*const_n);
+	//lambda_hessian_IJV.resize(300*const_n);
 }
 
 Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) const {
