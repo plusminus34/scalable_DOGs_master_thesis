@@ -1,0 +1,6 @@
+  t3 = 1.0/len_ex_b;
+  t4 = 1.0/len_ex_f;
+  t2 = t3*(p0_x-pxb_x)*2.0+t4*(p0_x-pxf_x)*2.0;
+  t5 = t3*(p0_y-pxb_y)*2.0+t4*(p0_y-pxf_y)*2.0;
+  t6 = t3*(p0_z-pxb_z)*2.0+t4*(p0_z-pxf_z)*2.0;
+  t0 = t2*t2+t5*t5+t6*t6;

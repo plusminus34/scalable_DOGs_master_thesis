@@ -70,7 +70,6 @@ ey_f = p_yf-p_0;
 ex_b = p_xb-p_0;
 ey_b = p_yb-p_0;
 
-
 len_ex_f = sym('len_ex_f');
 len_ex_b = sym('len_ex_b');
 len_ey_f = sym('len_ey_f');
@@ -80,6 +79,21 @@ assume(len_ex_f > 0)
 assume(len_ex_b > 0)
 assume(len_ey_f > 0)
 assume(len_ey_b > 0)
+
+% Kx*N integrated is linear if we know the lengths
+Kx = 2*(ex_f/len_ex_f+ex_b/len_ex_b);
+Ky = 2*(ey_f/len_ey_f+ey_b/len_ey_b);
+H = 0.5*(Kx+Ky);
+squared_integrated_H = dot(H,H);
+squared_integrated_bnd = dot(Kx,Kx);
+
+ccode(squared_integrated_H ,'file','Bending_squared_integrated_E');
+ccode(gradient(squared_integrated_H, [p_0,p_xb,p_xf,p_yb,p_yf]),'file','Bending_squared_integrated_G');
+ccode(hessian(squared_integrated_H, [p_0,p_xb,p_xf,p_yb,p_yf]),'file','Bending_squared_integrated_H');
+ccode(squared_integrated_bnd ,'file','Bending_squared_integrated_bnd_E');
+ccode(gradient(squared_integrated_bnd, [p_0,p_xb,p_xf,p_yb,p_yf]),'file','Bending_squared_integrated_bnd_G');
+ccode(hessian(squared_integrated_bnd, [p_0,p_xb,p_xf,p_yb,p_yf]),'file','Bending_squared_integrated_bnd_H');
+
 
 squared_cos1 = norm(len_ex_b*ex_f+len_ex_f*ex_b).^2;
 squared_cos2 = norm(len_ey_b*ey_f+len_ey_f*ey_b).^2;
