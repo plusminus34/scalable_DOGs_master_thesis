@@ -17,4 +17,5 @@ private:
 	const DogEdgeStitching& eS;
 	int curve_i;
 	double flip_sign_mult = 1;
+	double delta = 0.00001;
 };
