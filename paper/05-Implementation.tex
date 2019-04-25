@@ -65,7 +65,7 @@ For ease of notation, we use the following notation to refer to the objective of
 \begin{equation}
 f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2
 \end{equation}
-We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linsearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
+We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linesearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 
 \begin{equation} \label{eq:KKT_eps}
 \begin{gathered}
