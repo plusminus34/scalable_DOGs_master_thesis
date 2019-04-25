@@ -36,18 +36,18 @@ Motivated by the fact that in the smooth case one cannot move from a folded to a
 	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
 	\item Use linesearch method that does not except meshes deviating from the constraints $\phi_{d_i}(\x)$.
 \end{enumerate}
-As the functions involved in the constraints $\phi_{d_i}(\x)$ are not continuous, we replace them by the analytic approximations:
+As the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
 
 \begin{align} 
 \begin{split}\label{eq:const_inner}
-\tanh(hx) \approx \text{sgn}(x) \\
-\frac{1+\tanh(hx)}{2} \approx H(x)\\
+\text{sgn}(x) \approx \tanh(hx) \\
+H(x) \approx  \left\{\begin{array}{@{}l@{\thinspace}l}
+0  &: \text{if } x \leq 0, \\
+\frac{x^2}{x^2+\delta} &: \text{if } x = 0, \delta > 0 \\\\
+\end{array}\right.
 \end{split}
 \end{align}
-using a fix parameter $h=1000$.
-\begin{equation}
-\text{sgn}(x) \approx \tanh(kx)
-\end{equation}
+using the fixed parameters $h=1000,\delta = 1e-5$. We note that we do not use the common approximation for the Heaviside function $H(x) \approx \hat{H}(x) =  \frac{1+\tanh(hx)}{2}$ as $\hat H(0) = \frac{1}{2}$ instead of $0$. Since we use a homotopy based optimization it is important that our approximation for $H(x)$ will exactly vanish on a flat mesh.
 We refer to the approximated constraints as $\phi^*_i(\x)$.
 
 Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
