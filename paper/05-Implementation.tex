@@ -47,10 +47,9 @@ H(x) \approx  \left\{\begin{array}{@{}l@{\thinspace}l}
 \end{array}\right.
 \end{split}
 \end{align}
-using the fixed parameters $h=1000,\delta = 1e-5$. We note that we do not use the common approximation for the Heaviside function $H(x) \approx \hat{H}(x) =  \frac{1+\tanh(hx)}{2}$ as $\hat H(0) = \frac{1}{2}$ instead of $0$. Since we use a homotopy based optimization it is important that our approximation for $H(x)$ will exactly vanish on a flat mesh.
-We refer to the approximated constraints as $\phi^*_i(\x)$.
+using the fixed parameters $h=1000,\delta = 1e-5$. Our approximation for $H(x)$ is taken from by the works of \cite{l0_approximation,autocuts}.  Our use in a homotopy based optimization necessitates an approximation for $H(x)$ that vanishes on a flat mesh, and therefore we do not use the common approximation for the Heaviside function $H(x) \approx \hat{H}(x) =  \frac{1+\tanh(hx)}{2}$ as $\hat H(0) = \frac{1}{2}$.
 
-Thus, we replace the optimzation problem \eqref{eq:const_opt} with the following problem:
+We refer to the approximated constraints as $\phi^*_i(\x)$. and replace the optimization problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
 & \argmin_x f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
