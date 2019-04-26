@@ -108,7 +108,7 @@ In this section we build tools to control a deformations folding angles and thei
 \end{lemma}
 \begin{proof}{Let $\{t,n,b\}$ be the Frenet frame of the curved crease at the point. An angle $\alpha$ means that at the flat isometric configuration both tangents can be written as $cos(\alpha)t + sin(\alpha)n$. A folding angle of $\theta$ at a given point means that relative to the Frenet frame of the curve, tangents on one surface where rotated in angle $\frac{\theta}{2}$ around the crease's tangent $t$, while on the other surface they were rotated in an angle  $-\frac{\theta}{2}$. Thus w.l.o.g $t_1 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n+sin(\frac{\theta}{2})b)$ and $t_2 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n-sin(\frac{\theta}{2})b)$. The proof ends by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $cos(\theta) = cos^2(\frac{\theta}{2})-sin^2(\frac{\theta}{2})$.}\end{proof}
 
-Under an isometry eq.\eqref{eq:tangents_dihedral} is quadratic, as the edge length and angle $\alpha$ stays the same.
+At \secref{sec:implementation} we show that under an isometric deformation and for a fixed dihedral angle, eq. \eqref{eq:tangents_dihedral} can be formalized as a linear constraint.
 
 \begin{figure} [h]
 	\centering

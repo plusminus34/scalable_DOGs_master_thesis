@@ -109,4 +109,15 @@ where we update the parameter $\mu^k$ at each iteration using the absolute value
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-\MiR{Mean curvature is quadratic under isometry (or even under same ratio, similar to Wardetzky's observance but true for the shape2018 paper as well), then iso energy (convex hessian). Then positional edge/point constraints by linear constraints (which are sometimes build as a curve constrained flow by slowly interpolating it). Then dihedral angle and fold bias are all written down as constraints and used as a quadratic objective with a Gauss-newton hessian. They also all start with zero deviation.}
+Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it. Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry term:
+\begin{equation}
+f_\text{iso}(\x) = \sum_{e \text{ edge in } \x} (l_e^2 - {l_e^0}^2)^2.
+\end{equation}
+\MiR{Add the convex approximation of the Hessian.}
+We use a bending objective taken from \cite{rabi2018shape}, and exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
+\begin{equation}
+f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
+\end{equation}
+Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}.\\
+\MiR{add quadratic soft positional constraints}
+\MiR{write down the dihedral soft constraints after showing it can be formalized as a linear constraint and therefore as a convex quadratic objective use as a soft constraint. We just use the fact that the cos of half the angle is linear under isometric deformation. Also write down that we enforce it in an homotopy fashion by linear interpolating it from 0 to the required dihedral angle.}
