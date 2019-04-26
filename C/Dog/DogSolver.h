@@ -36,7 +36,7 @@ public:
 	
 	struct Params {
 		double bending_weight = 1.;
-		double isometry_weight = 0.1;
+		double isometry_weight = 1;
 		double soft_pos_weight = 10;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
