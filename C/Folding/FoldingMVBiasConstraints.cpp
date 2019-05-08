@@ -3,6 +3,7 @@
 using namespace std;
 
 FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, bool flip_sign, int curve_i): dog(dog), eS(dog.getEdgeStitching()), curve_i(curve_i) {
+	if (eS.stitched_curves.size() == 0) {const_n = 0; return;}
 	int inner_v_n = eS.stitched_curves[curve_i].size()-2;
 	const_n = inner_v_n;
 	IJV.resize(24*const_n);
@@ -12,6 +13,7 @@ FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, bool flip_sig
 Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 	// Edges should be exactly equal
 	Eigen::VectorXd constVals(const_n); constVals.setZero();
+	if (eS.stitched_curves.size() == 0) return constVals;
 	
 	// Add curve fold constraints
 	int vnum = x.rows()/3;
@@ -61,6 +63,7 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
 }
 
 void FoldingMVBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
+	if (eS.stitched_curves.size() == 0) return;
 	// Add curve fold constraints
 	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;

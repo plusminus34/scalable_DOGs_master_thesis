@@ -123,7 +123,7 @@ void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::Ma
 
 	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
     Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
-    Eigen::Vector3d specular; specular << 0,0,0;// specular << 0.1,0.1,0.1,1.;
+    Eigen::Vector3d specular; specular << 0,0,0;
     //viewer.data.set_colors(diffuse);
     viewer.data().uniform_colors(ambient,diffuse,specular);
 
@@ -211,7 +211,7 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   viewer.data().set_mesh(sphereV, sphereF);
   Eigen::Vector3d diffuse; diffuse << 0.98,0.98,0.98;
   Eigen::Vector3d ambient; ambient << 0,0,0;//0.05*diffuse;
-  Eigen::Vector3d specular; specular << 0,0,0;
+  Eigen::Vector3d specular; specular << 0.05*diffuse;
   viewer.data().uniform_colors(ambient,diffuse,specular);
   //viewer.core.shininess = 0;
   
