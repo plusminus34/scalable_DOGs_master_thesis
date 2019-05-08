@@ -109,7 +109,7 @@ where we update the parameter $\mu^k$ at each iteration using the absolute value
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it. Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry term:
+Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it. Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry term:
 \begin{equation}
 f_\text{iso}(\x) = \sum_{e \text{ edge in } \x} (l_e^2 - {l_e^0}^2)^2.
 \end{equation}

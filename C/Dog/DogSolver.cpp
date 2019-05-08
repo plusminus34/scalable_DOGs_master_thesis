@@ -25,7 +25,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
            {
-    
     is_constrained = (b.rows() + edgePoints.size())>0;
     if (time_measurements_log) {
       p.max_newton_iters = 1;
