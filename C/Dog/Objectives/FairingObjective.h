@@ -5,11 +5,12 @@
 
 class FairingObjective: public Objective {
 public:
-	FairingObjective(const QuadTopology& quadTop);
+	FairingObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0);
 	virtual FairingObjective* clone() const {return new FairingObjective(*this);}
 	
 	virtual double obj(const Eigen::VectorXd& x) const;
 	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const;
+	virtual void set_ref(const Eigen::VectorXd& x0);
 
 private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);

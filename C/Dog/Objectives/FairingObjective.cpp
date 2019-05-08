@@ -1,6 +1,6 @@
 #include "FairingObjective.h"
 
-FairingObjective::FairingObjective(const QuadTopology& quadTop) {
+FairingObjective::FairingObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0) {
 	// set up indices for std::vector<int> p_xb,p_0,p_xf,p_xff;
 	// for every star vertex, add nearby vertices if they are stars as well
 	int const_n = 0;
@@ -9,7 +9,7 @@ FairingObjective::FairingObjective(const QuadTopology& quadTop) {
 		// x-forward curve
 		if (quadTop.vi_to_star[p_xf_i] != -1) {
 			int nb_star = quadTop.vi_to_star[p_xf_i];
-			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(quadTop.stars(si+1));
+			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(quadTop.stars(nb_star+1));
 			const_n++;
 		}
 		// x-backward curve
@@ -24,20 +24,39 @@ FairingObjective::FairingObjective(const QuadTopology& quadTop) {
 			p_xb.push_back(p_yb_i); p_0.push_back(p_0_i); p_xf.push_back(p_yf_i); p_xff.push_back(quadTop.stars(nb_star+2));
 			const_n++;
 		}
+		// y - lower curve
 		if (quadTop.vi_to_star[p_yb_i] != -1) {
 			int nb_star = quadTop.vi_to_star[p_yb_i];
 			p_xb.push_back(quadTop.stars(nb_star+4)); p_0.push_back(p_yb_i); p_xf.push_back(p_0_i); p_xff.push_back(p_yf_i);
 			const_n++;
 		}
+		std::cout << std::endl << std::endl;
 	}
+	//int wait; std::cin >> wait;
+	set_ref(x0);
 	// Then resize IJV
 	IJV.resize(const_n*48);
+}
+
+void FairingObjective::set_ref(const Eigen::VectorXd& x) {
+	int vnum = x.rows()/3;
+	for (int i = 0; i < p_xb.size(); i++) {
+		int p_xb_i(p_xb[i]), p_0_i(p_0[i]), p_xf_i(p_xf[i]), p_xff_i(p_xff[i]);
+		const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
+		const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
+		const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
+		const double pxff_x(x(p_xff_i+0)); const double pxff_y(x(p_xff_i+1*vnum)); const double pxff_z(x(p_xff_i+2*vnum));
+
+		// todo save lengths
+		len_ex_b_v.push_back(sqrt(pow(p0_x-pxb_x,2)+pow(p0_y-pxb_y,2)+pow(p0_z-pxb_z,2)));
+		len_ex_f_v.push_back(sqrt(pow(pxf_x-p0_x,2)+pow(pxf_y-p0_y,2)+pow(pxf_z-p0_z,2)));
+		len_ex_ff_v.push_back(sqrt(pow(pxff_x-pxf_x,2)+pow(pxff_y-pxf_y,2)+pow(pxff_z-pxf_z,2)));
+	}
 }
 
 double FairingObjective::obj(const Eigen::VectorXd& x) const {
 	double e = 0;
 	int vnum = x.rows()/3;
-	double edge_stretch = 0;
 	for (int i = 0; i < p_xb.size(); i++) {
 		int p_xb_i(p_xb[i]), p_0_i(p_0[i]), p_xf_i(p_xf[i]), p_xff_i(p_xff[i]);
 		const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
@@ -46,6 +65,9 @@ double FairingObjective::obj(const Eigen::VectorXd& x) const {
 		const double pxff_x(x(p_xff_i+0)); const double pxff_y(x(p_xff_i+1*vnum)); const double pxff_z(x(p_xff_i+2*vnum));
 
 		const double len_ex_b(len_ex_b_v[i]); const double len_ex_f(len_ex_f_v[i]); const double len_ex_ff(len_ex_ff_v[i]);
+		std::cout << "len_ex_b = " << len_ex_b << std::endl;
+		std::cout << "len_ex_f = " << len_ex_f << std::endl;
+		std::cout << "len_ex_ff = " << len_ex_ff << std::endl;
 
 		double t2 = len_ex_ff*p0_x-len_ex_ff*pxb_x-len_ex_b*pxf_x+len_ex_b*pxff_x;
 		double t3 = 1.0/(len_ex_b*len_ex_b);
@@ -54,6 +76,9 @@ double FairingObjective::obj(const Eigen::VectorXd& x) const {
 		double t6 = len_ex_ff*p0_z-len_ex_ff*pxb_z-len_ex_b*pxf_z+len_ex_b*pxff_z;
 		e += (t2*t2)*t3*t4*4.0+t3*t4*(t5*t5)*4.0+t3*t4*(t6*t6)*4.0;
 	}
+	std::cout << "FairingObjective::obj = " << e << std::endl;
+	int wait; std::cin >> wait;
+	return e;
 }
 
 Eigen::VectorXd FairingObjective::grad(const Eigen::VectorXd& x) const {
