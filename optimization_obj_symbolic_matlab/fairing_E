@@ -1,0 +1,6 @@
+  t2 = len_ex_ff*p0_x-len_ex_ff*pxb_x-len_ex_b*pxf_x+len_ex_b*pxff_x;
+  t3 = 1.0/(len_ex_b*len_ex_b);
+  t4 = 1.0/(len_ex_ff*len_ex_ff);
+  t5 = len_ex_ff*p0_y-len_ex_ff*pxb_y-len_ex_b*pxf_y+len_ex_b*pxff_y;
+  t6 = len_ex_ff*p0_z-len_ex_ff*pxb_z-len_ex_b*pxf_z+len_ex_b*pxff_z;
+  t0 = (t2*t2)*t3*t4*4.0+t3*t4*(t5*t5)*4.0+t3*t4*(t6*t6)*4.0;
