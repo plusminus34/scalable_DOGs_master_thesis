@@ -50,7 +50,7 @@ public:
 		double infeasability_epsilon = 1e-3;
 		double infeasability_filter = 1e-1;
 		double convergence_threshold = 1e-6;
-		bool folding_mode = false;
+		bool folding_mode = true;
 		bool flip_sign = false;
 	};
 

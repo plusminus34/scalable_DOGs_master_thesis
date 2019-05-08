@@ -65,19 +65,16 @@ double FairingObjective::obj(const Eigen::VectorXd& x) const {
 		const double pxff_x(x(p_xff_i+0)); const double pxff_y(x(p_xff_i+1*vnum)); const double pxff_z(x(p_xff_i+2*vnum));
 
 		const double len_ex_b(len_ex_b_v[i]); const double len_ex_f(len_ex_f_v[i]); const double len_ex_ff(len_ex_ff_v[i]);
-		std::cout << "len_ex_b = " << len_ex_b << std::endl;
-		std::cout << "len_ex_f = " << len_ex_f << std::endl;
-		std::cout << "len_ex_ff = " << len_ex_ff << std::endl;
 
-		double t2 = len_ex_ff*p0_x-len_ex_ff*pxb_x-len_ex_b*pxf_x+len_ex_b*pxff_x;
+		double t2 = len_ex_ff*p0_x-len_ex_ff*pxb_x+len_ex_b*pxf_x-len_ex_b*pxff_x;
 		double t3 = 1.0/(len_ex_b*len_ex_b);
 		double t4 = 1.0/(len_ex_ff*len_ex_ff);
-		double t5 = len_ex_ff*p0_y-len_ex_ff*pxb_y-len_ex_b*pxf_y+len_ex_b*pxff_y;
-		double t6 = len_ex_ff*p0_z-len_ex_ff*pxb_z-len_ex_b*pxf_z+len_ex_b*pxff_z;
+		double t5 = len_ex_ff*p0_y-len_ex_ff*pxb_y+len_ex_b*pxf_y-len_ex_b*pxff_y;
+		double t6 = len_ex_ff*p0_z-len_ex_ff*pxb_z+len_ex_b*pxf_z-len_ex_b*pxff_z;
 		e += (t2*t2)*t3*t4*4.0+t3*t4*(t5*t5)*4.0+t3*t4*(t6*t6)*4.0;
+
 	}
-	std::cout << "FairingObjective::obj = " << e << std::endl;
-	int wait; std::cin >> wait;
+	//std::cout << "FairingObjective::obj = " << e << std::endl;
 	return e;
 }
 
@@ -100,25 +97,28 @@ Eigen::VectorXd FairingObjective::grad(const Eigen::VectorXd& x) const {
 		double t2 = 1.0/(len_ex_b*len_ex_b);
 		double t3 = 1.0/len_ex_ff;
 		double t4 = len_ex_ff*p0_x;
-		double t5 = len_ex_b*pxff_x;
+		double t5 = len_ex_b*pxf_x;
 		double t16 = len_ex_ff*pxb_x;
-		double t17 = len_ex_b*pxf_x;
+		double t17 = len_ex_b*pxff_x;
 		double t6 = t4+t5-t16-t17;
 		double t7 = t2*t3*t6*8.0;
 		double t8 = len_ex_ff*p0_y;
-		double t9 = len_ex_b*pxff_y;
+		double t9 = len_ex_b*pxf_y;
 		double t20 = len_ex_ff*pxb_y;
-		double t21 = len_ex_b*pxf_y;
+		double t21 = len_ex_b*pxff_y;
 		double t10 = t8+t9-t20-t21;
 		double t11 = t2*t3*t10*8.0;
 		double t12 = len_ex_ff*p0_z;
-		double t13 = len_ex_b*pxff_z;
+		double t13 = len_ex_b*pxf_z;
 		double t22 = len_ex_ff*pxb_z;
-		double t23 = len_ex_b*pxf_z;
+		double t23 = len_ex_b*pxff_z;
 		double t14 = t12+t13-t22-t23;
 		double t15 = t2*t3*t14*8.0;
 		double t18 = 1.0/len_ex_b;
 		double t19 = 1.0/(len_ex_ff*len_ex_ff);
+		double t24 = t6*t18*t19*8.0;
+		double t25 = t10*t18*t19*8.0;
+		double t26 = t14*t18*t19*8.0;
 
 		grad(p_0_i) += t7;
 		grad(p_0_i+v_num) += t11;
@@ -126,12 +126,12 @@ Eigen::VectorXd FairingObjective::grad(const Eigen::VectorXd& x) const {
 		grad(p_xb_i) += -t7;
 		grad(p_xb_i+v_num) += -t11;
 		grad(p_xb_i+2*v_num) += -t15;
-		grad(p_xf_i) += t6*t18*t19*-8.0;
-		grad(p_xf_i+v_num) += t10*t18*t19*-8.0;
-		grad(p_xf_i+2*v_num) += t14*t18*t19*-8.0;
-		grad(p_xff_i) += t6*t18*t19*8.0;
-		grad(p_xff_i+v_num) += t10*t18*t19*8.0;
-		grad(p_xff_i+2*v_num) += t14*t18*t19*8.0;
+		grad(p_xf_i) += t24;
+		grad(p_xf_i+v_num) += t25;
+		grad(p_xf_i+2*v_num) += t26;
+		grad(p_xff_i) += -t24;
+		grad(p_xff_i+v_num) += -t25;
+		grad(p_xff_i+2*v_num) += -t26;
   }
   return grad;
 }
@@ -162,50 +162,50 @@ void FairingObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_0_i, t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xb_i, -t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xf_i, t4*t5*-8.0);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xff_i, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xf_i, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xff_i, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, -t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xff_i+vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xff_i+vnum, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, -t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xff_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xff_i+2*vnum, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_0_i, -t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xb_i, t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xf_i, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xff_i, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xf_i, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xff_i, t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, -t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xff_i+vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xff_i+vnum, t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, -t3);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, t3);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xff_i+2*vnum, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_0_i, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xb_i, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xff_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_0_i, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xb_i, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xf_i, t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xff_i, -t8);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xff_i+vnum, -t8);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, -t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, -t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xff_i+2*vnum, -t8);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_0_i, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_xb_i, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_0_i, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_xb_i, t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_xf_i, -t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i,p_xff_i, t8);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_0_i+vnum, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_xb_i+vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_0_i+vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_xb_i+vnum, t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_xf_i+vnum, -t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+vnum,p_xff_i+vnum, t8);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_0_i+2*vnum, t6);
-		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xb_i+2*vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_0_i+2*vnum, -t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xb_i+2*vnum, t6);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xf_i+2*vnum, -t8);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xff_i+2*vnum, t8);
   }
