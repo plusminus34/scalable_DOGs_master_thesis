@@ -1,15 +1,21 @@
 #include "FairingObjective.h"
 
 FairingObjective::FairingObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0) {
+	// new strategy: Go over all stars
+	// For all stars check each one of the 4 neighbours, and find the correct neighbour of that (check up to epsilon)
+	// Do the same for bnd3, just with less neighbours
 	// set up indices for std::vector<int> p_xb,p_0,p_xf,p_xff;
 	// for every star vertex, add nearby vertices if they are stars as well
+	int vnum = x0.rows()/3;
 	int const_n = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
 		int p_0_i = quadTop.stars(si), p_xf_i = quadTop.stars(si+1), p_yf_i = quadTop.stars(si+2), p_xb_i = quadTop.stars(si+3),p_yb_i = quadTop.stars(si+4);
+		Eigen::RowVector3d direction;
 		// x-forward curve
-		if (quadTop.vi_to_star[p_xf_i] != -1) {
-			int nb_star = quadTop.vi_to_star[p_xf_i];
-			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(quadTop.stars(nb_star+1));
+		direction << x0(p_0_i)-x0(p_xb_i),x0(p_0_i+vnum)-x0(p_xb_i+vnum),x0(p_0_i+2*+vnum)-x0(p_xb_i+2*+vnum); direction.normalize();
+		int x_forward_nb; get_neighbour_in_direction(quadTop,x0,p_xf_i, direction);
+		if (x_forward_nb) {
+			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(find_nb());
 			const_n++;
 		}
 		// x-backward curve
