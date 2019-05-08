@@ -34,7 +34,7 @@ With $f$ as an objective, composed of a weighted sum of a bending objective, iso
 Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
 \begin{enumerate}
 	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
-	\item Use linesearch method that does not except meshes deviating from the constraints $\phi_{d_i}(\x)$.
+	\item Use a linesearch method that backtracks if the resulting mesh does not exactly satisfies $\phi_{d_i}(\x) = 0, i = 1,...,m$.
 \end{enumerate}
 As the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
 
