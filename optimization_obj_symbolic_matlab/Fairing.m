@@ -22,8 +22,8 @@ pxff_z = sym('pxff_z', 'real');
 
 p_xff = [pxff_x,pxff_y,pxff_z];
 
+ex_b = p_0-p_xb;
 ex_f = p_xf-p_0;
-ex_b = p_xb-p_0;
 ex_ff = p_xff-p_xf;
 
 
