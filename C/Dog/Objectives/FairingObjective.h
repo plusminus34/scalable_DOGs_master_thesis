@@ -14,6 +14,8 @@ public:
 
 private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
+
+	void add_indices_for_vertex(int p_0_i, int p_xb_i, int p_xf_i, const QuadTopology& quadTop, const Eigen::VectorXd& x0, int& const_n);
 	
 	// Indices of curve points to compare curvature normals
 	std::vector<int> p_xb,p_0,p_xf,p_xff;
