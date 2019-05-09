@@ -180,7 +180,6 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Fairing", &DC.p.fairing_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");

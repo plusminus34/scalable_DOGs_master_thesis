@@ -19,7 +19,6 @@
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 
 #include "Objectives/DogConstraints.h"
-#include "Objectives/FairingObjective.h"
 #include "Objectives/IsometryObjective.h"
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/StitchingConstraints.h"
@@ -39,7 +38,6 @@ public:
 		double bending_weight = 1.;
 		double isometry_weight = 10;
 		double soft_pos_weight = 1;
-		double fairing_weight = 0;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
 		double mv_bias_weight = 0;
@@ -109,7 +107,6 @@ public:
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	FairingObjective fairingObj;
 	  	PointsRigidAlignmentObjective pointsRigidAlignmentY;
 	  	PointsRigidAlignmentObjective pointsRigidAlignmentX;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;

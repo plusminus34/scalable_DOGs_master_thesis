@@ -27,7 +27,7 @@ void IsometryObjective::set_ref(const Eigen::VectorXd& x) {
 double IsometryObjective::obj(const Eigen::VectorXd& x) const {
 	double e = 0;
 	int vnum = x.rows()/3;
-	double edge_stretch = 0;
+	double edge_stretch = 0; double max_stretch = 0;
 	int h_cnt = 0;
 	for (int ei = 0; ei < quadTop.E.rows(); ei++) {
 		int p_0_i = quadTop.E(ei,0), p_xf_i = quadTop.E(ei,1);
@@ -41,12 +41,14 @@ double IsometryObjective::obj(const Eigen::VectorXd& x) const {
   		double t4 = p0_z-pxf_z;
   		double t5 = -l0+t2*t2+t3*t3+t4*t4;
 
-  		//edge_stretch += abs(sqrt(l0)-sqrt(t2*t2+t3*t3+t4*t4))/sqrt(l0);
+  		double cur_stretch = abs(sqrt(l0)-sqrt(t2*t2+t3*t3+t4*t4))/sqrt(l0);;
+  		edge_stretch += cur_stretch;
+  		max_stretch = std::max(max_stretch,cur_stretch);
 
   		e += t5*t5;
 		h_cnt++;
   }
-  //std::cout << "isometry objective = " << e << " and averaged stretch " << edge_stretch/quadTop.E.rows() << std::endl;
+  std::cout << "isometry objective = " << e << ", averaged stretch " << edge_stretch/quadTop.E.rows() << ", max stretch = " << max_stretch << std::endl;
   return e;
 }
 

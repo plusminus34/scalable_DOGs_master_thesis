@@ -38,7 +38,7 @@ void FairingObjective::add_indices_for_vertex(int p_0_i, int p_xb_i, int p_xf_i,
 	int vnum = x0.rows()/3;
 	Eigen::RowVector3d direction;
 	direction << x0(p_0_i)-x0(p_xb_i),x0(p_0_i+vnum)-x0(p_xb_i+vnum),x0(p_0_i+2*+vnum)-x0(p_xb_i+2*+vnum); direction.normalize();
-	std::cout << "direction = " << direction << std::endl;
+	//std::cout << "direction = " << direction << std::endl;
 	double eps = 1e-12;
 	for (int j = 0; j < quadTop.A[p_xf_i].size(); j++) {
 		int p_xff_i = quadTop.A[p_xf_i][j];
