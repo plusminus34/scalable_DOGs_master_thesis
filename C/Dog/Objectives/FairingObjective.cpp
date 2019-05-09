@@ -4,44 +4,54 @@ FairingObjective::FairingObjective(const QuadTopology& quadTop, const Eigen::Vec
 	// new strategy: Go over all stars
 	// For all stars check each one of the 4 neighbours, and find the correct neighbour of that (check up to epsilon)
 	// Do the same for bnd3, just with less neighbours
-	// set up indices for std::vector<int> p_xb,p_0,p_xf,p_xff;
-	// for every star vertex, add nearby vertices if they are stars as well
+	// So place this in an inner method, and then just run it on stars and bnd3 vertices
+
 	int vnum = x0.rows()/3;
 	int const_n = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
 		int p_0_i = quadTop.stars(si), p_xf_i = quadTop.stars(si+1), p_yf_i = quadTop.stars(si+2), p_xb_i = quadTop.stars(si+3),p_yb_i = quadTop.stars(si+4);
-		Eigen::RowVector3d direction;
 		// x-forward curve
-		direction << x0(p_0_i)-x0(p_xb_i),x0(p_0_i+vnum)-x0(p_xb_i+vnum),x0(p_0_i+2*+vnum)-x0(p_xb_i+2*+vnum); direction.normalize();
-		int x_forward_nb; get_neighbour_in_direction(quadTop,x0,p_xf_i, direction);
-		if (x_forward_nb) {
-			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(find_nb());
-			const_n++;
-		}
+		add_indices_for_vertex(p_0_i, p_xb_i, p_xf_i, quadTop, x0, const_n);
 		// x-backward curve
-		if (quadTop.vi_to_star[p_xb_i] != -1) {
-			int nb_star = quadTop.vi_to_star[p_xb_i];
-			p_xb.push_back(quadTop.stars(nb_star+3)); p_0.push_back(p_xb_i); p_xf.push_back(p_0_i); p_xff.push_back(p_xf_i);
-			const_n++;
-		}
-		// y-upper curve
-		if (quadTop.vi_to_star[p_yf_i] != -1) {
-			int nb_star = quadTop.vi_to_star[p_yf_i];
-			p_xb.push_back(p_yb_i); p_0.push_back(p_0_i); p_xf.push_back(p_yf_i); p_xff.push_back(quadTop.stars(nb_star+2));
-			const_n++;
-		}
-		// y - lower curve
-		if (quadTop.vi_to_star[p_yb_i] != -1) {
-			int nb_star = quadTop.vi_to_star[p_yb_i];
-			p_xb.push_back(quadTop.stars(nb_star+4)); p_0.push_back(p_yb_i); p_xf.push_back(p_0_i); p_xff.push_back(p_yf_i);
-			const_n++;
-		}
+		add_indices_for_vertex(p_0_i, p_xf_i, p_xb_i, quadTop, x0, const_n);
+		// y-forward curve
+		add_indices_for_vertex(p_0_i, p_yb_i, p_yf_i, quadTop, x0, const_n);
+		// y-backward curve
+		add_indices_for_vertex(p_0_i, p_yf_i, p_yb_i, quadTop, x0, const_n);
 		std::cout << std::endl << std::endl;
 	}
-	//int wait; std::cin >> wait;
+	for (int si = 0; si < quadTop.bnd3.rows(); si+=4) {
+	    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+	   // x-forward curve
+		add_indices_for_vertex(p_0_i, p_xb_i, p_xf_i, quadTop, x0, const_n);
+		// x-backward curve
+		add_indices_for_vertex(p_0_i, p_xf_i, p_xb_i, quadTop, x0, const_n);
+	}
 	set_ref(x0);
 	// Then resize IJV
 	IJV.resize(const_n*48);
+}
+
+void FairingObjective::add_indices_for_vertex(int p_0_i, int p_xb_i, int p_xf_i, 
+				const QuadTopology& quadTop, const Eigen::VectorXd& x0, int& const_n) {
+	int vnum = x0.rows()/3;
+	Eigen::RowVector3d direction;
+	direction << x0(p_0_i)-x0(p_xb_i),x0(p_0_i+vnum)-x0(p_xb_i+vnum),x0(p_0_i+2*+vnum)-x0(p_xb_i+2*+vnum); direction.normalize();
+	std::cout << "direction = " << direction << std::endl;
+	double eps = 1e-12;
+	for (int j = 0; j < quadTop.A[p_xf_i].size(); j++) {
+		int p_xff_i = quadTop.A[p_xf_i][j];
+		//std::cout << "p_xb_i = " << p_xb_i << " p_xf_i = " << p_xf_i << " p_xff_i = " << p_xff_i << std::endl;
+		Eigen::RowVector3d direction2; direction2 << x0(p_xff_i)-x0(p_xf_i),x0(p_xff_i+vnum)-x0(p_xf_i+vnum),x0(p_xff_i+2*+vnum)-x0(p_xf_i+2*+vnum); 
+		direction2.normalize();
+		//std::cout << "direction2 = " << direction2 << std::endl;
+		if ((direction-direction2).norm() < eps) {
+			p_xb.push_back(p_xb_i); p_0.push_back(p_0_i); p_xf.push_back(p_xf_i); p_xff.push_back(p_xff_i);
+			const_n++;
+			//std::cout << "found it" << std::endl; int wait; std::cin >> wait;
+			return;
+		}
+	}
 }
 
 void FairingObjective::set_ref(const Eigen::VectorXd& x) {
