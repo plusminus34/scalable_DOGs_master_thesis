@@ -48,3 +48,5 @@ void get_faces_polygons_without_holes(const CreasePattern& creasePattern, const 
 std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern);
 Number_type bbox_diff(const CGAL::Bbox_2& bbox1, const CGAL::Bbox_2& bbox2);
 Number_type bbox_max_edge(const CGAL::Bbox_2& bbox);
+
+void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > & vF,Eigen::MatrixXi& F);

@@ -3,12 +3,15 @@
 #include <igl/combine.h>
 #include <igl/polygon_mesh_to_triangle_mesh.h>
 #include <igl/remove_unreferenced.h>
+#include <igl/boundary_loop.h>
 
 #include <CGAL/Polygon_2_algorithms.h>
+#include <igl/triangle/triangulate.h>
 
 #include "../QuadMesh/Quad.h"
 
 using namespace std;
+using namespace Eigen;
 
 Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::vector<bool> is_polygon_hole = submesh_is_hole(creasePattern);
@@ -265,76 +268,6 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	//for (auto sp: submesh_polygons) {std::cout << "submesh = " << sp.first << " polygon = " << sp.second << std::endl;}
 }
 
-Eigen::MatrixXi generate_rendered_mesh_faces(const CreasePattern& creasePattern, std::vector<SubmeshPoly>& submesh_polygons,
-			const std::vector<Eigen::MatrixXd>& submeshVList, const Eigen::MatrixXd& V_ren, const std::vector<Point_2>& constrained_pts_non_unique) {
-	typedef std::pair<double,double> PointDouble;
-	std::vector<std::vector<int> > polygons_v_ren_indices(submesh_polygons.size());
-
-
-	// IMPORTANT:
-	// To make things a (bit) faster, this method uses a mapping from Points (in double) to a given submesh
-	// The function then iterates on CGAL exact kernel Point_2, convert them to double with CGAL::to_double() and then use this map
-	//	This should always work for points on the grid (since the mesh points in double with the same CGAL::to_double routing)
-	//	The only problem might be edge points which are in the exact form t*v1+(1-t)*v2.
-	//	V_ren has the points in the from to_double(t)*to_double(v1) + to_double(1-t)*to_double(v2) which is different than converting it all together, i.e:
-	//			to_double( t*v1 + (1-t)*v2  )
-	//  Therefore the solution is to use the original polygon points which we saved at constrained_pts_non_unique
-	
-	// set [min_sub_i, max_sub_i) as the (half-closed) range of indices of the submesh in subPoly inside V_ren 
-	int sub_i = 0; int min_sub_i = 0; int max_sub_i = min_sub_i + submeshVList[sub_i].rows();
-
-	// Save a mapping between constrained fold points to V_ren indices
-	std::map<PointDouble, int> poly_fold_pt_to_V_ren; int v_ren_start_idx = 0;
-	for (auto subV: submeshVList) v_ren_start_idx+=subV.rows();
-	for (int const_i = 0; const_i < constrained_pts_non_unique.size(); const_i++) {
-		auto const_pt = constrained_pts_non_unique[const_i];
-		PointDouble pt(CGAL::to_double(const_pt.x()),CGAL::to_double(const_pt.y()));
-		poly_fold_pt_to_V_ren[pt] = v_ren_start_idx+const_i;
-	}
-	std::map<PointDouble, int> submesh_pt_to_V_ren;
-	// create a map from point coordinates to index in V_ren (which should be a vertex in the correct submesh)
-	for (int ri = min_sub_i; ri < max_sub_i; ri++) {submesh_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
-	std::cout <<"sub_i = " << sub_i << std::endl;
-
-	for (int poly_i = 0; poly_i < submesh_polygons.size(); poly_i++) {
-		auto submesh_i = submesh_polygons[poly_i].first; auto submesh_poly = submesh_polygons[poly_i].second;
-		// Update the interval [min_sub_i, max_sub_i) to the new submesh vertices indices in V_ren
-		if (submesh_i != sub_i) {
-			sub_i++;
-			min_sub_i = max_sub_i;
-			max_sub_i = min_sub_i + submeshVList[sub_i].rows();
-			
-			submesh_pt_to_V_ren.clear();
-			// update the mapping from points to coordinates in v_ren for the new submesh
-			for (int ri = min_sub_i; ri < max_sub_i; ri++) {submesh_pt_to_V_ren[PointDouble(V_ren(ri,0),V_ren(ri,1))] = ri;}
-			std::cout <<"sub_i = " << sub_i << std::endl;
-		}
-		// every pt should have some cashed indices to V_ren
-		polygons_v_ren_indices[poly_i].resize(submesh_poly.size()); int poly_vi = 0;
-		for (auto vptr = submesh_poly.vertices_begin(); vptr != submesh_poly.vertices_end(); vptr++) {
-			PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
-			
-			if (submesh_pt_to_V_ren.count(pt)) {
-				//std::cout << "pt has key in submesh "  << std::endl;
-				polygons_v_ren_indices[poly_i][poly_vi] = submesh_pt_to_V_ren[pt];
-			} else if (poly_fold_pt_to_V_ren.count(pt)) {
-				//std::cout << "pt has key in fold map" << std::endl;
-				polygons_v_ren_indices[poly_i][poly_vi] = poly_fold_pt_to_V_ren[pt];
-			} else {
-				std::cout << "Error! Could not map point to polygon " << std::endl;
-
-				exit(1); // No solution to this other than debugging
-			}
-			poly_vi++;
-		}
-	}
-
-	// Generate a triangular mesh from the polygonal faces (which are all convex, otherwise this routine is problematic)
-	Eigen::MatrixXi F_ren;
-	igl::polygon_mesh_to_triangle_mesh(polygons_v_ren_indices,F_ren);
-	return F_ren;
-}
-
 
 void init_mesh_vertices_and_faces_from_grid(const CreasePattern& creasePattern, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridF) {
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
@@ -545,7 +478,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 			poly_n++;
 		}
 		// Create the submesh
-		igl::polygon_mesh_to_triangle_mesh(polygons_v_ren_indices,F_ren_list[subi]);
+		polygon_mesh_to_triangle_mesh_better(polygons_v_ren_indices,F_ren_list[subi]);
 	}
 	igl::combine(V_ren_list,F_ren_list, V_ren, F_ren);
 }
@@ -587,4 +520,56 @@ std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 	}
 	//int wait; std::cin>>wait;
 	return submesh_is_hole;
+}
+
+
+void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > & vF,Eigen::MatrixXi& F) {
+  int m = 0;
+  // estimate of size
+  for(typename vector<vector<int > >::const_iterator fit = vF.begin();
+    fit!=vF.end();
+    fit++)
+  {
+    if(fit->size() >= 3)
+    {
+      m += fit->size() - 2;
+    }
+  }
+  // Resize output
+  F.resize(m,3);
+  {
+    int k = 0;
+   	for (int fi = 0; fi < vF.size(); fi++) {
+   	  int poly_vn = vF[fi].size();
+   	  
+   	  for (auto vi : vF[fi]) std::cout << vi << ","; std::cout << std::endl;
+      if(vF[fi].size() >= 3) {
+      	int main_v = 0;
+      	for (int next = (main_v+1)%poly_vn; (next+1)%poly_vn != main_v; next = (next+1)%poly_vn ) {
+      		F(k,0) = vF[fi][main_v];
+          	F(k,1) = vF[fi][next];
+          	F(k,2) = vF[fi][(next+1)%poly_vn];
+          	std::cout << "Adding face: " << F.row(k) << std::endl;
+          	k++;
+      	}
+      	/*
+        typename vector<int >::const_iterator cit = fit->begin();
+        cit++;
+        typename vector<int >::const_iterator pit = cit++;
+        for(;
+          cit!=fit->end();
+          cit++,pit++)
+        {
+          F(k,0) = *(fit->begin());
+          F(k,1) = *pit;
+          F(k,2) = *cit;
+          k++;
+        }
+        */
+      }
+    }
+    //exit(1);
+    assert(k==m);
+  }
+
 }
