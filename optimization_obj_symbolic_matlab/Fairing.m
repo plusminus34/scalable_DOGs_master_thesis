@@ -36,10 +36,11 @@ assume(len_ex_f > 0)
 assume(len_ex_ff > 0)
 
 % Kx*N integrated is linear if we know the lengths
-KxN1 = 2*(ex_f/len_ex_f+ex_b/len_ex_b);
-KxN2 = 2*(ex_ff/len_ex_ff+ex_f/len_ex_f);
+KxN1 = 2*(ex_f/len_ex_f-ex_b/len_ex_b);
+KxN2 = 2*(ex_ff/len_ex_ff-ex_f/len_ex_f);
 diffKN = KxN1-KxN2;
-E = simplify(norm(diffKN).^2);
+%E = simplify(norm(diffKN).^2);
+E = simplify(norm(KxN1).^2);
 ccode(E ,'file','fairing_E');
 vars = [p_0,p_xb,p_xf,p_xff];
 ccode(gradient(E,vars),'file','fairing_G');
