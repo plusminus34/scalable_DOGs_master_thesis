@@ -37,9 +37,9 @@ public:
 	
 	struct Params {
 		double bending_weight = 1.;
-		double isometry_weight = 1;
-		double soft_pos_weight = 10;
-		double fairing_weight = 0.1;
+		double isometry_weight = 10;
+		double soft_pos_weight = 1;
+		double fairing_weight = 0;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
 		double mv_bias_weight = 0;
@@ -119,7 +119,7 @@ public:
       	QuadraticConstraintsSumObjective ptPairSoftConst;
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
       	QuadraticConstraintsSumObjective foldingMVBiasObj;
-      	//QuadraticConstraintsSumObjective allConstQuadraticObj;
+      	QuadraticConstraintsSumObjective stitchingConstraintsPenalty;
       	CompositeObjective compObj;
 	};
 

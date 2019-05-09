@@ -30,6 +30,7 @@ FairingObjective::FairingObjective(const QuadTopology& quadTop, const Eigen::Vec
 	set_ref(x0);
 	// Then resize IJV
 	IJV.resize(const_n*48);
+	//IJV.resize(const_n*27);
 }
 
 void FairingObjective::add_indices_for_vertex(int p_0_i, int p_xb_i, int p_xf_i, 
@@ -82,6 +83,7 @@ double FairingObjective::obj(const Eigen::VectorXd& x) const {
 
 		const double len_ex_b(len_ex_b_v[i]); const double len_ex_f(len_ex_f_v[i]); const double len_ex_ff(len_ex_ff_v[i]);
 
+		
 		double t3 = 1.0/len_ex_b;
 		double t4 = 1.0/len_ex_f;
 		double t5 = 1.0/len_ex_ff;
@@ -89,7 +91,15 @@ double FairingObjective::obj(const Eigen::VectorXd& x) const {
 		double t6 = t3*(p0_y-pxb_y)*2.0+t4*(p0_y-pxf_y)*4.0-t5*(pxf_y-pxff_y)*2.0;
 		double t7 = t3*(p0_z-pxb_z)*2.0+t4*(p0_z-pxf_z)*4.0-t5*(pxf_z-pxff_z)*2.0;
 		e += t2*t2+t6*t6+t7*t7;
-
+		
+		/*
+		double t2 = len_ex_b*p0_x+len_ex_f*p0_x-len_ex_f*pxb_x-len_ex_b*pxf_x;
+		double t3 = 1.0/(len_ex_b*len_ex_b);
+		double t4 = 1.0/(len_ex_f*len_ex_f);
+		double t5 = len_ex_b*p0_y+len_ex_f*p0_y-len_ex_f*pxb_y-len_ex_b*pxf_y;
+		double t6 = len_ex_b*p0_z+len_ex_f*p0_z-len_ex_f*pxb_z-len_ex_b*pxf_z;
+		e += (t2*t2)*t3*t4*4.0+t3*t4*(t5*t5)*4.0+t3*t4*(t6*t6)*4.0;
+		*/
 	}
 	std::cout << "FairingObjective::obj = " << e << std::endl;
 	return e;
@@ -111,6 +121,7 @@ Eigen::VectorXd FairingObjective::grad(const Eigen::VectorXd& x) const {
 
 		const double len_ex_b(len_ex_b_v[i]); const double len_ex_f(len_ex_f_v[i]); const double len_ex_ff(len_ex_ff_v[i]);
 
+		
 		double t2 = 1.0/len_ex_b;
 		double t3 = 1.0/len_ex_f;
 		double t4 = t2*2.0;
@@ -153,6 +164,39 @@ Eigen::VectorXd FairingObjective::grad(const Eigen::VectorXd& x) const {
 		grad(p_xff_i) += t7*t13*4.0;
 		grad(p_xff_i+v_num) += t7*t19*4.0;
 		grad(p_xff_i+2*v_num) += t7*t25*4.0;
+		
+		/*
+		double t2 = 1.0/(len_ex_b*len_ex_b);
+		double t3 = 1.0/(len_ex_f*len_ex_f);
+		double t4 = len_ex_b+len_ex_f;
+		double t5 = len_ex_b*p0_x;
+		double t6 = len_ex_f*p0_x;
+		double t15 = len_ex_f*pxb_x;
+		double t16 = len_ex_b*pxf_x;
+		double t7 = t5+t6-t15-t16;
+		double t8 = 1.0/len_ex_f;
+		double t9 = len_ex_b*p0_y;
+		double t10 = len_ex_f*p0_y;
+		double t18 = len_ex_f*pxb_y;
+		double t19 = len_ex_b*pxf_y;
+		double t11 = t9+t10-t18-t19;
+		double t12 = len_ex_b*p0_z;
+		double t13 = len_ex_f*p0_z;
+		double t20 = len_ex_f*pxb_z;
+		double t21 = len_ex_b*pxf_z;
+		double t14 = t12+t13-t20-t21;
+		double t17 = 1.0/len_ex_b;
+
+		grad(p_0_i) += t2*t3*t4*t7*8.0;
+		grad(p_0_i+v_num) += t2*t3*t4*t11*8.0;
+		grad(p_0_i+2*v_num) += t2*t3*t4*t14*8.0;
+		grad(p_xb_i) += t2*t7*t8*-8.0;
+		grad(p_xb_i+v_num) += t2*t8*t11*-8.0;
+		grad(p_xb_i+2*v_num) += t2*t8*t14*-8.0;
+		grad(p_xf_i) += t3*t7*t17*-8.0;
+		grad(p_xf_i+v_num) += t3*t11*t17*-8.0;
+		grad(p_xf_i+2*v_num) += t3*t14*t17*-8.0;
+		*/
   }
   return grad;
 }
@@ -172,7 +216,7 @@ void FairingObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		const double pxff_x(x(p_xff_i+0)); const double pxff_y(x(p_xff_i+1*vnum)); const double pxff_z(x(p_xff_i+2*vnum));
 
 		const double len_ex_b(len_ex_b_v[i]); const double len_ex_f(len_ex_f_v[i]); const double len_ex_ff(len_ex_ff_v[i]);
-
+		
 		double t3 = 1.0/len_ex_b;
 		double t4 = t3*2.0;
 		double t5 = 1.0/len_ex_f;
@@ -240,5 +284,45 @@ void FairingObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xb_i+2*vnum, t3*t7*-8.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xf_i+2*vnum, t7*t11*-4.0);
 		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xff_i+2*vnum,p_xff_i+2*vnum, t19);
+		/*
+		double t2 = len_ex_b+len_ex_f;
+		double t3 = 1.0/(len_ex_b*len_ex_b);
+		double t4 = 1.0/(len_ex_f*len_ex_f);
+		double t5 = t2*t2;
+		double t6 = t3*t4*t5*8.0;
+		double t7 = 1.0/len_ex_f;
+		double t8 = 1.0/len_ex_b;
+		double t9 = t3*8.0;
+		double t10 = t7*t8*8.0;
+		double t11 = t4*8.0;
+
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_0_i, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xb_i, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i,p_xf_i, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_0_i+vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xb_i+vnum, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+vnum,p_xf_i+vnum, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_0_i+2*vnum, t6);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xb_i+2*vnum, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_0_i+2*vnum,p_xf_i+2*vnum, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_0_i, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xb_i, t9);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i,p_xf_i, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_0_i+vnum, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xb_i+vnum, t9);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+vnum,p_xf_i+vnum, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_0_i+2*vnum, t2*t3*t7*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xb_i+2*vnum, t9);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xb_i+2*vnum,p_xf_i+2*vnum, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_0_i, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xb_i, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i,p_xf_i, t11);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_0_i+vnum, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xb_i+vnum, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+vnum,p_xf_i+vnum, t11);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_0_i+2*vnum, t2*t4*t8*-8.0);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xb_i+2*vnum, t10);
+		IJV[ijv_idx++] = Eigen::Triplet<double>(p_xf_i+2*vnum,p_xf_i+2*vnum, t11);
+		*/
   }
 }

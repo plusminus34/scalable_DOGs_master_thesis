@@ -30,6 +30,7 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
 
     auto prev_x = x0; double current_merit_p = merit_p; x = x0;
     current_merit_p = max(0.05,lambda.cwiseAbs().maxCoeff()*1.1); // (18.32) in Nocedal
+    //current_merit_p = max(0.005,lambda.cwiseAbs().maxCoeff()*0.1); // (18.32) in Nocedal
     double ret = f.obj(x0); int iter = 0;
     std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
