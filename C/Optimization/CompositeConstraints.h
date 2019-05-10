@@ -10,7 +10,7 @@ public:
 	CompositeConstraints() {};
 	virtual CompositeConstraints* clone() const {return new CompositeConstraints(*this);}
 
-	CompositeConstraints(const std::vector<Constraints*>& constraints_i) {
+	CompositeConstraints(const std::vector<Constraints*>& constraints_i, const int var_range = -1) : var_range(var_range){
 		constraints.resize(constraints_i.size());
 		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i];
 		const_n = 0; 
@@ -32,7 +32,9 @@ public:
 		IJV.resize(ijv_size);
 	}
 
-	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
+	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x_whole) const {
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		Eigen::VectorXd vals(const_n);
 		int const_cnt = 0; 
 		for (auto cnst: constraints) {
@@ -45,7 +47,9 @@ public:
 		}
 		return vals;
 	}
-	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
+	virtual void updateJacobianIJV(const Eigen::VectorXd& x_whole) {
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		int row_base = 0; int ijv_idx = 0;
 		for (auto cnst: constraints) {
 			cnst->updateJacobianIJV(x);
@@ -58,7 +62,9 @@ public:
 		}
 	}
 	
-	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda){
+	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x_whole, const Eigen::VectorXd& lambda){
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		int lambda_idx = 0;
 		// Each set of constraints has a different sub set of the lagrange multipliers
 		for (auto cnst: constraints) {
@@ -73,5 +79,6 @@ public:
 	}
 private:
 	std::vector<Constraints*> constraints;
+	int var_range;
 	int ijv_size = 0;
 };
