@@ -7,7 +7,8 @@ class CompositeObjective: public Objective {
   
 public:
 	CompositeObjective(){/*empty on purpose*/}
-	CompositeObjective(const std::vector<Objective*>& objectives_i, const std::vector<double>& weights) : weights(weights) {
+	CompositeObjective(const std::vector<Objective*>& objectives_i, const std::vector<double>& weights, const int var_range = -1) : 
+				weights(weights), var_range(var_range) {
 		objectives.resize(objectives_i.size());
 		for (int i = 0; i < objectives.size(); i++) {
 			objectives[i] = objectives_i[i]->clone();
@@ -40,7 +41,9 @@ public:
 		IJV.resize(ijv_size);
 	}
 
-	virtual double obj(const Eigen::VectorXd& x) const {
+	virtual double obj(const Eigen::VectorXd& x_whole) const {
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		double obj = 0;
 		for (int i = 0; i < objectives.size(); i++) {
 			if (weights[i]>0) obj+=weights[i]*objectives[i]->obj(x);
@@ -48,19 +51,33 @@ public:
 		return obj;
 	}
 
-	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x) const {
+	virtual Eigen::VectorXd grad(const Eigen::VectorXd& x_whole) const {
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		Eigen::VectorXd grad(x.rows()); grad.setZero();
 		for (int i = 0; i < objectives.size(); i++) {
 			if (weights[i]>0) grad+=weights[i]*objectives[i]->grad(x);
 		}
-		return grad;
+		if (var_range == -1) {
+			return grad;
+		} else {
+			Eigen::VectorXd whole_grad(x_whole.rows()); whole_grad.setZero();
+			whole_grad.head(var_range) = grad;
+			return whole_grad;
+		}
 	};
 
-	virtual void set_ref(const Eigen::VectorXd& x0) {for (auto obj : objectives) {obj->set_ref(x0);}};
+	virtual void set_ref(const Eigen::VectorXd& x0_whole) {
+		Eigen::VectorXd x0;
+		if (var_range == -1) x0 = x0_whole; else x0 = x0_whole.head(var_range);
+		for (auto obj : objectives) {obj->set_ref(x0);}
+	};
 
 
 private:
-	virtual void updateHessianIJV(const Eigen::VectorXd& x) {
+	virtual void updateHessianIJV(const Eigen::VectorXd& x_whole) {
+		Eigen::VectorXd x;
+		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		int ijv_idx = 0;
 		for (int i = 0; i < objectives.size(); i++) {
 			const std::vector<Eigen::Triplet<double> >& obj_IJV = objectives[i]->update_and_get_hessian_ijv(x);
@@ -70,8 +87,6 @@ private:
 
 	std::vector<Objective*> objectives;
 	std::vector<double> weights;
+	int var_range;
 	int ijv_size = 0;
 };
-
-//This hessian time = 0.000199551
-//This hessian time = 0.00027908

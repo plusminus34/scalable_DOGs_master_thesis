@@ -36,7 +36,7 @@ public:
 	
 	struct Params {
 		double bending_weight = 1.;
-		double isometry_weight = 200000;
+		double isometry_weight = 20000;
 		double soft_pos_weight = 1;
 		double dihedral_weight = 10;
 		double fold_bias_weight = 1;
@@ -126,8 +126,6 @@ private:
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
 
-	// Optimization parameters
-	Eigen::VectorXd init_x0;
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
 	DogSolver::Objectives obj;

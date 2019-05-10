@@ -3,7 +3,7 @@
 using namespace std;
 
 
-DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, 
+DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars, 
         DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
@@ -14,13 +14,12 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
         std::ofstream* time_measurements_log) :
 
-          dog(dog), x(dog.getV_vector()),
+          dog(dog), x(init_mesh_vars), /*todo more variables than only mesh, and init everything..*/
           foldingBinormalBiasConstraints(dog),
-          foldingMVBiasConstraints(dog, p.flip_sign),
-          init_x0(init_x0), p(p),
-          constraints(dog, init_x0, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
+          foldingMVBiasConstraints(dog, p.flip_sign), p(p),
+          constraints(dog, init_mesh_vars, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
-          obj(dog, init_x0, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, matching_curve_pts_y, matching_curve_pts_x, p),
+          obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, matching_curve_pts_y, matching_curve_pts_x, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
