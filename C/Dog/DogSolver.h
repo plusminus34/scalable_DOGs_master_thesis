@@ -24,6 +24,7 @@
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
 #include "Objectives/PointsRigidAlignmentObjective.h"
+#include "Objectives/CurveTranslationalSymmetryConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
