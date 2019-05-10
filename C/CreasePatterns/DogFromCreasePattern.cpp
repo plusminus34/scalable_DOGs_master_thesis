@@ -4,6 +4,7 @@
 #include <igl/polygon_mesh_to_triangle_mesh.h>
 #include <igl/remove_unreferenced.h>
 #include <igl/boundary_loop.h>
+#include <igl/doublearea.h>
 
 #include <CGAL/Polygon_2_algorithms.h>
 #include <igl/triangle/triangulate.h>
@@ -478,7 +479,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 			poly_n++;
 		}
 		// Create the submesh
-		polygon_mesh_to_triangle_mesh_better(polygons_v_ren_indices,F_ren_list[subi]);
+		polygon_mesh_to_triangle_mesh_better(polygons_v_ren_indices, V_ren_list[subi], F_ren_list[subi]);
 	}
 	igl::combine(V_ren_list,F_ren_list, V_ren, F_ren);
 }
@@ -523,7 +524,7 @@ std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 }
 
 
-void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > & vF,Eigen::MatrixXi& F) {
+void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > & vF, const Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F) {
   int m = 0;
   // estimate of size
   for(typename vector<vector<int > >::const_iterator fit = vF.begin();
@@ -544,14 +545,39 @@ void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > &
    	  
    	  for (auto vi : vF[fi]) std::cout << vi << ","; std::cout << std::endl;
       if(vF[fi].size() >= 3) {
-      	int main_v = 0;
+      	// first find the vertex we connect all edges to
+      	Eigen::MatrixXd triV(poly_vn,3); for (int i = 0; i < poly_vn; i++) triV.row(i) = V_ren.row(vF[fi][i]);
+      	Eigen::MatrixXi triF(poly_vn-2,3);
+      	std::cout << "Face number " << fi << " with triV.rows() = " << triV.rows() << std::endl;
+      	double biggest_min_tri_area = 0; int biggest_min_tri_area_i = 0;
+      	for (int j = 0; j < poly_vn; j++) {
+      		int tri_f_cnt = 0; Eigen::VectorXd dblA;
+      		for (int next = (j+1)%poly_vn; (next+1)%poly_vn != j; next = (next+1)%poly_vn ) {
+	      		triF.row(tri_f_cnt++) << j,next,(next+1)%poly_vn;
+      		}	
+      		igl::doublearea(triV,triF,dblA);
+      		std::cout << "dblA = " << dblA << std::endl;
+      		double min_tri_area =  dblA.minCoeff();
+      		if (min_tri_area > biggest_min_tri_area) {
+      			std::cout << "min_tri_area > biggest_min_tri_area since " << min_tri_area << " > " << biggest_min_tri_area << std::endl;
+      			biggest_min_tri_area = min_tri_area;
+      			biggest_min_tri_area_i = j;
+      		} else {
+      			std::cout << "min_tri_area not bigger than biggest_min_tri_areasince " << min_tri_area << " not bigger than " << biggest_min_tri_area << std::endl;
+      		}
+      	}
+      	std::cout << "biggest_min_tri_area_i = " << biggest_min_tri_area_i <<std::endl;
+      	int main_v = biggest_min_tri_area_i;
+      	//std::cout << "main_v = " << main_v << std::endl;
+      	//if (main_v != 0) {std::cout << "Boom!" << std::endl; int wait; std::cin >> wait;}
       	for (int next = (main_v+1)%poly_vn; (next+1)%poly_vn != main_v; next = (next+1)%poly_vn ) {
       		F(k,0) = vF[fi][main_v];
           	F(k,1) = vF[fi][next];
           	F(k,2) = vF[fi][(next+1)%poly_vn];
-          	std::cout << "Adding face: " << F.row(k) << std::endl;
+          	//std::cout << "Adding face: " << F.row(k) << std::endl;
           	k++;
       	}
+      	std::cout << std::endl << std::endl;
       	/*
         typename vector<int >::const_iterator cit = fit->begin();
         cit++;
