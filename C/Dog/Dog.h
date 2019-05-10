@@ -99,6 +99,7 @@ public:
 	bool is_rectangular();
 	void setup_rendered_wireframe_edges_from_planar();
 	const std::vector< std::pair<int,int> >& get_rendered_wireframe_edges() const {return rendered_wireframe_edges;}
+	void setup_boundary_curves_indices();
 
 	void InitSerialization() {
       Add(V,std::string("_V"));
@@ -129,7 +130,6 @@ public:
 private:
 	void update_rendering_v();
 	void setup_stitched_curves_initial_l_angles_length();
-	void setup_boundary_curves_indices();
 	void get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices);
 	static int find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v);
 	static int find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v);

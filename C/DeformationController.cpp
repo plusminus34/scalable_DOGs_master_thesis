@@ -203,7 +203,7 @@ void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	if (dogSolver) delete dogSolver;
 	cout << "reseting dog solver" << endl;
-	std::cout << "matching_curve_pts_y.size() = " << matching_curve_pts_y.first.size() << std::endl;
+	std::cout << "matching_curve_pts_x.size() = " << matching_curve_pts_x.first.size() << std::endl;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
 		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, matching_curve_pts_y, matching_curve_pts_x, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
@@ -212,14 +212,15 @@ void DeformationController::reset_dog_solver() {
 }
 
 void DeformationController::set_wallpaper_constraints() {
+	dogSolver->getDog().setup_boundary_curves_indices();
 	// Set Y curve constraints
 	auto left_curve = dogSolver->getDog().left_bnd; auto right_curve = dogSolver->getDog().right_bnd;
 	if ((wallpaperType == XUY) || (wallpaperType == UXUY) ) {std::reverse(right_curve.begin(),right_curve.end());}
 	auto lower_curve = dogSolver->getDog().lower_bnd; auto upper_curve = dogSolver->getDog().upper_bnd;
 	if ((wallpaperType == UXY) || (wallpaperType == UXUY) ) {std::reverse(upper_curve.begin(),upper_curve.end());}
 
-	matching_curve_pts_y.first = left_curve; matching_curve_pts_y.second = right_curve;
-	//matching_curve_pts_x.first = lower_curve; matching_curve_pts_x.second = upper_curve;
+	//matching_curve_pts_y.first = left_curve; matching_curve_pts_y.second = right_curve;
+	matching_curve_pts_x.first = lower_curve; matching_curve_pts_x.second = upper_curve;
 
 	reset_dog_solver();
 }

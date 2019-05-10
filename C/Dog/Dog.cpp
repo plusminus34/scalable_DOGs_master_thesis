@@ -33,7 +33,6 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting boundary curves" << endl;
-	setup_boundary_curves_indices();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -42,7 +41,6 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(
 	vi_to_submesh.assign(V.rows(),0);
 	quad_topology(V,F,quadTop);
 	setup_rendered_wireframe_edges_from_planar();
-	setup_boundary_curves_indices();
 }
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
@@ -234,27 +232,25 @@ bool Dog::is_rectangular() {
 }
 
 void Dog::setup_boundary_curves_indices() {
-	if (is_rectangular()) {
-		double min_x = flatV.col(0).minCoeff(); double max_x = flatV.col(0).maxCoeff();
-		double min_y = flatV.col(1).minCoeff(); double max_y = flatV.col(1).maxCoeff();
-		//std::cout << "min_x = " << min_x << " max_x = " << max_x << " min_y = " << min_y << " max_y = " << max_y << std::endl;
-		int left_lower_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,min_y,0));
-		int right_lower_i = find_v_idx(flatV,Eigen::RowVector3d(max_x,min_y,0));
-		int left_upper_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,max_y,0));
-		//std::cout << "At indices " << left_lower_i << "," << right_lower_i << "," << left_upper_i << std::endl;
+	double min_x = flatV.col(0).minCoeff(); double max_x = flatV.col(0).maxCoeff();
+	double min_y = flatV.col(1).minCoeff(); double max_y = flatV.col(1).maxCoeff();
+	//std::cout << "min_x = " << min_x << " max_x = " << max_x << " min_y = " << min_y << " max_y = " << max_y << std::endl;
+	int left_lower_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,min_y,0));
+	int right_lower_i = find_v_idx(flatV,Eigen::RowVector3d(max_x,min_y,0));
+	int left_upper_i = find_v_idx(flatV,Eigen::RowVector3d(min_x,max_y,0));
+	//std::cout << "At indices " << left_lower_i << "," << right_lower_i << "," << left_upper_i << std::endl;
 
-		//left_bnd,right_bnd,lower_bnd,upper_bnd;
-		get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(0,1,0), left_bnd);
-		get_all_curves_on_parameter_line(right_lower_i, Eigen::RowVector3d(0,1,0), right_bnd);
-		get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(1,0,0), lower_bnd);
-		get_all_curves_on_parameter_line(left_upper_i, Eigen::RowVector3d(1,0,0), upper_bnd);
-		/*
-		cout << "left ";for (auto idx: left_bnd ) cout << idx <<","; cout << endl;
-		cout << "right "; for (auto idx: right_bnd ) cout << idx <<","; cout << endl;
-		cout << "down "; for (auto idx: lower_bnd ) cout << idx <<","; cout << endl;
-		cout << "up "; for (auto idx: upper_bnd ) cout << idx <<","; cout << endl;
-		*/
-	}
+	//left_bnd,right_bnd,lower_bnd,upper_bnd;
+	get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(0,1,0), left_bnd);
+	get_all_curves_on_parameter_line(right_lower_i, Eigen::RowVector3d(0,1,0), right_bnd);
+	get_all_curves_on_parameter_line(left_lower_i, Eigen::RowVector3d(1,0,0), lower_bnd);
+	get_all_curves_on_parameter_line(left_upper_i, Eigen::RowVector3d(1,0,0), upper_bnd);
+	/*
+	cout << "left ";for (auto idx: left_bnd ) cout << idx <<","; cout << endl;
+	cout << "right "; for (auto idx: right_bnd ) cout << idx <<","; cout << endl;
+	cout << "down "; for (auto idx: lower_bnd ) cout << idx <<","; cout << endl;
+	cout << "up "; for (auto idx: upper_bnd ) cout << idx <<","; cout << endl;
+	*/
 }
 
 int Dog::find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v) {
