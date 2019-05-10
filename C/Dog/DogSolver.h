@@ -23,7 +23,7 @@
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
-#include "Objectives/PointsRigidAlignmentObjective.h"
+//#include "Objectives/PointsRigidAlignmentObjective.h"
 #include "Objectives/CurveTranslationalSymmetryConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
@@ -108,8 +108,7 @@ public:
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	//PointsRigidAlignmentObjective pointsRigidAlignmentY;
-	  	PointsRigidAlignmentObjective pointsRigidAlignmentX;
+	  	CurveTranslationalSymmetryConstraint translationAlignment;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;
@@ -122,7 +121,7 @@ public:
 	};
 
 private:
-	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars);
+	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, bool is_x_curve_matching);
 	Dog& dog;
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
