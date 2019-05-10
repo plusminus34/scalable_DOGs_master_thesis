@@ -14,7 +14,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_x0,
         std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
         std::ofstream* time_measurements_log) :
 
-          dog(dog),
+          dog(dog), x(dog.getV_vector()),
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign),
           init_x0(init_x0), p(p),
@@ -112,6 +112,7 @@ bool DogSolver::is_folded() {
       if ( sign1*sign2 > 0) {
         is_folded = false;
         //cout << "Change!" << endl;
+        /*
         cout << "edge_t = " << edge_t << std::endl;
         cout << "(ep_p-ep_b_p).norm() = " << (ep_p-ep_b_p).norm()  << std::endl;
         cout << "(ep_f_p-ep_p).norm() = " << (ep_f_p-ep_p).norm()  << std::endl;
@@ -121,6 +122,7 @@ bool DogSolver::is_folded() {
         cout << "(ep_f_p-ep_p).normalized().dot(e2.normalized()) " << (ep_f_p-ep_p).normalized().dot(e2.normalized()) << std::endl;
         std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
         cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
+        */
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;
         break;
       }
@@ -137,7 +139,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
-	Eigen::VectorXd x0(dog.getV_vector()), x(x0);
+	Eigen::VectorXd x0(x);
   if (!is_folded()) {
     cout << "Error: Not folded" << endl; exit(1);
   }
@@ -172,7 +174,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
 
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
   cout << "running a single optimization routine" << endl;
-  Eigen::VectorXd x0(dog.getV_vector()), x(x0);
+  Eigen::VectorXd x0(x);
 
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight,p.wallpaper_curve_weight});
 

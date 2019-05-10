@@ -135,6 +135,7 @@ private:
 
 	// Solvers
 	//NewtonKKT newtonKKT;
+	Eigen::VectorXd x; // variables
 	EqSQP newtonKKT;
 	//FeasibleIneqInteriorPoint interiorPt;
 
