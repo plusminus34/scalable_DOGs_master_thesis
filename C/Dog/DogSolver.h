@@ -107,7 +107,7 @@ public:
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	PointsRigidAlignmentObjective pointsRigidAlignmentY;
+	  	//PointsRigidAlignmentObjective pointsRigidAlignmentY;
 	  	PointsRigidAlignmentObjective pointsRigidAlignmentX;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
@@ -121,6 +121,7 @@ public:
 	};
 
 private:
+	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars);
 	Dog& dog;
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
