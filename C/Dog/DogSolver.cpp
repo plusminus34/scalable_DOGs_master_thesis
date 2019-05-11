@@ -30,8 +30,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
     if (time_measurements_log) {
       p.max_newton_iters = 1;
     }
+     if (matching_curve_pts_x.first.size() ) {
+      std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
+      int wait; std::cin>> wait;
+    }
     //std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
-    //int wait; std::cin>> wait;
 }
 
 Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, 
@@ -44,9 +47,9 @@ Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars,
   x.head(dog_vars_num) = init_mesh_vars;
   // Init initial translation
   if (matching_curve_pts_x.first.size() ) {
-    x(dog_vars_num) = x(matching_curve_pts_x.first[0])-x(matching_curve_pts_x.second[0]);
-    x(dog_vars_num+1) = x(matching_curve_pts_x.first[0]+dog_vars_num/3)-x(matching_curve_pts_x.second[0]+dog_vars_num/3);
-    x(dog_vars_num+2) = x(matching_curve_pts_x.first[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.second[0]+2*dog_vars_num/3);
+    x(dog_vars_num) = x(matching_curve_pts_x.second[0])-x(matching_curve_pts_x.first[0]);
+    x(dog_vars_num+1) = x(matching_curve_pts_x.second[0]+dog_vars_num/3)-x(matching_curve_pts_x.first[0]+dog_vars_num/3);
+    x(dog_vars_num+2) = x(matching_curve_pts_x.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.first[0]+2*dog_vars_num/3);
     std::cout << "x.tail(3) = " << x.tail(3) << std::endl;
   }
   return x;

@@ -17,17 +17,16 @@ public:
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd vals(const_n); 
 		int vnum = (x.rows()-3)/3; // Todo:Assume the translation variables are at the end of the mesh for now
-		int tx_i = x.rows(),ty_i = tx_i+1, tz_i = ty_i+1;
-		double t_x = x(tx_i), t_y = x(ty_i), t_z = x(tz_i);
+		int tx_i = x.rows()-3,ty_i = tx_i+1, tz_i = ty_i+1;
+		double t_x = x(tx_i), t_y = x(ty_i), t_z = x(tz_i); int val_cnt = 0;
 		for (int i = 0; i < src_points.size(); i++) {
-			vals(i++) = x(src_points[i])+t_x-x(target_points[i]);
-			vals(i++) = x(src_points[i]+vnum)+t_x-x(target_points[i]+vnum);
-			vals(i++) = x(src_points[i]+2*vnum)+t_x-x(target_points[i]+2*vnum);
+			vals(val_cnt++) = x(src_points[i])+t_x-x(target_points[i]);
+			vals(val_cnt++) = x(src_points[i]+vnum)+t_y-x(target_points[i]+vnum);
+			vals(val_cnt++) = x(src_points[i]+2*vnum)+t_z-x(target_points[i]+2*vnum);
 		}
 		return vals;
 	}
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
-		std::cout << "here" << std::endl;
 		int const_cnt = 0; int ijv_cnt = 0;
 		int vnum = (x.rows()-3)/3; // Todo:Assume the translation variables are at the end of the mesh for now
 		int tx_i = x.rows()-3,ty_i = tx_i+1, tz_i = ty_i+1;
