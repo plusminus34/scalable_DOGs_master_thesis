@@ -10,7 +10,8 @@
 
 class EdgePointConstraints : public Constraints {
 public:
-	EdgePointConstraints(std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) : edgePoints(edgePoints) {
+	EdgePointConstraints(const QuadTopology& quadTop, std::vector<EdgePoint> edgePoints , const Eigen::MatrixXd& edgePointCoords) : 
+			vnum(quadTop.v_n), edgePoints(edgePoints) {
 		mat2_to_vec(edgePointCoords, bc); // flatten to a vector
 		const_n = bc.rows(); 
 		// 2 points per edge
@@ -28,14 +29,13 @@ public:
 		*/
 		int edge_points_n = edgePoints.size(); Eigen::VectorXd coords(3*edge_points_n);
     	for (int i = 0; i < edge_points_n; i++) {
-        	auto vec = edgePoints[i].getPositionInMesh(x);
+        	auto vec = edgePoints[i].getPositionInMesh(x,vnum);
         	coords(i) = vec(0); coords(edge_points_n+i) = vec(1); coords(2*edge_points_n+i) = vec(2);
     	}
     	return coords-bc;
 	}
 
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
-		int vn = x.rows()/3;
 		
 		int const_row = 0; int edge_points_n = edgePoints.size(); int ijv_cnt = 0;
 		for (int b_i = 0; b_i < edge_points_n; b_i++ ) {
@@ -46,11 +46,11 @@ public:
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v1, t);
 			IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v2, 1-t);
 
-			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vn+v1, t);
-			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vn+v2, 1-t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vnum+v1, t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vnum+v2, 1-t);
 
-			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vn+v1, t);
-			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vn+v2, 1-t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vnum+v1, t);
+			IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vnum+v2, 1-t);
 
 			const_row++;
 		}
@@ -65,5 +65,6 @@ public:
 	Eigen::VectorXd getEdgePointConstraints() const {return bc;}
 
 private:
+	int vnum;
 	std::vector<EdgePoint> edgePoints; Eigen::VectorXd bc;
 };

@@ -18,13 +18,12 @@ struct MVTangentCreaseFold {
 
 class MVTangentCreaseAngleConstraints : public Constraints {
 public:
-	MVTangentCreaseAngleConstraints(const Eigen::VectorXd& x, const std::vector<MVTangentCreaseFold>& fold_params, const std::vector<double> cos_angles) :
-			fold_params(fold_params), cos_angles(cos_angles) {
+	MVTangentCreaseAngleConstraints(const QuadTopology& quadTop, const Eigen::VectorXd& x, const std::vector<MVTangentCreaseFold>& fold_params, const std::vector<double> cos_angles) :
+			fold_params(fold_params), cos_angles(cos_angles), vnum(quadTop.v_n) {
 		// Every edge pairs consist 1 angle constraint
 		const_n = fold_params.size();
 		IJV.resize(24*const_n);
 
-		int vnum = x.rows()/3;
 		for (int i = 0; i < fold_params.size(); i++) {
 			int v1_i(fold_params[i].v1),v2_i(fold_params[i].v2);
 			int w1_i(fold_params[i].w1),w2_i(fold_params[i].w2);
@@ -94,7 +93,6 @@ public:
 	virtual MVTangentCreaseAngleConstraints* clone() const {return new MVTangentCreaseAngleConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
-		int vnum = x.rows()/3;
 		Eigen::VectorXd vals(fold_params.size()); 
 		for (int i = 0; i < fold_params.size(); i++) {
 			int v1_i(fold_params[i].v1),v2_i(fold_params[i].v2);
@@ -169,7 +167,6 @@ public:
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
 		int const_cnt = 0; int ijv_cnt = 0;
 
-		int vnum = x.rows()/3;
 		Eigen::VectorXd vals(fold_params.size()); 
 		for (int i = 0; i < fold_params.size(); i++) {
 			int v1_i(fold_params[i].v1),v2_i(fold_params[i].v2);
@@ -299,6 +296,7 @@ public:
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
 		// The constraints are not linear but for now we use here gauss-newton..
 	};
+	int vnum;
 	const std::vector<MVTangentCreaseFold>& fold_params;
 	std::vector<double> cos_angles;
 	std::vector<double> folds_e1_l,folds_e2_l;

@@ -14,5 +14,6 @@ public:
 
 private:
 	const Dog& dog;
+	int vnum;
 	const DogEdgeStitching& eS;
 };

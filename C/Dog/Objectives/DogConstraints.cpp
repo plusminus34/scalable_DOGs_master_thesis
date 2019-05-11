@@ -2,8 +2,8 @@
 
 using namespace std;
 
-DogConstraints::DogConstraints(const QuadTopology& quadTop, bool offset_planar) : quadTop(quadTop),
-									 offset_planar(offset_planar) {
+DogConstraints::DogConstraints(const QuadTopology& quadTop, bool offset_planar) : 
+					quadTop(quadTop), vnum(quadTop.v_n), offset_planar(offset_planar) {
 	const_n= 3*(quadTop.stars.rows()/5)+1*quadTop.bnd3.rows()/4;
 	IJV.resize(36*(quadTop.stars.rows()/5) + 12*(quadTop.bnd3.rows()/4));
 	lambda_hessian_IJV.resize(189*(quadTop.stars.rows()/5) + 126*(quadTop.bnd3.rows()/4));
@@ -11,7 +11,6 @@ DogConstraints::DogConstraints(const QuadTopology& quadTop, bool offset_planar) 
 
 void DogConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 	// Add inner vertices constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_idx = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
 		int p_0_i = quadTop.stars(si), p_xf_i = quadTop.stars(si+1), p_yf_i = quadTop.stars(si+2), p_xb_i = quadTop.stars(si+3),p_yb_i = quadTop.stars(si+4);
@@ -308,7 +307,6 @@ void DogConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 Eigen::VectorXd DogConstraints::Vals(const Eigen::VectorXd& x) const {
 	Eigen::VectorXd constVals(const_n); constVals.setZero();
 	// Add inner vertices constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
 		int p_0_i = quadTop.stars(si), p_xf_i = quadTop.stars(si+1), p_yf_i = quadTop.stars(si+2), p_xb_i = quadTop.stars(si+3),p_yb_i = quadTop.stars(si+4);
@@ -402,7 +400,7 @@ Eigen::VectorXd DogConstraints::Vals(const Eigen::VectorXd& x) const {
 
 void DogConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
 	// Add inner vertices constraints
-	int vnum = x.rows()/3; int ijv_idx = 0;
+	int ijv_idx = 0;
 	int const_cnt = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
 		int p_0_i = quadTop.stars(si), p_xf_i = quadTop.stars(si+1), p_yf_i = quadTop.stars(si+2), p_xb_i = quadTop.stars(si+3),p_yb_i = quadTop.stars(si+4);

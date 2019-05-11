@@ -2,7 +2,8 @@
 
 using namespace std;
 
-FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) : dog(dog), eS(dog.getEdgeStitching()) {
+FoldingBinormalBiasConstraints::FoldingBinormalBiasConstraints(const Dog& dog) : 
+	dog(dog), eS(dog.getEdgeStitching()), vnum(dog.getQuadTopology().v_n) {
     // TODO: different handling of vertices (maybe no consatraints there?)
 	//const_n= 2*(eS.edge_coordinates.size()-2);
 	//const_n = 1;//*(eS.edge_coordinates.size()-2);
@@ -36,7 +37,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 	Eigen::VectorXd constVals(const_n); constVals.setZero();
 	
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0;
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
@@ -111,7 +111,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals(const Eigen::VectorXd& x) c
 
 void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
@@ -264,7 +263,6 @@ void FoldingBinormalBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x)
 /*
 void FoldingBinormalBiasConstraints::updateJacobianIJV_old(const Eigen::VectorXd& x) {
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
@@ -399,7 +397,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals_old(const Eigen::VectorXd& 
 	Eigen::VectorXd constVals(const_n); constVals.setZero();
 	
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0;
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
@@ -473,7 +470,6 @@ Eigen::VectorXd FoldingBinormalBiasConstraints::Vals_old(const Eigen::VectorXd& 
 
 void FoldingBinormalBiasConstraints::updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda_v) {
 		// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_idx = 0;
   	for (int curve_i = 0; curve_i < eS.stitched_curves.size(); curve_i++) {
 		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];

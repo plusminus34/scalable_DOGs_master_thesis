@@ -1,13 +1,13 @@
 #include "IsometryObjective.h"
 
-IsometryObjective::IsometryObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0)  : quadTop(quadTop) {
+IsometryObjective::IsometryObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x0)  :
+		 quadTop(quadTop), vnum(quadTop.v_n) {
 	refL.resize(quadTop.E.rows()); refL.setZero();
 	set_ref(x0);
 	IJV.resize(quadTop.E.rows()*36);
 }
 
 void IsometryObjective::set_ref(const Eigen::VectorXd& x) {
-	int vnum = x.rows()/3;
 
   	int h_cnt = 0;
   	for (int ei = 0; ei < quadTop.E.rows(); ei++) {
@@ -26,7 +26,6 @@ void IsometryObjective::set_ref(const Eigen::VectorXd& x) {
 
 double IsometryObjective::obj(const Eigen::VectorXd& x) const {
 	double e = 0;
-	int vnum = x.rows()/3;
 	double edge_stretch = 0; double max_stretch = 0;
 	int h_cnt = 0;
 	for (int ei = 0; ei < quadTop.E.rows(); ei++) {
@@ -55,7 +54,6 @@ double IsometryObjective::obj(const Eigen::VectorXd& x) const {
 Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) const {
   Eigen::VectorXd grad;
   grad.resize(x.rows(),1); grad.setZero();
-  int vnum = x.rows()/3;
   int v_num = vnum;
   int h_cnt = 0;
 
@@ -100,7 +98,6 @@ Eigen::VectorXd IsometryObjective::grad(const Eigen::VectorXd& x) const {
 }
 
 void IsometryObjective::updateHessianIJV(const Eigen::VectorXd& x) {
-  int vnum = x.rows()/3;
   int v_num = vnum;
   int h_cnt = 0;
 

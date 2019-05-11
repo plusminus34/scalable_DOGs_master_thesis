@@ -3,7 +3,7 @@
 using namespace std;
 
 StitchingConstraints::StitchingConstraints(const QuadTopology& quadTop,const DogEdgeStitching& edgeStitching) : quadTop(quadTop), 
-																					eS(edgeStitching) {
+																					eS(edgeStitching), vnum(quadTop.v_n) {
 	const_n= 3*edgeStitching.edge_coordinates.size();
 	IJV.resize(4*const_n);
 }
@@ -12,7 +12,6 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 	Eigen::VectorXd constVals(const_n); constVals.setZero();
 	
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0;
   	#pragma clang loop vectorize(enable)
 	//for (auto pair : v_equality_matchings) {
@@ -38,7 +37,6 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 void StitchingConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {
 
 	// Add curve fold constraints
-	int vnum = x.rows()/3;
 	int const_cnt = 0; int ijv_cnt = 0;
   	#pragma clang loop vectorize(enable)
 	for (int i = 0; i < eS.edge_const_1.size(); i++) {

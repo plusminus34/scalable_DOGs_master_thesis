@@ -18,5 +18,6 @@ public:
 
 private:
 	const QuadTopology& quadTop;
+	int vnum;
 	const DogEdgeStitching& eS;
 };

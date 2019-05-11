@@ -19,4 +19,5 @@ private:
 	
 	const QuadTopology& quadTop;
 	Eigen::VectorXd refL;
+	int vnum;
 };

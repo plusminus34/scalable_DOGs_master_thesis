@@ -15,4 +15,5 @@ public:
 private:
 	const bool offset_planar;
 	const QuadTopology& quadTop;
+	int vnum;
 };
