@@ -15,6 +15,10 @@ R = [r11,r12,r13;r21,r22,r23;r31,r32,r33];
 syms t1 t2 t3
 T = [t1,t2,t3];
 
+assume(R,'real')
+assume(T,'real')
+
+
 % Equal up to rigid motion
 const = p1*R+T-p2;
 
@@ -22,3 +26,7 @@ vars = [p1_x, p1_y, p1_z, p2_x, p2_y, p2_z,t1,t2,t3,r11,r12,r13,r21,r22,r23,r31,
 
 ccode(const ,'file','affine_alignment_C');
 ccode(jacobian(const,vars),'file','affine_alignment_G');
+
+rot_const = R*R'-eye(3); rot_const = rot_const(:);
+ccode(rot_const  ,'file','rot_const_C');
+ccode(jacobian(rot_const ,vars),'file','rot_const__G');
