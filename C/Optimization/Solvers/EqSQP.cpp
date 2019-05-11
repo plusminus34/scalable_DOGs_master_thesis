@@ -32,10 +32,11 @@ double EqSQP::solve_constrained(const Eigen::VectorXd& x0, Objective& f, Constra
     current_merit_p = max(0.05,lambda.cwiseAbs().maxCoeff()*1.1); // (18.32) in Nocedal
     //current_merit_p = max(0.005,lambda.cwiseAbs().maxCoeff()*0.1); // (18.32) in Nocedal
     double ret = f.obj(x0); int iter = 0;
-    std::cout << "convergence_threshold = " << convergence_threshold << endl;
+    //std::cout << "convergence_threshold = " << convergence_threshold << endl;
     //if (const_dev > infeasability_filter) { x = prev_x; current_merit_p *=2;} prev_x = x;
     //while ((const_dev > infeasability_epsilon) && iter < max_newton_iters) {
     double error = 10000*kkt_error(x, f, constraints);
+    std::cout << "error = " << error << std::endl;
     //error = convergence_threshold+1e-2; // hack to get at least one iteration. Problem is that the gradient condition is too tight, maybe.
     // this might be due to the modified jacobian. We should probably use the normal non modified one for the termination condition..
     while ( (error > infeasability_epsilon) && (iter < max_newton_iters) ) {

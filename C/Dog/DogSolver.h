@@ -127,8 +127,8 @@ private:
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	CurveTranslationalSymmetryConstraint affineAlignment;
-	//CurveAffineSymmetryConstraint affineAlignment;
+	//CurveTranslationalSymmetryConstraint affineAlignment;
+	CurveAffineSymmetryConstraint affineAlignment;
 	QuadraticConstraintsSumObjective affineAlignmentSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
