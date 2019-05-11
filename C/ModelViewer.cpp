@@ -83,7 +83,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 		Dog nextDog(vertDog);
 		for (int i = 0; i < wallpaper_res; i++) {
 			PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
-			std::cout << "ModelViewr: Rx = " << Rx << " Tx = " << Tx << std::endl;
+			//std::cout << "ModelViewr: Rx = " << Rx << " Tx = " << Tx << std::endl;
 			Eigen::MatrixXd newV = (nextDog.getV() * Rx).rowwise() + Tx.transpose();
 			nextDog.update_V(newV);
 			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());

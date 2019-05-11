@@ -25,7 +25,7 @@
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
 //#include "Objectives/PointsRigidAlignmentObjective.h"
 #include "Objectives/CurveAffineSymmetryConstraint.h"
-#include "Objectives/CurveTranslationalSymmetryConstraint.h"
+#include "Objectives/Curve2AffineSymmetriesConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
