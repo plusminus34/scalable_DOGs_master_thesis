@@ -109,6 +109,7 @@ public:
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
 	  	CurveTranslationalSymmetryConstraint translationAlignment;
+	  	//QuadraticConstraintsSumObjective translationAlignmentSoft;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;

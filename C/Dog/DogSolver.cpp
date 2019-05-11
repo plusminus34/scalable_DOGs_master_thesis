@@ -155,7 +155,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight});
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight,1});
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
-  dog.update_V_vector(x);
+  dog.update_V_vector(x.head(3*dog.get_v_num()));
   
   if (is_folded()) {
     p.fold_bias_weight = 1;
@@ -164,17 +164,17 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
       cout << "Not folded, fold bias = " << p.fold_bias_weight << " reverting back and making the bias stronger" << endl;
       x = x0;
       cout << "x.norm() = " << x.norm() << endl;
-      dog.update_V_vector(x);
+      dog.update_V_vector(x.head(3*dog.get_v_num()));
       cout << "Rolled back and is_folded = " << is_folded() << endl;
       p.fold_bias_weight *= 10;
       obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight,p.mv_bias_weight});
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
-      dog.update_V_vector(x);
+      dog.update_V_vector(x.head(3*dog.get_v_num()));
     }
   }
   cout << "Finished: fold bias = " << p.fold_bias_weight << " and is_folded = " << is_folded() << endl;
 
-  dog.update_V_vector(x);
+  dog.update_V_vector(x.head(3*dog.get_v_num()));
   
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
@@ -189,7 +189,7 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   is_folded();
 
-  dog.update_V_vector(x);
+  dog.update_V_vector(x.head(3*dog.get_v_num()));
   
   objective = obj.compObj.obj(x);
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
