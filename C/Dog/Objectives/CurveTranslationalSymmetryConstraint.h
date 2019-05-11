@@ -14,6 +14,7 @@ public:
 
 	virtual CurveTranslationalSymmetryConstraint* clone() const {return new CurveTranslationalSymmetryConstraint(*this);}
 
+	bool is_constraint() {return (src_points.size() > 0);}
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd vals(const_n); 
 		int vnum = (x.rows()-3)/3; // Todo:Assume the translation variables are at the end of the mesh for now

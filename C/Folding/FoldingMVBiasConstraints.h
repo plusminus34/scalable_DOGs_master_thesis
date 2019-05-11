@@ -15,6 +15,7 @@ public:
 private:
 	const Dog& dog;
 	const DogEdgeStitching& eS;
+	int vnum;
 	int curve_i;
 	double flip_sign_mult = 1;
 	double delta = 0.00001;

@@ -9,13 +9,12 @@
 
 class EdgesAngleConstraints : public Constraints {
 public:
-	EdgesAngleConstraints(const Eigen::VectorXd& x, const std::vector<std::pair<Edge,Edge>>& edge_pairs, const std::vector<double> cos_angles) :
-			edge_pairs(edge_pairs), cos_angles(cos_angles) {
+	EdgesAngleConstraints(const QuadTopology& quadTop, const Eigen::VectorXd& x, const std::vector<std::pair<Edge,Edge>>& edge_pairs, const std::vector<double> cos_angles) :
+			vnum(quadTop.v_n), edge_pairs(edge_pairs), cos_angles(cos_angles) {
 		// Every edge pairs consist 1 angle constraint
 		const_n = edge_pairs.size();
 		IJV.resize(12*const_n);
 
-		int vnum = x.rows()/3;
 		for (int i = 0; i < edge_pairs.size(); i++) {
 			int v1_i(edge_pairs[i].first.v1),v2_i(edge_pairs[i].first.v2),w1_i(edge_pairs[i].second.v1),w2_i(edge_pairs[i].second.v2);
 			const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
@@ -33,7 +32,6 @@ public:
 	virtual EdgesAngleConstraints* clone() const {return new EdgesAngleConstraints(*this);}
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
-		int vnum = x.rows()/3;
 		Eigen::VectorXd vals(edge_pairs.size()); 
 		for (int i = 0; i < edge_pairs.size(); i++) {
 			int v1_i(edge_pairs[i].first.v1),v2_i(edge_pairs[i].first.v2),w1_i(edge_pairs[i].second.v1),w2_i(edge_pairs[i].second.v2);
@@ -56,7 +54,6 @@ public:
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {
 		int const_cnt = 0; int ijv_cnt = 0;
 
-		int vnum = x.rows()/3;
 		Eigen::VectorXd vals(edge_pairs.size()); 
 		for (int i = 0; i < edge_pairs.size(); i++) {
 			int v1_i(edge_pairs[i].first.v1),v2_i(edge_pairs[i].first.v2),w1_i(edge_pairs[i].second.v1),w2_i(edge_pairs[i].second.v2);
@@ -101,6 +98,7 @@ public:
 		// The constraints are not linear but for now we use here gauss-newton..
 	};
 
+	int vnum;
 	std::vector<std::pair<Edge,Edge>> edge_pairs;
 	std::vector<double> cos_angles;
 	std::vector<double> e_lens;

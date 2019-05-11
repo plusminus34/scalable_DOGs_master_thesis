@@ -1,10 +1,10 @@
 #include "SimplifiedBendingObjective.h"
 
-SimplifiedBendingObjective::SimplifiedBendingObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x)  : quadTop(quadTop) {
+SimplifiedBendingObjective::SimplifiedBendingObjective(const QuadTopology& quadTop, const Eigen::VectorXd& x)  : 
+		quadTop(quadTop), vnum(quadTop.v_n) {
 	// Number of hessian triplets
 	IJV.resize(75*quadTop.stars.rows()/5+27*quadTop.bnd3.rows()/4);
 	// Change the weights to 1 to get to the old bending energy (this is for unregular grid, needed for intersecting creases)
-	int vnum = x.rows()/3;
 	init_edge_lengths.resize(4*quadTop.stars.rows()/5 + 2*quadTop.bnd3.rows()/4); 
 	int cnt = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
@@ -45,7 +45,6 @@ SimplifiedBendingObjective::SimplifiedBendingObjective(const QuadTopology& quadT
 
 double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) const {
   double e = 0;
-  int vnum = x.rows()/3;
   
   int cnt = 0;  
   for (int si = 0; si < quadTop.stars.rows(); si+=5) {
@@ -99,7 +98,6 @@ double SimplifiedBendingObjective::obj(const Eigen::VectorXd& x) const {
 Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) const {
   Eigen::VectorXd grad;
   grad.resize(x.rows(),1); grad.setZero();
-  int vnum = x.rows()/3;
   int v_num = vnum;
 
   int cnt = 0;
@@ -221,7 +219,6 @@ Eigen::VectorXd SimplifiedBendingObjective::grad(const Eigen::VectorXd& x) const
 
 void SimplifiedBendingObjective::updateHessianIJV(const Eigen::VectorXd& x) {
   // Number of ijv values
-  int vnum = x.rows()/3;
   int v_num = vnum;
   int ijv_idx = 0; int cnt = 0;
   #pragma clang loop vectorize(enable)

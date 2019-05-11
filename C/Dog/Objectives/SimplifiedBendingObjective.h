@@ -16,5 +16,6 @@ private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
 	
 	const QuadTopology& quadTop;
+	int vnum;
 	std::vector<double> init_edge_lengths;
 };

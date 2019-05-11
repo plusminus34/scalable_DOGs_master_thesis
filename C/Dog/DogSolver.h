@@ -102,8 +102,7 @@ public:
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
-	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
-	  			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
+	  			QuadraticConstraintsSumObjective& translationAlignmentSoft,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
