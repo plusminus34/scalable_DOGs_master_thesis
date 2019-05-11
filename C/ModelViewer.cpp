@@ -6,6 +6,8 @@
 #include <igl/per_vertex_normals.h>
 #include <igl/per_corner_normals.h>
 
+#include "Dog/Objectives/PointsRigidAlignmentObjective.h"
+
 using namespace std;
 
 
@@ -72,28 +74,29 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
 	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
 	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
-	Eigen::Matrix3d R; Eigen::Vector3d T;
+	Eigen::Matrix3d Rx;/*(DC.wallpaperRx);*/ Eigen::Vector3d Tx;//(DC.wallpaperTx);
 
 	// add meshes to the right
-	for (int j = 0; j < wallpaper_res; j++) {
+	//for (int j = 0; j < wallpaper_res; j++) {
 		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
-		/*
+		
 		Dog nextDog(vertDog);
 		for (int i = 0; i < wallpaper_res; i++) {
-			PointsRigidAlignmentObjective::update_rigid_motion(nextDog.getV_vector(), left_curve, right_curve,R, T);
-			Eigen::MatrixXd newV = (nextDog.getV() * R).rowwise() + T.transpose();
+			PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
+			std::cout << "ModelViewr: Rx = " << Rx << " Tx = " << Tx << std::endl;
+			Eigen::MatrixXd newV = (nextDog.getV() * Rx).rowwise() + Tx.transpose();
 			nextDog.update_V(newV);
 			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
 		}
-		
+		/*
 		// add mesh up
 		PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,R, T);
 		Eigen::MatrixXd newV = (vertDog.getV() * R).rowwise() + T.transpose();
 		vertDog.update_V(newV);
 		*/
-	}
+	//}
 	
-
+	//std::cout << "Vlist.size() = " << Vlist.size() << std::endl;
 	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
 	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);
 	render_mesh(viewer,VWallpaper,FWallpaper);

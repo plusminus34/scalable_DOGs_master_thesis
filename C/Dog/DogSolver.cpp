@@ -219,3 +219,11 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
     *time_measurements_log << objective << "," << constraints_deviation << endl;
   }
 }
+
+void DogSolver::get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
+  int vn = 3*dog.get_v_num();
+  T << x(vn),x(vn+1),x(vn+2);
+  R.row(0) << x(vn+3),x(vn+4),x(vn+5);
+  R.row(1) << x(vn+6),x(vn+7),x(vn+8);
+  R.row(2) << x(vn+9),x(vn+10),x(vn+11);
+}

@@ -21,11 +21,11 @@ void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x
 		target.row(i) << x(target_points[i]), x(target_points[i]+vnum), x(target_points[i]+2*vnum);
 	}
 	// call procrustes with includeScaling = false, includeReflections = false
-	//double scale_dummy; igl::procrustes(src, target, false, false, scale_dummy,R,T);
+	double scale_dummy; igl::procrustes(src, target, false, false, scale_dummy,R,T);
 	// Only rotation and translation
-	R.setIdentity();
-	T = target.colwise().mean()-src.colwise().mean();
-	//std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
+	//R.setIdentity();
+	//T = target.colwise().mean()-src.colwise().mean();
+	std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
 	//int wait; std::cin >> wait; exit(1);
 }
 

@@ -68,6 +68,7 @@ public:
 
 	std::vector<EdgePoint> dihedral_constrained; // used for also plotting the dihedral constraints
 	WallapaperType wallpaperType;
+	Eigen::Matrix3d wallpaperRx; Eigen::RowVector3d wallpaperTx;
 
 private:
 	void reset_dog_solver();

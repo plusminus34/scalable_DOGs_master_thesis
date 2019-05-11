@@ -75,6 +75,8 @@ public:
 	Dog& getDog(){return dog;}
 
 	bool is_folded();
+
+	void get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	
 	struct Constraints {
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,

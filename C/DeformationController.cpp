@@ -49,6 +49,10 @@ void DeformationController::single_optimization() {
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);
+	if (matching_curve_pts_x.first.size()) {
+		dogSolver->get_x_rigid_motion(wallpaperRx, wallpaperTx);
+		std::cout << "Rotation = " << std::endl << wallpaperRx << std::endl << " translation = " << wallpaperTx << std::endl;
+	}
 }
 
 void DeformationController::apply_new_editor_constraint() {
