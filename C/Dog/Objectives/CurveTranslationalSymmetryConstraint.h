@@ -9,7 +9,7 @@ public:
 	CurveTranslationalSymmetryConstraint(std::vector<int>& src_points, std::vector<int>& target_points)
 			: src_points(src_points), target_points(target_points) {
 		const_n = 3*src_points.size();
-		IJV.resize(9*const_n);
+		IJV.resize(9*src_points.size());
 	};
 
 	virtual CurveTranslationalSymmetryConstraint* clone() const {return new CurveTranslationalSymmetryConstraint(*this);}
