@@ -24,6 +24,7 @@
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
 //#include "Objectives/PointsRigidAlignmentObjective.h"
+#include "Objectives/CurveAffineSymmetryConstraint.h"
 #include "Objectives/CurveTranslationalSymmetryConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
@@ -102,12 +103,11 @@ public:
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
-	  			QuadraticConstraintsSumObjective& translationAlignmentSoft,
+	  			QuadraticConstraintsSumObjective& affineAlignmentSoft,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	//QuadraticConstraintsSumObjective translationAlignmentSoft;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
       	QuadraticConstraintsSumObjective edgeAnglesSoftConstraints;
@@ -127,8 +127,9 @@ private:
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	CurveTranslationalSymmetryConstraint translationAlignment;
-	QuadraticConstraintsSumObjective translationAlignmentSoft;
+	CurveTranslationalSymmetryConstraint affineAlignment;
+	//CurveAffineSymmetryConstraint affineAlignment;
+	QuadraticConstraintsSumObjective affineAlignmentSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;

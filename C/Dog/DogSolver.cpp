@@ -17,11 +17,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
           dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x)), /*todo more variables than only mesh, and init everything..*/
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
-          translationAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second),
-          translationAlignmentSoft(translationAlignment, x),
+          affineAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second),
+          affineAlignmentSoft(affineAlignment, x),
           constraints(dog, init_mesh_vars, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
-          obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, translationAlignmentSoft, p),
+          obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, affineAlignmentSoft, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
@@ -31,26 +31,30 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       p.max_newton_iters = 1;
     }
      if (matching_curve_pts_x.first.size() ) {
-      std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
+      //std::cout << "affineAlignment.Vals(x) = " << affineAlignment.Vals(x) << std::endl;
+      std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
+      //std::cout << "x.rows() = " << x.rows() << " compObj.grad(x).rows() = " << obj.compObj.grad(x).rows() << std::endl;
       //int wait; std::cin>> wait;
     }
-    //std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
+    //std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
 }
 
 Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, 
       std::pair<vector<int>,vector<int>>& matching_curve_pts_x) {
-  //Eigen::VectorXd x(init_mesh_vars.rows()+3); // For now just translation variables
   int dog_vars_num = init_mesh_vars.rows();
   int var_num = dog_vars_num;
-  if (matching_curve_pts_x.first.size()) var_num += 3;
-  Eigen::VectorXd x(var_num);
+  //if (matching_curve_pts_x.first.size()) var_num += 12; // affine variables
+  if (matching_curve_pts_x.first.size()) var_num += 3; // translation variables
+  Eigen::VectorXd x(var_num); x.setZero();
   x.head(dog_vars_num) = init_mesh_vars;
-  // Init initial translation
+  // Init initial affine motion
   if (matching_curve_pts_x.first.size() ) {
     x(dog_vars_num) = x(matching_curve_pts_x.second[0])-x(matching_curve_pts_x.first[0]);
     x(dog_vars_num+1) = x(matching_curve_pts_x.second[0]+dog_vars_num/3)-x(matching_curve_pts_x.first[0]+dog_vars_num/3);
     x(dog_vars_num+2) = x(matching_curve_pts_x.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.first[0]+2*dog_vars_num/3);
-    std::cout << "x.tail(3) = " << x.tail(3) << std::endl;
+    //x(dog_vars_num+3) = x(dog_vars_num+7) = x(dog_vars_num+11) = 1; // Set the first rotation as identity
+    //std::cout << "x.tail(12) = " << x.tail(12) << std::endl;
+    //int wait; std::cin >> wait;
   }
   return x;
 }
@@ -81,7 +85,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           PointPairConstraints& ptPairConst,*/
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           FoldingMVBiasConstraints& foldingMVBiasConstraints,
-          QuadraticConstraintsSumObjective& translationAlignmentSoft,
+          QuadraticConstraintsSumObjective& affineAlignmentSoft,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
@@ -96,7 +100,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
         
         compObj(
-          {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&translationAlignmentSoft},
+          {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&affineAlignmentSoft},
           {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight,p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight})
           /*
         compObj(
@@ -160,9 +164,9 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
-  if (translationAlignment.is_constraint() ) {
-      std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
-      std::cout << "translation = " << x.tail(3) << std::endl;
+  if (affineAlignment.is_constraint() ) {
+      std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
+      //std::cout << "Rigid motion = " << x.tail(12) << std::endl;
       //int wait; std::cin>> wait;
     }
 	Eigen::VectorXd x0(x);
