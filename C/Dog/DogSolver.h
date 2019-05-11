@@ -108,7 +108,6 @@ public:
 
 	  	SimplifiedBendingObjective bending;
 	  	IsometryObjective isoObj;
-	  	CurveTranslationalSymmetryConstraint translationAlignment;
 	  	//QuadraticConstraintsSumObjective translationAlignmentSoft;
       	QuadraticConstraintsSumObjective pointsPosSoftConstraints;
       	QuadraticConstraintsSumObjective edgePosSoftConstraints;
@@ -122,11 +121,15 @@ public:
 	};
 
 private:
-	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, bool is_x_curve_matching);
+	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, 
+			std::pair<vector<int>,vector<int>>& matching_curve_pts_x);
 	Dog& dog;
+	Eigen::VectorXd x; // variables
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
+	CurveTranslationalSymmetryConstraint translationAlignment;
+	QuadraticConstraintsSumObjective translationAlignmentSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
@@ -135,7 +138,6 @@ private:
 
 	// Solvers
 	//NewtonKKT newtonKKT;
-	Eigen::VectorXd x; // variables
 	EqSQP newtonKKT;
 	//FeasibleIneqInteriorPoint interiorPt;
 

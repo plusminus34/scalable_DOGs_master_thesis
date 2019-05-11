@@ -14,9 +14,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
         std::ofstream* time_measurements_log) :
 
-          dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x.first.size()>0)), /*todo more variables than only mesh, and init everything..*/
+          dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x)), /*todo more variables than only mesh, and init everything..*/
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
+          translationAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second),
+          translationAlignmentSoft(translationAlignment, x),
           constraints(dog, init_mesh_vars, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
           obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, matching_curve_pts_y, matching_curve_pts_x, p),
@@ -28,14 +30,25 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
     if (time_measurements_log) {
       p.max_newton_iters = 1;
     }
+    //std::cout << "translationAlignmentSoft.obj(x) = " << translationAlignmentSoft.obj(x) << std::endl;
+    //int wait; std::cin>> wait;
 }
 
-Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, bool is_x_curve_matching) {
+Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, 
+      std::pair<vector<int>,vector<int>>& matching_curve_pts_x) {
   //Eigen::VectorXd x(init_mesh_vars.rows()+3); // For now just translation variables
-  int var_num = init_mesh_vars.rows();
-  if (is_x_curve_matching) var_num += 3;
+  int dog_vars_num = init_mesh_vars.rows();
+  int var_num = dog_vars_num;
+  if (matching_curve_pts_x.first.size()) var_num += 3;
   Eigen::VectorXd x(var_num);
-  x.head(init_mesh_vars.rows()) = init_mesh_vars;
+  x.head(dog_vars_num) = init_mesh_vars;
+  // Init initial translation
+  if (matching_curve_pts_x.first.size() ) {
+    x(dog_vars_num) = x(matching_curve_pts_x.first[0])-x(matching_curve_pts_x.second[0]);
+    x(dog_vars_num+1) = x(matching_curve_pts_x.first[0]+dog_vars_num/3)-x(matching_curve_pts_x.second[0]+dog_vars_num/3);
+    x(dog_vars_num+2) = x(matching_curve_pts_x.first[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.second[0]+2*dog_vars_num/3);
+    std::cout << "x.tail(3) = " << x.tail(3) << std::endl;
+  }
   return x;
 }
 
@@ -69,7 +82,6 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
-        translationAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
         edgePosSoftConstraints(constraints.edgePtConst, init_x0),
         edgeAnglesSoftConstraints(constraints.edgeAngleConst, init_x0),
