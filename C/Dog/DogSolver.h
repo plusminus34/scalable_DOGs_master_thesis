@@ -110,7 +110,7 @@ public:
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
 	  			QuadraticConstraintsSumObjective& affineAlignmentSoft,
-	  			QuadraticConstraintsSumObjective& affineCommuteSoft,
+	  			//QuadraticConstraintsSumObjective& affineCommuteSoft,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -137,11 +137,11 @@ private:
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	//CurveAffineSymmetryConstraint affineAlignment;
-	Curve2AffineSymmetriesConstraint affineAlignment;
+	CurveAffineSymmetryConstraint affineAlignment;
+	//Curve2AffineSymmetriesConstraint affineAlignment;
 	QuadraticConstraintsSumObjective affineAlignmentSoft;
-	Curve2AffineCommuteConstraint affineCommuteConst;
-	QuadraticConstraintsSumObjective affineCommuteSoft;
+	//Curve2AffineCommuteConstraint affineCommuteConst;
+	//QuadraticConstraintsSumObjective affineCommuteSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;

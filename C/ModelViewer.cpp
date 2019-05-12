@@ -75,8 +75,8 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
 	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
 	Eigen::Matrix3d Rx(DC.wallpaperRx); Eigen::Vector3d Tx(DC.wallpaperTx);
-	//PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
-	Eigen::Matrix3d Ry(DC.wallpaperRy); Eigen::Vector3d Ty(DC.wallpaperTy);
+	PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
+	//Eigen::Matrix3d Ry(DC.wallpaperRy); Eigen::Vector3d Ty(DC.wallpaperTy);
 	//PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), left_curve, right_curve,Ry, Ty);
 
 	//std::cout << "(Rx*Ry-Ry*Rx).norm() = " << (Rx*Ry-Ry*Rx).norm() << std::endl;
@@ -85,7 +85,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	//std::cout << "(DC.wallpaperRx*Dc.wallpaperRy-DC.wallpaperRy*Dc.wallpaperRx).norm() = " << std::endl << (DC.wallpaperRx*DC.wallpaperRy-DC.wallpaperRy*DC.wallpaperRx).norm() << std::endl;
 
 	// add meshes to the right
-	for (int j = 0; j < wallpaper_res; j++) {
+	//for (int j = 0; j < wallpaper_res; j++) {
 		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
 		
 		Dog nextDog(vertDog);
@@ -96,10 +96,10 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
 		}
 		
-		// add mesh up
+	/*	// add mesh up
 		Eigen::MatrixXd newV = (vertDog.getV() * Ry).rowwise() + Ty.transpose();
 		vertDog.update_V(newV);
-	}
+	}*/
 	
 	//std::cout << "Vlist.size() = " << Vlist.size() << std::endl;
 	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
