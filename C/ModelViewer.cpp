@@ -74,15 +74,15 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
 	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
 	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
-	Eigen::Matrix3d Rx;/*(DC.wallpaperRx);*/ Eigen::Vector3d Tx;//(DC.wallpaperTx);
-	PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
-	Eigen::Matrix3d Ry;/*(DC.wallpaperRx);*/ Eigen::Vector3d Ty;//(DC.wallpaperTx);
-	PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), left_curve, right_curve,Ry, Ty);
+	Eigen::Matrix3d Rx(DC.wallpaperRx); Eigen::Vector3d Tx(DC.wallpaperTx);
+	//PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
+	Eigen::Matrix3d Ry(DC.wallpaperRy); Eigen::Vector3d Ty(DC.wallpaperTy);
+	//PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), left_curve, right_curve,Ry, Ty);
 
-	std::cout << "(Rx*Ry-Ry*Rx).norm() = " << (Rx*Ry-Ry*Rx).norm() << std::endl;
-	std::cout << "Rx = " << std::endl << Rx << std::endl;
+	//std::cout << "(Rx*Ry-Ry*Rx).norm() = " << (Rx*Ry-Ry*Rx).norm() << std::endl;
+	//std::cout << "Rx = " << std::endl << Rx << std::endl;
 	std::cout << "DC.wallpaperRx = " << std::endl << DC.wallpaperRx << std::endl;
-	std::cout << "(DC.wallpaperRx*Dc.wallpaperRy-DC.wallpaperRy*Dc.wallpaperRx).norm() = " << std::endl << (DC.wallpaperRx*DC.wallpaperRy-DC.wallpaperRy*DC.wallpaperRx).norm() << std::endl;
+	//std::cout << "(DC.wallpaperRx*Dc.wallpaperRy-DC.wallpaperRy*Dc.wallpaperRx).norm() = " << std::endl << (DC.wallpaperRx*DC.wallpaperRy-DC.wallpaperRy*DC.wallpaperRx).norm() << std::endl;
 
 	// add meshes to the right
 	for (int j = 0; j < wallpaper_res; j++) {

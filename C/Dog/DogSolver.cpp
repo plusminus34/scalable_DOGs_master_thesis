@@ -1,5 +1,7 @@
 #include "DogSolver.h"
 
+#include <igl/polar_svd.h>
+
 using namespace std;
 
 DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars, 
@@ -211,6 +213,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
+  //flip_rotation_if_needed();
 }
 
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
@@ -238,10 +241,61 @@ void DogSolver::get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
   R.row(1) << x(vn+6),x(vn+7),x(vn+8);
   R.row(2) << x(vn+9),x(vn+10),x(vn+11);
 }
+
+void DogSolver::set_x_rotation(Eigen::Matrix3d& R) {
+  int vn = 3*dog.get_v_num();
+  x(vn+3) = R(0,0); x(vn+4) = R(0,1); x(vn+5) = R(0,2);
+  x(vn+6) = R(1,0); x(vn+7) = R(1,1); x(vn+8) = R(1,2);
+  x(vn+9) = R(2,0); x(vn+10) = R(2,1); x(vn+11) = R(2,2);
+}
+
+void DogSolver::set_y_rotation(Eigen::Matrix3d& R) {
+  int vn = 3*dog.get_v_num()+12;
+  x(vn+3) = R(0,0); x(vn+4) = R(0,1); x(vn+5) = R(0,2);
+  x(vn+6) = R(1,0); x(vn+7) = R(1,1); x(vn+8) = R(1,2);
+  x(vn+9) = R(2,0); x(vn+10) = R(2,1); x(vn+11) = R(2,2);
+}
+
 void DogSolver::get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
   int vn = 3*dog.get_v_num()+12;
   T << x(vn),x(vn+1),x(vn+2);
   R.row(0) << x(vn+3),x(vn+4),x(vn+5);
   R.row(1) << x(vn+6),x(vn+7),x(vn+8);
   R.row(2) << x(vn+9),x(vn+10),x(vn+11);
+}
+
+void DogSolver::flip_rotation_if_needed() {
+  if (x.rows() >= (12+ 3*dog.get_v_num()) ) {
+    Eigen::Matrix3d R; Eigen::RowVector3d T; get_x_rigid_motion(R,T);
+    //std::cout << "Rx = " << R << std::endl;
+    if (R.determinant() < 0 ) {
+      std::cout << "Negative determinat: Flip!" << std::endl;
+      //std::cout << "Boom!" << std::endl; exit(1);
+      Eigen::Matrix3d ri,ti,ui,vi;
+      Eigen::Vector3d _;
+      igl::polar_svd(R,ri,ti,ui,_,vi);
+      // Check for reflection
+      if(ri.determinant() < 0) {
+        vi.col(1) *= -1.;
+        ri = ui * vi.transpose();
+      }
+      set_x_rotation(ri);
+    }
+  }
+  if (x.rows() >= (24+ 3*dog.get_v_num()) ) {
+    Eigen::Matrix3d R; Eigen::RowVector3d T; get_y_rigid_motion(R,T);
+    if (R.determinant() < 0 ) {
+      //std::cout << "Boom!" << std::endl; exit(1);
+      std::cout << "Negative determinat: Flip!" << std::endl;
+      Eigen::Matrix3d ri,ti,ui,vi;
+      Eigen::Vector3d _;
+      igl::polar_svd(R,ri,ti,ui,_,vi);
+      // Check for reflection
+      if(ri.determinant() < 0) {
+        vi.col(1) *= -1.;
+        ri = ui * vi.transpose();
+      }
+      set_y_rotation(ri);
+    }
+  }
 }

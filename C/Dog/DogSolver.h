@@ -79,6 +79,8 @@ public:
 
 	void get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	void get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
+	void set_x_rotation(Eigen::Matrix3d& R);
+	void set_y_rotation(Eigen::Matrix3d& R);
 	
 	struct Constraints {
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
@@ -128,6 +130,8 @@ private:
 	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, 
 			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 			std::pair<vector<int>,vector<int>>& matching_curve_pts_y);
+
+	void flip_rotation_if_needed();
 	Dog& dog;
 	Eigen::VectorXd x; // variables
 	bool is_constrained;

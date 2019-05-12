@@ -229,8 +229,8 @@ void DeformationController::set_wallpaper_constraints() {
 	auto lower_curve = dogSolver->getDog().lower_bnd; auto upper_curve = dogSolver->getDog().upper_bnd;
 	if ((wallpaperType == UXY) || (wallpaperType == UXUY) ) {std::reverse(upper_curve.begin(),upper_curve.end());}
 
-	matching_curve_pts_y.first = left_curve; matching_curve_pts_y.second = right_curve;
 	matching_curve_pts_x.first = lower_curve; matching_curve_pts_x.second = upper_curve;
+	matching_curve_pts_y.first = left_curve; matching_curve_pts_y.second = right_curve;
 
 	reset_dog_solver();
 }

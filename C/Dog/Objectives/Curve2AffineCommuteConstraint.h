@@ -49,9 +49,6 @@ public:
 		double t3 = r1_13*r2_31;
 		double t4 = r1_23*r2_32;
 
-		std::cout << "t1_1 = " << t1_1 << " t1_2 = " << t1_2 << " t1_3 = " << t1_3 << std::endl;
-		std::cout << "t2_1 = " << t2_1 << " t2_2 = " << t2_2 << " t2_3 = " << t1_3 << std::endl;
-
 		vals(val_cnt++) = t2+t3-r1_21*r2_12-r1_31*r2_13;
 		vals(val_cnt++) = -r1_11*r2_21+r1_21*r2_11-r1_21*r2_22+r1_22*r2_21+r1_23*r2_31-r1_31*r2_23;
 		vals(val_cnt++) = -r1_11*r2_31+r1_31*r2_11-r1_21*r2_32+r1_32*r2_21-r1_31*r2_33+r1_33*r2_31;
@@ -65,8 +62,7 @@ public:
 		vals(val_cnt++) = t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3;
 		vals(val_cnt++) = t1_3-t2_3+r1_13*t2_1+r1_23*t2_2+r1_33*t2_3-r2_13*t1_1-r2_23*t1_2-r2_33*t1_3;
 
-		std::cout << "t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3 = " << t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3 << std::endl;
-		std::cout << "vals = " << vals << std::endl;
+		//std::cout << "vals = " << vals << std::endl;
 		
 		return vals;
 	}
