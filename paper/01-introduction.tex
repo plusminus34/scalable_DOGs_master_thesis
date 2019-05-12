@@ -1,3 +1,6 @@
+% !TEX root =  CurvedFoldedDogs.tex
+
+
 \section{Introduction}
 There are infinitely many ways to deform a planar sheet without stretching or tearing it. One can either bend it, form sharp creases by folding it, or combine the two. Folding and bending isometries are different by nature, and historically there has been a dichotomy in the study of the two. Smooth bending deformations are typically studied in differential geometry \cite{do_carmo}, whereas straight folds are  explored in the field of computational origami \cite{origami_book}. Curved folded surfaces \cite{huffman} can be viewed as a combination of the two, since folding an inextensible sheet along a curve necessitates global bending around the crease. These elegant geometries have garnered the attention of architectures, artists, and industrial designers \cite{arch_geom,tachi2013composite,tachi2011one,buri2011curved,robofold,curved_review}. \OSH{somewhere here we can refer to the teaser once it exists.}
 
@@ -17,7 +20,7 @@ In this paper we set out to develop the basic tools for freeform modeling of cur
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/rulings_problem_curve}
-	\caption{Folding and bending of the same curved crease pattern (left) into two different surfaces with some of their ruling lines plotted. Methods that model the ruling directly need to remesh in order to be able to model these surfaces as the rulings can change drastically, connecting vertices at different patches to one another. Representing the curved folded as a piecewise DOG avoid the need in remeshing as a DOG is parameterized by intrinsics invariants: orthogonal geodesics, and does not explicitly encode the developable rulings in its mesh. }
+	\caption{Folding and bending the same curved crease pattern (left) into two different surfaces, with some of their rulings plotted. Methods that model the rulings directly must remesh in order to model these surfaces, since the rulings can change drastically, connecting vertices of different patches to one another. Representing the curved folded surface as a piecewise DOG avoids the need to remesh because a DOG is parameterized by intrinsics invariants (orthogonal geodesics) and does not explicitly encode the developable rulings in its mesh. \OSH{it's confusing that the creases and the rulings are in the same color. Make the crease pattern dark blue like in the next figure?}}
 	\label{fig:rulings_problem_curve}
 \end{figure}
 
