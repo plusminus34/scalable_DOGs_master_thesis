@@ -123,14 +123,15 @@ public:
 
 private:
 	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, 
-			std::pair<vector<int>,vector<int>>& matching_curve_pts_x);
+			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
+			std::pair<vector<int>,vector<int>>& matching_curve_pts_y);
 	Dog& dog;
 	Eigen::VectorXd x; // variables
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	//CurveTranslationalSymmetryConstraint affineAlignment;
-	CurveAffineSymmetryConstraint affineAlignment;
+	//CurveAffineSymmetryConstraint affineAlignment;
+	Curve2AffineSymmetriesConstraint affineAlignment;
 	QuadraticConstraintsSumObjective affineAlignmentSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints

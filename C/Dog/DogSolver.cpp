@@ -14,10 +14,11 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
         std::ofstream* time_measurements_log) :
 
-          dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x)), /*todo more variables than only mesh, and init everything..*/
+          dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x, matching_curve_pts_y)), /*todo more variables than only mesh, and init everything..*/
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
-          affineAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second),
+          affineAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second,
+                          matching_curve_pts_y.first, matching_curve_pts_y.second),
           affineAlignmentSoft(affineAlignment, x),
           constraints(dog, x, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
@@ -40,19 +41,26 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
 }
 
 Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, 
-      std::pair<vector<int>,vector<int>>& matching_curve_pts_x) {
+      std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
+      std::pair<vector<int>,vector<int>>& matching_curve_pts_y) {
   int dog_vars_num = init_mesh_vars.rows();
   int var_num = dog_vars_num;
-  if (matching_curve_pts_x.first.size()) var_num += 12; // affine variables
+  if (matching_curve_pts_x.first.size()) var_num += 24; // affine variables
   //if (matching_curve_pts_x.first.size()) var_num += 3; // translation variables
   Eigen::VectorXd x(var_num); x.setZero();
   x.head(dog_vars_num) = init_mesh_vars;
   // Init initial affine motion
   if (matching_curve_pts_x.first.size() ) {
+    // first translation
     x(dog_vars_num) = x(matching_curve_pts_x.second[0])-x(matching_curve_pts_x.first[0]);
     x(dog_vars_num+1) = x(matching_curve_pts_x.second[0]+dog_vars_num/3)-x(matching_curve_pts_x.first[0]+dog_vars_num/3);
     x(dog_vars_num+2) = x(matching_curve_pts_x.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.first[0]+2*dog_vars_num/3);
     x(dog_vars_num+3) = x(dog_vars_num+7) = x(dog_vars_num+11) = 1; // Set the first rotation as identity
+
+    x(dog_vars_num+12) = x(matching_curve_pts_y.second[0])-x(matching_curve_pts_y.first[0]);
+    x(dog_vars_num+13) = x(matching_curve_pts_y.second[0]+dog_vars_num/3)-x(matching_curve_pts_y.first[0]+dog_vars_num/3);
+    x(dog_vars_num+14) = x(matching_curve_pts_y.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_y.first[0]+2*dog_vars_num/3);
+    x(dog_vars_num+15) = x(dog_vars_num+19) = x(dog_vars_num+23) = 1; // Set the second rotation as identity
     //std::cout << "x.tail(12) = " << x.tail(12) << std::endl;
     //int wait; std::cin >> wait;
   }

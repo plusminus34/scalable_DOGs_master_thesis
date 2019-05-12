@@ -25,7 +25,7 @@ void PointsRigidAlignmentObjective::update_rigid_motion(const Eigen::VectorXd& x
 	// Only rotation and translation
 	//R.setIdentity();
 	//T = target.colwise().mean()-src.colwise().mean();
-	std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
+	//std::cout << "R = " << endl << R << endl << "T = " << endl << T << endl;
 	//int wait; std::cin >> wait; exit(1);
 }
 
