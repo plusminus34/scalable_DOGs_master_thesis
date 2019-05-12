@@ -36,8 +36,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
-  	std::vector<Point_2> crease_vertices = polylines_intersections;
 
+  	std::vector<Point_2> crease_vertices;
   	// add additional interesction points at the start and end of every curve, after snapping to both boundary and closed loops
   	std::vector<Polyline_2> polylines_to_snap = initial_bnd_polylines;
   	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
@@ -59,6 +59,14 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
   		} else {
   			filtered_and_clipped_to_boundary_polylines.push_back(*poly);
+  		}
+  	}
+  	
+  	for (auto v: polylines_intersections) {
+  		if (origPatternBoundary.inside(v)) {
+  			crease_vertices.push_back(v);
+  		} else {
+  			std::cout << "filtering a vertex outside of the boundary" << std::endl;
   		}
   	}
   	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size(), dist_threshold_pow2);
