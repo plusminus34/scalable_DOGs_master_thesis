@@ -58,8 +58,12 @@ Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_t
 	} else {
 		filtered_pts = pts;
 	}
-	filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold, snappedFirst);
-	filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold, snappedLast);
+	if (!filtered_pts.size()) {
+		std::cout << "The entire curve is out of the boundary" << std::endl; 
+	} else {
+		filtered_pts[0] = snap_pt(filtered_pts[0], squared_dist_threshold, snappedFirst);
+		filtered_pts.back() = snap_pt(filtered_pts.back(), squared_dist_threshold, snappedLast);
+	}
 	Geom_traits_2 traits;
     Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 
