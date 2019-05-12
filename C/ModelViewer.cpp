@@ -79,6 +79,11 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	Eigen::Matrix3d Ry;/*(DC.wallpaperRx);*/ Eigen::Vector3d Ty;//(DC.wallpaperTx);
 	PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), left_curve, right_curve,Ry, Ty);
 
+	std::cout << "(Rx*Ry-Ry*Rx).norm() = " << (Rx*Ry-Ry*Rx).norm() << std::endl;
+	std::cout << "Rx = " << std::endl << Rx << std::endl;
+	std::cout << "DC.wallpaperRx = " << std::endl << DC.wallpaperRx << std::endl;
+	std::cout << "(DC.wallpaperRx*Dc.wallpaperRy-DC.wallpaperRy*Dc.wallpaperRx).norm() = " << std::endl << (DC.wallpaperRx*DC.wallpaperRy-DC.wallpaperRy*DC.wallpaperRx).norm() << std::endl;
+
 	// add meshes to the right
 	for (int j = 0; j < wallpaper_res; j++) {
 		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());

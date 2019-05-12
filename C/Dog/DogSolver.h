@@ -26,6 +26,7 @@
 //#include "Objectives/PointsRigidAlignmentObjective.h"
 #include "Objectives/CurveAffineSymmetryConstraint.h"
 #include "Objectives/Curve2AffineSymmetriesConstraint.h"
+#include "Objectives/Curve2AffineCommuteConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
@@ -77,6 +78,7 @@ public:
 	bool is_folded();
 
 	void get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
+	void get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	
 	struct Constraints {
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
@@ -106,6 +108,7 @@ public:
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
 	  			QuadraticConstraintsSumObjective& affineAlignmentSoft,
+	  			QuadraticConstraintsSumObjective& affineCommuteSoft,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -133,6 +136,8 @@ private:
 	//CurveAffineSymmetryConstraint affineAlignment;
 	Curve2AffineSymmetriesConstraint affineAlignment;
 	QuadraticConstraintsSumObjective affineAlignmentSoft;
+	Curve2AffineCommuteConstraint affineCommuteConst;
+	QuadraticConstraintsSumObjective affineCommuteSoft;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;

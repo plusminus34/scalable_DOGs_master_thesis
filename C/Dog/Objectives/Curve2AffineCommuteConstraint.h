@@ -22,8 +22,11 @@ public:
 
 	bool is_constraint() {return (src_points1.size() > 0);}
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
+		Eigen::VectorXd vals(const_n); int val_cnt = 0;
+		if (!const_n) return vals;
+
 		int t1_1i = x.rows()-24,t1_2i = t1_1i+1, t1_3i = t1_2i+1;
-		double t1_1 = x(t1_1i), t1_2 = x(t1_2i), t1_3 = x(t1_2i);
+		double t1_1 = x(t1_1i), t1_2 = x(t1_2i), t1_3 = x(t1_3i);
 		int r1_11i = t1_3i+1, r1_12i = t1_3i+2, r1_13i = t1_3i+3;
 		int r1_21i = t1_3i+4, r1_22i = t1_3i+5, r1_23i = t1_3i+6;
 		int r1_31i = t1_3i+7, r1_32i = t1_3i+8, r1_33i = t1_3i+9;
@@ -32,8 +35,8 @@ public:
 		double r1_21(x(r1_21i)),r1_22(x(r1_22i)),r1_23(x(r1_23i));
 		double r1_31(x(r1_31i)),r1_32(x(r1_32i)),r1_33(x(r1_33i));
 
-		int t2_1i = x.rows()-24,t2_2i = t2_1i+1, t2_3i = t2_2i+1;
-		double t2_1 = x(t2_1i), t2_2 = x(t2_2i), t2_3 = x(t2_2i);
+		int t2_1i = x.rows()-12,t2_2i = t2_1i+1, t2_3i = t2_2i+1;
+		double t2_1 = x(t2_1i), t2_2 = x(t2_2i), t2_3 = x(t2_3i);
 		int r2_11i = t2_3i+1, r2_12i = t2_3i+2, r2_13i = t2_3i+3;
 		int r2_21i = t2_3i+4, r2_22i = t2_3i+5, r2_23i = t2_3i+6;
 		int r2_31i = t2_3i+7, r2_32i = t2_3i+8, r2_33i = t2_3i+9;
@@ -45,6 +48,9 @@ public:
 		double t2 = r1_12*r2_21;
 		double t3 = r1_13*r2_31;
 		double t4 = r1_23*r2_32;
+
+		std::cout << "t1_1 = " << t1_1 << " t1_2 = " << t1_2 << " t1_3 = " << t1_3 << std::endl;
+		std::cout << "t2_1 = " << t2_1 << " t2_2 = " << t2_2 << " t2_3 = " << t1_3 << std::endl;
 
 		vals(val_cnt++) = t2+t3-r1_21*r2_12-r1_31*r2_13;
 		vals(val_cnt++) = -r1_11*r2_21+r1_21*r2_11-r1_21*r2_22+r1_22*r2_21+r1_23*r2_31-r1_31*r2_23;
@@ -58,7 +64,9 @@ public:
 		vals(val_cnt++) = t1_1-t2_1+r1_11*t2_1+r1_21*t2_2+r1_31*t2_3-r2_11*t1_1-r2_21*t1_2-r2_31*t1_3;
 		vals(val_cnt++) = t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3;
 		vals(val_cnt++) = t1_3-t2_3+r1_13*t2_1+r1_23*t2_2+r1_33*t2_3-r2_13*t1_1-r2_23*t1_2-r2_33*t1_3;
-		std::cout << "vals.head(12) = " << vals.head(12) << std::endl;
+
+		std::cout << "t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3 = " << t1_2-t2_2+r1_12*t2_1+r1_22*t2_2+r1_32*t2_3-r2_12*t1_1-r2_22*t1_2-r2_32*t1_3 << std::endl;
+		std::cout << "vals = " << vals << std::endl;
 		
 		return vals;
 	}
@@ -68,7 +76,7 @@ public:
 		int const_cnt = 0; int ijv_cnt = 0;
 		
 		int t1_1i = x.rows()-24,t1_2i = t1_1i+1, t1_3i = t1_2i+1;
-		double t1_1 = x(t1_1i), t1_2 = x(t1_2i), t1_3 = x(t1_2i);
+		double t1_1 = x(t1_1i), t1_2 = x(t1_2i), t1_3 = x(t1_3i);
 		int r1_11i = t1_3i+1, r1_12i = t1_3i+2, r1_13i = t1_3i+3;
 		int r1_21i = t1_3i+4, r1_22i = t1_3i+5, r1_23i = t1_3i+6;
 		int r1_31i = t1_3i+7, r1_32i = t1_3i+8, r1_33i = t1_3i+9;
@@ -77,8 +85,8 @@ public:
 		double r1_21(x(r1_21i)),r1_22(x(r1_22i)),r1_23(x(r1_23i));
 		double r1_31(x(r1_31i)),r1_32(x(r1_32i)),r1_33(x(r1_33i));
 
-		int t2_1i = x.rows()-24,t2_2i = t2_1i+1, t2_3i = t2_2i+1;
-		double t2_1 = x(t2_1i), t2_2 = x(t2_2i), t2_3 = x(t2_2i);
+		int t2_1i = x.rows()-12,t2_2i = t2_1i+1, t2_3i = t2_2i+1;
+		double t2_1 = x(t2_1i), t2_2 = x(t2_2i), t2_3 = x(t2_3i);
 		int r2_11i = t2_3i+1, r2_12i = t2_3i+2, r2_13i = t2_3i+3;
 		int r2_21i = t2_3i+4, r2_22i = t2_3i+5, r2_23i = t2_3i+6;
 		int r2_31i = t2_3i+7, r2_32i = t2_3i+8, r2_33i = t2_3i+9;
