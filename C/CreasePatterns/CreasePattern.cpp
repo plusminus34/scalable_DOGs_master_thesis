@@ -50,8 +50,10 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
   		if (!closed_polyline) {
   			Point_2 firstPt,lastPt; bool snappedFirst,snappedLast;
-	  		filtered_and_clipped_to_boundary_polylines.push_back(
-	  				origPatternBoundary.filter_and_snap(*poly,dist_threshold_pow2, firstPt, lastPt, snappedFirst, snappedLast));
+
+  			auto snapped_poly(origPatternBoundary.filter_and_snap(*poly,dist_threshold_pow2, firstPt, lastPt, snappedFirst, snappedLast));
+  			int snapped_poly_seg_n = snapped_poly.subcurves_end()-snapped_poly.subcurves_begin();
+	  		if (snapped_poly_seg_n) filtered_and_clipped_to_boundary_polylines.push_back(snapped_poly);
 	  		// Add the first and last point to the grid
 	  		if (snappedFirst) { std::cout << "adding point " << firstPt << " to grid" << std::endl; crease_vertices.push_back(firstPt);}
 	  		if (snappedLast)  { std::cout << "adding point " << lastPt << " to grid" << std::endl; crease_vertices.push_back(lastPt);}
