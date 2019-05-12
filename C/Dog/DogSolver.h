@@ -41,7 +41,7 @@ public:
 		double bending_weight = 1.;
 		double isometry_weight = 20000;
 		double soft_pos_weight = 1;
-		double dihedral_weight = 10;
+		double dihedral_weight = 1000;
 		double fold_bias_weight = 1;
 		double mv_bias_weight = 0;
 		double wallpaper_curve_weight = 1;

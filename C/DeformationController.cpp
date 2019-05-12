@@ -65,8 +65,12 @@ void DeformationController::apply_new_editor_constraint() {
 	if (edit_mode == DogEditor::VERTEX_PAIRS) {
 		if ( (dogEditor->pair_vertex_1!= -1) && (dogEditor->pair_vertex_2!= -1) ) {
 			int vnum = globalDog->get_v_num();
-			for (int i = 0; i < 3; i++) {
-				paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
+			if (z_only_editing) {
+				paired_vertices.push_back(std::pair<int,int>(2*vnum+dogEditor->pair_vertex_1,2*vnum+dogEditor->pair_vertex_2));	
+			} else {
+				for (int i = 0; i < 3; i++) {
+					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
+				}
 			}
 		}
 	} else if (edit_mode == DogEditor::DIHEDRAL_ANGLE) {

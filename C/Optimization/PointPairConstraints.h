@@ -20,6 +20,7 @@ public:
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd vals(pairs.size()); 
 		for (int i = 0; i < pairs.size(); i++) { vals(i) = x(pairs[i].first)-x(pairs[i].second); };
+		std::cout << "vals = " << vals << std::endl;
 		return vals;
 	}
 	virtual void updateJacobianIJV(const Eigen::VectorXd& x) {

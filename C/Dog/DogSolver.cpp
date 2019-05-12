@@ -118,7 +118,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         
         compObj(
           {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&affineAlignmentSoft/*, &affineCommuteSoft*/},
-          {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight/dog.getQuadTopology().E.rows(),p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight/*, 1000*p.wallpaper_curve_weight*/})
+          {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.isometry_weight/dog.getQuadTopology().E.rows(),p.soft_pos_weight, p.soft_pos_weight, p.soft_pos_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight/*, 1000*p.wallpaper_curve_weight*/})
           /*
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj, &allConstQuadraticObj},

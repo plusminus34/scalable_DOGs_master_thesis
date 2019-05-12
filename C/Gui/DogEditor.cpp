@@ -208,6 +208,7 @@ void DogEditor::render_positional_constraints() const {
     }
 }
 void DogEditor::render_paired_constraints() const {
+	/*
 	Eigen::MatrixXd E1(paired_vertices.size()/3,3),E2(paired_vertices.size()/3,3);
 	// The pair values are flattened
 	for (int i = 0; i < paired_vertices.size(); i+=3) {
@@ -217,6 +218,7 @@ void DogEditor::render_paired_constraints() const {
 	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(128./255,128./255,128./255));
 	viewer.data().add_points(E1, Eigen::RowVector3d(128./255,128./255,128./255));
 	viewer.data().add_points(E2, Eigen::RowVector3d(128./255,128./255,128./255));
+	*/
 }
 void DogEditor::render_selected_pairs() const {
 	Eigen::RowVector3d active_pair_color(0./255,160./255,0./255);
