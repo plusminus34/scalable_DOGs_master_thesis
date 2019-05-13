@@ -28,22 +28,32 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(initial_fold_polylines.begin(), initial_fold_polylines.end(),
-                                    std::back_inserter(polylines_intersections), true, geom_traits_2);
+                                    std::back_inserter(polylines_intersections), false, geom_traits_2);
   	polylines_intersections.insert(polylines_intersections.end(), endpoints_intersections.begin(), endpoints_intersections.end());
+  	for (auto poly: initial_fold_polylines) {
+  		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
+  		if (pts.size()) polylines_intersections.push_back(pts[0]); polylines_intersections.push_back(pts.back());
+  	}
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
+  	for (auto pt: polylines_intersections) {
+  		std::cout << "int pt = " << pt << std::endl; //int wait; std::cin >> wait;
+  	}
+  	//int w; std::cin >> w;
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
 
   	std::vector<Point_2> crease_vertices;
-  	// add additional interesction points at the start and end of every curve, after snapping to both boundary and closed loops
+  	// add additional interesction points at the start and end of every curve after snapping to both boundary and closed loops
+  	/*
   	std::vector<Polyline_2> polylines_to_snap = initial_bnd_polylines;
   	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
   		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
   		if (closed_polyline) polylines_to_snap.push_back(*poly);
   	}
-  	PatternBoundary origPatternBoundary(polylines_to_snap);
+  	*/
+  	PatternBoundary origPatternBoundary(initial_bnd_polylines);
   	std::vector<Polyline_2> filtered_and_clipped_to_boundary_polylines;
   	for (auto poly = initial_fold_polylines.begin(); poly != initial_fold_polylines.end(); poly++) {
   		bool closed_polyline = is_polyline_closed_with_tolerance(*poly, is_closed_threshold);
