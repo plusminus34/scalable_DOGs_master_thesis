@@ -15,8 +15,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	std::vector<Point_2> endpoints_intersections;
 	std::cout << "snapping polylines start/end" << std::endl;
 	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines, endpoints_intersections);
+
+	// Before computing intersections, make sure that each curves starting/end point is on the other curves if it close enough
+	auto snapped_and_split_to_starting_points_polylines = snap_and_split_curves_to_starting_points(merged_starting_point_polylines, dist_threshold_pow2/10);
+
 	// At that point just make sure to snap the 'x' and 'y' coordinates of the intersections to one of them first
-	initial_fold_polylines = merge_nearby_polylines_intersections(merged_starting_point_polylines);
+	initial_fold_polylines = merge_nearby_polylines_intersections(snapped_and_split_to_starting_points_polylines);
 
 	// Setup initial boundary
 	initial_bnd_polylines = bnd_polylines;
@@ -36,8 +40,9 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	}
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
   	for (auto pt: polylines_intersections) {
-  		std::cout << "int pt = " << pt << std::endl; //int wait; std::cin >> wait;
+  		std::cout << "int pt = " << pt << std::endl;
   	}
+  	//int wait; std::cin >> wait;
   	//int w; std::cin >> w;
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
   	
@@ -170,12 +175,24 @@ bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& p
 
 std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines) {
 	std::vector<Polyline_2> new_polylines;
+
 	// First find the vertices intersections
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(polylines.begin(), polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
-  	std::cout << "initial number of intersections = " << polylines_intersections.size() << std::endl;
+  	/*
+  	std::cout << "initial number of intersections before start/end points = " << polylines_intersections.size() << std::endl;
+	for (auto poly: polylines) {
+  		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
+  		if (pts.size()) {
+  			polylines_intersections.push_back(pts[0]); polylines_intersections.push_back(pts.back());
+  			std::cout << "added " << pts[0] << " and " << " pts.back() " << pts.back () << std::endl;
+  		}
+  	}
+  	std::cout << "initial number of intersections after start/end points = " << polylines_intersections.size() << std::endl;
+  	int wait; std::cin >> wait;
+  	*/
 
   	double bbox_max_len = std::max(std::abs(CGAL::to_double(bbox.xmax()-bbox.xmin())),std::abs(CGAL::to_double(bbox.ymax()-bbox.ymin())));
 	Number_type dist_threshold_pow2(pow(bbox_max_len/100,2));  	
@@ -381,4 +398,136 @@ std::vector<Polyline_2> CreasePattern::snap_polylines_start_end_to_vertices(std:
 		snapped_polylines.push_back(polyline_construct(pts.begin(),pts.end()));
 	}
 	return snapped_polylines;
+}
+
+std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(std::vector<Polyline_2>& polylines, Number_type threshold) {
+	Geom_traits_2 traits;
+	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+	std::vector<Polyline_2> new_polylines;
+
+	// Get start/end points
+	std::vector<Point_2> start_end_points;
+	for (auto poly: polylines) {
+  		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
+  		if (pts.size()) start_end_points.push_back(pts[0]); start_end_points.push_back(pts.back());
+  	}
+
+  	// Now go on every curve. Save the closest segment to each vertex
+  	for (auto poly: polylines) {
+  		std::vector<Segment_2> closest_segs; std::vector<Number_type> shortest_dist;
+  		for (auto v: start_end_points) {
+  			CGAL::Segment_2<Kernel> seg0(poly.subcurves_begin()->source(),poly.subcurves_begin()->target());
+  			// Start with the first seg and just a random distance to point
+  			auto init_closest_pt = poly.subcurves_begin()->source();
+  			closest_segs.push_back(seg0); shortest_dist.push_back(CGAL::squared_distance(v,init_closest_pt));
+  			for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+  				// If the distance frim the seg to the point is smaller, save it
+  				Point_2 proj_pt; Number_type squared_dist;
+  				PatternBoundary::proj_pt_to_segment(v, *seg_i, proj_pt, squared_dist);
+  				if (squared_dist < shortest_dist.back()) {
+  					closest_segs.back() = *seg_i;
+  					shortest_dist.back() = squared_dist;
+  				}
+  			}	
+  		}
+  		// Now find only the segments we split (those that have a small distance to a point)
+  		// And also do not contain the points already
+  		std::vector<Segment_2> segs_to_split; std::vector<Point_2> splitting_pts;
+  		for (int i = 0; i < closest_segs.size(); i++) {
+  			if (shortest_dist[i] < threshold) {
+  				if ( (start_end_points[i] == closest_segs[i].source()) || (start_end_points[i] == closest_segs[i].target()) ) {
+  					//std::cout << "Distance too big, or segment already has point: shortest_dist[i] = " << shortest_dist[i] << std::endl;
+  					//std::cout << "\t With closest_segs[i] = " << closest_segs[i] <<  "and start_end_points[i] = " << start_end_points[i] << std::endl;
+  					continue;	
+  				} 
+  				//std::cout << "shortest_dist[i] = " << shortest_dist[i] << std::endl;
+  				//std::cout << "\t With closest_segs[i] = " << closest_segs[i] <<  "and start_end_points[i] = " << start_end_points[i] << std::endl;
+  				segs_to_split.push_back(closest_segs[i]);
+  				splitting_pts.push_back(start_end_points[i]);
+  				/*
+  				if (i == closest_segs.size()-2) {
+  					std::cout << "BOOM!" << std::endl;
+  				} else {
+  					std::cout << "shit" << std::endl;
+  				}
+  				*/
+  			}
+  		}
+  		// Now we have a list of segments to split, and we just need to split them
+  		// We assume they are different, otherwise the code will probably break (Todo)
+  		std::vector<Segment_2> new_poly_segs;
+  		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+			bool split_seg = false; int split_seg_i = -1;
+	        for (int i = 0; i < segs_to_split.size(); i++) {
+	          
+	          if ( (seg_i->source() == segs_to_split[i].source()) && (seg_i->target() == segs_to_split[i].target())) {
+	            CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
+	            if (!tmp_seg.has_on(splitting_pts[i])) {
+	              /*split_seg = true;*/ split_seg_i = i; continue;
+	              /*
+	              Point_2 proj_pt; Number_type squared_dist;
+	            PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
+	            // TODO (why can it even go the other way getting here?)
+	            if ( (proj_pt != seg_i->source()) && (proj_pt != seg_i->target()) ) {
+	              
+	            }
+	            */  
+	            }
+	          }
+	        }
+	        if (!split_seg) {
+	            new_poly_segs.push_back(*seg_i);
+	          } else {
+	            std::cout << "Splitting seg: " << *seg_i << " into: " << std::endl;
+	            std::cout << "\t " << Segment_2(seg_i->source(), splitting_pts[split_seg_i]) << " and " << Segment_2(splitting_pts[split_seg_i], seg_i->target()) << std::endl;
+	            //std:: cout << "splitting seg = " << *seg_i << " with the point " << splitting_pts[i] << std::endl;
+	            // Now check if the closest point is the source, target, or not
+	            /*
+	            Point_2 proj_pt; Number_type squared_dist;
+	            PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
+	            if (proj_pt == seg_i->source()) 
+	 {            new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->source));
+	            } else if (proj_pt == seg_i->target()) {
+	              splitting_pts[i]
+	            } else {
+	              new_poly_segs.push_back(Segment_2(seg_i->source(), splitting_pts[i]));
+	            new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->target()));
+	            }
+	            */
+	        }
+  		}
+  		new_polylines.push_back(polyline_construct(new_poly_segs.begin(), new_poly_segs.end()));
+  		/*
+		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
+			bool sing_on_segment = false;
+			// This is a different type of cgal segement class, that supports "has_on" queries 
+			//		(but for some reasone doesn't work with arrangements)
+			CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
+			//int sing_num = 0;
+			//for (auto v: polylines_intersections) {
+			for (int sing_num = 0; sing_num < polylines_intersections.size(); sing_num++) {
+				Point_2 v = polylines_intersections[sing_num];
+				// Don't split if its at the boundary of the segment
+				if ((v == tmp_seg.source()) || (v == tmp_seg.target()) ) continue;
+				if (tmp_seg.has_on(v)) {
+					std::cout << "curve number " << curve_i << " with singularity number " << sing_num << " since vertex " << v << " is on segment " << *seg_i << std::endl; 
+					sing_on_segment = true;
+					
+					auto snipped_v = vertices_to_snapped_vertices[v];
+					seg_list.push_back(Segment_2(seg_i->source(), snipped_v));
+					seg_list.push_back(Segment_2(snipped_v, seg_i->target()));
+					break;
+				}
+			}
+			if (!sing_on_segment) {
+				seg_list.push_back(*seg_i);
+			}
+		}
+		new_polylines.push_back(polyline_construct(seg_list.begin(), seg_list.end()));
+		curve_i++;
+		*/
+		
+	}
+	//exit(1);
+	return new_polylines;
 }
