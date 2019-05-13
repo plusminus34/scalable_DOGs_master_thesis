@@ -32,12 +32,11 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	polylines_intersections.insert(polylines_intersections.end(), endpoints_intersections.begin(), endpoints_intersections.end());
   	for (auto poly: initial_fold_polylines) {
   		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
-  		polylines_intersections.push_back(pts[0]); polylines_intersections.push_back(pts.back());
+  		if (pts.size()) polylines_intersections.push_back(pts[0]); polylines_intersections.push_back(pts.back());
   	}
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
-  	std::cout << "initial_fold_polylines.size() = " << initial_fold_polylines.size() << std::endl;
   	for (auto pt: polylines_intersections) {
-  		std::cout << "int pt = " << pt << std::endl;
+  		std::cout << "int pt = " << pt << std::endl; //int wait; std::cin >> wait;
   	}
   	//int w; std::cin >> w;
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
