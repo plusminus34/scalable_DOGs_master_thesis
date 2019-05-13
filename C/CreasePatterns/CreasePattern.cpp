@@ -13,11 +13,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 
 	// Handle polyline intersections
 	std::vector<Point_2> endpoints_intersections;
+	std::cout << "snapping polylines start/end" << std::endl;
 	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines, endpoints_intersections);
 	// At that point just make sure to snap the 'x' and 'y' coordinates of the intersections to one of them first
 	initial_fold_polylines = merge_nearby_polylines_intersections(merged_starting_point_polylines);
 
-	// Setup initial boundary (for now just a boundary box)
+	// Setup initial boundary
 	initial_bnd_polylines = bnd_polylines;
 
 	// The following is just for visualization
@@ -27,12 +28,10 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	std::vector<Point_2> polylines_intersections;
 	Geom_traits_2 geom_traits_2;
   	CGAL::compute_intersection_points(initial_fold_polylines.begin(), initial_fold_polylines.end(),
-                                    std::back_inserter(polylines_intersections), false, geom_traits_2);
+                                    std::back_inserter(polylines_intersections), true, geom_traits_2);
   	polylines_intersections.insert(polylines_intersections.end(), endpoints_intersections.begin(), endpoints_intersections.end());
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
-  	std::cout << "polylines_intersections.size() = " << polylines_intersections.size() << std::endl;
-  	for (auto p : polylines_intersections) {std::cout << "Intersection at " << p << std::endl;}
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
@@ -218,6 +217,7 @@ std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_
 	std::vector<Number_type> x_coords(2*polylines.size()); std::vector<Number_type> y_coords(2*polylines.size());
 	int cnt = 0;
 	for (auto pts : poly_pts) {
+		std::cout << "pts[0] = " << pts[0] << " and " << "pts.back() = " << pts.back() << std::endl;
 		x_coords[cnt] = pts[0].x(); y_coords[cnt] = pts[0].y(); cnt++;
 		x_coords[cnt] = pts.back().x(); y_coords[cnt] = pts.back().y(); cnt++;
 	}
