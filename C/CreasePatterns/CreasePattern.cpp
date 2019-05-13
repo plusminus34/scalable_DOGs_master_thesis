@@ -42,7 +42,7 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	for (auto pt: polylines_intersections) {
   		std::cout << "int pt = " << pt << std::endl;
   	}
-  	int wait; std::cin >> wait;
+  	//int wait; std::cin >> wait;
   	//int w; std::cin >> w;
   	// add segment start ending intersection points (passing true in the above function always gives back all endpoints even if they dont intersect)
   	
@@ -457,47 +457,46 @@ std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(
   		// We assume they are different, otherwise the code will probably break (Todo)
   		std::vector<Segment_2> new_poly_segs;
   		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
-  			bool split_seg = false; int split_seg_i = -1;
-  			for (int i = 0; i < segs_to_split.size(); i++) {
-  				
-  				if ( (seg_i->source() == segs_to_split[i].source()) && (seg_i->target() == segs_to_split[i].target())) {
-  					CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
-  					if (!tmp_seg.has_on(splitting_pts[i])) {
-  						/*split_seg = true;*/ split_seg_i = i; continue;
-  						/*
-  						Point_2 proj_pt; Number_type squared_dist;
-						PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
-						// TODO (why can it even go the other way getting here?)
-						if ( (proj_pt != seg_i->source()) && (proj_pt != seg_i->target()) ) {
-							
-						}
-						*/	
-  					}
-  				}
-  			}
-  			if (!split_seg) {
-  					new_poly_segs.push_back(*seg_i);
-  				} else {
-  					std::cout << "Splitting seg: " << *seg_i << " into: " << std::endl;
-  					std::cout << "\t " << Segment_2(seg_i->source(), splitting_pts[split_seg_i]) << " and " << Segment_2(splitting_pts[split_seg_i], seg_i->target()) << std::endl;
-  					//std:: cout << "splitting seg = " << *seg_i << " with the point " << splitting_pts[i] << std::endl;
-  					// Now check if the closest point is the source, target, or not
-  					/*
-  					Point_2 proj_pt; Number_type squared_dist;
-  					PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
-  					if (proj_pt == seg_i->source()) 
- { 						new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->source));
-  					} else if (proj_pt == seg_i->target()) {
-  						splitting_pts[i]
-  					} else {
-  						new_poly_segs.push_back(Segment_2(seg_i->source(), splitting_pts[i]));
-						new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->target()));
-  					}
-  					*/
-  			}
-  			new_polylines.push_back(polyline_construct(new_poly_segs.begin(), new_poly_segs.end()));
+			bool split_seg = false; int split_seg_i = -1;
+	        for (int i = 0; i < segs_to_split.size(); i++) {
+	          
+	          if ( (seg_i->source() == segs_to_split[i].source()) && (seg_i->target() == segs_to_split[i].target())) {
+	            CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
+	            if (!tmp_seg.has_on(splitting_pts[i])) {
+	              /*split_seg = true;*/ split_seg_i = i; continue;
+	              /*
+	              Point_2 proj_pt; Number_type squared_dist;
+	            PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
+	            // TODO (why can it even go the other way getting here?)
+	            if ( (proj_pt != seg_i->source()) && (proj_pt != seg_i->target()) ) {
+	              
+	            }
+	            */  
+	            }
+	          }
+	        }
+	        if (!split_seg) {
+	            new_poly_segs.push_back(*seg_i);
+	          } else {
+	            std::cout << "Splitting seg: " << *seg_i << " into: " << std::endl;
+	            std::cout << "\t " << Segment_2(seg_i->source(), splitting_pts[split_seg_i]) << " and " << Segment_2(splitting_pts[split_seg_i], seg_i->target()) << std::endl;
+	            //std:: cout << "splitting seg = " << *seg_i << " with the point " << splitting_pts[i] << std::endl;
+	            // Now check if the closest point is the source, target, or not
+	            /*
+	            Point_2 proj_pt; Number_type squared_dist;
+	            PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
+	            if (proj_pt == seg_i->source()) 
+	 {            new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->source));
+	            } else if (proj_pt == seg_i->target()) {
+	              splitting_pts[i]
+	            } else {
+	              new_poly_segs.push_back(Segment_2(seg_i->source(), splitting_pts[i]));
+	            new_poly_segs.push_back(Segment_2(splitting_pts[i], seg_i->target()));
+	            }
+	            */
+	        }
   		}
-  			 
+  		new_polylines.push_back(polyline_construct(new_poly_segs.begin(), new_poly_segs.end()));
   		/*
 		for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
 			bool sing_on_segment = false;
