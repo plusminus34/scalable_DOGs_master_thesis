@@ -39,6 +39,8 @@ private:
 	std::vector<Polyline_2> merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines);
 	std::vector<Polyline_2> snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines, std::vector<Point_2>& intersections);
 	std::vector<Polyline_2> snap_polylines_start_end_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices, Number_type& threshold);
+	std::vector<Polyline_2> snap_polylines_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
+		Number_type& threshold);
 	std::map<Number_type, Number_type> snap_coords(std::vector<Number_type>& coords, Number_type threshold);
 	std::vector<Polyline_2> snap_and_split_curves_to_starting_points(std::vector<Polyline_2>& polylines, Number_type threshold);
 

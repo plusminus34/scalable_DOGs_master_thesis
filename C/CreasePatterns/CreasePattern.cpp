@@ -17,10 +17,10 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	auto merged_starting_point_polylines = snap_nearby_polylines_start_end_starting_points(polylines, endpoints_intersections);
 
 	// Before computing intersections, make sure that each curves starting/end point is on the other curves if it close enough
-	auto snapped_and_split_to_starting_points_polylines = snap_and_split_curves_to_starting_points(merged_starting_point_polylines, dist_threshold_pow2/10);
+	//auto snapped_and_split_to_starting_points_polylines = snap_and_split_curves_to_starting_points(merged_starting_point_polylines, dist_threshold_pow2/100);
 
 	// At that point just make sure to snap the 'x' and 'y' coordinates of the intersections to one of them first
-	initial_fold_polylines = merge_nearby_polylines_intersections(snapped_and_split_to_starting_points_polylines);
+	initial_fold_polylines = merge_nearby_polylines_intersections(merged_starting_point_polylines);
 
 	// Setup initial boundary
 	initial_bnd_polylines = bnd_polylines;
@@ -48,6 +48,9 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	
   	// Create an orthogonal grid with singularities
   	//orthogonalGrid.add_additional_grid_points(polylines_intersections);
+
+
+
 
   	std::vector<Point_2> crease_vertices;
   	// add additional interesction points at the start and end of every curve after snapping to both boundary and closed loops
@@ -84,7 +87,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   		}
   	}
   	crease_vertices = align_crease_vertices_x_y_with_boundary(origPatternBoundary, crease_vertices, polylines_intersections.size(), dist_threshold_pow2);
+  	// At this point we should explicitly snap points on polygons to the intersection points (also including/start ending of curves)
+  	// This will guarantuee them to have the vertices if they do have them
   	auto preprocessed_polylines = snap_polylines_start_end_to_vertices(filtered_and_clipped_to_boundary_polylines, crease_vertices, dist_threshold_pow2);
+  	Number_type non_starting_point_snap_threshold = dist_threshold_pow2;
+  	preprocessed_polylines = snap_polylines_to_vertices(preprocessed_polylines, crease_vertices, non_starting_point_snap_threshold);
+
   	std::cout << "before" << std::endl;
 
   	orthogonalGrid.add_additional_grid_points(crease_vertices);
@@ -400,6 +408,41 @@ std::vector<Polyline_2> CreasePattern::snap_polylines_start_end_to_vertices(std:
 	return snapped_polylines;
 }
 
+std::vector<Polyline_2> CreasePattern::snap_polylines_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
+		Number_type& threshold) {
+	Geom_traits_2 traits;
+	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
+	std::vector<Polyline_2> snapped_polylines; int curve_cnt = 0;
+	for (auto poly: polylines) {
+		std::cout << "curve_cnt = " << curve_cnt << std::endl << std::endl;
+		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
+		/*
+		for (auto v: vertices) {
+			if (CGAL::squared_distance(v, pts[0]) < threshold ) {std::cout << "snapping " << pts[0] << "to " << v << std::endl; pts[0] = v;}
+			if (CGAL::squared_distance(v, pts.back()) < threshold ) { std::cout << "snapping " << pts.back() << "to " << v << std::endl; pts.back() = v;}
+		}
+		*/
+		bool is_poly_closed = is_polyline_closed_with_tolerance(poly, threshold);
+		for (int v_i = 0; v_i < vertices.size(); v_i++) {
+			Number_type min_dist = CGAL::squared_distance(vertices[v_i],pts[1]); int min_i = 1;
+			for (int pt_i = 1; pt_i < pts.size()-1; pt_i++) {
+				auto pt_dist = CGAL::squared_distance(vertices[v_i],pts[pt_i]);
+				if (pt_dist < min_dist) {
+					min_dist = pt_dist; min_i = pt_i;
+				}
+			}
+			if (min_dist < threshold) {
+				std::cout << "non boundary snapping " << pts[min_i] << "to " << vertices[v_i] << " with pt_i = " << min_i << std::endl;
+				pts[min_i] = vertices[v_i];
+			}
+			
+		}
+		snapped_polylines.push_back(polyline_construct(pts.begin(),pts.end()));
+		curve_cnt++;
+	}
+	return snapped_polylines;
+}
+
 std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(std::vector<Polyline_2>& polylines, Number_type threshold) {
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
@@ -407,10 +450,15 @@ std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(
 
 	// Get start/end points
 	std::vector<Point_2> start_end_points;
-	for (auto poly: polylines) {
+	//for (auto poly: polylines) {
+	//for (int i = polylines.size()-1; i < polylines.size(); i++)
+	{
+		auto poly = polylines.back();
   		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
   		if (pts.size()) start_end_points.push_back(pts[0]); start_end_points.push_back(pts.back());
   	}
+  	std::cout << "start_end_points.size() = " << start_end_points.size() << std::endl;
+  	//}
 
   	// Now go on every curve. Save the closest segment to each vertex
   	for (auto poly: polylines) {
@@ -463,7 +511,7 @@ std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(
 	          if ( (seg_i->source() == segs_to_split[i].source()) && (seg_i->target() == segs_to_split[i].target())) {
 	            CGAL::Segment_2<Kernel> tmp_seg(seg_i->source(),seg_i->target());
 	            if (!tmp_seg.has_on(splitting_pts[i])) {
-	              /*split_seg = true;*/ split_seg_i = i; continue;
+	              split_seg = true; split_seg_i = i; continue;
 	              /*
 	              Point_2 proj_pt; Number_type squared_dist;
 	            PatternBoundary::proj_pt_to_segment(splitting_pts[i], *seg_i, proj_pt, squared_dist);
@@ -528,6 +576,7 @@ std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(
 		*/
 		
 	}
+	int wait; std::cin >> wait;
 	//exit(1);
 	return new_polylines;
 }
