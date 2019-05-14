@@ -114,14 +114,14 @@ We use a bending objective taken from \cite{rabi2018shape}, but exploit the fact
 \begin{equation}
 f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
 \end{equation}
-Let $c(i)$ be a crease point, $e^1(i)$ and $e^2(i)$ its duplicated edges as in figure \figref{fig:fold_angle_and_tangent_angles}, and let $\theta_i$ be a desired dihedral angle along the fold at $c(i)$. We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at $c(i)$ using a soft penalty, but write it down as a quadratic objective:
+Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}.
+Let $c(i)$ be a crease point, $e_1(i)$ and $e_2(i)$ its duplicated edges as in figure \figref{fig:fold_angle_and_tangent_angles}, and let $\theta_i$ be a desired dihedral angle along the fold at $c(i)$. Let $t_i$ be the tangent of the curve of the flat mesh at the crease point $c_i$, which we discretize as the tangent of the osculating circle at $c_i$ and let $\alpha$ w.l.o.g be the angle between $t$ and $t_1$ on the initial flat mesh. We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at $c(i)$ using a soft penalty:
 \begin{equation}
-f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
+\phi_{\text{dihedral}_{c(i)}}(\x) = \langle t_1, t_2 \rangle - cos(\alpha)^2 - sin^2(\alpha) cos(\theta)
 \end{equation}
+And note that under isometry deformations $t_1,t_2$ are linear in the vertices locations, $\alpha$ is fixed and the constraint is quadratic. \\
 % squared half angle of two vectors is quadratic in their position to reach the following objective:
-
-Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}.\\
-Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry constraints:
+Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following quadratic isometry constraints:
 \begin{equation}
 \phi_\text{iso}(\x)_e = l_e^2 - {l_e^0}^2
 \end{equation}
