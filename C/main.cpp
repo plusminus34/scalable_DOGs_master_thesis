@@ -182,6 +182,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Pairs weight", &DC.p.pair_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("MV bias weight", &DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
