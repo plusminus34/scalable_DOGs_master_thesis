@@ -61,36 +61,39 @@ A non-planar curved crease point on a curved folded surface $S$ is folded if and
 This follows directly from the fact that the tangent planes on both sides of a crease curve coincide if the surface is smooth there, but along a folded crease they are reflections of one another through the crease curve's osculating plane. Planar crease points along a curved crease, while not folded, still satisfy this constraint, since around these points the tangent planes are exactly the same as the osculating plane of the curve, though even the slightest surface deformation might change that. 
 
 \subsection{Discretization}
-We discretize the condition by constraining tangents formed by the orthogonal grid parameter lines to lie on one side of the curve's discrete osculating plane (see \figref{fig:osc_plane_discretization} for the notations of the edges). The edges intersecting the crease can be considered as discrete tangents originating at crease points. In the notation of \figref{fig:osc_plane_discretization}, each connected component has its own edge $e^1,e^2$ intersecting the crease. At a starting flat configuration they are the same, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{t_1}{\|t_1\|}, t_2 = \frac{t_2}{\|t_2\|}$. We denote the curves binormal, i.e. its osculating plane's normal as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ are the same along both connected components.
+\OSH{We saw that folding happens exactly when both sides of the surface around a crease are in the same half-space of the osculating plane of the crease curve.} We discretize this condition by constraining the tangents of the discrete parametric (grid) lines of the two DOG patches to be on the same side of the crease curve's discrete osculating plane. See \figref{fig:osc_plane_discretization} for the notation. The DOG edges intersecting the crease can be considered as discrete tangents originating at the crease points. In the notation of \figref{fig:osc_plane_discretization}, each of the two patches has its own edge ($e^1$ or $e^2$) intersecting the crease curve. In the starting, flat configuration the two edges coincide, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{t_1}{\|t_1\|}, t_2 = \frac{t_2}{\|t_2\|}$ \OSH{you mean $t^1 = \frac{e^1}{\|e^1\|}, t^2 = \frac{e^2}{\|e^2\|}$?}. We denote the crease curve's binormal, i.e., the normal of its osculating plane, as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ coincide for both patches.
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/osc_plane_discretization}
-	\caption{Notation for edges along a crease pattern. Left: An orthogonal grid with a crease curve. Center: Following \cite{rabi2018shape}, we represent such a part by duplicating quads along the grid, creating different connected components while positionally constraining the curve edge points to match. Right: Notation for a duplicated edge intersecting the curve at the blue points ($e_1,e_2$), and the forward and backwards crease edges at the blue points ($e_f,e_b$). }
+	\caption{Notation for edges in a discrete crease pattern. Left: a DOG net with a discrete crease curve. Center: Following \cite{rabi2018shape}, we represent creases by duplicating the quads that contain the crease curve, which results in different connected components, or patches. The positions of the vertices on the curve, i.e., its intersection points with the grid edges, are constrained to match on both patches. Right: Notation for a duplicated grid edge ($e^1, e^2$) intersecting the crease curve at the blue point(s), and the two crease edges $e_f,e_b$. }
 	\label{fig:osc_plane_discretization}
 \end{figure}
 
-In the notation of \figref{fig:osc_plane_discretization}, this constraint can be written as:
+In the notation of \figref{fig:osc_plane_discretization}, the supporting plane constraint can be written as
 \begin{equation} \label{eq:folding_const_normalized} 
 \text{sgn}(\langle t^1,B\rangle) +  {sgn}(\langle t^2,B\rangle) = 0
 \end{equation}
 with 
 \begin{equation} \label{eq:sign}
 \text{sgn}(x) = \left\{
-     \begin{array}{@{}l@{\thinspace}l}
+     \begin{array}{@{}r@{\thinspace}l}
        -1  &: \text{if } x < 0, \\
        0 &: \text{if } x = 0, \\
        1 &: \text{if } x > 0. \\
      \end{array}
    \right.
 \end{equation}
- Constraint \eqref{eq:folding_const_normalized} can be simplified. As $B$ appears in both dot products, one can replace it by the non-normalized $\langle e_f \times e_b \rangle$. Furthermore, if one assumes an isometric deformation it is possible to replace $t_1,t_2$ by the non-normalized $e_1,e_2$, arriving at:
+%
+Constraint \eqref{eq:folding_const_normalized} can be simplified by replacing $B$ with the non-normalized $\langle e_f \times e_b \rangle$. Furthermore, if one assumes an isometric deformation, it is possible to replace $t^1,t^2$ by the non-normalized edges $e^1,e^2$, arriving at:
 \begin{equation} \label{eq:folding_const}
-\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0
+\text{sgn}(\langle e^1,e_f \times e_b \rangle) +  {sgn}(\langle e^2,e_f \times e_b\rangle) = 0.
 \end{equation}
+%
+\OSH{I don't like ending a paragraph on an equation, looks incomplete. Say a sentence about how we use this constraint? Add it to the modeling system along with DOG constraints and continuity constraints for patch boundaries?}
 
 \subsection{Discussion}
-There are multiple equivalent charecterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint, i.e. \eqref{eq:folding_const_normalized}, and briefly discuss how these are not satisfied by different constraint choices. \\
+There are multiple equivalent characterizations for a folded crease over a curved folded surface. We would like to point out some key properties of our chosen discretization for the constraint, i.e. \eqref{eq:folding_const_normalized}, and briefly discuss how these are not satisfied by different constraint choices. \\
 \textbf{It is suitable for homotopy based optimization methods} as it is satisfied on a flat mesh. In this sense we consider a point along a curve with zero normal curvature as both folded and not folded. \\ 
 \textbf{It is minimal} and generally non-intrusive. Once a curved crease is folded on a piecewise smooth developable surface, one does not need to explicitly take extra care of folding. The effect of eq. \eqref{eq:folding_const} on an already-folded surface is null. The discontinuity along the tangents caused by the folding implies that a folded crease remain folded under local deformations, and in order for it to become unfolded one need to first flatten it, as this is the case for a piecewise smooth curved folded surface. It also captures the converse: a curved crease can only be folded from a point with zero normal curvature \cite{more_on_paper}. \\
 One could for instance distinguish curved folded with non-curved folded configurations using discontinuties along the tangents $t_1,t_2$, but lose the feasibility of the flat models. Moreover, in the discrete case a minor discontinuity can still arise even though there is no fold, i.e. where eq. \eqref{eq:folding_const_normalized} is not satisfied, thus numerically giving the impression of a fold when visually there is none. Another option is to define folded configurations as those satisfying the similar but simpler smooth constraint:
