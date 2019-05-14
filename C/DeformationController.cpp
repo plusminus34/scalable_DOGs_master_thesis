@@ -42,6 +42,7 @@ bool DeformationController::has_constraints() {
 void DeformationController::single_optimization() {
 	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
 		deformation_timestep+=deformation_timestep_diff;
+		p.pair_weight = deformation_timestep*p.soft_pos_weight;
 	}
 	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
@@ -65,6 +66,10 @@ void DeformationController::apply_new_editor_constraint() {
 	if (edit_mode == DogEditor::VERTEX_PAIRS) {
 		if ( (dogEditor->pair_vertex_1!= -1) && (dogEditor->pair_vertex_2!= -1) ) {
 			int vnum = globalDog->get_v_num();
+			for (int i = 0; i < 3; i++) {
+					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
+			}
+			/*
 			if (z_only_editing) {
 				paired_vertices.push_back(std::pair<int,int>(2*vnum+dogEditor->pair_vertex_1,2*vnum+dogEditor->pair_vertex_2));	
 			} else {
@@ -72,6 +77,7 @@ void DeformationController::apply_new_editor_constraint() {
 					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
 				}
 			}
+			*/
 		}
 	} else if (edit_mode == DogEditor::DIHEDRAL_ANGLE) {
 		if (dogEditor->picked_edge.t !=-1) {
