@@ -31,7 +31,7 @@ The problems we solve in this paper can be written in the form:
 With $f$ as an objective, composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 
 \subsection{Folding constraints}
-Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
+Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
 \begin{enumerate}
 	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
 	\item Use a linesearch method that backtracks if the resulting mesh does not exactly satisfies $\phi_{d_i}(\x) = 0, i = 1,...,m$.
@@ -52,17 +52,17 @@ using the fixed parameters $h=1000,\delta = 1e-5$. Our approximation for $H(x)$ 
 We refer to the approximated constraints as $\phi^*_i(\x)$. and replace the optimization problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
-& \argmin_x f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
+& \argmin_x f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
 & \textrm{subject to} \\
 & \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
 \end{equation}
-Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
+Where $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
 
 \subsection{Equality constrainted SQP}
 For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
 \begin{equation}
-f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2
+f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2
 \end{equation}
 We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linesearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 
@@ -80,15 +80,15 @@ We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic
 \end{gathered}
 \end{equation}
 
-Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\alpha}(\x)$ is the Hessian of $f_\alpha(\x)$.
+Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\alpha(\x)$.
 
-Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\alpha}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
+Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 
 \begin{equation} \label{eq:KKT_us}
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{ H^*_{f_\alpha}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
+{ H^*_{f_\omega}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
 {J^*(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
@@ -109,15 +109,30 @@ where we update the parameter $\mu^k$ at each iteration using the absolute value
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it. Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry term:
-\begin{equation}
-f_\text{iso}(\x) = \sum_{e \text{ edge in } \x} (l_e^2 - {l_e^0}^2)^2.
-\end{equation}
-\MiR{Add the convex approximation of the Hessian.}
-We use a bending objective taken from \cite{rabi2018shape}, and exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
+Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. 
+We use a bending objective taken from \cite{rabi2018shape}, but exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
 \begin{equation}
 f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
 \end{equation}
+Let $c(i)$ be a crease point, $e^1(i)$ and $e^2(i)$ its duplicated edges as in figure \figref{fig:fold_angle_and_tangent_angles}, and let $\theta_i$ be a desired dihedral angle along the fold at $c(i)$. We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at $c(i)$ using a soft penalty, but write it down as a quadratic objective:
+\begin{equation}
+f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
+\end{equation}
+% squared half angle of two vectors is quadratic in their position to reach the following objective:
+
 Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}.\\
+Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry constraints:
+\begin{equation}
+\phi_\text{iso}(\x)_e = l_e^2 - {l_e^0}^2
+\end{equation}
+% Write down stitching constraint
+% Write down that we use them as soft cosntraint, and we use the gauss-newton hessian of the constraints as a convex hessian approximation
+%Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). 
+%Likewise, we have noticed significant improvement while using soft stitching constraints \MiR{can we shortly discuss that?}.
+%Our bending, positional constraints and dihedral angle objectives are all convex, while other parts of our objectives are not. of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it.
+
+\MiR{Add the convex approximation of the Hessian.}
+% All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it.
+
 \MiR{add quadratic soft positional constraints}
 \MiR{write down the dihedral soft constraints after showing it can be formalized as a linear constraint and therefore as a convex quadratic objective use as a soft constraint. We just use the fact that the cos of half the angle is linear under isometric deformation. Also write down that we enforce it in an homotopy fashion by linear interpolating it from 0 to the required dihedral angle.}
