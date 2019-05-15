@@ -73,7 +73,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_edge_points_constraints(viewer);
 		DC.dogEditor->render_pairs();
 	}
-	render_mesh(viewer, dog->getVrendering(),dog->getFrendering(), dog->getUV());
+	render_mesh(viewer, *dog);
 }
 
 void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
@@ -134,25 +134,30 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
-void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren,
-				const Eigen::MatrixXd& uv) {
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
 	if (first_rendering || switched_mode) {
-		viewer.data().set_mesh(Vren, Fren);
+		viewer.data().set_mesh(dog.getV(), dog.getFrendering());
 		Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
 	    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
 	    Eigen::Vector3d specular; specular << 0,0,0;
 	    //viewer.data.set_colors(diffuse);
 	    viewer.data().uniform_colors(ambient,diffuse,specular);
-	    //if (uv.rows()) viewer.data().set_uv(uv);
+	    if (dog.getUV().rows()) {
+	    	 viewer.data().set_uv(dog.getUV());
+	    	 Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> R,G,B,A;
+	    	 dog.getTexture(R,G,B,A);
+	    	 viewer.data().set_texture(R,G,B,A);
+	    	 //int wait; std::cout << "texture" << std::endl; std::cin >> wait;
+	    	 viewer.data().show_texture = true;
+	    }
 	}
 	else {
-		 viewer.data().set_vertices(Vren);
+		 viewer.data().set_vertices(dog.getV());
     	 viewer.data().compute_normals();
 	}
-
-    //Eigen::MatrixXd VN; igl::per_vertex_normals(Vren,Fren,VN);
-  	//viewer.data().set_normals(VN);
 }
+
+
 
 void ModelViewer::render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer) {
 	const DogEdgeStitching& eS = state.dog.getEdgeStitching();

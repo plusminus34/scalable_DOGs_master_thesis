@@ -33,7 +33,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting up uv" << endl;
-	setup_uv();
+	setup_uv_and_texture();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -305,7 +305,8 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 	
 }
 
-void Dog::setup_uv() {
+void Dog::setup_uv_and_texture() {
+	std::cout << "here" << std::endl;
 	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
 	Eigen::VectorXd max_c = uv.colwise().maxCoeff();
 	Eigen::VectorXd min_c = uv.colwise().minCoeff();
@@ -319,4 +320,21 @@ void Dog::setup_uv() {
   	for (int i = 0; i < uv.rows(); i++) {
     	uv.row(i) << scale*(V(i,0)+t_x),scale*(V(i,1)+t_y);
   	}
+  	int resolution = 10240;
+  	text_R.resize(resolution,resolution);text_R.setZero();
+  	text_G.resize(resolution,resolution);text_G.setZero();
+  	text_B.resize(resolution,resolution);text_B.setZero();
+  	text_A.resize(resolution,resolution);text_A.setZero();
+  	for (int i = 0; i < resolution; i++) {
+  		for (int j = 0; j < resolution/2; j++) {
+  			text_A(i,j) = 255;
+  		}
+  	}
+}
+
+const Eigen::MatrixXd& Dog::getTexture(Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ri,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Gi,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Bi,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ai) const {
+	text_Ri = text_R; text_Gi = text_G; text_Bi = text_B;text_Ai = text_A;
 }
