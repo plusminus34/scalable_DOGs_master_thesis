@@ -29,6 +29,7 @@ Eigen::VectorXd StitchingConstraints::Vals(const Eigen::VectorXd& x) const {
 		cout << "error, const_cnt = " << const_cnt << " but const_n = " << const_n << endl;
 		exit(1);
   }
+  //std::cout << "StitchingConstraints avg = " << constVals.cwiseAbs().sum()/constVals.rows() << " and max = " << constVals.cwiseAbs().maxCoeff() << std::endl;
   return constVals;
   
 }

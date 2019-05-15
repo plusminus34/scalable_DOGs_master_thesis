@@ -38,10 +38,11 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::cout << "submeshVList.size() = " << submeshVList.size() << std::endl;
 	save_submesh_bnd_edge_points(creasePattern, submeshVList, edgeStitching);
 	cout << "saved submesh bnd edge points" << endl;
+	// For rendering puproses: snap nearby edge points
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	std::cout << "generated v ren list" << std::endl;
-	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
-									V_ren_list, edgeStitching, V_ren2, F_ren2);
+	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+									V_ren_list, edgeStitching, V_ren, F_ren);
 	std::cout << "Generated constraints" << std::endl;
 
 	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
@@ -54,8 +55,11 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
 	cout << "got submesh_adjacency" << endl;
 
-	//return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submeshFSize, submesh_adjacency);
-	return Dog(V,F,edgeStitching,V_ren2,F_ren2, submeshVSize, submeshFSize, submesh_adjacency);
+	//double min_tri_area =  dblA.minCoeff();
+	//std::cout << "min_tri_area = " << min_tri_area << std::endl; int wait; std::cin >> wait;
+	//F_ren = Fsqr_to_F(F);
+	//V_ren = V;
+	return Dog(V,F,edgeStitching,V_ren,F_ren,submeshVSize,submeshFSize,submesh_adjacency);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, 
@@ -139,7 +143,7 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 
 
-// Another way to go about it is to get the vertices of the )orth grid + polylines) graph that share more than one face
+// Another way to go about it is to get the vertices of the (orth grid + polylines) graph that share more than one face
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
@@ -408,7 +412,7 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 		for (int j = 0; j < eS.submesh_to_edge_pt[i].size(); j++) {
 			int ei = eS.submesh_to_edge_pt[i][j];
 			if (ei == -1) {
-				std::cout <<"oh" << std::endl; exit(1);
+				std::cout <<"Found a crease point on a submesh that is not mapped to an edge pt" << std::endl; exit(1);
 			}
 			auto t = eS.edge_coordinates_precise[ei];
 			auto coord_x =  t*V(eS.edge_const_1[ei].v1,0) + (1-t)*V(eS.edge_const_1[ei].v2,0);

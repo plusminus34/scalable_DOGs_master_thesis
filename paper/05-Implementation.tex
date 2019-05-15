@@ -2,7 +2,7 @@
 We employ \theoremref{Thm:supporting_plane} and its discretization eq.\eqref{eq:folding_const} in a simple algorithm to enforce folds along creases while deforming piecewise smooth DOGs. The algorithm tries to minimize an objective, while keeping the DOG constraints and ensuring the formation of folds along all crease curves.
 
 \subsection{Problem setup}
-We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}. The patches themselves also need to align along the creases as detailed at \ref{sec:model} enforced by simple linear constraints as done in \cite{rabi2018shape}. For convenience we call both of these constraints the "DOG constraints" and denote them by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
+We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $R^3$ by $V \in R^{n\times3}$, the flattened variables by $\x \in R^{3n}$, and the mesh quad faces by $F$. Each connected component by its own is a DOG, i.e. has the connectivity of a subset of $\Z^2$ and satisfy the DOG angle constraints \cite{rabi18}, which we denote by $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
 We are interested in deformations that fold along all creases in a given folding pattern using \theoremref{Thm:supporting_plane} and enforcing eq. \eqref{eq:folding_const}. We enforce these constraints on all crease points, which are points on crease curves that are not crease vertices, besides crease points that have the following degeneracy on the flattened mesh (see \figref{fig:fold_const_degeneracies}):
 \begin{enumerate}
@@ -31,7 +31,7 @@ The problems we solve in this paper can be written in the form:
 With $f$ as an objective, composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 
 \subsection{Folding constraints}
-Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{d_i}(\x)$:
+Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
 \begin{enumerate}
 	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
 	\item Use a linesearch method that backtracks if the resulting mesh does not exactly satisfies $\phi_{d_i}(\x) = 0, i = 1,...,m$.
@@ -52,17 +52,17 @@ using the fixed parameters $h=1000,\delta = 1e-5$. Our approximation for $H(x)$ 
 We refer to the approximated constraints as $\phi^*_i(\x)$. and replace the optimization problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
-& \argmin_x f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
+& \argmin_x f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
 & \textrm{subject to} \\
 & \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
 \end{equation}
-Where $\alpha > 0$ is a metaparameter initialized as $\alpha_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
+Where $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
 
 \subsection{Equality constrainted SQP}
 For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
 \begin{equation}
-f_\alpha(\x) = f(x) + \alpha \sum \|\phi^*_{f_i}(\x)\|_2^2
+f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2
 \end{equation}
 We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linesearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 
@@ -74,25 +74,25 @@ We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic
 {J(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
-{\nabla f(x^k)} \\ 
+{\nabla f_\omega(x^k)} \\ 
 -\phi_{d_i}(x^k)\\
 \end{pmatrix}.
 \end{gathered}
 \end{equation}
 
-Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\alpha}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\alpha}(\x)$ is the Hessian of $f_\alpha(\x)$.
+Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\alpha(\x)$.
 
-Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\alpha}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
+Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 
 \begin{equation} \label{eq:KKT_us}
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
 {K}=\begin{pmatrix}
-{ H^*_{f_\alpha}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
+{ H^*_{f_\omega}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
 {J^*(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 \mathbf{b}=\begin{pmatrix}
-{\nabla f(x^k)} \\ 
+{\nabla f_\omega(x^k)} \\ 
 -\phi_{d_i}(x^k)\\
 \end{pmatrix}.
 \end{gathered}
@@ -109,15 +109,24 @@ where we update the parameter $\mu^k$ at each iteration using the absolute value
 with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
-Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles. All of them are quadratic and convex besides the stretch objective and therefore we replacte its Hessian by a convex approximation of it. Isometry is modeled in the objective as a soft constraint, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$ (\MiR{I can push it more with a stronger weight if needed}). Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following isometry term:
+Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles.
+We use an integrated sqaured mean curvature bending objective taken from \cite{rabi2018shape}, but exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
 \begin{equation}
-f_\text{iso}(\x) = \sum_{e \text{ edge in } \x} (l_e^2 - {l_e^0}^2)^2.
+f_\text{H}(\x) = 0.5\x^t(L^tM^{-1}L)\x
 \end{equation}
-\MiR{Add the convex approximation of the Hessian.}
-We use a bending objective taken from \cite{rabi2018shape}, and exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
+Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}. \\
+Let $c^i$ be a crease point, $t_1^i$ and $t_2^i$ the grid tangents as in \figref{fig:fold_angle_and_tangent_angles}, and let $\theta^i$ be a desired dihedral angle along the fold at $c^i$. Let $t^i$ be the tangent of the curve of the flat mesh at the crease point $c_i$ where we discretize $t^i$ as the tangent of the unique circle passing through $c_i$ and its neighbours on the crease. Let $cos(\alpha^i) = \langle t^i,t_1^i \rangle = \langle t^i,t_2^i \rangle$ on the initial flat mesh. We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at $c(i)$ using a soft penalty:
 \begin{equation}
-f_\text{bending}(\x) = 0.5\x^t(L^tM^{-1}L)\x
+\phi_{\text{d}_{c^i}}(\x) = \langle t_1^i, t_2^i \rangle - cos(\alpha)^2 - sin^2(\alpha^i) cos(\theta^i)
 \end{equation}
-Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}.\\
-\MiR{add quadratic soft positional constraints}
-\MiR{write down the dihedral soft constraints after showing it can be formalized as a linear constraint and therefore as a convex quadratic objective use as a soft constraint. We just use the fact that the cos of half the angle is linear under isometric deformation. Also write down that we enforce it in an homotopy fashion by linear interpolating it from 0 to the required dihedral angle.}
+And note that under isometry deformations $t_1,t_2$ are linear in the vertices locations, $\alpha$ is fixed, and the constraint is quadratic. Throughout the optimization we enforce a given dihedral angle constraint in an homotopy fashion by linearly interpolating the constrained angle from zero to the user requested value. \\
+Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following quadratic isometry constraints:
+\begin{equation}
+\phi_\text{iso}(\x)_e = l_e^2 - {l_e^0}^2
+\end{equation}
+The patches themselves also need to align along the creases as detailed at \ref{sec:model}, which can be enforced by linear constraints as done in \cite{rabi2018shape} which we denote by $\phi_\text{a}(\x)$. We enforce the dihedral, positional, isometry and patches alignment constraints as positional constraints in a soft manner by using a penalty on their squared deviation, denoted accordingly by $f_\text{d}(\x)$,$f_\text{pos}(\x)$,$f_\text{iso}(\x)$,$f_\text{a}(\x)$. We use the constraints Gauss-Newton's Hessian as a convex approximation for the Hessian of these constraints as well as the hessian of the folding constraints  $\sum \|\phi^*_{f_i}(\x)\|_2^2$. Isometry is enforced as a soft constraint $f_\text{iso}(\x)$, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$, and a maximum stretch below $4$. As opposed to \cite{rabi2018shape} we also encode  $\phi_\text{a}(\x)$ as a soft constraint, as we have noticed a significance improvement in the quality and smoothness of complicated crease patterns when these are enforced as a soft penalty with a large weight \MiR{ok to say?, this is mostly important in the curved constrained case for interactivity, as if we run the interpolation much slower then we can still use hard constraints},  with an average deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns rise to a large set of additional linear constraints.\\ 
+The objective we optimize is then:
+\begin{equation}
+f(\x) = w_Hf_\text{H}+w_pf_\text{pos}+w_df_\text{d}+w_{iso}f_\text{iso}+w_af_\text{stitching}
+\end{equation}
+Throughout the paper, unless stated otherwise, we use $w_H = 1$, $w_{pos}=5$,$w_d = 100$, $w_{iso}= \frac{20000}{\|E\|}$, $w_a = 1e4$. Where $\|E\|$ is the number of edges in the mesh (i.e. for a mesh with $1000$ vertices $w_{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geoemtry keeps our bending objective the same, however scales the isometric objective by the number of edges.

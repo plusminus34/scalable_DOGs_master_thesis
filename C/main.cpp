@@ -182,9 +182,11 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Pairs weight", &DC.p.pair_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("MV bias weight", &DC.p.mv_bias_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Stitching weight", &DC.p.stitching_weight, 0, 0, "%.4f");
+      //ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
       
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
@@ -204,6 +206,7 @@ int main(int argc, char *argv[]) {
       //ImGui::InputInt("Penalty repetitions", &DC.p.penalty_repetitions);
       ImGui::Checkbox("Folding mode", &DC.p.folding_mode);
       ImGui::Checkbox("Flip sign", &DC.p.flip_sign);
+      ImGui::Checkbox("Render creases", &modelViewer.show_curves);
       //ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
       //ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);

@@ -36,6 +36,9 @@ bool is_closed_polyline(const Polyline_2& poly);
 void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points);
 void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& submeshVList,DogEdgeStitching& eS,
 	 std::vector<Eigen::MatrixXd>& V_ren_list);
+
+void build_edge_pt_to_snapped_edge_pt_mapping(DogEdgeStitching& edgeStitching, const Eigen::MatrixXd& V);
+
 void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, const std::vector<SubmeshPoly>& submesh_polygons,
 		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F_ren);
 

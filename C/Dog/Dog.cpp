@@ -106,6 +106,7 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 }
 
 void Dog::update_rendering_v() {
+	//V_ren = V;
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
 	update_Vren();
 }
@@ -219,6 +220,7 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 	Eigen::MatrixXi E; igl::edges(F_ren,E);
 	for (int i = 0; i < E.rows(); i++) {
 		// make sure the edge is an 'x' or 'y' edge
+		std::cout << "checking edge i = " << i << " out of " << E.rows() << std::endl;
 		if ( abs(V_ren(E(i,0),0)-V_ren(E(i,1),0)) < eps ) {
 			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));	
 		} else if ( abs(V_ren(E(i,0),1)-V_ren(E(i,1),1)) < eps ) {
