@@ -73,7 +73,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_edge_points_constraints(viewer);
 		DC.dogEditor->render_pairs();
 	}
-	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
+	render_mesh(viewer, dog->getVrendering(),dog->getFrendering(), dog->getUV());
 }
 
 void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
@@ -112,7 +112,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	//std::cout << "Vlist.size() = " << Vlist.size() << std::endl;
 	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
 	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);
-	render_mesh(viewer,VWallpaper,FWallpaper);
+	//render_mesh(viewer,VWallpaper,FWallpaper); Need uv but wallpaper doesn't work at the moment in any case..
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
@@ -134,7 +134,8 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
-void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren) {
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren,
+				const Eigen::MatrixXd& uv) {
 	if (first_rendering || switched_mode) {
 		viewer.data().set_mesh(Vren, Fren);
 		Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
@@ -142,6 +143,7 @@ void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::Ma
 	    Eigen::Vector3d specular; specular << 0,0,0;
 	    //viewer.data.set_colors(diffuse);
 	    viewer.data().uniform_colors(ambient,diffuse,specular);
+	    //if (uv.rows()) viewer.data().set_uv(uv);
 	}
 	else {
 		 viewer.data().set_vertices(Vren);

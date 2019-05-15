@@ -80,6 +80,7 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	const Eigen::MatrixXd& getUV() const {return uv;}
 	//const Eigen::MatrixXd& getFlatV() const {return flatV;} somehow nto working now
 	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}

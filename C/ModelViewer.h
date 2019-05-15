@@ -44,7 +44,8 @@ private:
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 
-	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren);
+	void render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, 
+					const Eigen::MatrixXi& Fren, const Eigen::MatrixXd& uv);
 	void render_wallpaper(igl::opengl::glfw::Viewer& viewer);
 	void reset_state() {first_rendering = true;}
 	void clear_edges_and_points(igl::opengl::glfw::Viewer& viewer);

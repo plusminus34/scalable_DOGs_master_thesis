@@ -107,9 +107,9 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 }
 
 void Dog::update_rendering_v() {
-	//V_ren = V;
+	V_ren = V;
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
-	update_Vren();
+	//update_Vren();
 }
 
 void Dog::get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out) const {
