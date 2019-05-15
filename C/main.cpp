@@ -185,7 +185,8 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Pairs weight", &DC.p.pair_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("MV bias weight", &DC.p.mv_bias_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Stitching weight", &DC.p.stitching_weight, 0, 0, "%.4f");
+      //ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
       
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
