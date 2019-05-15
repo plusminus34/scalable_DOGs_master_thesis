@@ -32,7 +32,8 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	setup_stitched_curves_initial_l_angles_length();
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
-	cout << "setting boundary curves" << endl;
+	cout << "setting up uv" << endl;
+	setup_uv();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -302,4 +303,20 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 		}
 	}
 	
+}
+
+void Dog::setup_uv() {
+	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
+	Eigen::VectorXd max_c = uv.colwise().maxCoeff();
+	Eigen::VectorXd min_c = uv.colwise().minCoeff();
+  	// move the minimal coordinates x to be 0, and same for y
+  	double t_x = -1*min_c[0]; double t_y = -1*min_c[1];
+  	//cout << "t_x = " << t_x << " t_y = " << t_y << endl;
+  	// scale it such that the maximum 'x' distance will be 1, and same for y
+  	double x_rad = max_c[0]-min_c[0]; double y_rad = max_c[1]-min_c[1];
+  	// For now scale it by the smaller factor so it will always fit to a 1x1 box
+  	double scale = min(1./x_rad,1./y_rad);
+  	for (int i = 0; i < uv.rows(); i++) {
+    	uv.row(i) << scale*(V(i,0)+t_x),scale*(V(i,1)+t_y);
+  	}
 }

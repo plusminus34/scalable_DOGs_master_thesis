@@ -24,10 +24,13 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DeformationControll
 
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
-	viewer.data().clear();
-	viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
+	clear_edges_and_points(viewer);
 	switched_mode = ((viewMode != prevMode) || (first_rendering));
 	prevMode = viewMode;
+	if (first_rendering || switched_mode)  {
+		viewer.data().clear();
+		viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
+	}
 
 	if ( (viewMode == ViewModeMesh) || (viewMode == ViewModeMeshWire) ) {
 		render_mesh_and_wireframe(viewer);
@@ -48,6 +51,11 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	}
 
 	first_rendering = false;
+}
+
+void ModelViewer::clear_edges_and_points(igl::opengl::glfw::Viewer& viewer) {
+	viewer.data().set_edges(Eigen::MatrixXd::Zero(0,3), Eigen::MatrixXi::Zero(0,3), Eigen::MatrixXd::Zero(0,3));
+	viewer.data().set_points(Eigen::MatrixXd::Zero(0,3), Eigen::MatrixXd::Zero(0,3));
 }
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
@@ -127,16 +135,21 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren) {
-	viewer.data().set_mesh(Vren, Fren);
+	if (first_rendering || switched_mode) {
+		viewer.data().set_mesh(Vren, Fren);
+		Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
+	    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
+	    Eigen::Vector3d specular; specular << 0,0,0;
+	    //viewer.data.set_colors(diffuse);
+	    viewer.data().uniform_colors(ambient,diffuse,specular);
+	}
+	else {
+		 viewer.data().set_vertices(Vren);
+    	 viewer.data().compute_normals();
+	}
 
-	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
-    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
-    Eigen::Vector3d specular; specular << 0,0,0;
-    //viewer.data.set_colors(diffuse);
-    viewer.data().uniform_colors(ambient,diffuse,specular);
-
-    Eigen::MatrixXd VN; igl::per_vertex_normals(Vren,Fren,VN);
-  	viewer.data().set_normals(VN);
+    //Eigen::MatrixXd VN; igl::per_vertex_normals(Vren,Fren,VN);
+  	//viewer.data().set_normals(VN);
 }
 
 void ModelViewer::render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer) {

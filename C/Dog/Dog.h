@@ -133,9 +133,11 @@ private:
 	void get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices);
 	static int find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v);
 	static int find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v);
+	void setup_uv();
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	Eigen::MatrixXd uv;
 	Eigen::MatrixXd flatV;
 	// Indices of boundary curves (also when there are creases). Only relevant for square patches and used for wallpapers.
 	QuadTopology quadTop;
