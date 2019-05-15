@@ -146,9 +146,15 @@ void Dog::update_Vren() {
 		// Then add the crease points
 		if (edgeStitching.submesh_to_edge_pt.size()){
 			for (auto ei : edgeStitching.submesh_to_edge_pt[subi]) {
+				int snapped_ei = edgeStitching.edge_const_to_snapped_edge_const[ei];
+				/*
+				if (snapped_ei != ei) {
+					std::cout << "I am here" << std::endl; int wait; std::cin >> wait;
+				}
+				*/
 				// Get the vertex
-				double t = edgeStitching.edge_coordinates[ei];
-				V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
+				double t = edgeStitching.edge_coordinates[snapped_ei];
+				V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[snapped_ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[snapped_ei].v2);
 			}
 			for (int j = 0; j < edgeStitching.submesh_to_bnd_edge[subi].size(); j++) {
 				EdgePoint ep = edgeStitching.submesh_to_bnd_edge[subi][j];
@@ -219,6 +225,7 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 	Eigen::MatrixXi E; igl::edges(F_ren,E);
 	for (int i = 0; i < E.rows(); i++) {
 		// make sure the edge is an 'x' or 'y' edge
+		std::cout << "checking edge i = " << i << " out of " << E.rows() << std::endl;
 		if ( abs(V_ren(E(i,0),0)-V_ren(E(i,1),0)) < eps ) {
 			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));	
 		} else if ( abs(V_ren(E(i,0),1)-V_ren(E(i,1),1)) < eps ) {

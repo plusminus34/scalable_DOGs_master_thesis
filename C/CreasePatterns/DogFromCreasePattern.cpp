@@ -38,10 +38,12 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	std::cout << "submeshVList.size() = " << submeshVList.size() << std::endl;
 	save_submesh_bnd_edge_points(creasePattern, submeshVList, edgeStitching);
 	cout << "saved submesh bnd edge points" << endl;
+	// For rendering puproses: snap nearby edge points
+	build_edge_pt_to_snapped_edge_pt_mapping(edgeStitching, V);
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	std::cout << "generated v ren list" << std::endl;
-	Eigen::MatrixXd V_ren2; Eigen::MatrixXi F_ren2; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
-									V_ren_list, edgeStitching, V_ren2, F_ren2);
+	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren_tmp; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+									V_ren_list, edgeStitching, V_ren, F_ren_tmp);
 	std::cout << "Generated constraints" << std::endl;
 
 	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
@@ -54,8 +56,18 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	creasePattern.get_clipped_arrangement().get_faces_adjacency_list(submesh_adjacency);
 	cout << "got submesh_adjacency" << endl;
 
-	//return Dog(V,F,edgeStitching,V_ren,F_ren, submeshVSize, submeshFSize, submesh_adjacency);
-	return Dog(V,F,edgeStitching,V_ren2,F_ren2, submeshVSize, submeshFSize, submesh_adjacency);
+
+	// Remove 0 area faces
+	Eigen::VectorXd dblA;
+	igl::doublearea(V_ren,F_ren_tmp,dblA);int zero_area_faces_n = (dblA.array()==0).count();
+	std::cout << "zero_area_faces_n = " << zero_area_faces_n <<std::endl;
+	Eigen::MatrixXi F_ren(F_ren_tmp.rows()-zero_area_faces_n,3); int f_cnt = 0;
+	for (int i = 0; i < F_ren_tmp.rows(); i++) if (dblA(i)) F_ren.row(f_cnt++) = F_ren_tmp.row(i);
+	//double min_tri_area =  dblA.minCoeff();
+	//std::cout << "min_tri_area = " << min_tri_area << std::endl; int wait; std::cin >> wait;
+	
+
+	return Dog(V,F,edgeStitching,V_ren,F_ren,submeshVSize,submeshFSize,submesh_adjacency);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, 
@@ -139,7 +151,7 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 
 
-// Another way to go about it is to get the vertices of the )orth grid + polylines) graph that share more than one face
+// Another way to go about it is to get the vertices of the (orth grid + polylines) graph that share more than one face
 void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
@@ -406,10 +418,12 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 		for (int j = 0; j < submeshVList[i].rows(); j++) {V_ren_list[i].row(j) = submeshVList[i].row(j);}
 		// add crease points
 		for (int j = 0; j < eS.submesh_to_edge_pt[i].size(); j++) {
-			int ei = eS.submesh_to_edge_pt[i][j];
-			if (ei == -1) {
-				std::cout <<"oh" << std::endl; exit(1);
+			int tmp_ei = eS.submesh_to_edge_pt[i][j];
+			if (tmp_ei == -1) {
+				std::cout <<"Found a crease point on a submesh that is not mapped to an edge pt" << std::endl; exit(1);
 			}
+			// Getting the rendered snapped edge point location *we snap nearby edge points for rendering to avoid degenerate triangles which affects the rendered mesh normal)
+			int ei = eS.edge_const_to_snapped_edge_const[tmp_ei];
 			auto t = eS.edge_coordinates_precise[ei];
 			auto coord_x =  t*V(eS.edge_const_1[ei].v1,0) + (1-t)*V(eS.edge_const_1[ei].v2,0);
 			auto coord_y =  t*V(eS.edge_const_1[ei].v1,1) + (1-t)*V(eS.edge_const_1[ei].v2,1);
@@ -598,4 +612,46 @@ void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > &
     assert(k==m);
   }
 
+}
+
+void build_edge_pt_to_snapped_edge_pt_mapping(DogEdgeStitching& eS, const Eigen::MatrixXd& V) {
+	// Unless snapped, every index of the edge point should equal itself, pointing to the same index in edge_const_1
+	eS.edge_const_to_snapped_edge_const.resize(eS.edge_const_1.size());
+	for (int i = 0; i < eS.edge_const_to_snapped_edge_const.size(); i++) eS.edge_const_to_snapped_edge_const[i] = i;
+	// Go through all the curves
+	for (auto curve: eS.stitched_curves) {
+		std::cout << std::endl << std::endl << "--New curve --" << std::endl;
+		// Get the avg curve length
+		std::vector<double> edge_l;
+		double edge_l_avg = 0;
+		for (int edge_idx = 0; edge_idx < curve.size()-1; edge_idx++) {
+			auto pt1 = curve[edge_idx].getPositionInMesh(V); auto pt2 = curve[edge_idx+1].getPositionInMesh(V);
+			double e_len = (pt1-pt2).norm();
+			std::cout << "edge with len = " << e_len << std::endl;
+			edge_l.push_back(e_len);
+			edge_l_avg+= e_len;
+		}
+		edge_l_avg /= curve.size()-1;
+		
+		double small_edge_thresh = edge_l_avg/20;
+		std::cout << "edge_l_avg = " << edge_l_avg << " setting the threshold as " << small_edge_thresh << std::endl;
+		for (int i = 0; i < edge_l.size(); i++) {
+			if (edge_l[i] < small_edge_thresh) {
+				std::cout << "Snapping an edge with index " << i << std::endl;
+				int snapped_v = i, v_to_snap_to = i+1;
+				// Now map the edge index to the edge_const_1 list
+				int snapped_edge_idx_start = eS.multiplied_edges_start[eS.edge_to_duplicates.at(curve[snapped_v].edge)];
+				int v_to_snap_edge_idx = eS.multiplied_edges_start[eS.edge_to_duplicates.at(curve[v_to_snap_to].edge)];
+				int mult_edge_num = eS.multiplied_edges_num[eS.edge_to_duplicates.at(curve[snapped_v].edge)];
+				std::cout << "mult_edge_num = " << mult_edge_num << std::endl;
+				for (int v_i = snapped_edge_idx_start; v_i < snapped_edge_idx_start+mult_edge_num; v_i++ ) {
+					std::cout << "snapping " << v_i << " to " << v_to_snap_edge_idx << std::endl;
+					eS.edge_const_to_snapped_edge_const[v_i] = v_to_snap_edge_idx;
+				}
+
+			}
+		}
+	}
+
+	//exit(1);
 }
