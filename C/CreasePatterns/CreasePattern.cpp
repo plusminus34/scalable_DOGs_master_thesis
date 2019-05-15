@@ -34,10 +34,12 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	CGAL::compute_intersection_points(initial_fold_polylines.begin(), initial_fold_polylines.end(),
                                     std::back_inserter(polylines_intersections), false, geom_traits_2);
   	polylines_intersections.insert(polylines_intersections.end(), endpoints_intersections.begin(), endpoints_intersections.end());
+  	/*
   	for (auto poly: initial_fold_polylines) {
   		std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts);
   		if (pts.size()) polylines_intersections.push_back(pts[0]); polylines_intersections.push_back(pts.back());
   	}
+  	*/
   	std::unique(polylines_intersections.begin(),polylines_intersections.end());
   	for (auto pt: polylines_intersections) {
   		std::cout << "int pt = " << pt << std::endl;
@@ -90,8 +92,8 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
   	// At this point we should explicitly snap points on polygons to the intersection points (also including/start ending of curves)
   	// This will guarantuee them to have the vertices if they do have them
   	auto preprocessed_polylines = snap_polylines_start_end_to_vertices(filtered_and_clipped_to_boundary_polylines, crease_vertices, dist_threshold_pow2);
-  	Number_type non_starting_point_snap_threshold = dist_threshold_pow2;
-  	preprocessed_polylines = snap_polylines_to_vertices(preprocessed_polylines, crease_vertices, non_starting_point_snap_threshold);
+  	//Number_type non_starting_point_snap_threshold = dist_threshold_pow2;
+  	//preprocessed_polylines = snap_polylines_to_vertices(preprocessed_polylines, crease_vertices, non_starting_point_snap_threshold);
 
   	std::cout << "before" << std::endl;
 
