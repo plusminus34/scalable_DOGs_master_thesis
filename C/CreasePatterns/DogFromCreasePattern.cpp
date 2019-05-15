@@ -41,8 +41,8 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	// For rendering puproses: snap nearby edge points
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	std::cout << "generated v ren list" << std::endl;
-	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren_tmp; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
-									V_ren_list, edgeStitching, V_ren, F_ren_tmp);
+	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+									V_ren_list, edgeStitching, V_ren, F_ren);
 	std::cout << "Generated constraints" << std::endl;
 
 	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
