@@ -106,6 +106,7 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 }
 
 void Dog::update_rendering_v() {
+	//V_ren = V;
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
 	update_Vren();
 }
@@ -146,15 +147,9 @@ void Dog::update_Vren() {
 		// Then add the crease points
 		if (edgeStitching.submesh_to_edge_pt.size()){
 			for (auto ei : edgeStitching.submesh_to_edge_pt[subi]) {
-				int snapped_ei = edgeStitching.edge_const_to_snapped_edge_const[ei];
-				/*
-				if (snapped_ei != ei) {
-					std::cout << "I am here" << std::endl; int wait; std::cin >> wait;
-				}
-				*/
 				// Get the vertex
-				double t = edgeStitching.edge_coordinates[snapped_ei];
-				V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[snapped_ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[snapped_ei].v2);
+				double t = edgeStitching.edge_coordinates[ei];
+				V_ren.row(vi_cnt++) = t*V.row(edgeStitching.edge_const_1[ei].v1) + (1-t)*V.row(edgeStitching.edge_const_1[ei].v2);
 			}
 			for (int j = 0; j < edgeStitching.submesh_to_bnd_edge[subi].size(); j++) {
 				EdgePoint ep = edgeStitching.submesh_to_bnd_edge[subi][j];

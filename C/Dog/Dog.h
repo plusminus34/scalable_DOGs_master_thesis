@@ -32,9 +32,6 @@ struct DogEdgeStitching  : public igl::Serializable {
 	std::vector<std::vector<int>> submesh_to_edge_pt;
 	std::vector<std::vector<EdgePoint>> submesh_to_bnd_edge;
 
-	// Relevant for rendering - we snap nearby crease points to avoid degenerate triangles in rendering
-	std::vector<int> edge_const_to_snapped_edge_const;
-
 	int get_vertex_edge_point_deg(Edge& edge) const;
 
 	// For now we don't serialize the exact CGAL coordinates
