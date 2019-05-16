@@ -60,7 +60,7 @@ void ModelViewer::clear_edges_and_points(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
-	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
+	if (switched_mode) viewer.core.align_camera_center(dog->getV(), dog->getFtri());
 	if (render_curved_folding_properties) render_curved_folding_normals(viewer);
 	//if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
@@ -79,7 +79,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	std::vector<Eigen::MatrixXd> Vlist; std::vector<Eigen::MatrixXi> Flist;
 	const Dog* dog = DC.getEditedSubmesh(); Dog vertDog(*dog);
-	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
+	//render_mesh(viewer,dog->getV(),dog->getFtri());
 	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
 	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
 	Eigen::Matrix3d Rx(DC.wallpaperRx); Eigen::Vector3d Tx(DC.wallpaperTx);
@@ -94,14 +94,14 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 
 	// add meshes to the right
 	//for (int j = 0; j < wallpaper_res; j++) {
-		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
+		Vlist.push_back(vertDog.getV()); Flist.push_back(vertDog.getFtri());
 		
 		Dog nextDog(vertDog);
 		for (int i = 0; i < wallpaper_res; i++) {
 			//std::cout << "ModelViewr: Rx = " << Rx << " Tx = " << Tx << std::endl;
 			Eigen::MatrixXd newV = (nextDog.getV() * Rx).rowwise() + Tx.transpose();
 			nextDog.update_V(newV);
-			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
+			Vlist.push_back(nextDog.getV()); Flist.push_back(nextDog.getFtri());
 		}
 		
 	/*	// add mesh up
@@ -116,10 +116,10 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
-	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
+	if (switched_mode) viewer.core.align_camera_center(state.dog.getV(), state.dog.getFtri());
 	int submesh_i = DC.getEditedSubmeshI();
 	Dog flattenedDog(state.dog);
-	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
+	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getV(), flattenedDog.getFtri());
 	if ( (submesh_i >= 0) && (submesh_i < state.dog.get_submesh_n()) ) {
 		int submesh_v_min_i, submesh_v_max_i;
 		flattenedDog.get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
@@ -136,7 +136,7 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
 	if (first_rendering || switched_mode) {
-		viewer.data().set_mesh(dog.getV(), dog.getFrendering());
+		viewer.data().set_mesh(dog.getV(), dog.getFtri());
 		Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
 	    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
 	    Eigen::Vector3d specular; specular << 0,0,0;
@@ -243,13 +243,11 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   viewer.data().uniform_colors(ambient,diffuse,specular);
   //viewer.core.shininess = 0;
   
-  if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
+  if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
   //viewer.core.align_camera_center(sphereV, sphereF);
   //viewer.core.show_lines = false;
-
-  // TODO support curved folds by looking at normal map of each one separately
-  Eigen::MatrixXd VN; igl::per_vertex_normals(dog->getVrendering(),dog->getFrendering(),VN);
-  //viewer.data.set_normals(VN);
+  Eigen::MatrixXd VN;
+  igl::per_vertex_normals(dog->getV(),dog->getFTriangular(),VN);
   render_wireframe(viewer,VN,dog->getQuadTopology(), false);
   if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
 }

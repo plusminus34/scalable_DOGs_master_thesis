@@ -21,6 +21,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
 				submesh_adjacency(submesh_adjacency) {
 	cout << "Dog::Dog" << endl;
+	F_tri = Fsqr_to_F(F);
 	// set mesh_min_max_i;
 	vi_to_submesh.resize(V.rows());
 	int min_idx = 0;
@@ -37,6 +38,8 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting up uv" << endl;
 	setup_uv_and_texture();
+	// updating V_ren
+	update_Vren();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -45,6 +48,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(
 	vi_to_submesh.assign(V.rows(),0);
 	quad_topology(V,F,quadTop);
 	setup_rendered_wireframe_edges_from_planar();
+	F_tri = Fsqr_to_F(F);
 }
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
@@ -52,7 +56,7 @@ Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						stitched_curves_l(d.stitched_curves_l),stitched_curves_angles(d.stitched_curves_angles), stitched_curves_curvature(d.stitched_curves_curvature),
 						vi_to_submesh(d.vi_to_submesh) {
-	// empty on purpose
+	F_tri = Fsqr_to_F(F);
 }
 
 void Dog::setup_stitched_curves_initial_l_angles_length() {
@@ -113,9 +117,9 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 }
 
 void Dog::update_rendering_v() {
-	V_ren = V;
+	//V_ren = V;
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
-	//update_Vren();
+	update_Vren();
 }
 
 void Dog::get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out) const {
