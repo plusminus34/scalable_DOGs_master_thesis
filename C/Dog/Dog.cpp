@@ -2,6 +2,7 @@
 
 #include <igl/boundary_loop.h>
 #include <igl/edges.h>
+#include <igl/point_mesh_squared_distance.h>
 
 using namespace std;
 
@@ -83,7 +84,7 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 
 Dog* Dog::get_submesh(int submesh_i) {
 	Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
-	get_submesh_VF(submesh_i, submeshV, submeshF)
+	get_submesh_VF(submesh_i, submeshV, submeshF);
 	Dog* submeshDog = new Dog(submeshV, submeshF);
 	return submeshDog;
 }
@@ -310,9 +311,11 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 
 void Dog::setup_uv_and_texture() {
 	std::cout << "here" << std::endl;
+	int wait;
 
 	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
-	auto mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().maxCoeff();
+	Eigen::VectorXd mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().minCoeff();
+	std::cout << "mesh_bb_size = " << mesh_bb_size << std::endl;
 	double mesh_W = mesh_bb_size[0], mesh_H = mesh_bb_size[1];
 
 	// now go component by component and set the uv values accordingly
@@ -321,21 +324,22 @@ void Dog::setup_uv_and_texture() {
 	int submesh_n = get_submesh_n(); int subm_v_start = 0;
 	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
 		int subm_size = submeshVSize[subm_i];
-		double x_offset = subm_i*mesh_W + 1;
+		double x_offset = subm_i*(mesh_W + 1);
+		std::cout << "x_offset = " << x_offset << std::endl;
 		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
-			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
+			uv.row(v_idx) << V(v_idx,0), x_offset+V(v_idx,1);
 		}
 		subm_v_start += subm_size;
 	}
 
 	// Now create a texture. Set the resolution for 1024Xsubmesh_n*(1024+1)
 	// So height is 1024, and width is the paccking of everything
-	int y_resolution = 1024, x_resolution = (1+1024)*submesh_n;
+	int y_resolution = 1024, x_resolution = (1+y_resolution)*submesh_n;
 	// Set everything to be invisible, and then mark those that are inside
-	text_R.resize(y_resolution,x_resolution);text_R.setZero();
-  	text_G.resize(y_resolution,x_resolution);text_G.setZero();
-  	text_B.resize(y_resolution,x_resolution);text_B.setZero();
-  	text_A.resize(y_resolution,x_resolution);text_A.setZero();
+	text_R.resize(x_resolution,y_resolution);text_R.setZero();
+  	text_G.resize(x_resolution,y_resolution);text_G.setZero();
+  	text_B.resize(x_resolution,y_resolution);text_B.setZero();
+  	text_A.resize(x_resolution,y_resolution);text_A.setZero();
 
 
   	// Set text_A by inside/outside for each connected component
@@ -343,26 +347,38 @@ void Dog::setup_uv_and_texture() {
   	//	and should be a sampling of the bounding box of the mesh in the y_resolution (y_resolution and not x_resolution for both axes!)
   	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
   	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
-  	double x_step = mesh_W/y_resolution, y_step = mesh_W/y_resolution;
+  	double x_step = mesh_W/y_resolution, y_step = mesh_H/y_resolution;
+  	std::cout << "mesh_W = " << mesh_W << std::endl; std::cout << "mesh_H = " << mesh_H << std::endl;
+  	std::cout << "x_step = " << x_step << " y_step = " << y_step << std::endl;
   	for (int i = 0; i < y_resolution; i++) {
   		for (int j = 0; j < y_resolution; j++) {
   			gridPoints.row(i*y_resolution+j) << start_x + j*x_step, start_y + i*y_step;
   		}
+
   	}
+  	std::cout << "gridPoints.colwise().minCoeff() = " << gridPoints.colwise().minCoeff() << std::endl;
+  	std::cout << "gridPoints.colwise().maxCoeff() = " << gridPoints.colwise().maxCoeff() << std::endl;
+  	std::cout << "V.colwise().minCoeff() = " << V.colwise().minCoeff() << std::endl;
+  	std::cout << "V.colwise().maxCoeff() = " << V.colwise().maxCoeff() << std::endl;
+
+  	/*
   	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
   	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
-		int subm_size = submeshVSize[subm_i];
-		double x_offset = subm_i*mesh_W + 1;
-		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
-			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
-		}
-		subm_v_start += subm_size;
+  		Eigen::MatrixXd submV3d; Eigen::MatrixXi submF; get_submesh_VF(subm_i, submV3d, submF);
+  		Eigen::MatrixXd submV2d(submV3d.rows(),2); submV2d.col(0) = submV3d.col(0); submV2d.col(1) = submV3d.col(1);
+  		// now see which ones are in/out
+  		Eigen::VectorXd sqrD; Eigen::VectorXi dummy1; Eigen::MatrixXd dummy2;
+  		// TODO this won't work very well and we need V_ren instead...
+  		igl::point_mesh_squared_distance(gridPoints,submV2d,submF,sqrD,dummy1,dummy2);
+  		std::cout << "number of points = " << sqrD.rows() << std::endl;
+  		std::cout << "number of zeros = " << (sqrD.array()==0).count() << std::endl;
 	}
-
+	std::cin >> wait;
+	*/
   	// This should zero out half of the y things
-  	for (int i = 0; i < y_resolution/2; i++) {
-  		for (int j = 0; j < x_resolution; j++) {
-  			text_A(i,j) = 255;
+  	for (int i = 0; i < y_resolution; i++) {
+  		for (int j = 0; j < x_resolution/4; j++) {
+  			text_A(j,i) = 255;
   		}
   	}
 
@@ -378,6 +394,7 @@ void Dog::setup_uv_and_texture() {
   	//cout << "t_x = " << t_x << " t_y = " << t_y << endl;
   	// scale it such that the maximum 'x' distance will be 1, and same for y
   	double x_rad = max_c[0]-min_c[0]; double y_rad = max_c[1]-min_c[1];
+  	std::cout << "x_rad = " << x_rad << " y_rad = " << y_rad << std::endl;
 
   	double x_s,y_s;
 	if (x_resolution >= y_resolution){
@@ -385,10 +402,14 @@ void Dog::setup_uv_and_texture() {
 	} else {
 		y_s = 1./y_rad, x_s = (double(x_resolution)/y_resolution)*1./x_rad;
 	}
+	std::cout << "x_s = " << x_s << " y_s = " << y_s << std::endl;
+	std::cout << "t_x = " << t_x << " t_y = " << t_y << std::endl;
+	std::cin >> wait;
   	// For now scale it by the smaller factor so it will always fit to a 1x1 box
   	double scale = min(1./x_rad,1./y_rad);
   	for (int i = 0; i < uv.rows(); i++) {
-    	uv.row(i) << x_s*(V(i,0)+t_x),y_s*(V(i,1)+t_y);
+    	//uv.row(i) << x_s*(uv(i,0)+t_x),x_s*(uv(i,1)+t_y);
+    	uv.row(i) << x_s*(uv(i,0)+t_x),y_s*(uv(i,1)+t_y);
   	}
 }
 
