@@ -41,8 +41,9 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	// For rendering puproses: snap nearby edge points
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	std::cout << "generated v ren list" << std::endl;
-	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
-									V_ren_list, edgeStitching, V_ren, F_ren);
+	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; std::vector<int> submesh_f_ren_faces_num;
+	generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+									V_ren_list, edgeStitching, V_ren, F_ren, submesh_f_ren_faces_num);
 	std::cout << "Generated constraints" << std::endl;
 
 	std::vector<int> submeshVSize(submeshVList.size()); std::vector<int> submeshFSize(submeshFList.size());
@@ -59,7 +60,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	//std::cout << "min_tri_area = " << min_tri_area << std::endl; int wait; std::cin >> wait;
 	//F_ren = Fsqr_to_F(F);
 	//V_ren = V;
-	return Dog(V,F,edgeStitching,V_ren,F_ren,submeshVSize,submeshFSize,submesh_adjacency);
+	return Dog(V,F,edgeStitching,V_ren,F_ren,submesh_f_ren_faces_num,submeshVSize,submeshFSize,submesh_adjacency);
 }
 
 void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, 
@@ -436,7 +437,8 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 		const std::vector<SubmeshPoly>& submesh_polygons,
 		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,
 		Eigen::MatrixXd& V_ren,
-		Eigen::MatrixXi& F_ren) {
+		Eigen::MatrixXi& F_ren,
+		std::vector<int>& submesh_f_ren_faces) {
 	typedef std::pair<double,double> PointDouble;
 	// First create a list of F_ren
 	std::vector<Eigen::MatrixXi> F_ren_list(V_ren_list.size());
@@ -484,6 +486,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 		}
 		// Create the submesh
 		polygon_mesh_to_triangle_mesh_better(polygons_v_ren_indices, V_ren_list[subi], F_ren_list[subi]);
+		submesh_f_ren_faces.push_back(F_ren_list[subi].rows());
 	}
 	igl::combine(V_ren_list,F_ren_list, V_ren, F_ren);
 }

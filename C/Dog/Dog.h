@@ -52,7 +52,7 @@ struct DogEdgeStitching  : public igl::Serializable {
 class Dog : public igl::Serializable {
 public:
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren,
-		std::vector<int> submeshVSize, std::vector<int> submeshFSize, const std::vector< std::vector<int> >& submesh_adjacency);
+		const std::vector<int>& submesh_f_ren_faces_num, std::vector<int> submeshVSize, std::vector<int> submeshFSize,  const std::vector< std::vector<int> >& submesh_adjacency);
 	Dog(const Dog& dog);
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 	Dog(){/*Needed for deserilization*/};
@@ -138,7 +138,7 @@ private:
 	void get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices);
 	static int find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v);
 	static int find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v);
-	void setup_uv_and_texture();
+	void setup_uv_and_texture(const std::vector<int>& submesh_f_ren_faces_num);
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXi F_tri;

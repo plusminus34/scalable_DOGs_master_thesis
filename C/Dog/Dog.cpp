@@ -1,10 +1,11 @@
 #include "Dog.h"
 
+#include <igl/AABB.h>
 #include <igl/boundary_loop.h>
 #include <igl/edges.h>
-#include <igl/point_mesh_squared_distance.h>
 #include <igl/in_element.h>
-#include <igl/AABB.h>
+#include <igl/point_mesh_squared_distance.h>
+#include <igl/remove_unreferenced.h>
 
 using namespace std;
 
@@ -16,7 +17,7 @@ int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
 }
 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
-		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
+		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, const std::vector<int>& submesh_f_ren_faces_num, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
 		const std::vector< std::vector<int> >& submesh_adjacency) :
 				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
 				submesh_adjacency(submesh_adjacency) {
@@ -37,7 +38,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting up uv" << endl;
-	setup_uv_and_texture();
+	setup_uv_and_texture(submesh_f_ren_faces_num);
 	// updating V_ren
 	update_Vren();
 	cout << "DOG setup complete" << endl;
@@ -315,13 +316,12 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 	
 }
 
-void Dog::setup_uv_and_texture() {
+void Dog::setup_uv_and_texture(const std::vector<int>& submesh_f_ren_faces_num) {
 	std::cout << "here" << std::endl;
 	int wait;
 
 	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
 	Eigen::VectorXd mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().minCoeff();
-	std::cout << "mesh_bb_size = " << mesh_bb_size << std::endl;
 	double mesh_W = mesh_bb_size[0], mesh_H = mesh_bb_size[1];
 
 	// now go component by component and set the uv values accordingly
@@ -334,7 +334,6 @@ void Dog::setup_uv_and_texture() {
 	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
 		int subm_size = submeshVSize[subm_i];
 		double x_offset = subm_i*(mesh_W + 1);
-		std::cout << "x_offset = " << x_offset << std::endl;
 		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
 			uv.row(v_idx) << x_offset+V(v_idx,0), V(v_idx,1);
 		}
@@ -358,26 +357,29 @@ void Dog::setup_uv_and_texture() {
   	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
   	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
   	double x_step = mesh_W/(y_resolution-1), y_step = mesh_H/(y_resolution-1);
-  	std::cout << "mesh_W = " << mesh_W << std::endl; std::cout << "mesh_H = " << mesh_H << std::endl;
-  	std::cout << "x_step = " << x_step << " y_step = " << y_step << std::endl;
   	for (int i = 0; i < y_resolution; i++) {
   		for (int j = 0; j < y_resolution; j++) {
   			gridPoints.row(i*y_resolution+j) << start_x + j*x_step, start_y + i*y_step;
   		}
 
   	}
-  	std::cout << "gridPoints.colwise().minCoeff() = " << gridPoints.colwise().minCoeff() << std::endl;
-  	std::cout << "gridPoints.colwise().maxCoeff() = " << gridPoints.colwise().maxCoeff() << std::endl;
-  	std::cout << "V.colwise().minCoeff() = " << V.colwise().minCoeff() << std::endl;
-  	std::cout << "V.colwise().maxCoeff() = " << V.colwise().maxCoeff() << std::endl;
-	
+
   	
   	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
+  	Eigen::MatrixXd VRen2D(V_ren.rows(),2); VRen2D.col(0) = V_ren.col(0); VRen2D.col(1) = V_ren.col(1);
+  	int f_ren_face_base = 0;
   	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
+  		int f_ren_face_n = submesh_f_ren_faces_num[subm_i];
+  		Eigen::MatrixXi submF(f_ren_face_n,3); int f_cnt = 0;
+  		for (int fi = f_ren_face_base; fi < f_ren_face_base+ f_ren_face_n; fi++) submF.row(f_cnt++) = F_ren.row(fi);
+  			Eigen::MatrixXd submV2d; Eigen::VectorXi dummy;
+  		igl::remove_unreferenced(VRen2D,submF,submV2d,submF,dummy);
+  		/*
   		Eigen::MatrixXd submV3d; Eigen::MatrixXi submF; get_submesh_VF(subm_i, submV3d, submF);
   		submF = Fsqr_to_F(submF);
   		Eigen::MatrixXd submV2d(submV3d.rows(),2); 
   		submV2d.col(0) = submV3d.col(0); submV2d.col(1) = submV3d.col(1);
+  		*/
   		/*
   		// now see which ones are in/out
   		Eigen::VectorXd sqrD; Eigen::VectorXi dummy1; Eigen::MatrixXd dummy2;
@@ -385,7 +387,6 @@ void Dog::setup_uv_and_texture() {
   		igl::point_mesh_squared_distance(gridPoints,submV2d,submF,sqrD,dummy1,dummy2);
   		std::cout << "number of points = " << sqrD.rows() << std::endl;
   		std::cout << "number of zeros = " << (sqrD.array()==0).count() << std::endl;
-  		std::cout << "max coeff = " << sqrD.maxCoeff() << std::endl;
   		*/
   		igl::AABB<Eigen::MatrixXd,2> tree;
       	tree.init(submV2d,submF);
@@ -397,18 +398,8 @@ void Dog::setup_uv_and_texture() {
   				if (I(i*y_resolution+j) !=-1) text_A(subm_i*(y_resolution + 1)+j,i) = 255;
   			}
   		}
+  		f_ren_face_base += f_ren_face_n;
 	}
-	std::cin >> wait;	
-	/*
-  	// This should zero out half of the y things
-  	for (int i = 0; i < 2*y_resolution/3; i++) {
-  		for (int j = 0; j < x_resolution; j++) {
-  			text_A(j,i) = 255;
-  		}
-  	}
-  	*/
-
-
   	
   	// Now scale the uv. Scale it such that the biggest axis of the texture will be from 0 to 1
 	// while the other one be at that ratio
