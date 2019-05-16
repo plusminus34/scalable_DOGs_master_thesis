@@ -16,7 +16,6 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DeformationControll
 	viewMode = ViewModeMeshWire; 
 	prevMode = viewMode;
 	first_rendering = true;
-	render_pos_const = true;
 
 	igl::readOBJ("../../data/sphere.obj",sphereV,sphereF);
 	center_and_scale_gauss_sphere(sphereV,sphereF);
@@ -68,10 +67,10 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		if ( state.dog.has_creases() ) render_dog_wireframe(viewer);
 		else render_wireframe(viewer, dog->getV(), dog->getQuadTopology()); 
 	}
+	render_positional_constraints(viewer);
+	DC.dogEditor->render_pairs();
 	if (render_pos_const) {
-		render_positional_constraints(viewer);
 		render_edge_points_constraints(viewer);
-		DC.dogEditor->render_pairs();
 	}
 	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
 }
@@ -208,7 +207,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
 	
-	viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
+	if (render_pos_const) viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 	//viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
 	DC.dogEditor->render_positional_constraints();
 	for (int d_i = 0; d_i < DC.dihedral_constrained.size(); d_i++) {
