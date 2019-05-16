@@ -64,6 +64,7 @@ public:
 	std::vector<std::vector <int> > get_submesh_adjacency() {return submesh_adjacency;}
 
 	Dog* get_submesh(int submesh_i);
+	void get_submesh_VF(int submesh_i,Eigen::MatrixXd& submV, Eigen::MatrixXi& submF);
 
 	int get_v_num() {return V.rows();}
 
@@ -80,6 +81,9 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	const Eigen::MatrixXd& getUV() const {return uv;}
+	const Eigen::MatrixXd& getTexture(Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ri, Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Gi,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Bi, Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ai) const;
 	//const Eigen::MatrixXd& getFlatV() const {return flatV;} somehow nto working now
 	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}
@@ -133,9 +137,12 @@ private:
 	void get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& direction, std::vector<int>& indices);
 	static int find_v_idx(Eigen::MatrixXd& Vertices, Eigen::RowVector3d v);
 	static int find_other_v_idx(Eigen::MatrixXd& Vertices, int other_v_i, Eigen::RowVector3d v);
+	void setup_uv_and_texture();
 
 	// The quad mesh
 	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	// uv and texture (we mostly care about the alpha values but we send it to libigl's renderer anyhow)
+	Eigen::MatrixXd uv; Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> text_R,text_G,text_B,text_A;
 	Eigen::MatrixXd flatV;
 	// Indices of boundary curves (also when there are creases). Only relevant for square patches and used for wallpapers.
 	QuadTopology quadTop;

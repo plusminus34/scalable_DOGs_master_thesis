@@ -32,7 +32,8 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	setup_stitched_curves_initial_l_angles_length();
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
-	cout << "setting boundary curves" << endl;
+	cout << "setting up uv" << endl;
+	setup_uv_and_texture();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -81,20 +82,23 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 }
 
 Dog* Dog::get_submesh(int submesh_i) {
-	if (submesh_i >= get_submesh_n()) return NULL;
+	Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
+	get_submesh_VF(submesh_i, submeshV, submeshF)
+	Dog* submeshDog = new Dog(submeshV, submeshF);
+	return submeshDog;
+}
+
+void Dog::get_submesh_VF(int submesh_i, Eigen::MatrixXd& submeshV, Eigen::MatrixXi& submeshF) {
+	if (submesh_i >= get_submesh_n()) return;
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
-	Eigen::MatrixXd submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
+	submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
 
 	int submesh_f_min_i, submesh_f_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_f_min_i, submesh_f_max_i, false);
-	Eigen::MatrixXi submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
+	submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
 	// substract submesh_f_min_i from all F faces
 	for (int i = 0; i < submeshF.rows(); i++) {submeshF.row(i).array() -= submesh_v_min_i;}
-
-
-	Dog* submeshDog = new Dog(submeshV, submeshF);
-	return submeshDog;
 }
 
 void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
@@ -106,9 +110,9 @@ void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 }
 
 void Dog::update_rendering_v() {
-	//V_ren = V;
+	V_ren = V;
 	//V_ren_from_V_and_const(V,edgeStitching,V_ren);
-	update_Vren();
+	//update_Vren();
 }
 
 void Dog::get_2_submeshes_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_out, int &w1_out, int& w2_out) const {
@@ -302,4 +306,95 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 		}
 	}
 	
+}
+
+void Dog::setup_uv_and_texture() {
+	std::cout << "here" << std::endl;
+
+	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
+	auto mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().maxCoeff();
+	double mesh_W = mesh_bb_size[0], mesh_H = mesh_bb_size[1];
+
+	// now go component by component and set the uv values accordingly
+
+	// First set every vertex in the uv as its location + some offset of the x value of the mesh
+	int submesh_n = get_submesh_n(); int subm_v_start = 0;
+	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
+		int subm_size = submeshVSize[subm_i];
+		double x_offset = subm_i*mesh_W + 1;
+		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
+			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
+		}
+		subm_v_start += subm_size;
+	}
+
+	// Now create a texture. Set the resolution for 1024Xsubmesh_n*(1024+1)
+	// So height is 1024, and width is the paccking of everything
+	int y_resolution = 1024, x_resolution = (1+1024)*submesh_n;
+	// Set everything to be invisible, and then mark those that are inside
+	text_R.resize(y_resolution,x_resolution);text_R.setZero();
+  	text_G.resize(y_resolution,x_resolution);text_G.setZero();
+  	text_B.resize(y_resolution,x_resolution);text_B.setZero();
+  	text_A.resize(y_resolution,x_resolution);text_A.setZero();
+
+
+  	// Set text_A by inside/outside for each connected component
+  	// First define the query points which should be of size y_resolution*y_resolution
+  	//	and should be a sampling of the bounding box of the mesh in the y_resolution (y_resolution and not x_resolution for both axes!)
+  	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
+  	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
+  	double x_step = mesh_W/y_resolution, y_step = mesh_W/y_resolution;
+  	for (int i = 0; i < y_resolution; i++) {
+  		for (int j = 0; j < y_resolution; j++) {
+  			gridPoints.row(i*y_resolution+j) << start_x + j*x_step, start_y + i*y_step;
+  		}
+  	}
+  	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
+  	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
+		int subm_size = submeshVSize[subm_i];
+		double x_offset = subm_i*mesh_W + 1;
+		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
+			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
+		}
+		subm_v_start += subm_size;
+	}
+
+  	// This should zero out half of the y things
+  	for (int i = 0; i < y_resolution/2; i++) {
+  		for (int j = 0; j < x_resolution; j++) {
+  			text_A(i,j) = 255;
+  		}
+  	}
+
+
+  	
+  	// Now scale the uv. Scale it such that the biggest axis of the texture will be from 0 to 1
+	// while the other one be at that ratio
+	// move the minimal coordinates x to be 0, and same for y
+	Eigen::VectorXd max_c = uv.colwise().maxCoeff();
+	Eigen::VectorXd min_c = uv.colwise().minCoeff();
+  	// move the minimal coordinates x to be 0, and same for y
+  	double t_x = -1*min_c[0]; double t_y = -1*min_c[1];
+  	//cout << "t_x = " << t_x << " t_y = " << t_y << endl;
+  	// scale it such that the maximum 'x' distance will be 1, and same for y
+  	double x_rad = max_c[0]-min_c[0]; double y_rad = max_c[1]-min_c[1];
+
+  	double x_s,y_s;
+	if (x_resolution >= y_resolution){
+		x_s = 1./x_rad, y_s = (double(y_resolution)/x_resolution)*1./y_rad;
+	} else {
+		y_s = 1./y_rad, x_s = (double(x_resolution)/y_resolution)*1./x_rad;
+	}
+  	// For now scale it by the smaller factor so it will always fit to a 1x1 box
+  	double scale = min(1./x_rad,1./y_rad);
+  	for (int i = 0; i < uv.rows(); i++) {
+    	uv.row(i) << x_s*(V(i,0)+t_x),y_s*(V(i,1)+t_y);
+  	}
+}
+
+const Eigen::MatrixXd& Dog::getTexture(Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ri,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Gi,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Bi,
+					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ai) const {
+	text_Ri = text_R; text_Gi = text_G; text_Bi = text_B;text_Ai = text_A;
 }

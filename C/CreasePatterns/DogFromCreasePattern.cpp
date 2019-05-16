@@ -57,8 +57,8 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 
 	//double min_tri_area =  dblA.minCoeff();
 	//std::cout << "min_tri_area = " << min_tri_area << std::endl; int wait; std::cin >> wait;
-	//F_ren = Fsqr_to_F(F);
-	//V_ren = V;
+	F_ren = Fsqr_to_F(F);
+	V_ren = V;
 	return Dog(V,F,edgeStitching,V_ren,F_ren,submeshVSize,submeshFSize,submesh_adjacency);
 }
 

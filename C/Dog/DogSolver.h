@@ -41,7 +41,7 @@ public:
 		double bending_weight = 1.;
 		double isometry_weight = 20000;
 		double stitching_weight = 10000;
-		double soft_pos_weight = 1;
+		double soft_pos_weight = 5;
 		double dihedral_weight = 1000;
 		double pair_weight = 1;
 		double fold_bias_weight = 1;

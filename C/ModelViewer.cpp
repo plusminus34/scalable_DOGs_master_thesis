@@ -24,10 +24,13 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DeformationControll
 
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
-	viewer.data().clear();
-	viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
+	clear_edges_and_points(viewer);
 	switched_mode = ((viewMode != prevMode) || (first_rendering));
 	prevMode = viewMode;
+	if (first_rendering || switched_mode)  {
+		viewer.data().clear();
+		viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
+	}
 
 	if ( (viewMode == ViewModeMesh) || (viewMode == ViewModeMeshWire) ) {
 		render_mesh_and_wireframe(viewer);
@@ -50,6 +53,11 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	first_rendering = false;
 }
 
+void ModelViewer::clear_edges_and_points(igl::opengl::glfw::Viewer& viewer) {
+	viewer.data().set_edges(Eigen::MatrixXd::Zero(0,3), Eigen::MatrixXi::Zero(0,3), Eigen::MatrixXd::Zero(0,3));
+	viewer.data().set_points(Eigen::MatrixXd::Zero(0,3), Eigen::MatrixXd::Zero(0,3));
+}
+
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
@@ -65,7 +73,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_edge_points_constraints(viewer);
 		DC.dogEditor->render_pairs();
 	}
-	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
+	render_mesh(viewer, *dog);
 }
 
 void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
@@ -104,7 +112,7 @@ void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
 	//std::cout << "Vlist.size() = " << Vlist.size() << std::endl;
 	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
 	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);
-	render_mesh(viewer,VWallpaper,FWallpaper);
+	//render_mesh(viewer,VWallpaper,FWallpaper); Need uv but wallpaper doesn't work at the moment in any case..
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
@@ -126,18 +134,30 @@ void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 }
 
-void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Eigen::MatrixXd& Vren, const Eigen::MatrixXi& Fren) {
-	viewer.data().set_mesh(Vren, Fren);
-
-	Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
-    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
-    Eigen::Vector3d specular; specular << 0,0,0;
-    //viewer.data.set_colors(diffuse);
-    viewer.data().uniform_colors(ambient,diffuse,specular);
-
-    Eigen::MatrixXd VN; igl::per_vertex_normals(Vren,Fren,VN);
-  	viewer.data().set_normals(VN);
+void ModelViewer::render_mesh(igl::opengl::glfw::Viewer& viewer, const Dog& dog) {
+	if (first_rendering || switched_mode) {
+		viewer.data().set_mesh(dog.getV(), dog.getFrendering());
+		Eigen::Vector3d diffuse; diffuse << 135./255,206./255,250./255;
+	    Eigen::Vector3d ambient; /*ambient = 0.05*diffuse;*/ ambient<< 0.05,0.05,0.05;
+	    Eigen::Vector3d specular; specular << 0,0,0;
+	    //viewer.data.set_colors(diffuse);
+	    viewer.data().uniform_colors(ambient,diffuse,specular);
+	    if (dog.getUV().rows()) {
+	    	 viewer.data().set_uv(dog.getUV());
+	    	 Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> R,G,B,A;
+	    	 dog.getTexture(R,G,B,A);
+	    	 viewer.data().set_texture(R,G,B,A);
+	    	 //int wait; std::cout << "texture" << std::endl; std::cin >> wait;
+	    	 viewer.data().show_texture = true;
+	    }
+	}
+	else {
+		 viewer.data().set_vertices(dog.getV());
+    	 viewer.data().compute_normals();
+	}
 }
+
+
 
 void ModelViewer::render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer) {
 	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
