@@ -3,6 +3,8 @@
 #include <igl/boundary_loop.h>
 #include <igl/edges.h>
 #include <igl/point_mesh_squared_distance.h>
+#include <igl/in_element.h>
+#include <igl/AABB.h>
 
 using namespace std;
 
@@ -346,13 +348,12 @@ void Dog::setup_uv_and_texture() {
   	text_A.resize(x_resolution,y_resolution);text_A.setZero();
 
 
-/*
   	// Set text_A by inside/outside for each connected component
   	// First define the query points which should be of size y_resolution*y_resolution
   	//	and should be a sampling of the bounding box of the mesh in the y_resolution (y_resolution and not x_resolution for both axes!)
   	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
   	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
-  	double x_step = mesh_W/y_resolution, y_step = mesh_H/y_resolution;
+  	double x_step = mesh_W/(y_resolution-1), y_step = mesh_H/(y_resolution-1);
   	std::cout << "mesh_W = " << mesh_W << std::endl; std::cout << "mesh_H = " << mesh_H << std::endl;
   	std::cout << "x_step = " << x_step << " y_step = " << y_step << std::endl;
   	for (int i = 0; i < y_resolution; i++) {
@@ -365,27 +366,43 @@ void Dog::setup_uv_and_texture() {
   	std::cout << "gridPoints.colwise().maxCoeff() = " << gridPoints.colwise().maxCoeff() << std::endl;
   	std::cout << "V.colwise().minCoeff() = " << V.colwise().minCoeff() << std::endl;
   	std::cout << "V.colwise().maxCoeff() = " << V.colwise().maxCoeff() << std::endl;
-	*/
-  	/*
+	
+  	
   	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
   	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
   		Eigen::MatrixXd submV3d; Eigen::MatrixXi submF; get_submesh_VF(subm_i, submV3d, submF);
-  		Eigen::MatrixXd submV2d(submV3d.rows(),2); submV2d.col(0) = submV3d.col(0); submV2d.col(1) = submV3d.col(1);
+  		submF = Fsqr_to_F(submF);
+  		Eigen::MatrixXd submV2d(submV3d.rows(),2); 
+  		submV2d.col(0) = submV3d.col(0); submV2d.col(1) = submV3d.col(1);
+  		/*
   		// now see which ones are in/out
   		Eigen::VectorXd sqrD; Eigen::VectorXi dummy1; Eigen::MatrixXd dummy2;
   		// TODO this won't work very well and we need V_ren instead...
   		igl::point_mesh_squared_distance(gridPoints,submV2d,submF,sqrD,dummy1,dummy2);
   		std::cout << "number of points = " << sqrD.rows() << std::endl;
   		std::cout << "number of zeros = " << (sqrD.array()==0).count() << std::endl;
+  		std::cout << "max coeff = " << sqrD.maxCoeff() << std::endl;
+  		*/
+  		igl::AABB<Eigen::MatrixXd,2> tree;
+      	tree.init(submV2d,submF);
+      	Eigen::VectorXi I;
+      	igl::in_element(submV2d,submF,gridPoints,tree,I);
+		for (int i = 0; i < y_resolution; i++) {
+  			for (int j = 0; j < y_resolution; j++) {
+  				//if (!sqrD(i*y_resolution+j)) text_A(subm_i*(y_resolution + 1)+j,i) = 255;
+  				if (I(i*y_resolution+j) !=-1) text_A(subm_i*(y_resolution + 1)+j,i) = 255;
+  			}
+  		}
 	}
-	std::cin >> wait;
-	*/
+	std::cin >> wait;	
+	/*
   	// This should zero out half of the y things
   	for (int i = 0; i < 2*y_resolution/3; i++) {
   		for (int j = 0; j < x_resolution; j++) {
   			text_A(j,i) = 255;
   		}
   	}
+  	*/
 
 
   	
