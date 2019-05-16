@@ -23,7 +23,7 @@ public:
 
 	ViewMode prevMode;
 	ViewMode viewMode;
-	bool render_pos_const;
+	bool render_pos_const =  false;
 	bool render_curved_folding_properties = false;
 
 	double rulings_length = 1;
