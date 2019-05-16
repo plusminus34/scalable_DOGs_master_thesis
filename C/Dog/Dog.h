@@ -64,6 +64,7 @@ public:
 	std::vector<std::vector <int> > get_submesh_adjacency() {return submesh_adjacency;}
 
 	Dog* get_submesh(int submesh_i);
+	void get_submesh_VF(int submesh_i,Eigen::MatrixXd& submV, Eigen::MatrixXi& submF);
 
 	int get_v_num() {return V.rows();}
 

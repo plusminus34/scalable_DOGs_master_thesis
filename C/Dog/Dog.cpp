@@ -82,20 +82,23 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 }
 
 Dog* Dog::get_submesh(int submesh_i) {
-	if (submesh_i >= get_submesh_n()) return NULL;
+	Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
+	get_submesh_VF(submesh_i, submeshV, submeshF)
+	Dog* submeshDog = new Dog(submeshV, submeshF);
+	return submeshDog;
+}
+
+void Dog::get_submesh_VF(int submesh_i, Eigen::MatrixXd& submeshV, Eigen::MatrixXi& submeshF) {
+	if (submesh_i >= get_submesh_n()) return;
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
-	Eigen::MatrixXd submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
+	submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
 
 	int submesh_f_min_i, submesh_f_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_f_min_i, submesh_f_max_i, false);
-	Eigen::MatrixXi submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
+	submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
 	// substract submesh_f_min_i from all F faces
 	for (int i = 0; i < submeshF.rows(); i++) {submeshF.row(i).array() -= submesh_v_min_i;}
-
-
-	Dog* submeshDog = new Dog(submeshV, submeshF);
-	return submeshDog;
 }
 
 void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
@@ -334,12 +337,35 @@ void Dog::setup_uv_and_texture() {
   	text_B.resize(y_resolution,x_resolution);text_B.setZero();
   	text_A.resize(y_resolution,x_resolution);text_A.setZero();
 
+
+  	// Set text_A by inside/outside for each connected component
+  	// First define the query points which should be of size y_resolution*y_resolution
+  	//	and should be a sampling of the bounding box of the mesh in the y_resolution (y_resolution and not x_resolution for both axes!)
+  	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
+  	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
+  	double x_step = mesh_W/y_resolution, y_step = mesh_W/y_resolution;
+  	for (int i = 0; i < y_resolution; i++) {
+  		for (int j = 0; j < y_resolution; j++) {
+  			gridPoints.row(i*y_resolution+j) << start_x + j*x_step, start_y + i*y_step;
+  		}
+  	}
+  	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
+  	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
+		int subm_size = submeshVSize[subm_i];
+		double x_offset = subm_i*mesh_W + 1;
+		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
+			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
+		}
+		subm_v_start += subm_size;
+	}
+
   	// This should zero out half of the y things
   	for (int i = 0; i < y_resolution/2; i++) {
   		for (int j = 0; j < x_resolution; j++) {
   			text_A(i,j) = 255;
   		}
   	}
+
 
   	
   	// Now scale the uv. Scale it such that the biggest axis of the texture will be from 0 to 1
