@@ -40,7 +40,7 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 void build_edge_pt_to_snapped_edge_pt_mapping(DogEdgeStitching& edgeStitching, const Eigen::MatrixXd& V);
 
 void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, const std::vector<SubmeshPoly>& submesh_polygons,
-		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F_ren, std::vector<int>& submesh_f_ren_faces);
+		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,Eigen::MatrixXd& V_ren, Eigen::MatrixXi& F_ren);
 
 
 bool pt_inside_polygon(const Polygon_with_holes_2& poly, const Point_2& pt);

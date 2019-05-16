@@ -1,11 +1,7 @@
 #include "Dog.h"
 
-#include <igl/AABB.h>
 #include <igl/boundary_loop.h>
 #include <igl/edges.h>
-#include <igl/in_element.h>
-#include <igl/point_mesh_squared_distance.h>
-#include <igl/remove_unreferenced.h>
 
 using namespace std;
 
@@ -17,12 +13,11 @@ int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
 }
 
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
-		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, const std::vector<int>& submesh_f_ren_faces_num, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
+		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
 		const std::vector< std::vector<int> >& submesh_adjacency) :
 				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
 				submesh_adjacency(submesh_adjacency) {
 	cout << "Dog::Dog" << endl;
-	F_tri = Fsqr_to_F(F);
 	// set mesh_min_max_i;
 	vi_to_submesh.resize(V.rows());
 	int min_idx = 0;
@@ -38,9 +33,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	cout << "setting wireframe edges" << endl;
 	setup_rendered_wireframe_edges_from_planar();
 	cout << "setting up uv" << endl;
-	setup_uv_and_texture(submesh_f_ren_faces_num);
-	// updating V_ren
-	update_Vren();
+	setup_uv();
 	cout << "DOG setup complete" << endl;
 }
  
@@ -49,7 +42,6 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(
 	vi_to_submesh.assign(V.rows(),0);
 	quad_topology(V,F,quadTop);
 	setup_rendered_wireframe_edges_from_planar();
-	F_tri = Fsqr_to_F(F);
 }
 
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
@@ -57,7 +49,7 @@ Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),
 						stitched_curves_l(d.stitched_curves_l),stitched_curves_angles(d.stitched_curves_angles), stitched_curves_curvature(d.stitched_curves_curvature),
 						vi_to_submesh(d.vi_to_submesh) {
-	F_tri = Fsqr_to_F(F);
+	// empty on purpose
 }
 
 void Dog::setup_stitched_curves_initial_l_angles_length() {
@@ -90,23 +82,20 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 }
 
 Dog* Dog::get_submesh(int submesh_i) {
-	Eigen::MatrixXd submeshV; Eigen::MatrixXi submeshF;
-	get_submesh_VF(submesh_i, submeshV, submeshF);
-	Dog* submeshDog = new Dog(submeshV, submeshF);
-	return submeshDog;
-}
-
-void Dog::get_submesh_VF(int submesh_i, Eigen::MatrixXd& submeshV, Eigen::MatrixXi& submeshF) {
-	if (submesh_i >= get_submesh_n()) return;
+	if (submesh_i >= get_submesh_n()) return NULL;
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
-	submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
+	Eigen::MatrixXd submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
 
 	int submesh_f_min_i, submesh_f_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_f_min_i, submesh_f_max_i, false);
-	submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
+	Eigen::MatrixXi submeshF = F.block(submesh_f_min_i,0,submesh_f_max_i-submesh_f_min_i+1,4);
 	// substract submesh_f_min_i from all F faces
 	for (int i = 0; i < submeshF.rows(); i++) {submeshF.row(i).array() -= submesh_v_min_i;}
+
+
+	Dog* submeshDog = new Dog(submeshV, submeshF);
+	return submeshDog;
 }
 
 void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
@@ -316,94 +305,8 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 	
 }
 
-void Dog::setup_uv_and_texture(const std::vector<int>& submesh_f_ren_faces_num) {
-	std::cout << "here" << std::endl;
-	int wait;
-
+void Dog::setup_uv() {
 	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
-	Eigen::VectorXd mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().minCoeff();
-	double mesh_W = mesh_bb_size[0], mesh_H = mesh_bb_size[1];
-
-	// now go component by component and set the uv values accordingly
-
-	// First set every vertex in the uv as its location + some offset of the x value of the mesh
-
-	
-	int submesh_n = get_submesh_n(); int subm_v_start = 0;
-	
-	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
-		int subm_size = submeshVSize[subm_i];
-		double x_offset = subm_i*(mesh_W + 1);
-		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
-			uv.row(v_idx) << x_offset+V(v_idx,0), V(v_idx,1);
-		}
-		subm_v_start += subm_size;
-	}
-
-	// Now create a texture. Set the resolution for 1024Xsubmesh_n*(1024+1)
-	// So height is 1024, and width is the paccking of everything
-	//int y_resolution = 1024, x_resolution = (1+y_resolution)*submesh_n;
-	int y_resolution = 1024, x_resolution = (1+y_resolution)*submesh_n;
-	// Set everything to be invisible, and then mark those that are inside
-	text_R.resize(x_resolution,y_resolution);text_R.setZero();
-  	text_G.resize(x_resolution,y_resolution);text_G.setZero();
-  	text_B.resize(x_resolution,y_resolution);text_B.setZero();
-  	text_A.resize(x_resolution,y_resolution);text_A.setZero();
-
-
-  	// Set text_A by inside/outside for each connected component
-  	// First define the query points which should be of size y_resolution*y_resolution
-  	//	and should be a sampling of the bounding box of the mesh in the y_resolution (y_resolution and not x_resolution for both axes!)
-  	Eigen::MatrixXd gridPoints(y_resolution*y_resolution,2);
-  	double start_x = V.colwise().minCoeff()[0], start_y = V.colwise().minCoeff()[1];
-  	double x_step = mesh_W/(y_resolution-1), y_step = mesh_H/(y_resolution-1);
-  	for (int i = 0; i < y_resolution; i++) {
-  		for (int j = 0; j < y_resolution; j++) {
-  			gridPoints.row(i*y_resolution+j) << start_x + j*x_step, start_y + i*y_step;
-  		}
-
-  	}
-
-  	
-  	// Now go through every submesh, check which points have a distance zero, and update stuff accordingly
-  	Eigen::MatrixXd VRen2D(V_ren.rows(),2); VRen2D.col(0) = V_ren.col(0); VRen2D.col(1) = V_ren.col(1);
-  	int f_ren_face_base = 0;
-  	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
-  		int f_ren_face_n = submesh_f_ren_faces_num[subm_i];
-  		Eigen::MatrixXi submF(f_ren_face_n,3); int f_cnt = 0;
-  		for (int fi = f_ren_face_base; fi < f_ren_face_base+ f_ren_face_n; fi++) submF.row(f_cnt++) = F_ren.row(fi);
-  			Eigen::MatrixXd submV2d; Eigen::VectorXi dummy;
-  		igl::remove_unreferenced(VRen2D,submF,submV2d,submF,dummy);
-  		/*
-  		Eigen::MatrixXd submV3d; Eigen::MatrixXi submF; get_submesh_VF(subm_i, submV3d, submF);
-  		submF = Fsqr_to_F(submF);
-  		Eigen::MatrixXd submV2d(submV3d.rows(),2); 
-  		submV2d.col(0) = submV3d.col(0); submV2d.col(1) = submV3d.col(1);
-  		*/
-  		/*
-  		// now see which ones are in/out
-  		Eigen::VectorXd sqrD; Eigen::VectorXi dummy1; Eigen::MatrixXd dummy2;
-  		// TODO this won't work very well and we need V_ren instead...
-  		igl::point_mesh_squared_distance(gridPoints,submV2d,submF,sqrD,dummy1,dummy2);
-  		std::cout << "number of points = " << sqrD.rows() << std::endl;
-  		std::cout << "number of zeros = " << (sqrD.array()==0).count() << std::endl;
-  		*/
-  		igl::AABB<Eigen::MatrixXd,2> tree;
-      	tree.init(submV2d,submF);
-      	Eigen::VectorXi I;
-      	igl::in_element(submV2d,submF,gridPoints,tree,I);
-		for (int i = 0; i < y_resolution; i++) {
-  			for (int j = 0; j < y_resolution; j++) {
-  				//if (!sqrD(i*y_resolution+j)) text_A(subm_i*(y_resolution + 1)+j,i) = 255;
-  				if (I(i*y_resolution+j) !=-1) text_A(subm_i*(y_resolution + 1)+j,i) = 255;
-  			}
-  		}
-  		f_ren_face_base += f_ren_face_n;
-	}
-  	
-  	// Now scale the uv. Scale it such that the biggest axis of the texture will be from 0 to 1
-	// while the other one be at that ratio
-	// move the minimal coordinates x to be 0, and same for y
 	Eigen::VectorXd max_c = uv.colwise().maxCoeff();
 	Eigen::VectorXd min_c = uv.colwise().minCoeff();
   	// move the minimal coordinates x to be 0, and same for y
@@ -414,15 +317,6 @@ void Dog::setup_uv_and_texture(const std::vector<int>& submesh_f_ren_faces_num) 
   	// For now scale it by the smaller factor so it will always fit to a 1x1 box
   	double scale = min(1./x_rad,1./y_rad);
   	for (int i = 0; i < uv.rows(); i++) {
-    	//uv.row(i) << x_s*(uv(i,0)+t_x),x_s*(uv(i,1)+t_y);
-    	uv.row(i) << 1./x_rad*(uv(i,0)+t_x),1./y_rad*(uv(i,1)+t_y);
+    	uv.row(i) << scale*(V(i,0)+t_x),scale*(V(i,1)+t_y);
   	}
-  	mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().minCoeff();
-}
-
-const Eigen::MatrixXd& Dog::getTexture(Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ri,
-					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Gi,
-					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Bi,
-					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ai) const {
-	text_Ri = text_R; text_Gi = text_G; text_Bi = text_B;text_Ai = text_A;
 }
