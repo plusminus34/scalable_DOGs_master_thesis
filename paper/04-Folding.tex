@@ -41,14 +41,16 @@ Let $S(t)$ be a curved folding flow and let $p(t_k)$ be a point on a curved crea
 \end{enumerate}
 \end{theorem}
 \begin{proof}
-Let $\kappa(p(t))$ be the crease curvature at the point $p(t)$, and let $\kappa_g(p(t)) = \kappa(p(t))\cos\alpha(p(t))$ be the crease's flattened (geodesic) curvature, where $\alpha(p(t))$ is the angle between the normals of the tangent planes of $P_1,P_2$ at $p(t)$ and the principal normal of $\kappa(p(t))$. If $\alpha \neq 0$, the claim follows from the discontinuity of the two possible tangent planes at $p(t)$: a folding corresponds to a different choice of the tangent planes, both forming an angle of $2\alpha(p(t))$ with each other, and any small continuous deformation cannot move from a folded to a non-folded configuration or vice-versa. Finally, the non-planarity of $p(t_k)$ implies $\alpha(p(t_k)) \neq 0$, since $\alpha(p(t_k)) = 0$ would mean that the normal curvature of the crease curve is $0$ and therefore the tangent of the crease curve is parallel to the ruling direction (see inset). But by Lemma 12 and Corollary 16 in \cite{demaine_lens} this implies that the curve has a kink at  $p(t_k)$, contradicting the fact that the deformation flow $S(t)$ is $C^2$ when restricted to the patches $P_1$ or $P_2$.
+Let $\kappa(p(t))$ be the crease curvature at the point $p(t)$, and let $\kappa_g(p(t)) = \kappa(p(t))\cos\alpha(p(t))$ be the crease's flattened (geodesic) curvature, where $\alpha(p(t))$ is the angle between the normals of the tangent planes of $P_1,P_2$ at $p(t)$ and the principal normal of $\kappa(p(t))$. If $\alpha \neq 0$, the claim follows from the discontinuity of the two possible tangent planes at $p(t)$: a folding corresponds to a different choice of the tangent planes, both forming an angle of $2\alpha(p(t))$ with each other, and any small continuous deformation cannot move from a folded to a non-folded configuration or vice-versa. Finally, the non-planarity of $p(t_k)$ implies $\alpha(p(t_k)) \neq 0$, since $\alpha(p(t_k)) = 0$ would mean that the normal curvature of the crease curve is $0$ and therefore the tangent of the crease curve is parallel to the ruling direction.
+% (see inset). 
+But by Lemma 12 and Corollary 16 in \cite{demaine_lens} this implies that the curve has a kink at  $p(t_k)$, contradicting the fact that the deformation flow $S(t)$ is $C^2$ when restricted to the patches $P_1$ or $P_2$.
 \end{proof}
-\setlength{\columnsep}{8pt}%
-\begin{wrapfigure}{r}{0.3\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{figures/ruling_tangent_to_a_curved_fold}
-%  \caption{\label{fig:cone_from_curve} A local representation of a developable surface through a curvature line curve $\gamma(s)$, and orthogonal rulings emanating from it.}
-\end{wrapfigure}
+%\setlength{\columnsep}{8pt}%
+%\begin{wrapfigure}{r}{0.3\linewidth}
+%  \centering
+%  \includegraphics[width=\linewidth]{figures/ruling_tangent_to_a_curved_fold}
+%%  \caption{\label{fig:cone_from_curve} A local representation of a developable surface through a curvature line curve $\gamma(s)$, and orthogonal rulings emanating from it.}
+%\end{wrapfigure}
 
 Therefore it is impossible to fold a crease point that is non-planar. For a non-planar point that is not folded, any small deformation keeps it that way. Folding can only happen after flattening the point, and if the surface is already folded, any small deformation keeps it folded. Thus, the decision whether to fold or not can only be done when the crease points are planar, while no extra care needs be taken if the crease is already folded. With this in mind, we note the following observation.
 
@@ -63,12 +65,12 @@ A non-planar curved crease point on a curved folded surface $S$ is folded if and
 This follows directly from the fact that the tangent planes on both sides of a crease curve coincide if the surface is smooth there, but along a folded crease they are reflections of one another through the crease curve's osculating plane. Planar crease points along a curved crease, while not folded, still satisfy this constraint, since around these points the tangent planes are exactly the same as the osculating plane of the curve, though even the slightest surface deformation might change that. 
 
 \subsection{Discretization}
-We saw that folding happens exactly when both sides of the surface around a crease are in the same half-space of the osculating plane of the crease curve. We discretize this condition by constraining the tangents of the discrete parametric (grid) lines of the two DOG patches to be on the same side of the crease curve's discrete osculating plane. See \figref{fig:osc_plane_discretization} for the notation. The DOG edges intersecting the crease can be considered as discrete tangents originating at the crease points. In the notation of \figref{fig:osc_plane_discretization}, each of the two patches has its own duplicate of the edge ($e_1$ or $e_2$) intersecting the crease curve. In the starting, flat configuration the two edges coincide, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{t_1}{\|t_1\|}, t_2 = \frac{t_2}{\|t_2\|}$ . We denote the crease curve's binormal, i.e., the normal of its osculating plane, as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ coincide for both patches.
+We saw that folding happens exactly when both sides of the surface around a crease are in the same half-space of the osculating plane of the crease curve. We discretize this condition by constraining the tangents of the discrete parametric (grid) lines of the two DOG patches to be on the same side of the crease curve's discrete osculating plane. See \figref{fig:osc_plane_discretization} for the notation. The DOG edges intersecting the crease can be considered as discrete tangents originating at the crease points. In the notation of \figref{fig:osc_plane_discretization}, each of the two patches has its own duplicate of the edge ($e_1$ or $e_2$) intersecting the crease curve. In the starting, flat configuration the two edges coincide, but a folding movement creates a discontinuity along them. We denote the tangents as $t_1 = \frac{e_1}{\|e_1\|}, t_2 = \frac{e_2}{\|e_2\|}$ . We denote the crease curve's binormal, i.e., the normal of its osculating plane, as $B = \frac{e_f \times e_b}{\|e_f \times e_b\|}$, noting that $e_f,e_b$ coincide for both patches.
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/osc_plane_discretization}
-	\caption{Notation for edges in a discrete crease pattern. Left: a DOG net with a discrete crease curve. Center: Following \cite{rabi2018shape}, we represent creases by duplicating the quads that contain the crease curve, which results in different connected components, or patches. The positions of the vertices on the curve, i.e., its intersection points with the grid edges, are constrained to match on both patches. Right: Notation for a duplicated grid edge ($e^1, e^2$) intersecting the crease curve at the blue point(s), and the two crease edges $e_f,e_b$. }
+	\caption{Notation for edges in a discrete crease pattern. Left: a DOG net with a discrete crease curve. Center: Following \cite{rabi2018shape}, we represent creases by duplicating the quads that contain the crease curve, which results in different connected components, or patches. The positions of the vertices on the curve, i.e., its intersection points with the grid edges, are constrained to match on both patches. Right: Notation for a duplicated grid edge ($e_1, e_2$) intersecting the crease curve at the blue point(s), and the two crease edges $e_f,e_b$. }
 	\label{fig:osc_plane_discretization}
 \end{figure}
 
@@ -121,7 +123,7 @@ A folding deformation can be seen as a rotation of tangent planes around the cre
  \begin{lemma}  \label{lem:tangents_dihedral}
  Let $t_1,t_2$ be tangents on two sides of a crease curve at a given point that are equal on the flattened isometric developable surface. Let $t$ be the crease curve tangent at that point. Assuming the surface went through a curved folding isometric deformation and the folding angle at a given point along the crease is $\theta$ then the tangents satisfy:
 \begin{equation} \label{eq:tangents_dihedral}
-\langle t_1, t_2 \rangle = cos(\alpha)^2 + sin^2(\alpha) cos(\theta) \end{equation}
+\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta. \end{equation}
 %4*cos(alpha/2)/(norm(e1)+norm(e2))
 \end{lemma}
 \begin{proof}{Let $\{t,n,b\}$ be the Frenet frame of the curved crease at the point. An angle $\alpha$ means that at the flat isometric configuration both tangents can be written as $cos(\alpha)t + sin(\alpha)n$. A folding angle of $\theta$ at a given point means that relative to the Frenet frame of the curve, tangents on one surface where rotated in angle $\frac{\theta}{2}$ around the crease's tangent $t$, while on the other surface they were rotated in an angle  $-\frac{\theta}{2}$. Thus w.l.o.g $t_1 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n+sin(\frac{\theta}{2})b)$ and $t_2 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n-sin(\frac{\theta}{2})b)$. The proof ends by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $cos(\theta) = cos^2(\frac{\theta}{2})-sin^2(\frac{\theta}{2})$.}\end{proof}
@@ -129,8 +131,8 @@ A folding deformation can be seen as a rotation of tangent planes around the cre
 Under an isometric deformation, $t_1,t_2$ are linear in the vertices positions, $\alpha$ is constant and equation \eqref{eq:tangents_dihedral} is quadratic.
 \begin{figure} [h]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/fold_angle_and_tangent_angles}
-	\caption{Left: A flattened configuration of a curve (gray) with edges $e_f,e_b$ and its tangent $t$, forming an angle $\alpha$ with the DOG tangents $t_1,t_2$ which are equal. Right: A folded isometric configuration with a discontinuty between $t_1,t_2$. \lemmaref{lem:tangents_dihedral} shows the connection between the tangents angles and the folding angle $\theta$ in the smooth case, stating that $\langle t_1, t_2 \rangle = cos(\alpha)^2 + sin^2(\alpha) cos(\theta)$. }
+	\includegraphics[width=0.8\linewidth]{figures/fold_angle_and_tangent_angles}
+	\caption{Left: A flattened configuration of a crease curve (dark blue) with edges $e_f,e_b$ and its tangent $t$, forming an angle $\alpha$ with the DOG tangents $t_1,t_2$, which are equal in this flat state ($t_1=t_2$). Right: A folded isometric configuration with a tangent discontinuity  $t_1 \neq t_2$. \lemmaref{lem:tangents_dihedral} shows the connection between the angle $\alpha$ and the folding angle $\theta$ in the smooth case, stating that $\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta$. }
 	\label{fig:fold_angle_and_tangent_angles}
 \end{figure}
 
@@ -140,7 +142,10 @@ Under an isometric deformation, $t_1,t_2$ are linear in the vertices positions, 
 \langle t_1, t \times t_2 \rangle \leq 0
 \end{equation}
 where $t$ is the tangent of the creases curve oriented, and $t \times t_2$ is the tangent plane of the surface with $t_2$ as a tangent vector. The orientation of $t$ determines whether a mountain or valley fold is chosen. By the cyclic property of the triple product \eqref{eq:mountain_valley} is also equal to $\langle t_2, t_1 \times t \rangle$.
-Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve as $t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\|\|e_b\|e_f + \|e_f\|e_b\|}$, which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry.
+Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve as 
+$$t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\left\|\|e_b\|e_f + \|e_f\|e_b\right\|},$$
+%
+ which for a creased curve is the tangent to the point at the unique circle passing through three points, and is linear in the vertices under isometry.
 To ease up notation in \secref{sec:implementation}, we reformulate \eqref{eq:mountain_valley_ineq} in an equivalent formulation with equalities by using the Heaviside step function:
 \begin{equation} \label{eq:heaviside}
 \text{H}(x) = \left\{
