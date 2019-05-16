@@ -307,7 +307,44 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 
 void Dog::setup_uv_and_texture() {
 	std::cout << "here" << std::endl;
+
 	uv.resize(V.rows(),2); uv.col(0) = V.col(0); uv.col(1) = V.col(1);
+	auto mesh_bb_size = uv.colwise().maxCoeff()-uv.colwise().maxCoeff();
+	double mesh_W = mesh_bb_size[0], mesh_H = mesh_bb_size[1];
+
+	// now go component by component and set the uv values accordingly
+
+	// First set every vertex in the uv as its location + some offset of the x value of the mesh
+	int submesh_n = get_submesh_n(); int subm_v_start = 0;
+	for (int subm_i = 0; subm_i < submesh_n; subm_i++) {
+		int subm_size = submeshVSize[subm_i];
+		double x_offset = subm_i*mesh_W + 1;
+		for (int v_idx = subm_v_start; v_idx < subm_v_start + subm_size; v_idx++) {
+			uv.row(v_idx) << x_offset + V(v_idx,0), V(v_idx,1);
+		}
+		subm_v_start += subm_size;
+	}
+
+	// Now create a texture. Set the resolution for 1024Xsubmesh_n*(1024+1)
+	// So height is 1024, and width is the paccking of everything
+	int y_resolution = 1024, x_resolution = (1+1024)*submesh_n;
+	// Set everything to be invisible, and then mark those that are inside
+	text_R.resize(y_resolution,x_resolution);text_R.setZero();
+  	text_G.resize(y_resolution,x_resolution);text_G.setZero();
+  	text_B.resize(y_resolution,x_resolution);text_B.setZero();
+  	text_A.resize(y_resolution,x_resolution);text_A.setZero();
+
+  	// This should zero out half of the y things
+  	for (int i = 0; i < y_resolution/2; i++) {
+  		for (int j = 0; j < x_resolution; j++) {
+  			text_A(i,j) = 255;
+  		}
+  	}
+
+  	
+  	// Now scale the uv. Scale it such that the biggest axis of the texture will be from 0 to 1
+	// while the other one be at that ratio
+	// move the minimal coordinates x to be 0, and same for y
 	Eigen::VectorXd max_c = uv.colwise().maxCoeff();
 	Eigen::VectorXd min_c = uv.colwise().minCoeff();
   	// move the minimal coordinates x to be 0, and same for y
@@ -315,20 +352,17 @@ void Dog::setup_uv_and_texture() {
   	//cout << "t_x = " << t_x << " t_y = " << t_y << endl;
   	// scale it such that the maximum 'x' distance will be 1, and same for y
   	double x_rad = max_c[0]-min_c[0]; double y_rad = max_c[1]-min_c[1];
+
+  	double x_s,y_s;
+	if (x_resolution >= y_resolution){
+		x_s = 1./x_rad, y_s = (double(y_resolution)/x_resolution)*1./y_rad;
+	} else {
+		y_s = 1./y_rad, x_s = (double(x_resolution)/y_resolution)*1./x_rad;
+	}
   	// For now scale it by the smaller factor so it will always fit to a 1x1 box
   	double scale = min(1./x_rad,1./y_rad);
   	for (int i = 0; i < uv.rows(); i++) {
-    	uv.row(i) << scale*(V(i,0)+t_x),scale*(V(i,1)+t_y);
-  	}
-  	int resolution = 10240;
-  	text_R.resize(resolution,resolution);text_R.setZero();
-  	text_G.resize(resolution,resolution);text_G.setZero();
-  	text_B.resize(resolution,resolution);text_B.setZero();
-  	text_A.resize(resolution,resolution);text_A.setZero();
-  	for (int i = 0; i < resolution; i++) {
-  		for (int j = 0; j < resolution/2; j++) {
-  			text_A(i,j) = 255;
-  		}
+    	uv.row(i) << x_s*(V(i,0)+t_x),y_s*(V(i,1)+t_y);
   	}
 }
 
