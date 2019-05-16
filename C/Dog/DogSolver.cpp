@@ -221,6 +221,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
 }
 
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
+  p.fold_bias_weight = 0;
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(x);
 

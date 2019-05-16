@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Flip sign", &DC.p.flip_sign);
       ImGui::Checkbox("Render creases", &modelViewer.show_curves);
       //ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
-      //ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
+      ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
       ImGui::InputDouble("Constraints deviation", &DC.constraints_deviation);
