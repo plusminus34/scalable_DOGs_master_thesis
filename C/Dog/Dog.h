@@ -81,6 +81,7 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
+	const Eigen::MatrixXi& getFtri() const {return F_tri;}
 	const Eigen::MatrixXd& getUV() const {return uv;}
 	const Eigen::MatrixXd& getTexture(Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ri, Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Gi,
 					Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Bi, Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic>& text_Ai) const;
@@ -140,7 +141,7 @@ private:
 	void setup_uv_and_texture();
 
 	// The quad mesh
-	Eigen::MatrixXd V; Eigen::MatrixXi F;
+	Eigen::MatrixXd V; Eigen::MatrixXi F; Eigen::MatrixXi F_tri;
 	// uv and texture (we mostly care about the alpha values but we send it to libigl's renderer anyhow)
 	Eigen::MatrixXd uv; Eigen::Matrix<unsigned char,Eigen::Dynamic,Eigen::Dynamic> text_R,text_G,text_B,text_A;
 	Eigen::MatrixXd flatV;
