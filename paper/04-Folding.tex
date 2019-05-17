@@ -157,10 +157,10 @@ As mentioned in \secref{sec:smooth-combinatorial}, there are a few combinatorial
 \langle t_1, t \times t_2 \rangle \leq 0,
 \end{equation}
 where $t$ is the tangent of the oriented crease curve and $t \times t_2$ is the \OSH{normal of the?} tangent plane of the second surface patch (the one that has $t_2$ as a tangent vector). The orientation of $t$ determines whether a mountain or a valley fold is chosen. By the cyclic property of the triple product, the left hand side of \equref{eq:mountain_valley} \OSH{you meant \equref{eq:mountain_valley_ineq}, right?} is also equal to $\langle t_2, t_1 \times t \rangle$.
-Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve at a given vertex by looking at the incident edge vectors $e_f, e_b$: 
+Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve at a given point by looking at the incident edge vectors $e_f, e_b$: 
 $$t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\left\|\|e_b\|e_f + \|e_f\|e_b\right\|}.$$
 %
- If the two edge vectors $e_b, e_f$ are not collinear, $t$ as above is the tangent to the unique circle passing through the vertex and its two neighbors, taken at the vertex. It is a linear function of the vertices under isometry.
+ If the two edge vectors $e_b, e_f$ are not collinear, $t$ as above is the tangent at the point to the unique circle passing through the point and its two neighbors. It is a linear function of the vertices under isometry.
  
 To simplify notation for \secref{sec:implementation}, we reformulate \equref{eq:mountain_valley_ineq} with equalities by using the Heaviside step function:
 \begin{equation} \label{eq:heaviside}
