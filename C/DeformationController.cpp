@@ -69,6 +69,7 @@ void DeformationController::apply_new_editor_constraint() {
 			for (int i = 0; i < 3; i++) {
 					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
 			}
+			is_time_dependent_deformation = true;
 			/*
 			if (z_only_editing) {
 				paired_vertices.push_back(std::pair<int,int>(2*vnum+dogEditor->pair_vertex_1,2*vnum+dogEditor->pair_vertex_2));	
