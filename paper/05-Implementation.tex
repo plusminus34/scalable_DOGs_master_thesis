@@ -33,33 +33,33 @@ The problems we solve in this paper can be written in the form:
 where $f$ is an objective function composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}. \OSH{who are $\phi_{f_j}(\x)$, spell out please.}
 
 \subsection{Folding constraints}
-Motivated by the fact that in the smooth case one cannot move from a folded to a non-folded model around a non-planar point, we strive to always satisfy $\phi_{f_i}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for its discretization \eqref{eq:folding_const_normalized}. To that end we solve our problem with an iterative sequential quadratic programming (SQP) solver with a linesearch, added with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
+Motivated by the fact that in the smooth case, one cannot move from a folded to a non-folded configuration around a non-planar point, we strive to always satisfy $\phi_{f_j}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for the discretization \equref{eq:folding_const_normalized}. To that end, we solve our problem with an iterative sequential quadratic programming (SQP) solver with a line search, complemented with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
 \begin{enumerate}
-	\item Use a penalty term (\cite{nocedal}) punishing on deviation from the constraints. \label{opt:penalty}
-	\item Use a linesearch method that backtracks if the resulting mesh does not exactly satisfies $\phi_{d_i}(\x) = 0, i = 1,...,m$.
+	\item a penalty term \cite{nocedal} punishing  deviation from the constraints; \label{opt:penalty}
+	\item a line search method that backtracks if the resulting mesh does not exactly satisfy $\phi_{d_i}(\x) = 0, i = 1,...,n$.
 \end{enumerate}
-As the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
-
+Since the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
+%
 \begin{align} 
 \begin{split}\label{eq:const_inner}
-\text{sgn}(x) \approx \tanh(hx) \\
-H(x) \approx  \left\{\begin{array}{@{}l@{\thinspace}l}
+&\text{sgn}(x) \approx \tanh(hx) \\
+&H(x) \approx  \left\{\begin{array}{@{}l@{\thinspace}l}
 0  &: \text{if } x \leq 0, \\
-\frac{x^2}{x^2+\delta} &: \text{if } x = 0, \delta > 0 \\\\
+\frac{x^2}{x^2+\delta} &: \text{if } x = 0, \delta > 0 \\
 \end{array}\right.
 \end{split}
 \end{align}
-using the fixed parameters $h=1000,\delta = 1e-5$. Our approximation for $H(x)$ is taken from by the works of \cite{l0_approximation,autocuts}.  Our use in a homotopy based optimization necessitates an approximation for $H(x)$ that vanishes on a flat mesh, and therefore we do not use the common approximation for the Heaviside function $H(x) \approx \hat{H}(x) =  \frac{1+\tanh(hx)}{2}$ as $\hat H(0) = \frac{1}{2}$.
+using the fixed parameters $h=1000,\delta = \text{1e-5}$. Our approximation for $H(x)$ is taken from \cite{l0_approximation,autocuts}.  The use in a homotopy based optimization necessitates an approximation for $H(x)$ that vanishes on a flat mesh, and therefore we do not use the common approximation for the Heaviside function $H(x) \approx \hat{H}(x) =  \frac{1+\tanh(hx)}{2}$ because $\hat H(0) = \frac{1}{2}$.
 
-We refer to the approximated constraints as $\phi^*_i(\x)$. and replace the optimization problem \eqref{eq:const_opt} with the following problem:
+We refer to the approximated constraints as $\phi^*_i(\x)$ and replace the optimization problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
-& \argmin_x f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2 \\
+& \argmin_x f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|_2^2 \\
 & \textrm{subject to} \\
-& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
+& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, n. \\ 
 \end{aligned}
 \end{equation}
-Where $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$, that doubles its value if the linesearch cannot find a point that both decreases a given merit function while satisfying the supporting planes conditions exactly. In practice, the penalty term only affects points that are very close to being planar points, while approaching zero very quickly around already folded points.
+Here, $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$ and which doubles its value if the line search cannot find a point that both decreases a given merit function while satisfying the supporting plane conditions exactly. In practice, the penalty term only affects points that are very close to being planar, while approaching zero very quickly around already folded points.
 
 \subsection{Equality constrainted SQP}
 For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
