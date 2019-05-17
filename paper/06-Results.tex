@@ -1,5 +1,5 @@
 \section{Results} \label{sec:results}
-\MiR{We use CGAL's arrangement model \cite{cgal,cgal_arr1,cgal_arr2} to compute a given planar arrangement from an input polyline, and Paradiso (cite) to solve our linear systems)}
+\MiR{We use CGAL's arrangement model \cite{cgal,cgal_arr1,cgal_arr2} to compute a given planar arrangement from an input polyline, Paradiso (cite) to solve our linear systems), and libigl for other stuff. In our optimization we enforce a given dihedral angle constraint in an homotopy fashion by linearly interpolating the constrained angle from zero to $\theta^i$. Curve constrained stuff. \\}
 
 %For rendering purposes, we keep another mesh where the extraneous parts of the duplicated faces are culled.
 \subsection{Editing system}
@@ -10,5 +10,3 @@
 	\caption{\MiR{Same pattern, same curve deformation, different mountain/valley assignment by enforcing constraint \eqref{eq:mountain_valley} along the fold.}}
 	\label{fig:MV_bias_modeling}
 \end{figure}
-\subsection{Symmetry}
-\subsection{Moving creases}

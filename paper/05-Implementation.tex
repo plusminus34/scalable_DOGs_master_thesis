@@ -12,7 +12,7 @@ We are interested in deformations that fold the surface along all crease curves 
 	\item degenerate edge: crease points on an edge, splitting it into two parts where one is shorter than $\eps_{r}$\% of the other; \label{item:deg_edge}
 	\item degenerate angle with the intersecting DOG tangent: crease points where the tangent directions $t_1,t_2$ form an angle with one of the edges $e_f,e_b$ that is smaller than $\eps_\alpha$. \label{item:deg_tan_angle}
 \end{enumerate}
-We use the constants $\kappa_\epsilon=\text{1e-5}, \eps_r=5\%, \eps_\alpha=3^{\circ}$.
+We use the constants $\kappa_\epsilon=\text{1e-5}, \eps_r=5\%, \eps_\alpha=3^{\circ}$. We denote the folding constraints by $\phi_{f_j}(\x) = 0, 1 \leq f_j \leq n_f$.
 
 \begin{figure} [h]
 	\centering
@@ -30,13 +30,13 @@ The problems we solve in this paper can be written in the form:
 & \phi_{f_j}(\x) = 0, \ \  j = 1, \ldots, n_f, \\ 
 \end{aligned}
 \end{equation}
-where $f$ is an objective function composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}. \OSH{who are $\phi_{f_j}(\x)$, spell out please.}
+where $f$ is an objective function composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}.
 
 \subsection{Folding constraints}
 Motivated by the fact that in the smooth case, one cannot move from a folded to a non-folded configuration around a non-planar point, we strive to always satisfy $\phi_{f_j}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for the discretization \equref{eq:folding_const_normalized}. To that end, we solve our problem with an iterative sequential quadratic programming (SQP) solver with a line search, complemented with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
 \begin{enumerate}
 	\item a penalty term \cite{nocedal} punishing  deviation from the constraints; \label{opt:penalty}
-	\item a line search method that backtracks if the resulting mesh does not exactly satisfy $\phi_{d_i}(\x) = 0, i = 1,...,m$.
+	\item a line search method that backtracks if the resulting mesh does not exactly satisfy $\phi_{f_j}(\x) = 0, i = 1,...,n_f$.
 \end{enumerate}
 Since the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
 %
@@ -82,9 +82,9 @@ We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{noce
 \end{gathered}
 \end{equation}
 %
-where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\alpha(\x)$. \OSH{who is $f_\alpha$, is that $f_\omega$?}
+where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
 
-Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\alpha}(\x)$ \OSH{$f_\omega$?} by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
+Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\omega}(\x)$ by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 %
 \begin{equation} \label{eq:KKT_us}
 \begin{gathered}
@@ -100,7 +100,7 @@ Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to
 \end{gathered}
 \end{equation}
 
-We note that at \cite{rabi2018shape} the authors discretized Laplacian metric flows by solving a similar system with a Laplacian instead of the objectives' Lagrangian, however we found that replacing the Laplacian by the Lagrangian followed by convexifying the Hessian performs significantly better, especially on larger models. As common in SQP algorithms, our linesearch used a merit function defined as a combination of the objective and the constraints, thus the linesearch chooses step sizes that both reduce the objective and keep the constraints numerically feasible. This removed the need of the slower LBFGS constraints projection used by \cite{rabi18,rabi2018shape}. We used the L2 merit function \cite{nocedal}:
+We note that at \cite{rabi2018shape} the authors discretized Laplacian metric flows by solving a similar system with a Laplacian instead of the objectives' Lagrangian, however we found that replacing the Laplacian by the Lagrangian followed by convexifying the Hessian performs significantly better, especially on larger models. As common in SQP algorithms, we used a merit function to guide our linesearch, defined as a combination of the objective and the constraints, thus the linesearch chooses step sizes that both reduce the objective and keep the constraints numerically feasible. This removed the need of the slower LBFGS constraints projection used by \cite{rabi18,rabi2018shape}. We used the L2 merit function \cite{nocedal}:
 \begin{equation}
 \psi(\x;\mu) = f_\alpha(\x)+\mu\sum\|\phi_{d_i}(x)\|_2
 \end{equation}
@@ -112,23 +112,24 @@ with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
 Our object $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles.
-We use an integrated sqaured mean curvature bending objective taken from \cite{rabi2018shape}, but exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
+We use an integrated squared mean curvature bending objective taken from \cite{rabi2018shape}, but use the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
 \begin{equation}
 f_\text{H}(\x) = 0.5\x^t(L^tM^{-1}L)\x
 \end{equation}
 Where $L$ is the DOG Laplacian and $M$ is a diagonal mass matrix defined by the DOG vertex area \cite{rabi2018shape}. \\
-Let $c^i$ be a crease point, $t_1^i$ and $t_2^i$ the grid tangents as in \figref{fig:fold_angle_and_tangent_angles}, and let $\theta^i$ be a desired dihedral angle along the fold at $c^i$. Let $t^i$ be the tangent of the curve of the flat mesh at the crease point $c_i$ where we discretize $t^i$ as the tangent of the unique circle passing through $c_i$ and its neighbours on the crease. Let $cos(\alpha^i) = \langle t^i,t_1^i \rangle = \langle t^i,t_2^i \rangle$ on the initial flat mesh. We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at $c(i)$ using a soft penalty:
+ We employ \lemmaref{lem:tangents_dihedral} to constrain the fold dihedral angle at a given crease point using the constraint
 \begin{equation}
-\phi_{\text{d}_{c^i}}(\x) = \langle t_1^i, t_2^i \rangle - cos(\alpha)^2 - sin^2(\alpha^i) cos(\theta^i)
+\phi_{\text{d}_{c^i}}(\x) := \langle t_1^i, t_2^i \rangle - cos(\alpha)^2 - sin^2(\alpha^i) cos(\theta^i) = 0
 \end{equation}
-And note that under isometry deformations $t_1,t_2$ are linear in the vertices locations, $\alpha$ is fixed, and the constraint is quadratic. Throughout the optimization we enforce a given dihedral angle constraint in an homotopy fashion by linearly interpolating the constrained angle from zero to the user requested value. \\
+Where $c^i$ is an index of a crease point along an edge defined as a linear combination of two vertices, $t_1^i$,$t_2^i$,$\alpha$ are as defined in \secref{sec:folding_angle} and \figref{fig:fold_angle_and_tangent_angles}, and $\theta^i$ is a desired dihedral angle at the crease point $c^i$. Under isometry $t_1,t_2$ are linear in the vertices locations, $\alpha$ is fixed, and the constraint is quadratic.\\
 Let $e$ be an edge on the mesh, $l_e$ its length and $l_e^0$ the length in a reference mesh. We define the following quadratic isometry constraints:
 \begin{equation}
 \phi_\text{iso}(\x)_e = l_e^2 - {l_e^0}^2
 \end{equation}
-The patches themselves also need to align along the creases as detailed at \ref{sec:model}, which can be enforced by linear constraints as done in \cite{rabi2018shape} which we denote by $\phi_\text{a}(\x)$. We enforce the dihedral, positional, isometry and patches alignment constraints as positional constraints in a soft manner by using a penalty on their squared deviation, denoted accordingly by $f_\text{d}(\x)$,$f_\text{pos}(\x)$,$f_\text{iso}(\x)$,$f_\text{a}(\x)$. We use the constraints Gauss-Newton's Hessian as a convex approximation for the Hessian of these constraints as well as the hessian of the folding constraints  $\sum \|\phi^*_{f_i}(\x)\|_2^2$. Isometry is enforced as a soft constraint $f_\text{iso}(\x)$, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$, and a maximum stretch below $4$. As opposed to \cite{rabi2018shape} we also encode  $\phi_\text{a}(\x)$ as a soft constraint, as we have noticed a significance improvement in the quality and smoothness of complicated crease patterns when these are enforced as a soft penalty with a large weight \MiR{ok to say?, this is mostly important in the curved constrained case for interactivity, as if we run the interpolation much slower then we can still use hard constraints},  with an average deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns rise to a large set of additional linear constraints.\\ 
+We maintain continuity along the patches with a set of linear equality constraints on duplicated crease points \cite{rabi2018shape}, which we denote by $\phi_\text{c}(\x) = 0$.
+We enforce the dihedral, positional, isometry and patches continuity constraints as positional constraints in a soft manner by using a penalty on their squared deviation, denoted accordingly by $f_\text{D}(\x)$,$f_\text{pos}(\x)$,$f_\text{iso}(\x)$,$f_\text{cont}(\x)$. We use the constraints Gauss-Newton's Hessian as a convex approximation for the Hessian of these constraints as well as the hessian of the folding constraints  $\sum \|\phi^*_{f_i}(\x)\|_2^2$. Isometry is enforced as a soft constraint $f_\text{iso}(\x)$, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasis that all of our results have an averaged relative edge stretch that is less than $0.003$, and a maximum stretch below $4$, where our surfaces are normalized to have an average edge length of $1$. As opposed to \cite{rabi2018shape} we also encode  $\phi_\text{cont}(\x)$ as a soft constraint, as we have noticed a significance improvement in the quality and smoothness of crease patterns when these are enforced as a soft penalty with a large weight \MiR{ok to say?, this is mostly important in the curved constrained case for interactivity, as if we run the interpolation much slower then we can still use hard constraints},  and our results have an average continuity deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns rise to a large set of additional linear constraints.\\ 
 The objective we optimize is then:
 \begin{equation}
-f(\x) = w_Hf_\text{H}+w_pf_\text{pos}+w_df_\text{d}+w_{iso}f_\text{iso}+w_af_\text{stitching}
+f(\x) = w_Hf_\text{H}+w_pf_\text{pos}+w_df_\text{d}+w_{iso}f_\text{iso}+w_cf_\text{a}
 \end{equation}
-Throughout the paper, unless stated otherwise, we use $w_H = 1$, $w_{pos}=5$,$w_d = 100$, $w_{iso}= \frac{20000}{\|E\|}$, $w_a = 1e4$. Where $\|E\|$ is the number of edges in the mesh (i.e. for a mesh with $1000$ vertices $w_{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geoemtry keeps our bending objective the same, however scales the isometric objective by the number of edges.
+Throughout the paper, unless stated otherwise, we use $w_H = 1$, $w_{pos}=5$,$w_d = 100$, $w_{iso}= \frac{20000}{\|E\|}$, $w_a = 1e4$. Where $\|E\|$ is the number of edges in the mesh (i.e. for a mesh with $1000$ vertices $w_{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geoemtry keeps our bending objective the same, but scales the isometric objective by the number of edges.
