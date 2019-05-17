@@ -222,6 +222,7 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 
 void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
+	auto vars = dogSolver->get_opt_vars();
 	if (dogSolver) delete dogSolver;
 	cout << "reseting dog solver" << endl;
 	std::cout << "matching_curve_pts_x.size() = " << matching_curve_pts_x.first.size() << std::endl;
@@ -229,6 +230,7 @@ void DeformationController::reset_dog_solver() {
 		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, matching_curve_pts_y, matching_curve_pts_x, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
 	//int wait; cin >> wait;
+	dogSolver->set_opt_vars(vars);
 	has_new_constraints = false;
 }
 
