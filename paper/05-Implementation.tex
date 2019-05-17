@@ -61,13 +61,13 @@ We refer to the approximated constraints as $\phi^*_i(\x)$ and replace the optim
 \end{equation}
 Here, $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$ and which doubles its value if the line search cannot find a point that both decreases a given merit function while satisfying the supporting plane conditions exactly. In practice, the penalty term only affects points that are very close to being planar, while approaching zero very quickly around already folded points.
 
-\subsection{Equality constrainted SQP}
-For ease of notation, we use the following notation to refer to the objective of \eqref{eq:const_opt_penalty}:
+\subsection{Equality constrained SQP}
+For ease of notation, we use the following to refer to the objective of \equref{eq:const_opt_penalty}:
 \begin{equation}
-f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_i}(\x)\|_2^2
+f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|_2^2.
 \end{equation}
-We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic Programming (SQP) solver with a linesearch \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of lagrange multipliers $\lambda^k$, a linesearch equality constrained SQP algorithm iteratively find the next direction for a linesearch of \eqref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
-
+We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of Lagrange multipliers $\lambda^k$, a line search equality constrained SQP algorithm iteratively finds the next direction for a line search of \equref{eq:const_opt_penalty} by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
+%
 \begin{equation} \label{eq:KKT_eps}
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
@@ -78,14 +78,14 @@ We minimize \eqref{eq:const_opt_penalty} using an iterative Sequential Quadratic
 \mathbf{b}=\begin{pmatrix}
 {\nabla f_\omega(x^k)} \\ 
 -\phi_{d_i}(x^k)\\
-\end{pmatrix}.
+\end{pmatrix},
 \end{gathered}
 \end{equation}
+%
+where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\alpha(\x)$. \OSH{who is $f_\alpha$, is that $f_\omega$?}
 
-Where $J(\x)$ is the Jacobian of the equality constraints in \eqref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\alpha(\x)$.
-
-Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replaced the Hessian of the objective $H_{f_\alpha}(\x)$ by a convex approximation which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
-
+Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\alpha}(\x)$ \OSH{$f_\omega$?} by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \ref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
+%
 \begin{equation} \label{eq:KKT_us}
 \begin{gathered}
 {K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b} \\
