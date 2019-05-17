@@ -12,21 +12,20 @@ This definition is suitable for various topologies, such as a cylinder, but thro
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=\linewidth]{figures/crease_patterns}
-	\caption{Curved crease patterns, decomposing a pattern into multiple components $P_i$ and intersecting at crease vertices. Boundary curves in black, crease curves in blue \OSH{it looks purple, let's later ensure it's really blue :)}.}
+	\caption{Curved crease patterns, decomposing a pattern into multiple components $P_i$ and intersecting at crease vertices. Boundary curves in black, crease curves in blue.}
 	\label{fig:crease_pattern}
 \end{figure}
 
 We are interested in deformations of curved folded surfaces that keep them curved folded. Viewed separately on each patch $P_i$, these deformations are $C^2$, though they often introduce folds along the creases as tangent plane discontinuities of neighbouring patches. In particular, we are interested in continuous deformations, or deformation flows \cite{rabi2018shape}, which we refer to as curved folding flows. We denote these flows by a continuous map $S(t), 0 \leq t \leq 1$, where each $S(t)$ is a curved folded surface and the flow is $C^2$ when limited to each patch. We often look at the case where the starting point $S(0)$ planar. We apply our tools to model isometric curved flows, which we also refer to as \emph{folding}. These flows can be used to model physical paper or sheet metal folding, though most of our observations and tools can also be used to model curved folding flows that stretch a developable surface while keeping it developable. Non-isometric developable deformations can be useful for design tasks where the a priori flattened shape is unknown \cite{rabi18,rabi2018shape,pottmann_new}.
 
 \subsection{Model} \label{sec:model}
-We follow the work of \cite{rabi2018shape} by modeling each patch $P_j$ as a discrete orthogonal geodesic net (see \figref{fig:curve_on_dog}). \OSH{It's a bit more than that -- in the flat, all DOGs agree and create a seamless grid. Should we say it, or just refer to the figure that explains it? } We represent the creases as piecewise linear curves, whose vertices $c(i)$ are the crease curves' intersection points with the grid edges. Each curve vertex $c(i)$ is a linear combination of two vertices of a DOG: $c(i) = t_i v_k + (1-t_i)v_j,$ where $0 \leq t_i \leq 1$ and $v_k,v_j$ are two neighboring vertices on the grid.  Each curve vertex lies on each of the $m \geq 2$ different patches \OSH{all of them? or just the ones intersecting at that point?}, essentially duplicated. If $c(i)^1,c(i)^2,....,c(i)^m$ are the representations of $c(i)$ on the different patches, we constrain these duplicated points to have equal coordinates (see \figref{fig:curve_on_dog}).
-We trivially extend the representation of \cite{rabi2018shape} to support intersecting curves by explicitly adding grid lines at crease vertices (see \figref{fig:piecewise_dog_from_crease} and \figref{fig:curve_on_dog}).
-\OSH{I would rewrite in a more constructive manner: we get the crease pattern as the arrangement of planar curves. We put a grid on it, ensuring that there is a horizontal and vertical grid line at each crease vertex. Then we split the grid into overlapping patches (they overlap along the faces where the curves pass). Then we compute the intersections of all curves with all grid edges and represent those resulting curve vertices as linear combinations, one for each patch that lies there geometrically. To maintain continuity, we use the same constraints as in RabinovichSIGA2018. I don't even think we need to say that Rabinovich18 didn't handle crease vertices. It's rather trivial.}  
+We follow the work of \cite{rabi2018shape} by modeling each patch $P_j$ as a discrete orthogonal geodesic net, together with alignment constraints on their boundaries. Our input is an arrangement of curves representing our crease pattern. On top of this arrangment we place an orthogonal grid while ensuring that every vertex of the arrangement lies on a grid line. We then split the grid into overlapping patches, overlapping along the faces where curves pass. Finally we compute the intersections of the curves with the grid edges and represent the resulting curve points as linear combinations, one for each patch sharing that curve point (see \figref{fig:curve_on_dog}). Following \cite{rabi18} we maintain continuity across curve points along edges while penalizing on edge lengths across duplicated quads. \MiR{We just do isometry, but this is not constraint.. is writing this way ok?}
+
 
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/piecewise_dog_from_crease}
-	\caption{Given a crease pattern, we create a separate DOG for each segment (see the different colors) and use the boundary constraints as in \cite{rabi2018shape}. \OSH{Color the crease curves on the right in dark blue, same as in previous figures.}}
+	\caption{Given a crease pattern, we create a separate DOG for each segment (see the different colors) and use the boundary constraints as in \cite{rabi2018shape}.}
 	\label{fig:piecewise_dog_from_crease}
 \end{figure}
 
