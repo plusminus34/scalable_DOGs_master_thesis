@@ -116,20 +116,30 @@ This condition is satisfied exactly in flat models and in any piecewise smooth c
 
 \section{Folding angles and mountain-valley assignments} \label{sec:folding_angles_mountain_valley}
 
-In this section we propose tools to constrain the folding angles and their direction during deformation, in order to provide designers with more expressive and intuitive control. We first show how to constrain folding angles, i.e., the angles between the tangent planes around a crease. We implement this by constraining DOG tangent angles, resulting in a simple quadratic constraint. We then devise a tool to differentiate between mountain or valley folds. Our derivations work for both curved and straight origami creases.
+In this section we propose tools to constrain the folding angles and their direction (mountain or valley) during deformation, in order to provide designers with additional expressive and intuitive control. We first show how to constrain folding angles, i.e., the angles between the tangent planes around a crease. We implement this by constraining DOG tangent angles, resulting in a simple quadratic constraint. We then devise a tool to differentiate between mountain and valley folds. Our derivations work for both curved and straight origami creases.
 
 \subsection{Folding angle} 
 
-A folding deformation can be seen as a rotation of tangent planes around the crease curve's tangent. The tangent on a straight fold is constant, and so is the folding angle, while on a curved crease, the tangent varies and often the folding angles change along the crease. In both cases, if the folding angle at a given point is $\theta$, then the surface tangent vectors on both sides of the crease that are orthogonal to the crease tangent form an angle of $\theta$, while the surface tangent vectors that are parallel to the crease remain parallel to each other. The following lemma shows the relation between an angle of tangents that are equal on a flat configuration and the folding angle (see \figref{fig:fold_angle_and_tangent_angles}): 
+A folding deformation can be seen as a rotation of the surface patches' tangent planes hinged on the tangent of the crease curve. The tangent of a straight fold is constant, and so is the folding angle, while on a curved crease, the tangent varies and often the folding angles change along the crease. In both cases, if the folding angle at a given point is $\theta$, then the surface tangent vectors on both sides of the crease that are orthogonal to the crease tangent form an angle of $\theta$, while the surface tangent vectors that are parallel to the crease remain parallel to each other. The following lemma shows the relation between the angle formed by surface tangent vectors that are equal in the flattened configuration and the folding angle (see \figref{fig:fold_angle_and_tangent_angles}): 
  \begin{lemma}  \label{lem:tangents_dihedral}
- Let $t_1,t_2$ be tangents on two sides of a crease curve at a given point that are equal on the flattened isometric developable surface. Let $t$ be the crease curve tangent at that point. Assuming the surface went through a curved folding isometric deformation and the folding angle at a given point along the crease is $\theta$ then the tangents satisfy:
+ Let $t_1,t_2$ be surface tangent vectors on two sides of a crease curve at a given point $p$ that are equal to each other in the isometrically flattened state of the developable surface. Let $t$ be the crease curve tangent at $p$. Assuming the surface went through a curved folding isometric deformation and the folding angle at crease point $p$  is $\theta$, the surface tangent vectors satisfy:
 \begin{equation} \label{eq:tangents_dihedral}
-\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta. \end{equation}
+\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta, \end{equation}
 %4*cos(alpha/2)/(norm(e1)+norm(e2))
+where $\alpha$ is the angle between $t$ and $t_1$. Note that this angle is preserved under isometry.
 \end{lemma}
-\begin{proof}{Let $\{t,n,b\}$ be the Frenet frame of the curved crease at the point. An angle $\alpha$ means that at the flat isometric configuration both tangents can be written as $cos(\alpha)t + sin(\alpha)n$. A folding angle of $\theta$ at a given point means that relative to the Frenet frame of the curve, tangents on one surface where rotated in angle $\frac{\theta}{2}$ around the crease's tangent $t$, while on the other surface they were rotated in an angle  $-\frac{\theta}{2}$. Thus w.l.o.g $t_1 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n+sin(\frac{\theta}{2})b)$ and $t_2 = cos(\alpha)t + sin(\alpha)(cos(\frac{\theta}{2})n-sin(\frac{\theta}{2})b)$. The proof ends by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $cos(\theta) = cos^2(\frac{\theta}{2})-sin^2(\frac{\theta}{2})$.}\end{proof}
+\begin{proof}{We denote by $t,n,b$ the vectors of the Frenet frame of the curved crease at $p$. We wish to express the surface tangent vectors $t_1, t_2$ in the local coordinates of this Frenet frame. In the flat isometric configuration, $t_1, t_2$ coincide and can be written as $\cos(\alpha)t + \sin(\alpha)n$. A folding angle of $\theta$ means that relative to the Frenet frame of the curve, the surface tangent on one side of the curve was rotated by angle $\frac{\theta}{2}$ about the crease curve tangent $t$, and the surface tangent on the other side by  $-\frac{\theta}{2}$. 
+%
+Thus w.l.o.g.\ 
+\begin{align*}
+\textstyle t_1 = \cos(\alpha)t + \sin(\alpha)\left(\cos\left(\frac{\theta}{2}\right)n + \sin\left(\frac{\theta}{2}\right)b\right),\\
+\textstyle t_2 = \cos(\alpha)t + \sin(\alpha)\left(\cos\left(\frac{\theta}{2}\right)n - \sin\left(\frac{\theta}{2}\right)b\right). 
+\end{align*}
+%
+The proof is concluded by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $\cos\theta = \cos^2{\frac{\theta}{2}}-\sin^2\frac{\theta}{2}$.}\end{proof}
 
-Under an isometric deformation, $t_1,t_2$ are linear in the vertices positions, $\alpha$ is constant and equation \eqref{eq:tangents_dihedral} is quadratic.
+Under an isometric deformation, $t_1,t_2$ are linear in the vertex positions, $\alpha$ is constant and  \equref{eq:tangents_dihedral} is quadratic.
+
 \begin{figure} [h]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/fold_angle_and_tangent_angles}
