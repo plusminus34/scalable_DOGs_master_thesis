@@ -4,7 +4,7 @@
 We employ \theoremref{Thm:supporting_plane} and its discretization in \equref{eq:folding_const} in a simple algorithm to enforce folding along crease curves while deforming piecewise DOGs. The algorithm aims to minimize an objective function while keeping the DOG constraints and ensuring the formation of folds along all crease curves.
 
 \subsection{Problem setup}
-We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $\R^3$ by $V$, the vertex positions (variables) by $\x \in \R^{3n}$, and the quad mesh faces by $F$. Each connected component is a DOG, i.e., it has the connectivity of a subset of $\Z^2$ and satisfies the DOG angle constraints \cite{rabi18}, which we denote as $\phi_{d_i}(\x) = 0, 1 \leq i \leq n$.
+We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $\R^3$ by $V$, the vertex positions (variables) by $\x \in \R^{3n}$, and the quad mesh faces by $F$. Each connected component is a DOG, i.e., it has the connectivity of a subset of $\Z^2$ and satisfies the DOG angle constraints \cite{rabi18}, which we denote as $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
 
 We are interested in deformations that fold the surface along all crease curves in a given crease pattern using \theoremref{Thm:supporting_plane} and enforcing \equref{eq:folding_const}. We enforce these constraints on all crease points, which are points on crease curves that are not crease vertices, with the exception of crease points that have the following degeneracies on the flattened mesh (see \figref{fig:fold_const_degeneracies}):
 \begin{enumerate}
@@ -26,8 +26,8 @@ The problems we solve in this paper can be written in the form:
 \begin{aligned}
 & \argmin_x f(x) \\
 & \textrm{subject to} \\
-& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, n, \\
-& \phi_{f_j}(\x) = 0, \ \  j = 1, \ldots, k, \\ 
+& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m, \\
+& \phi_{f_j}(\x) = 0, \ \  j = 1, \ldots, n_f, \\ 
 \end{aligned}
 \end{equation}
 where $f$ is an objective function composed of a weighted sum of a bending objective, isometry objective, positional constraints and other terms as specified in \secref{sec:dog_obj}. \OSH{who are $\phi_{f_j}(\x)$, spell out please.}
@@ -36,7 +36,7 @@ where $f$ is an objective function composed of a weighted sum of a bending objec
 Motivated by the fact that in the smooth case, one cannot move from a folded to a non-folded configuration around a non-planar point, we strive to always satisfy $\phi_{f_j}(x) = 0$ exactly. The common starting point of a flat surface is an interesting case, as it is a bifurcation point between surfaces satisfying \theoremref{Thm:supporting_plane} and those that do not, which also holds for the discretization \equref{eq:folding_const_normalized}. To that end, we solve our problem with an iterative sequential quadratic programming (SQP) solver with a line search, complemented with two simple strategies to handle the folding constraints $\phi_{f_i}(\x)$:
 \begin{enumerate}
 	\item a penalty term \cite{nocedal} punishing  deviation from the constraints; \label{opt:penalty}
-	\item a line search method that backtracks if the resulting mesh does not exactly satisfy $\phi_{d_i}(\x) = 0, i = 1,...,n$.
+	\item a line search method that backtracks if the resulting mesh does not exactly satisfy $\phi_{d_i}(\x) = 0, i = 1,...,m$.
 \end{enumerate}
 Since the functions $\text{sgn}(x),H(x)$ involved in the constraints $\phi_{d_i}(\x)$ are not $C^1$, we replace them by the approximations:
 %
@@ -56,7 +56,7 @@ We refer to the approximated constraints as $\phi^*_i(\x)$ and replace the optim
 \begin{aligned}
 & \argmin_x f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|_2^2 \\
 & \textrm{subject to} \\
-& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, n. \\ 
+& \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
 \end{equation}
 Here, $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$ and which doubles its value if the line search cannot find a point that both decreases a given merit function while satisfying the supporting plane conditions exactly. In practice, the penalty term only affects points that are very close to being planar, while approaching zero very quickly around already folded points.
