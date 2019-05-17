@@ -153,6 +153,14 @@ int main(int argc, char *argv[]) {
   igl::opengl::glfw::imgui::ImGuiMenu menu;
   viewer.plugins.push_back(&menu);
 
+  // Add content to the default menu window
+  menu.callback_draw_viewer_menu = [&]()
+  {
+    menu.draw_viewer_menu();
+    if (ImGui::Button("Load camera", ImVec2(-1,0))) viewer.load_scene();
+    if (ImGui::Button("Save camera", ImVec2(-1,0))) viewer.save_scene();
+  };
+
     // Draw additional windows
   menu.callback_draw_custom_window = [&]()
   {
@@ -173,10 +181,10 @@ int main(int argc, char *argv[]) {
       
       ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 MV Dihedral Angle\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
-      ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
+      //ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
-      if (ImGui::Button("Set wallpaper constraints", ImVec2(-1,0))) {DC.set_wallpaper_constraints();}
+      //if (ImGui::Button("Set wallpaper constraints", ImVec2(-1,0))) {DC.set_wallpaper_constraints();}
       ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
