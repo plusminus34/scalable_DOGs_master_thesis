@@ -66,6 +66,9 @@ public:
 		std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
 		std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
 		std::ofstream* time_measurements_log = NULL);
+
+	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
+	Eigen::VectorXd get_opt_vars() { return x;}
 	
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
