@@ -60,6 +60,7 @@ public:
 	DogSolver::Params p;
 	double deformation_timestep = 0;
 	double deformation_timestep_diff = 0.004;
+	double paired_boundary_bending_weight_mult = 1;
 	double dst_dihedral_angle = 0; // Later possibly have a list for every edge_angle_pair, so we could have different ones
 	double constraints_deviation;
 	double objective;
