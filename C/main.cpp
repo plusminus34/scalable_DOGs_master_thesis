@@ -8,7 +8,6 @@
 #include <igl/pathinfo.h>
 
 #include "Dog/Dog.h"
-#include "DeformationController.h"
 #include "ModelState.h"
 #include "ModelViewer.h"
 
@@ -18,15 +17,14 @@ bool is_optimizing = true;
 bool optimization_measurements = false;
 
 ModelState state;
-DeformationController DC;
 //DogEditor dogEditor;
-ModelViewer modelViewer(state, DC);
+ModelViewer modelViewer(state, state.DC);
 
 const int DEFAULT_GRID_RES = 21;
 int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh 
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  DC.init_from_new_dog(state.dog);
+  state.DC.init_from_new_dog(state.dog);
 }
 
 void save_workspace() {
@@ -60,7 +58,7 @@ void load_workspace(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void run_optimization() {
-  DC.single_optimization();
+  state.DC.single_optimization();
 }
 
 bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int modifiers)
@@ -70,24 +68,24 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     is_optimizing = !is_optimizing;
     break;
   case 'S':
-    DC.edit_mode = DogEditor::SELECT_POSITIONAL;
+    state.DC.edit_mode = DogEditor::SELECT_POSITIONAL;
     break;
   case 'D':
-    DC.edit_mode = DogEditor::TRANSLATE;
+    state.DC.edit_mode = DogEditor::TRANSLATE;
     break;
   case 'Q':
-    DC.apply_new_editor_constraint();
+    state.DC.apply_new_editor_constraint();
     is_optimizing = false;
     break;
   case 'Z':
-    DC.reset_new_editor_constraint();
+    state.DC.reset_new_editor_constraint();
     break;
   case 'C':
-    DC.reset_constraints();
+    state.DC.reset_constraints();
 
     break;
   case 'R':
-    DC.single_optimization();
+    state.DC.single_optimization();
     break;
   case 'E':
     exit(1);
@@ -97,20 +95,20 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
 }
 
 bool callback_mouse_down(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return DC.dogEditor->callback_mouse_down();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return state.DC.dogEditor->callback_mouse_down();
   return false;
 }
 bool callback_mouse_move(igl::opengl::glfw::Viewer& viewer, int mouse_x, int mouse_y) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  state.DC.dogEditor->callback_mouse_move(mouse_x, mouse_y);
   return false;
 }
 bool callback_mouse_up(igl::opengl::glfw::Viewer& viewer, int button, int modifier) {
-  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  DC.dogEditor->callback_mouse_up();
+  if ((modelViewer.viewMode == ViewModeMesh) || (modelViewer.viewMode == ViewRulings) || (modelViewer.viewMode == ViewModeMeshWire)) return  state.DC.dogEditor->callback_mouse_up();
   return false;
 }
 
 bool callback_pre_draw(igl::opengl::glfw::Viewer& viewer) {
-  if ( ((DC.has_constraints())) && is_optimizing) run_optimization();
+  if ( ((state.DC.has_constraints())) && is_optimizing) run_optimization();
   modelViewer.render(viewer);
   return false;
 }
@@ -135,7 +133,7 @@ int main(int argc, char *argv[]) {
     state.load_from_workspace(input_path);
     if (argc == 3) {
       optimization_measurements = true;
-      DC.setup_optimization_measurements(argv[2]);
+      state.DC.setup_optimization_measurements(argv[2]);
     }
 
   } else if (boost::iequals(basename, "planar")) {
@@ -148,7 +146,7 @@ int main(int argc, char *argv[]) {
   }
   // Set up viewer
   igl::opengl::glfw::Viewer viewer;
-  DC.init_viewer(viewer);
+  state.DC.init_viewer(viewer);
   // Attach a menu plugin
   igl::opengl::glfw::imgui::ImGuiMenu menu;
   viewer.plugins.push_back(&menu);
@@ -177,57 +175,58 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load svg", ImVec2(-1,0))) load_svg(viewer);
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
-      if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {DC.setup_curve_constraints();is_optimizing = false;}
+      if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {state.DC.setup_curve_constraints();is_optimizing = false;}
       
-      ImGui::Combo("Edit mode", (int *)(&DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 MV Dihedral Angle\0None\0\0");
-      ImGui::Combo("Select mode", (int *)(&DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
-      //ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
-      if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
-      if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
-      //if (ImGui::Button("Set wallpaper constraints", ImVec2(-1,0))) {DC.set_wallpaper_constraints();}
-      ImGui::Checkbox("Z only edit", &DC.z_only_editing);
-      ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Soft constraints", &DC.p.soft_pos_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Dihedral weight", &DC.p.dihedral_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Pairs weight", &DC.p.pair_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("MV bias weight", &DC.p.mv_bias_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Stitching weight", &DC.p.stitching_weight, 0, 0, "%.4f");
-      //ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
+      ImGui::Combo("Edit mode", (int *)(&state.DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 MV Dihedral Angle\0None\0\0");
+      ImGui::Combo("Select mode", (int *)(&state.DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
+      //ImGui::Combo("Wallaper type", (int *)(&state.DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
+      if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {state.DC.apply_new_editor_constraint();}
+      if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {state.DC.reset_new_editor_constraint();}
+      if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
       
-      ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
-      ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
-      ImGui::InputDouble("Curve k add", &DC.curve_k_translation, 0, 0, "%.4f");
-      ImGui::InputDouble("Curve k mult", &DC.curve_k_mult, 0, 0, "%.4f");
-      ImGui::InputDouble("Curve t add", &DC.curve_t_addition, 0, 0, "%.4f");
-      ImGui::InputInt("Max constrained curve points", &DC.max_curve_points);
+      ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
+      ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Soft constraints", &state.DC.p.soft_pos_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Dihedral weight", &state.DC.p.dihedral_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Pairs weight", &state.DC.p.pair_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Fold bias weight", &state.DC.p.fold_bias_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("MV bias weight", &state.DC.p.mv_bias_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
+      ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");
       
-      ImGui::InputDouble("Time step size", &DC.deformation_timestep_diff, 0, 0, "%.4f");
-      //if (ImGui::InputDouble("Dihedral angle", &DC.fold_dihedral_angle, 0, 0, "%.4f") ) {DC.update_fold_constraints();};
-      if (ImGui::InputDouble("Timestep", &DC.deformation_timestep, 0, 0, "%.4f") ) {DC.update_time_deformations();};
-      ImGui::InputDouble("Merit penalty", &DC.p.merit_p);
-      ImGui::InputDouble("Infeasability epsilon", &DC.p.infeasability_epsilon);
-      ImGui::InputDouble("Infeasability filter", &DC.p.infeasability_filter);
-      ImGui::InputDouble("Convergence threshold", &DC.p.convergence_threshold);
-      ImGui::InputInt("Max Newton iterations", &DC.p.max_newton_iters);
-      //ImGui::InputInt("Penalty repetitions", &DC.p.penalty_repetitions);
-      ImGui::Checkbox("Folding mode", &DC.p.folding_mode);
-      ImGui::Checkbox("Flip sign", &DC.p.flip_sign);
+      ImGui::InputDouble("Dihedral angle", &state.DC.dst_dihedral_angle, 0, 0, "%.4f");
+      ImGui::InputInt("Curve idx", &state.DC.deformed_curve_idx);
+      ImGui::InputDouble("Curve k add", &state.DC.curve_k_translation, 0, 0, "%.4f");
+      ImGui::InputDouble("Curve k mult", &state.DC.curve_k_mult, 0, 0, "%.4f");
+      ImGui::InputDouble("Curve t add", &state.DC.curve_t_addition, 0, 0, "%.4f");
+      ImGui::InputInt("Max constrained curve points", &state.DC.max_curve_points);
+      
+      ImGui::InputDouble("Time step size", &state.DC.deformation_timestep_diff, 0, 0, "%.4f");
+      //if (ImGui::InputDouble("Dihedral angle", &state.DC.fold_dihedral_angle, 0, 0, "%.4f") ) {state.DC.update_fold_constraints();};
+      if (ImGui::InputDouble("Timestep", &state.DC.deformation_timestep, 0, 0, "%.4f") ) {state.DC.update_time_deformations();};
+      ImGui::InputDouble("Merit penalty", &state.DC.p.merit_p);
+      ImGui::InputDouble("Infeasability epsilon", &state.DC.p.infeasability_epsilon);
+      ImGui::InputDouble("Infeasability filter", &state.DC.p.infeasability_filter);
+      ImGui::InputDouble("Convergence threshold", &state.DC.p.convergence_threshold);
+      ImGui::InputInt("Max Newton iterations", &state.DC.p.max_newton_iters);
+      //ImGui::InputInt("Penalty repetitions", &state.DC.p.penalty_repetitions);
+      ImGui::Checkbox("Folding mode", &state.DC.p.folding_mode);
+      ImGui::Checkbox("Flip M/V sign", &state.DC.p.flip_sign);
       ImGui::Checkbox("Render creases", &modelViewer.show_curves);
       //ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
-      ImGui::InputDouble("Constraints deviation", &DC.constraints_deviation);
-      ImGui::InputDouble("objective", &DC.objective);
+      ImGui::InputDouble("Constraints deviation", &state.DC.constraints_deviation);
+      ImGui::InputDouble("objective", &state.DC.objective);
       ImGui::Checkbox("Is optimizing?", &is_optimizing);
 
       ImGui::Checkbox("New rulings", &modelViewer.new_rulings);
       ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
-      ImGui::InputInt("Walllpaper Resolution", &modelViewer.wallpaper_res);
 
       ImGui::End();
   };

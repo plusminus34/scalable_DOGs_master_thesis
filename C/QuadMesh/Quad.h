@@ -17,7 +17,6 @@ struct QuadTopology : public igl::Serializable {
     std::vector<std::vector<int> > VF; // vertices to faces(quads)
     std::vector<std::vector<int> > A; // quad adjacency list
     std::vector<int> vi_to_star; // inner vertex to the star index in Eigen::VectorXi. In case it's not an inner vertex, just -1
-
     int v_n;
 
     void InitSerialization() {
@@ -31,6 +30,7 @@ struct QuadTopology : public igl::Serializable {
       Add(VF,std::string("_w_Href"));
       Add(A,std::string("_w_sqrGrid"));
       Add(vi_to_star,std::string("_w_vEq"));
+      Add(v_n,std::string("v_n"));
     }
 };
 

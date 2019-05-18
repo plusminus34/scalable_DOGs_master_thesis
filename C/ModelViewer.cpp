@@ -45,8 +45,6 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
     	igl::per_vertex_normals(dog->getV(),dog->getFTriangular(),VN);
 		plot_vertex_based_rulings(viewer, dog->getV(), VN,
 						dog->getQuadTopology(), new_rulings, rulings_length, rulings_mod, rulings_planar_eps);
-	} else if (viewMode == ViewWallpaper) {
-		render_wallpaper(viewer);
 	}
 
 	first_rendering = false;
@@ -73,45 +71,6 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		render_edge_points_constraints(viewer);
 	}
 	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
-}
-
-void ModelViewer::render_wallpaper(igl::opengl::glfw::Viewer& viewer) {
-	std::vector<Eigen::MatrixXd> Vlist; std::vector<Eigen::MatrixXi> Flist;
-	const Dog* dog = DC.getEditedSubmesh(); Dog vertDog(*dog);
-	//render_mesh(viewer,dog->getVrendering(),dog->getFrendering());
-	auto left_curve = dog->left_bnd; auto right_curve = dog->right_bnd;
-	auto lower_curve = dog->lower_bnd; auto upper_curve = dog->upper_bnd;
-	Eigen::Matrix3d Rx(DC.wallpaperRx); Eigen::Vector3d Tx(DC.wallpaperTx);
-	PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), lower_curve, upper_curve,Rx, Tx);
-	//Eigen::Matrix3d Ry(DC.wallpaperRy); Eigen::Vector3d Ty(DC.wallpaperTy);
-	//PointsRigidAlignmentObjective::update_rigid_motion(vertDog.getV_vector(), left_curve, right_curve,Ry, Ty);
-
-	//std::cout << "(Rx*Ry-Ry*Rx).norm() = " << (Rx*Ry-Ry*Rx).norm() << std::endl;
-	//std::cout << "Rx = " << std::endl << Rx << std::endl;
-	std::cout << "DC.wallpaperRx = " << std::endl << DC.wallpaperRx << std::endl;
-	//std::cout << "(DC.wallpaperRx*Dc.wallpaperRy-DC.wallpaperRy*Dc.wallpaperRx).norm() = " << std::endl << (DC.wallpaperRx*DC.wallpaperRy-DC.wallpaperRy*DC.wallpaperRx).norm() << std::endl;
-
-	// add meshes to the right
-	//for (int j = 0; j < wallpaper_res; j++) {
-		Vlist.push_back(vertDog.getVrendering()); Flist.push_back(vertDog.getFrendering());
-		
-		Dog nextDog(vertDog);
-		for (int i = 0; i < wallpaper_res; i++) {
-			//std::cout << "ModelViewr: Rx = " << Rx << " Tx = " << Tx << std::endl;
-			Eigen::MatrixXd newV = (nextDog.getV() * Rx).rowwise() + Tx.transpose();
-			nextDog.update_V(newV);
-			Vlist.push_back(nextDog.getVrendering()); Flist.push_back(nextDog.getFrendering());
-		}
-		
-	/*	// add mesh up
-		Eigen::MatrixXd newV = (vertDog.getV() * Ry).rowwise() + Ty.transpose();
-		vertDog.update_V(newV);
-	}*/
-	
-	//std::cout << "Vlist.size() = " << Vlist.size() << std::endl;
-	Eigen::MatrixXd VWallpaper; Eigen::MatrixXi FWallpaper;
-	igl::combine(Vlist,Flist, VWallpaper, FWallpaper);
-	render_mesh(viewer,VWallpaper,FWallpaper);
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {

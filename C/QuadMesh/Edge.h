@@ -36,10 +36,14 @@ struct Edge  : public igl::Serializable {
 };
 
 
-struct EdgePoint {
+struct EdgePoint : public igl::Serializable {
   EdgePoint(){}
   EdgePoint(const Edge& edge, double t) : edge(edge),t(t) {}
 
+  void InitSerialization() {
+    Add(edge,std::string("_edge"));
+    Add(t,std::string("_edge_t"));
+  }
 
   Eigen::RowVector3d getPositionInMesh(const Eigen::MatrixXd& V) const {return t * V.row(edge.v1) + (1-t) * V.row(edge.v2);}
   Eigen::RowVector3d getPositionInMesh(const Eigen::VectorXd& x, int vn) const {

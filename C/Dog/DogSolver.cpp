@@ -11,67 +11,30 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
         std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
         std::vector<std::pair<int,int>>& pairs,
-        std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
-        std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
+        std::vector<pair<int,int>>& bnd_vertices_pairs,
         std::ofstream* time_measurements_log) :
 
-          dog(dog), x(init_variables(init_mesh_vars, matching_curve_pts_x, matching_curve_pts_y)), /*todo more variables than only mesh, and init everything..*/
+          dog(dog), x(init_variables(init_mesh_vars)),
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
-          affineAlignment(matching_curve_pts_x.first, matching_curve_pts_x.second/*,
-                          matching_curve_pts_y.first, matching_curve_pts_y.second*/),
-          affineAlignmentSoft(affineAlignment, x),
-          /*affineCommuteConst(matching_curve_pts_x.first, matching_curve_pts_x.second,
-                          matching_curve_pts_y.first, matching_curve_pts_y.second),
-          affineCommuteSoft(affineCommuteConst, x),*/
           constraints(dog, x, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
                       mv_cos_angles, pairs),
-          obj(dog, x, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, affineAlignmentSoft, /*affineCommuteSoft,*/ p),
+          obj(dog, x, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
-          //interiorPt(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log)
            {
     is_constrained = (b.rows() + edgePoints.size())>0;
     if (time_measurements_log) {
       p.max_newton_iters = 1;
     }
-     if (matching_curve_pts_x.first.size() ) {
-      //std::cout << "affineAlignment.Vals(x) = " << affineAlignment.Vals(x) << std::endl;
-      std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
-      //std::cout << "x.rows() = " << x.rows() << " compObj.grad(x).rows() = " << obj.compObj.grad(x).rows() << std::endl;
-      //int wait; std::cin>> wait;
-    }
-    //std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
 }
 
-Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars, 
-      std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
-      std::pair<vector<int>,vector<int>>& matching_curve_pts_y) {
+Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars) {
   int dog_vars_num = init_mesh_vars.rows();
   int var_num = dog_vars_num;
-  if (matching_curve_pts_x.first.size()) var_num += 12; // affine variables
-  if (matching_curve_pts_y.first.size()) var_num += 12; // affine variables
-  //if (matching_curve_pts_x.first.size()) var_num += 24; // affine variables
-  //if (matching_curve_pts_x.first.size()) var_num += 3; // translation variables
+  // Here we can increase var_num and add more optimization variables at the end of x, if needed for other stuff (like symmetry for instance)
   Eigen::VectorXd x(var_num); x.setZero();
   x.head(dog_vars_num) = init_mesh_vars;
-  // Init initial affine motion
-  if (matching_curve_pts_x.first.size() ) {
-    // first translation
-    x(dog_vars_num) = x(matching_curve_pts_x.second[0])-x(matching_curve_pts_x.first[0]);
-    x(dog_vars_num+1) = x(matching_curve_pts_x.second[0]+dog_vars_num/3)-x(matching_curve_pts_x.first[0]+dog_vars_num/3);
-    x(dog_vars_num+2) = x(matching_curve_pts_x.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_x.first[0]+2*dog_vars_num/3);
-    x(dog_vars_num+3) = x(dog_vars_num+7) = x(dog_vars_num+11) = 1; // Set the first rotation as identity
-  }
-  if (matching_curve_pts_y.first.size() ) {
-
-    x(dog_vars_num+12) = x(matching_curve_pts_y.second[0])-x(matching_curve_pts_y.first[0]);
-    x(dog_vars_num+13) = x(matching_curve_pts_y.second[0]+dog_vars_num/3)-x(matching_curve_pts_y.first[0]+dog_vars_num/3);
-    x(dog_vars_num+14) = x(matching_curve_pts_y.second[0]+2*dog_vars_num/3)-x(matching_curve_pts_y.first[0]+2*dog_vars_num/3);
-    x(dog_vars_num+15) = x(dog_vars_num+19) = x(dog_vars_num+23) = 1; // Set the second rotation as identity
-    //std::cout << "x.tail(12) = " << x.tail(12) << std::endl;
-    //int wait; std::cin >> wait;
-  }
   return x;
 }
 
@@ -101,8 +64,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           PointPairConstraints& ptPairConst,*/
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           FoldingMVBiasConstraints& foldingMVBiasConstraints,
-          QuadraticConstraintsSumObjective& affineAlignmentSoft,
-          //QuadraticConstraintsSumObjective& affineCommuteSoft,
+          std::vector<std::pair<int,int>>& bnd_vertices_pairs,
           const DogSolver::Params& p) : 
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
@@ -113,12 +75,13 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         foldingBinormalBiasObj(foldingBinormalBiasConstraints, init_x0),
         foldingMVBiasObj(foldingMVBiasConstraints, init_x0),
         stitchingConstraintsPenalty(constraints.stitchingConstraints, init_x0),
+        pairedBndVertBendingObj(dog.getQuadTopology(), bnd_vertices_pairs, init_x0, Eigen::Vector3d(1,0,0)),
         //allConstQuadraticObj(constraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
         
         compObj(
-          {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&affineAlignmentSoft/*, &affineCommuteSoft*/},
-          {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight/*, 1000*p.wallpaper_curve_weight*/})
+          {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&pairedBndVertBendingObj},
+          {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.paired_boundary_bending_weight})
           /*
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj, &allConstQuadraticObj},
@@ -174,6 +137,10 @@ bool DogSolver::is_folded() {
   return is_folded;
 }
 
+bool DogSolver::is_mountain_valley_correct() {
+  return false;
+}
+
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
   if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
   else return single_iteration_normal(constraints_deviation, objective);
@@ -181,17 +148,12 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
-  if (affineAlignment.is_constraint() ) {
-      std::cout << "affineAlignmentSoft.obj(x) = " << affineAlignmentSoft.obj(x) << std::endl;
-      //std::cout << "Rigid motion = " << x.tail(12) << std::endl;
-      //int wait; std::cin>> wait;
-    }
 	Eigen::VectorXd x0(x);
   if (!is_folded()) {
     cout << "Error: Not folded" << endl; exit(1);
   }
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight/*,1000*p.wallpaper_curve_weight*/});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
   //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight,1});
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x.head(3*dog.get_v_num()));
@@ -206,7 +168,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
       dog.update_V_vector(x.head(3*dog.get_v_num()));
       cout << "Rolled back and is_folded = " << is_folded() << endl;
       p.fold_bias_weight *= 10;
-      obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight,p.mv_bias_weight, p.wallpaper_curve_weight/*,1000*p.wallpaper_curve_weight*/});
+      obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight,p.mv_bias_weight,p.paired_boundary_bending_weight});
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
       dog.update_V_vector(x.head(3*dog.get_v_num()));
     }
@@ -217,15 +179,14 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
-  //flip_rotation_if_needed();
 }
 
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
-  p.fold_bias_weight = 0;
+  //p.fold_bias_weight = 0;
   cout << "running a single optimization routine" << endl;
   Eigen::VectorXd x0(x);
 
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight, p.wallpaper_curve_weight/*,1000*p.wallpaper_curve_weight*/});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
 
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   is_folded();
@@ -267,40 +228,4 @@ void DogSolver::get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
   R.row(0) << x(vn+3),x(vn+4),x(vn+5);
   R.row(1) << x(vn+6),x(vn+7),x(vn+8);
   R.row(2) << x(vn+9),x(vn+10),x(vn+11);
-}
-
-void DogSolver::flip_rotation_if_needed() {
-  if (x.rows() >= (12+ 3*dog.get_v_num()) ) {
-    Eigen::Matrix3d R; Eigen::RowVector3d T; get_x_rigid_motion(R,T);
-    //std::cout << "Rx = " << R << std::endl;
-    if (R.determinant() < 0 ) {
-      std::cout << "Negative determinat: Flip!" << std::endl;
-      //std::cout << "Boom!" << std::endl; exit(1);
-      Eigen::Matrix3d ri,ti,ui,vi;
-      Eigen::Vector3d _;
-      igl::polar_svd(R,ri,ti,ui,_,vi);
-      // Check for reflection
-      if(ri.determinant() < 0) {
-        vi.col(1) *= -1.;
-        ri = ui * vi.transpose();
-      }
-      set_x_rotation(ri);
-    }
-  }
-  if (x.rows() >= (24+ 3*dog.get_v_num()) ) {
-    Eigen::Matrix3d R; Eigen::RowVector3d T; get_y_rigid_motion(R,T);
-    if (R.determinant() < 0 ) {
-      //std::cout << "Boom!" << std::endl; exit(1);
-      std::cout << "Negative determinat: Flip!" << std::endl;
-      Eigen::Matrix3d ri,ti,ui,vi;
-      Eigen::Vector3d _;
-      igl::polar_svd(R,ri,ti,ui,_,vi);
-      // Check for reflection
-      if(ri.determinant() < 0) {
-        vi.col(1) *= -1.;
-        ri = ui * vi.transpose();
-      }
-      set_y_rotation(ri);
-    }
-  }
 }
