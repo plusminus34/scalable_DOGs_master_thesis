@@ -4,7 +4,6 @@ SimplifiedBendingObjective::SimplifiedBendingObjective(const QuadTopology& quadT
 		quadTop(quadTop), vnum(quadTop.v_n) {
 	// Number of hessian triplets
 	IJV.resize(75*quadTop.stars.rows()/5+27*quadTop.bnd3.rows()/4);
-	// Change the weights to 1 to get to the old bending energy (this is for unregular grid, needed for intersecting creases)
 	init_edge_lengths.resize(4*quadTop.stars.rows()/5 + 2*quadTop.bnd3.rows()/4); 
 	int cnt = 0;
 	for (int si = 0; si < quadTop.stars.rows(); si+=5) {
