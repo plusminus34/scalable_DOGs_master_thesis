@@ -42,7 +42,7 @@ bool DeformationController::has_constraints() {
 void DeformationController::single_optimization() {
 	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
 		deformation_timestep+=deformation_timestep_diff;
-		p.pair_weight = deformation_timestep*p.soft_pos_weight;
+		p.pair_weight = deformation_timestep*0.1*p.soft_pos_weight;
 		p.paired_boundary_bending_weight = deformation_timestep*p.bending_weight;
 	}
 	if (has_new_constraints) reset_dog_solver();
@@ -232,6 +232,24 @@ void DeformationController::reset_dog_solver() {
 	//int wait; cin >> wait;
 	dogSolver->set_opt_vars(vars);
 	has_new_constraints = false;
+}
+
+void DeformationController::set_cylindrical_boundary_constraints() {
+	dogSolver->getDog().setup_boundary_curves_indices();
+	// Set Y curve constraints
+	auto left_curve = dogSolver->getDog().left_bnd; auto right_curve = dogSolver->getDog().right_bnd;
+	// Add curves pair constraints and curves boundary smoothness constraints
+	for (int pair_i = 0; pair_i < left_curve.size(); pair_i++) {
+		int vnum = globalDog->get_v_num();
+		int v1(left_curve[pair_i]),v2(right_curve[pair_i]);
+		for (int axis = 0; axis < 3; axis++) {
+			paired_vertices.push_back(std::pair<int,int>(axis*vnum+v1,axis*vnum+v2));	
+		}
+		//paired_vertices.push_back(std::pair<int,int>(v1,v2));
+
+	}
+	is_time_dependent_deformation = true;
+	reset_dog_solver();
 }
 
 void DeformationController::set_wallpaper_constraints() {

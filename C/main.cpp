@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
       //ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
+      if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {DC.set_cylindrical_boundary_constraints();}
       
       ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
