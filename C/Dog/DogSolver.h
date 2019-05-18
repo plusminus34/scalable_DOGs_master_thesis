@@ -35,6 +35,7 @@ public:
 	
 	struct Params {
 		double bending_weight = 1.;
+		double paired_boundary_bending_weight = 1.;
 		double isometry_weight = 20000;
 		double stitching_weight = 10000;
 		double soft_pos_weight = 5;
@@ -59,8 +60,7 @@ public:
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
-		std::pair<vector<int>,vector<int>>& matching_curve_pts_y,
-		std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
+		std::vector<std::pair<int,int>>& bnd_vertices_pairs,
 		std::ofstream* time_measurements_log = NULL);
 
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
@@ -104,13 +104,9 @@ public:
 	struct Objectives {
 	  Objectives(const Dog& dog, const Eigen::VectorXd& init_x0,
 	  			 Constraints& constraints,
-	  	/*
-	  			PositionalConstraints& posConst,
-	  			EdgePointConstraints& edgePtConst,
-	  			EdgesAngleConstraints& edgeAngleConst,
-	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
+	  			std::vector<std::pair<int,int>>& bnd_vertices_pairs,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -123,15 +119,13 @@ public:
       	QuadraticConstraintsSumObjective foldingBinormalBiasObj;
       	QuadraticConstraintsSumObjective foldingMVBiasObj;
       	QuadraticConstraintsSumObjective stitchingConstraintsPenalty;
+      	PairedBoundaryVerticesBendingObjective pairedBndVertBendingObj;
       	CompositeObjective compObj;
 	};
 
 private:
-	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars, 
-			std::pair<vector<int>,vector<int>>& matching_curve_pts_x,
-			std::pair<vector<int>,vector<int>>& matching_curve_pts_y);
+	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars);
 
-	void flip_rotation_if_needed();
 	Dog& dog;
 	Eigen::VectorXd x; // variables
 	bool is_constrained;

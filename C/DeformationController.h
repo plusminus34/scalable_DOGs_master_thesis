@@ -96,6 +96,9 @@ private:
 	// MV dihedral angle folds data (typically used for straight creases but sometimes for dihedral angle with an M/V assignment)
 	std::vector<MVTangentCreaseFold> mvTangentCreaseAngleParams; std::vector<double> mv_cos_angles;
 
+	// Pairs matching boundary curvature
+	std::vector<std::pair<int,int>> bnd_vertices_pairs;
+
 
 
 	Eigen::VectorXd init_x0;

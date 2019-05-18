@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
       //ImGui::Combo("Wallaper type", (int *)(&DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {DC.reset_new_editor_constraint();}
-      //if (ImGui::Button("Set wallpaper constraints", ImVec2(-1,0))) {DC.set_wallpaper_constraints();}
+      
       ImGui::Checkbox("Z only edit", &DC.z_only_editing);
       ImGui::InputDouble("Bending", &DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &DC.p.isometry_weight, 0, 0, "%.4f");
@@ -194,7 +194,6 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Fold bias weight", &DC.p.fold_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("MV bias weight", &DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Stitching weight", &DC.p.stitching_weight, 0, 0, "%.4f");
-      //ImGui::InputDouble("Wallpaper weight", &DC.p.wallpaper_curve_weight, 0, 0, "%.4f");
       
       ImGui::InputDouble("Dihedral angle", &DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputInt("Curve idx", &DC.deformed_curve_idx);
@@ -227,7 +226,6 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
-      ImGui::InputInt("Walllpaper Resolution", &modelViewer.wallpaper_res);
 
       ImGui::End();
   };

@@ -2,7 +2,7 @@
 
 PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(const QuadTopology& quadTop, 
 					const std::vector<std::pair<int,int>>& pairs, const Eigen::VectorXd& x, const Eigen::Vector3d& axis_direction) : 
-		quadTop(quadTop), vnum(quadTop.v_n), pairs(pairs) {
+		quadTop(quadTop), vnum(quadTop.v_n) {
 
 	// First locate the indices of the pairs. We have 3 vertices for each pair (the paired vertices are "the same" and then we need their neighbours along a curve)
 	obj_vertices.resize(3*pairs.size()); int obj_v_cnt = 0;
@@ -18,7 +18,8 @@ PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(c
 		obj_vertices(obj_v_cnt++) = nb1;
 		obj_vertices(obj_v_cnt++) = nb2;
 	}
-	std::cout << "arrived here" << std::endl; int wait; std::cin >> wait;
+	//std::cout << "obj_vertices.size() == "<< obj_vertices.size() << std::endl;
+	//std::cout << "arrived here" << std::endl; int wait; std::cin >> wait;
 
 	// Number of hessian triplets
 	IJV.resize(27*obj_vertices.rows()/3);
@@ -51,7 +52,7 @@ int PairedBoundaryVerticesBendingObjective::find_neighbour_in_axis_direction(int
 		}
 	}
 	// Getting here means error
-	std::cout << "Error finding neihbour in an axis" << std::endl; exit(1);
+	std::cout << "Error at PairedBoundaryVerticesBendingObjective: Could not find a neighbour in the direction of the axis" << std::endl; exit(1);
 }
 
 double PairedBoundaryVerticesBendingObjective::obj(const Eigen::VectorXd& x) const {
