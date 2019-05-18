@@ -14,7 +14,6 @@
 #include "../Optimization/Solvers/Newton.h"
 #include "../Optimization/Solvers/NewtonKKT.h"
 #include "../Optimization/Solvers/EqSQP.h"
-#include "../Optimization/Solvers/FeasibleIneqInteriorPoint.h"
 
 #include "Objectives/CurveInterpolationConstraintsBuilder.h"
 
@@ -23,7 +22,7 @@
 #include "Objectives/SimplifiedBendingObjective.h"
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
-//#include "Objectives/PointsRigidAlignmentObjective.h"
+#include "Objectives/PairedBoundaryVerticesBendingObjective.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"

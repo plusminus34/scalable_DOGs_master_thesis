@@ -1,7 +1,7 @@
 #include "PairedBoundaryVerticesBendingObjective.h"
 
 PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(const QuadTopology& quadTop, 
-					const std::vector<std::pair<int,int>>& pairs, , const Eigen::VectorXd& x) : 
+					const std::vector<std::pair<int,int>>& pairs, const Eigen::VectorXd& x, const Eigen::Vector3d& axis_direction) : 
 		quadTop(quadTop), vnum(quadTop.v_n), pairs(pairs) {
 
 	// First locate the indices of the pairs. We have 3 vertices for each pair (the paired vertices are "the same" and then we need their neighbours along a curve)
@@ -10,11 +10,15 @@ PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(c
 		int v1 = p.first, v2 = p.second;
 		obj_vertices(obj_v_cnt++) = v1;
 
-		// now locate the neihbours of v1,v2 that is lonely, i.e. if v1 and v2 have two y neighbours and 1 x neighbours, we want the x neighbours
+		// now locate the neihbours of v1,v2 that is on the given direction, i.e. if v1 and v2 have two y neighbours and 1 x neighbours, we want the x neighbours
 		//	so that we will add a bending objective on that curve that will smooth everything
-		exit(1); // TODO
+		// This is given as input now as there are also corner boundary vertices
+		int nb1 = find_neighbour_in_axis_direction(v1,quadTop,x,axis_direction);
+		int nb2 = find_neighbour_in_axis_direction(v2,quadTop,x,axis_direction);
+		obj_vertices(obj_v_cnt++) = nb1;
+		obj_vertices(obj_v_cnt++) = nb2;
 	}
-
+	std::cout << "arrived here" << std::endl; int wait; std::cin >> wait;
 
 	// Number of hessian triplets
 	IJV.resize(27*obj_vertices.rows()/3);
@@ -32,6 +36,22 @@ PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(c
 		init_edge_lengths[cnt++] = ex_f_l;
 		init_edge_lengths[cnt++] = ex_b_l;
 	}
+}
+
+int PairedBoundaryVerticesBendingObjective::find_neighbour_in_axis_direction(int v, const QuadTopology& quadTop, const Eigen::VectorXd& x, \
+	const Eigen::Vector3d& axis_direction) {
+	double eps = 1e-10;
+	for (auto nb_i : quadTop.A[v]) {
+		// S bit ugly but will do the job
+		// x direction so y difference is 0
+		if (axis_direction(1) == 0) {
+			if (abs(x(v+vnum)-x(nb_i+vnum)) < eps) return nb_i;
+		} else { // y direction (x difference is 0)
+			if (abs(x(v)-x(nb_i)) < eps) return nb_i;
+		}
+	}
+	// Getting here means error
+	std::cout << "Error finding neihbour in an axis" << std::endl; exit(1);
 }
 
 double PairedBoundaryVerticesBendingObjective::obj(const Eigen::VectorXd& x) const {

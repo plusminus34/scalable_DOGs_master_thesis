@@ -9,7 +9,8 @@
 class PairedBoundaryVerticesBendingObjective: public Objective {
   
 public:
-	PairedBoundaryVerticesBendingObjective(const QuadTopology& quadTop, const std::vector<std::pair<int,int>>& pairs, , const Eigen::VectorXd& x0_init);
+	PairedBoundaryVerticesBendingObjective(const QuadTopology& quadTop, const std::vector<std::pair<int,int>>& pairs, 
+			const Eigen::VectorXd& x0_init, const Eigen::Vector3d& axis_direction = Eigen::Vector3d(1,0,0));
 	virtual PairedBoundaryVerticesBendingObjective* clone() const {return new PairedBoundaryVerticesBendingObjective(*this);}
 	
 	virtual double obj(const Eigen::VectorXd& x) const;
@@ -17,6 +18,8 @@ public:
 
 private:
 	virtual void updateHessianIJV(const Eigen::VectorXd& x);
+	// Given a boundary index v with only
+	int find_neighbour_in_axis_direction(int v, const QuadTopology& quadTop, const Eigen::VectorXd& x, const Eigen::Vector3d& axis_direction);
 	
 	const QuadTopology& quadTop;
 	int vnum;
