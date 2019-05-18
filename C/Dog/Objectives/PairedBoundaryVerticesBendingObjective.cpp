@@ -17,16 +17,21 @@ PairedBoundaryVerticesBendingObjective::PairedBoundaryVerticesBendingObjective(c
 		int nb2 = find_neighbour_in_axis_direction(v2,quadTop,x,axis_direction);
 		obj_vertices(obj_v_cnt++) = nb1;
 		obj_vertices(obj_v_cnt++) = nb2;
+		//std::cout << "v1 = " << v1 << " v2 = " << v2 << " nb1 = " << nb1 << "nb2 = " << nb2 << std::endl;
 	}
-	//std::cout << "obj_vertices.size() == "<< obj_vertices.size() << std::endl;
-	//std::cout << "arrived here" << std::endl; int wait; std::cin >> wait;
+	/*
+	if (pairs.size()) {
+		std::cout << "obj_vertices.size() == "<< obj_vertices.size() << std::endl;
+		std::cout << "arrived here" << std::endl; int wait; std::cin >> wait;
+	}
+	*/
 
 	// Number of hessian triplets
 	IJV.resize(27*obj_vertices.rows()/3);
 	init_edge_lengths.resize(2*obj_vertices.rows()/3); 
 	int cnt = 0;
 	for (int si = 0; si < obj_vertices.rows(); si+=3) {
-	    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+	    int p_0_i = obj_vertices(si), p_xf_i = obj_vertices(si+1), p_xb_i = obj_vertices(si+2);
 	    const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
 	    const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
 	    const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
@@ -62,7 +67,7 @@ double PairedBoundaryVerticesBendingObjective::obj(const Eigen::VectorXd& x) con
   
   #pragma clang loop vectorize(enable)
   for (int si = 0; si < obj_vertices.rows(); si+=3) {
-    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+    int p_0_i = obj_vertices(si), p_xf_i = obj_vertices(si+1), p_xb_i = obj_vertices(si+2);
     const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
     const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
     const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
@@ -78,7 +83,7 @@ double PairedBoundaryVerticesBendingObjective::obj(const Eigen::VectorXd& x) con
 	e += t2*t2+t5*t5+t6*t6;
 
   }
-  //std::cout << "e = " << std::endl;
+  //std::cout << "PairedBoundaryVerticesBendingObjective e = " << e << std::endl;
   return e;
 }
 
@@ -90,7 +95,7 @@ Eigen::VectorXd PairedBoundaryVerticesBendingObjective::grad(const Eigen::Vector
   int cnt = 0;
   #pragma clang loop vectorize(enable)
   for (int si = 0; si < obj_vertices.rows(); si+=3) {
-    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+    int p_0_i = obj_vertices(si), p_xf_i = obj_vertices(si+1), p_xb_i = obj_vertices(si+2);
     const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
     const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
     const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
@@ -142,7 +147,7 @@ void PairedBoundaryVerticesBendingObjective::updateHessianIJV(const Eigen::Vecto
   int ijv_idx = 0; int cnt = 0;
   #pragma clang loop vectorize(enable)
   for (int si = 0; si < obj_vertices.rows(); si+=3) {
-    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+    int p_0_i = obj_vertices(si), p_xf_i = obj_vertices(si+1), p_xb_i = obj_vertices(si+2);
     const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
     const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
     const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
