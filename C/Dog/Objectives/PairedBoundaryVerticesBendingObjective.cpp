@@ -60,6 +60,7 @@ double PairedBoundaryVerticesBendingObjective::obj(const Eigen::VectorXd& x) con
   
   int cnt = 0;  
   
+  #pragma clang loop vectorize(enable)
   for (int si = 0; si < obj_vertices.rows(); si+=3) {
     int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
     const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
@@ -87,7 +88,7 @@ Eigen::VectorXd PairedBoundaryVerticesBendingObjective::grad(const Eigen::Vector
   int v_num = vnum;
 
   int cnt = 0;
- 
+  #pragma clang loop vectorize(enable)
   for (int si = 0; si < obj_vertices.rows(); si+=3) {
     int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
     const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
@@ -139,12 +140,12 @@ void PairedBoundaryVerticesBendingObjective::updateHessianIJV(const Eigen::Vecto
   // Number of ijv values
   int v_num = vnum;
   int ijv_idx = 0; int cnt = 0;
- 
-   for (int si = 0; si < quadTop.bnd3.rows(); si+=4) {
- 		const int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
-		const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
-		const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
-		const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
+  #pragma clang loop vectorize(enable)
+  for (int si = 0; si < obj_vertices.rows(); si+=3) {
+    int p_0_i = quadTop.bnd3(si), p_xf_i = quadTop.bnd3(si+1), p_yf_i = quadTop.bnd3(si+2), p_xb_i = quadTop.bnd3(si+3);
+    const double pxb_x(x(p_xb_i+0)); const double pxb_y(x(p_xb_i+1*vnum)); const double pxb_z(x(p_xb_i+2*vnum));
+    const double p0_x(x(p_0_i+0)); const double p0_y(x(p_0_i+1*vnum)); const double p0_z(x(p_0_i+2*vnum));
+    const double pxf_x(x(p_xf_i+0)); const double pxf_y(x(p_xf_i+1*vnum)); const double pxf_z(x(p_xf_i+2*vnum));
 
 		double len_ex_f = init_edge_lengths[cnt++];
 		double len_ex_b = init_edge_lengths[cnt++];
