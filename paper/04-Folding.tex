@@ -7,7 +7,7 @@ In this section we explore the different ways one can fold a given crease patter
 \subsection{The smooth and combinatorial degrees of freedom around a single curved crease}
 \label{sec:smooth-combinatorial}
 
-Straight creases are rather boring, mathematically speaking. Straight lines can only be folded as in classical origami, i.e., by keeping them straight \cite{demaine_lens}. \OSH{Or Tim's comment -- if the line becomes curved, it means that we have a ``double cover'', i.e., we folded 180 degrees and the two sheets coincide completely now.} Hence a folding of a single straight crease can be described by a single real number representing the constant dihedral angle between the incident planes. There are infinite many ways, or degrees of freedom, to fold a curved crease. If $S$ is a surface with a folded crease, and $P$ is its flattened isometric reference, then one can locally deform the curved surface by freely deforming the crease curve, as long as the absolute value of the crease curvature stays bigger than its flattened curvature at $P$ \cite{more_on_paper}. Up to rigid motion a curve is defined by its curvature and torsion functions.
+Straight creases are rather boring, mathematically speaking. Straight lines can only be folded as in classical origami, i.e., by keeping them straight \cite{demaine_lens}, unless one first folds a crease to $180$ degrees such that two sheets coincide. Hence a folding of a single straight crease can be described by a single real number representing the constant dihedral angle between the incident planes. There are infinite many ways, or degrees of freedom, to fold a curved crease. If $S$ is a surface with a folded crease, and $P$ is its flattened isometric reference, then one can locally deform the curved surface by freely deforming the crease curve, as long as the absolute value of the crease curvature stays bigger than its flattened curvature at $P$ \cite{more_on_paper}. Up to rigid motion a curve is defined by its curvature and torsion functions.
 
 One can flip this point of view: Given a planar domain $P$, a curve on the domain $\gamma(t)$ and a deformed space isometric curve $\Gamma(t)$ with a larger absolute curvature than $\gamma(t)$, there are only two smooth surfaces isometric to $P$ passing through $\Gamma(t)$ such that the unfolding of the surface to the plane maps $\Gamma(t)$ to $\gamma(t)$ \cite{mathematical_omnibus} (see \figref{fig:folding_combinatorics} left and center).
 
@@ -120,7 +120,7 @@ This condition is satisfied exactly in flat models and in any piecewise smooth c
 
 In this section we propose tools to constrain the folding angles and their direction (mountain or valley) during deformation, in order to provide designers with additional expressive and intuitive control. We first show how to constrain folding angles, i.e., the angles between the tangent planes around a crease. We implement this by constraining DOG tangent angles, resulting in a simple quadratic constraint. We then devise a tool to differentiate between mountain and valley folds. Our derivations work for both curved and straight origami creases.
 
-\subsection{Folding angle} 
+\subsection{Folding angle} \label{sec:folding_angle}
 
 A folding deformation can be seen as a rotation of the surface patches' tangent planes hinged on the tangent of the crease curve. The tangent of a straight fold is constant, and so is the folding angle, while on a curved crease, the tangent varies and often the folding angles change along the crease. In both cases, if the folding angle at a given point is $\theta$, then the surface tangent vectors on both sides of the crease that are orthogonal to the crease tangent form an angle of $\theta$, while the surface tangent vectors that are parallel to the crease remain parallel to each other. The following lemma shows the relation between the angle formed by surface tangent vectors that are equal in the flattened configuration and the folding angle (see \figref{fig:fold_angle_and_tangent_angles}): 
  \begin{lemma}  \label{lem:tangents_dihedral}
@@ -140,6 +140,12 @@ Thus w.l.o.g.\
 %
 The proof is concluded by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $\cos\theta = \cos^2{\frac{\theta}{2}}-\sin^2\frac{\theta}{2}$.}\end{proof}
 
+Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve at a given point by looking at the incident edge vectors $e_f, e_b$: 
+\begin{equation} \label{eq:crease_tangent}
+t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\left\|\|e_b\|e_f + \|e_f\|e_b\right\|}.
+\end{equation}
+If the two edge vectors $e_b, e_f$ are not collinear, $t$ as above is the tangent at the point to the unique circle passing through the point and its two neighbors. 
+
 Under an isometric deformation, $t_1,t_2$ are linear in the vertex positions, $\alpha$ is constant and  \equref{eq:tangents_dihedral} is quadratic.
 
 \begin{figure} [h]
@@ -156,13 +162,10 @@ As mentioned in \secref{sec:smooth-combinatorial}, there are a few combinatorial
 \begin{equation} \label{eq:mountain_valley_ineq}
 \langle t_1, t \times t_2 \rangle \leq 0,
 \end{equation}
-where $t$ is the tangent of the oriented crease curve and $t \times t_2$ is the \OSH{normal of the?} tangent plane of the second surface patch (the one that has $t_2$ as a tangent vector). The orientation of $t$ determines whether a mountain or a valley fold is chosen. By the cyclic property of the triple product, the left hand side of \equref{eq:mountain_valley} \OSH{you meant \equref{eq:mountain_valley_ineq}, right?} is also equal to $\langle t_2, t_1 \times t \rangle$.
-Using the notation of figure \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve at a given point by looking at the incident edge vectors $e_f, e_b$: 
-$$t = \frac{\|e_b\|e_f + \|e_f\|e_b}{\left\|\|e_b\|e_f + \|e_f\|e_b\right\|}.$$
-%
- If the two edge vectors $e_b, e_f$ are not collinear, $t$ as above is the tangent at the point to the unique circle passing through the point and its two neighbors. It is a linear function of the vertices under isometry.
+where $t$ is the tangent of the oriented crease curve and $t \times t_2$ is the normal of the tangent plane of the second surface patch (the one that has $t_2$ as a tangent vector). The orientation of $t$ determines whether a mountain or a valley fold is chosen. By the cyclic property of the triple product, the left hand side of \equref{eq:mountain_valley_ineq} is also equal to $\langle t_2, t_1 \times t \rangle$.
+As we are only interested in the sign of the left side of \eqref{eq:mountain_valley_ineq}, we can replace $t$ with the simpler $t^* = \|e_b\|e_f + \|e_f\|e_b$, which is linear under isometry.
  
-To simplify notation for \secref{sec:implementation}, we reformulate \equref{eq:mountain_valley_ineq} with equalities by using the Heaviside step function:
+To simplify notation for \secref{sec:implementation}, we reformulate our mountain/valley constraint with an equality by using the Heaviside step function:
 \begin{equation} \label{eq:heaviside}
 \text{H}(x) = \left\{
      \begin{array}{@{}l@{\thinspace}l}
@@ -173,5 +176,5 @@ To simplify notation for \secref{sec:implementation}, we reformulate \equref{eq:
 \end{equation}
 and write the mountain/valley condition as:
 \begin{equation} \label{eq:mountain_valley}
-H(\langle t_1, t \times t_2 \rangle) = 0.
+H(\langle t_1, t^* \times t_2 \rangle) = 0.
 \end{equation}
