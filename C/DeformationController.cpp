@@ -38,6 +38,7 @@ bool DeformationController::has_constraints() {
 	if ( (b.rows() + edgePoints.size()) > 0) return true;
 	if (is_curve_constraint) return true;
 	if (dihedral_constrained.size()) return true;
+	if (paired_vertices.size()) return true;
 	return false;
 }
 
