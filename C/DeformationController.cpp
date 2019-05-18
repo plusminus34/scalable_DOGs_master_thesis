@@ -27,6 +27,8 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, 
 				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 
+	std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
+
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 }
@@ -43,7 +45,9 @@ void DeformationController::single_optimization() {
 	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
 		deformation_timestep+=deformation_timestep_diff;
 		p.pair_weight = deformation_timestep*0.1*p.soft_pos_weight;
-		p.paired_boundary_bending_weight = deformation_timestep*p.bending_weight;
+		// the default of paired_boundary_bending_weight_mult is 1, so we jsut interpolate the weight from 0 to the bending weight
+		p.paired_boundary_bending_weight = deformation_timestep*paired_boundary_bending_weight_mult*p.bending_weight;
+		//p.paired_boundary_bending_weight = deformation_timestep*paired_boundary_bending_weight_mult*1;//p.bending_weight;
 	}
 	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
@@ -51,16 +55,6 @@ void DeformationController::single_optimization() {
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);
-	
-	if (matching_curve_pts_x.first.size()) {
-		dogSolver->get_x_rigid_motion(wallpaperRx, wallpaperTx);
-		//std::cout << "Rotation = " << std::endl << wallpaperRx << std::endl << " translation = " << wallpaperTx << std::endl;
-	}
-	if (matching_curve_pts_y.first.size()) {
-		dogSolver->get_y_rigid_motion(wallpaperRy, wallpaperTy);
-		//std::cout << "Rotation = " << std::endl << wallpaperRx << std::endl << " translation = " << wallpaperTx << std::endl;
-	}
-	
 }
 
 void DeformationController::apply_new_editor_constraint() {
@@ -194,6 +188,7 @@ void DeformationController::reset_constraints() {
 	b.resize(0);
 	bc.resize(0); 
 	paired_vertices.clear(); 
+	bnd_vertices_pairs.clear();
 	edgePoints.clear();
 	dihedral_constrained.clear();
 	edge_angle_pairs.clear(); 
@@ -235,7 +230,7 @@ void DeformationController::reset_dog_solver() {
 }
 
 void DeformationController::set_cylindrical_boundary_constraints() {
-	dogSolver->getDog().setup_boundary_curves_indices();
+	if ((!dogSolver->getDog().left_bnd.size()) || (!dogSolver->getDog().right_bnd.size()) ) dogSolver->getDog().setup_boundary_curves_indices();
 	// Set Y curve constraints
 	auto left_curve = dogSolver->getDog().left_bnd; auto right_curve = dogSolver->getDog().right_bnd;
 	// Add curves pair constraints and curves boundary smoothness constraints
@@ -245,23 +240,9 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 		for (int axis = 0; axis < 3; axis++) {
 			paired_vertices.push_back(std::pair<int,int>(axis*vnum+v1,axis*vnum+v2));	
 		}
-		//paired_vertices.push_back(std::pair<int,int>(v1,v2));
+		bnd_vertices_pairs.push_back(std::pair<int,int>(v1,v2));
 
 	}
 	is_time_dependent_deformation = true;
-	reset_dog_solver();
-}
-
-void DeformationController::set_wallpaper_constraints() {
-	dogSolver->getDog().setup_boundary_curves_indices();
-	// Set Y curve constraints
-	auto left_curve = dogSolver->getDog().left_bnd; auto right_curve = dogSolver->getDog().right_bnd;
-	if ((wallpaperType == XUY) || (wallpaperType == UXUY) ) {std::reverse(right_curve.begin(),right_curve.end());}
-	auto lower_curve = dogSolver->getDog().lower_bnd; auto upper_curve = dogSolver->getDog().upper_bnd;
-	if ((wallpaperType == UXY) || (wallpaperType == UXUY) ) {std::reverse(upper_curve.begin(),upper_curve.end());}
-
-	matching_curve_pts_x.first = lower_curve; matching_curve_pts_x.second = upper_curve;
-	//matching_curve_pts_y.first = left_curve; matching_curve_pts_y.second = right_curve;
-
 	reset_dog_solver();
 }

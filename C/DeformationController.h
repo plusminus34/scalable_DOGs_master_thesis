@@ -1,5 +1,7 @@
 #pragma once
 
+#include "igl/serialize.h"
+
 #include "Dog/DogSolver.h"
 #include "Dog/Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Dog/Objectives/FoldingDihedralAngleConstraintsBuilder.h"
@@ -14,7 +16,7 @@ enum WallapaperType {
 	XUY = 3
 };
 
-class DeformationController {
+class DeformationController : public igl::Serializable {
 public:
 	DeformationController();
 	~DeformationController() {if (dogSolver) delete dogSolver;}
@@ -44,6 +46,42 @@ public:
 	void reset_constraints();
 	bool is_folded();
 
+	void InitSerialization() {
+	      Add(edit_mode,std::string("edit_mode"));
+	      Add(select_mode,std::string("select_mode"));
+	      Add(deformed_curve_idx,std::string("deformed_curve_idx"));
+
+	      Add(curve_k_translation,std::string("curve_k_translation")); Add(curve_k_mult,std::string("curve_k_mult")); Add(curve_t_addition,std::string("curve_t_addition"));
+	      Add(max_curve_points,std::string("max_curve_points"));
+	      Add(z_only_editing,std::string("z_only_editing"));
+
+	      Add(has_new_constraints,std::string("has_new_constraints"));
+	      Add(is_curve_constraint,std::string("is_curve_constraint"));
+	      Add(is_time_dependent_deformation,std::string("is_time_dependent_deformation"));
+
+	      Add(p,std::string("deformation_params"));
+	      Add(deformation_timestep,std::string("deformation_timestep"));
+	      Add(deformation_timestep_diff,std::string("deformation_timestep_diff"));
+	      Add(paired_boundary_bending_weight_mult,std::string("paired_boundary_bending_weight_mult"));
+	      Add(dst_dihedral_angle,std::string("dst_dihedral_angle"));
+	      Add(constraints_deviation,std::string("constraints_deviation"));
+	      Add(objective,std::string("objective"));
+
+	      Add(matching_curve_pts_x,std::string("matching_curve_pts_x"));
+	      Add(matching_curve_pts_y,std::string("matching_curve_pts_y"));
+
+	      Add(dihedral_constrained,std::string("dihedral_constrained"));
+
+	      Add(b,std::string("b"));
+	      Add(bc,std::string("bc"));
+	      Add(edgePoints,std::string("edgePoints"));
+	      Add(edgeCoords,std::string("edgeCoords"));
+	      Add(paired_vertices,std::string("paired_vertices"));
+	      Add(edge_angle_pairs,std::string("edge_angle_pairs")); Add(edge_cos_angles,std::string("edge_cos_angles"));
+	      Add(bnd_vertices_pairs,std::string("bnd_vertices_pairs")); 
+	      Add(init_x0,std::string("init_x0"));
+    }
+
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
 
@@ -69,10 +107,6 @@ public:
 	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
 
 	std::vector<EdgePoint> dihedral_constrained; // used for also plotting the dihedral constraints
-	WallapaperType wallpaperType;
-	Eigen::Matrix3d wallpaperRx; Eigen::RowVector3d wallpaperTx;
-	Eigen::Matrix3d wallpaperRy; Eigen::RowVector3d wallpaperTy;
-
 private:
 	void reset_dog_solver();
 	EdgePoint find_most_equally_spaced_edge_on_fold_curve(int fold_curve_idx, int& edge_index);
@@ -100,7 +134,6 @@ private:
 
 	// Pairs matching boundary curvature
 	std::vector<std::pair<int,int>> bnd_vertices_pairs;
-
 
 
 	Eigen::VectorXd init_x0;

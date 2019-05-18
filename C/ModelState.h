@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Dog/Dog.h"
+#include "DeformationController.h"
 
 #include "igl/serialize.h"
 
@@ -25,6 +26,7 @@ struct CreasesVisualization : public igl::Serializable {
 struct ModelState : public igl::Serializable {
 	Dog dog;
 	CreasesVisualization creasesVisualization;
+	DeformationController DC;
 
 	void init_from_mesh(const std::string& mesh_path);
 	void init_from_planar(int square_h, int square_w);
@@ -35,6 +37,7 @@ struct ModelState : public igl::Serializable {
 	void InitSerialization() {
       Add(dog,std::string("_dog"));
       Add(creasesVisualization,std::string("_creasesVisualization"));
+      Add(DC,std::string("_DC"));
     }
 private:
 	void setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);

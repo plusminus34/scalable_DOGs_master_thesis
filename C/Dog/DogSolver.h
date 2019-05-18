@@ -2,6 +2,8 @@
 
 #include "Dog.h"
 
+#include "igl/serialize.h"
+
 #include "../Optimization/CompositeConstraints.h"
 #include "../Optimization/CompositeObjective.h"
 #include "../Optimization/EdgesAngleConstraints.h"
@@ -33,7 +35,7 @@ using std::vector;
 class DogSolver {
 public:
 	
-	struct Params {
+	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
 		double paired_boundary_bending_weight = 1.;
 		double isometry_weight = 20000;
@@ -52,6 +54,9 @@ public:
 		double convergence_threshold = 1e-6;
 		bool folding_mode = true;
 		bool flip_sign = false;
+
+		void InitSerialization() {
+		}
 	};
 
 	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p,
