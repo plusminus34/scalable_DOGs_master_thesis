@@ -80,7 +80,7 @@ public:
 	const DogEdgeStitching& getEdgeStitching() const {return edgeStitching;}
 	const Eigen::MatrixXi& getF() const {return F;}
 	const Eigen::MatrixXd& getV() const {return V;}
-	//const Eigen::MatrixXd& getFlatV() const {return flatV;} somehow nto working now
+	//const Eigen::MatrixXd& getFlatV() const {return flatV;} somehow not working now
 	const QuadTopology& getQuadTopology() const {return quadTop;}
 	Eigen::MatrixXd& getVMutable() {return V;}
 	Eigen::VectorXd getV_vector() const {Eigen::VectorXd x; mat2_to_vec(V,x); return x;}
@@ -104,7 +104,8 @@ public:
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
-      Add(F,std::string("_flatV"));
+      Add(V,std::string("_uv"));
+      Add(flatV,std::string("_flatV"));
       Add(left_bnd,std::string("_left_bnd"));
       Add(right_bnd,std::string("_right_bnd"));
       Add(lower_bnd,std::string("_lower_bnd"));
