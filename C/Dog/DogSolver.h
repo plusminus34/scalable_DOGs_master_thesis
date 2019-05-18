@@ -24,9 +24,6 @@
 #include "Objectives/StitchingConstraints.h"
 #include "Objectives/MVTangentCreaseAngleConstraints.h"
 //#include "Objectives/PointsRigidAlignmentObjective.h"
-#include "Objectives/CurveAffineSymmetryConstraint.h"
-#include "Objectives/Curve2AffineSymmetriesConstraint.h"
-#include "Objectives/Curve2AffineCommuteConstraint.h"
 
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
@@ -81,6 +78,7 @@ public:
 	Dog& getDog(){return dog;}
 
 	bool is_folded();
+	bool is_mountain_valley_correct();
 
 	void get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	void get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
@@ -114,8 +112,6 @@ public:
 	  			PointPairConstraints& ptPairConst,*/
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
-	  			QuadraticConstraintsSumObjective& affineAlignmentSoft,
-	  			//QuadraticConstraintsSumObjective& affineCommuteSoft,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -142,12 +138,7 @@ private:
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	CurveAffineSymmetryConstraint affineAlignment;
-	//Curve2AffineSymmetriesConstraint affineAlignment;
-	QuadraticConstraintsSumObjective affineAlignmentSoft;
-	//Curve2AffineCommuteConstraint affineCommuteConst;
-	//QuadraticConstraintsSumObjective affineCommuteSoft;
-
+	
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
 	DogSolver::Objectives obj;
