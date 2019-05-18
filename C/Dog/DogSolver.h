@@ -45,8 +45,6 @@ public:
 		double pair_weight = 0;
 		double fold_bias_weight = 1;
 		double mv_bias_weight = 0;
-		double wallpaper_curve_weight = 1;
-		int penalty_repetitions = 1;
 		double merit_p = 10;
 		int max_newton_iters = 5;
 		double infeasability_epsilon = 1e-3;
@@ -56,6 +54,22 @@ public:
 		bool flip_sign = false;
 
 		void InitSerialization() {
+			Add(bending_weight,std::string("bending_weight"));
+			Add(paired_boundary_bending_weight,std::string("paired_boundary_bending_weight"));
+			Add(isometry_weight,std::string("isometry_weight"));
+			Add(stitching_weight,std::string("stitching_weight"));
+			Add(soft_pos_weight,std::string("soft_pos_weight"));
+			Add(dihedral_weight,std::string("dihedral_weight"));
+			Add(pair_weight,std::string("pair_weight"));
+			Add(fold_bias_weight,std::string("fold_bias_weight"));
+			Add(mv_bias_weight,std::string("mv_bias_weight"));
+			Add(merit_p,std::string("merit_p"));
+			Add(max_newton_iters,std::string("max_newton_iters"));
+			Add(infeasability_epsilon,std::string("infeasability_epsilon"));
+			Add(infeasability_filter,std::string("infeasability_filter"));
+			Add(convergence_threshold,std::string("convergence_threshold"));
+			Add(folding_mode,std::string("folding_mode"));
+			Add(flip_sign,std::string("flip_sign"));
 		}
 	};
 
