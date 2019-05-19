@@ -96,7 +96,7 @@ public:
 	Dog& getDog(){return dog;}
 
 	bool is_folded();
-	bool is_mountain_valley_correct();
+	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
 
 	void get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	void get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);

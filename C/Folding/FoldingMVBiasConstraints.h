@@ -13,6 +13,8 @@ public:
 
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda);
 
+	bool is_mv_assignment_correct(const Eigen::VectorXd& x);
+
 private:
 	const Dog& dog;
 	const DogEdgeStitching& eS;
