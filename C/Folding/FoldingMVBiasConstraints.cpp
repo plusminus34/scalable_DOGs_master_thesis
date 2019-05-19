@@ -14,12 +14,14 @@ FoldingMVBiasConstraints::FoldingMVBiasConstraints(const Dog& dog, const std::ve
 		if (fl) flip_signs_mult.push_back(-1);
 		else flip_signs_mult.push_back(1);
 	}
+	/*
 	// Temporary hardcoded for one example (TODO remove me)
-	if (eS.stitched_curves.size() > 14) {
+	if (eS.stitched_curves.size() == 7) {
 		curve_indices.clear(); flip_signs_mult.clear();
-		for (int i = 0; i < 15; i++) curve_indices.push_back(i);
-		for (int i = 0; i < 8; i++) flip_signs_mult.push_back(1); for (int i = 8; i < 15; i++) flip_signs_mult.push_back(-1);
+		for (int i = 0; i < 7; i++) curve_indices.push_back(i);
+		for (int i = 0; i < 4; i++) flip_signs_mult.push_back(1); for (int i = 4; i < 7; i++) flip_signs_mult.push_back(1);
 	}
+	*/
 
 	int inner_v_n = 0;
 	for (auto ci: curve_indices) {
@@ -81,6 +83,52 @@ Eigen::VectorXd FoldingMVBiasConstraints::Vals(const Eigen::VectorXd& x) const {
   }
   std::cout << "constVals.norm() = " << constVals.norm() << std::endl;
   return constVals;
+}
+
+bool FoldingMVBiasConstraints::is_mv_assignment_correct(const Eigen::VectorXd& x) {
+	double old_delta = delta;
+	delta = 1e-8;
+	bool is_correct = true;
+	// Go through all the inner vertices in a curve
+	for (int ci = 0; ci < curve_indices.size(); ci++) {
+		int curve_i = curve_indices[ci]; double flip_sign_mult = flip_signs_mult[ci];
+		const vector<EdgePoint>& foldingCurve = eS.stitched_curves[curve_i];
+		for (int edge_idx = 1; edge_idx < eS.stitched_curves[curve_i].size()-1; edge_idx++) {
+		//for (int edge_idx = 1; edge_idx < 2; edge_idx++) {
+			// Should flip the binormal only if is_mountain xor flip_binormal is true
+			EdgePoint ep = foldingCurve[edge_idx], ep_b = foldingCurve[edge_idx-1], ep_f = foldingCurve[edge_idx+1];
+			//if ((eS.get_vertex_edge_point_deg(ep.edge) != 1) || dog.is_crease_vertex_flat(curve_i,edge_idx) ) continue;
+			int v1,v2,w1,w2;
+			dog.get_2_submeshes_vertices_from_edge(ep.edge, v1,v2,w1,w2);
+
+			int fold_v_indices[2]; dog.get_2_inner_vertices_from_edge(ep.edge,fold_v_indices[0],fold_v_indices[1]);
+			int v1_i(v1), v2_i(v2), w1_i(w1), w2_i(w2); const double ep_0_t(ep.t);
+
+			int ep_b_v1_i(ep_b.edge.v1), ep_b_v2_i(ep_b.edge.v2); const double ep_b_t(ep_b.t);
+			int ep_f_v1_i(ep_f.edge.v1), ep_f_v2_i(ep_f.edge.v2); const double ep_f_t(ep_f.t);
+
+			const double v1_x(x(v1_i)); const double v1_y(x(v1_i+1*vnum)); const double v1_z(x(v1_i+2*vnum));
+			const double v2_x(x(v2_i)); const double v2_y(x(v2_i+1*vnum)); const double v2_z(x(v2_i+2*vnum));
+			const double w1_x(x(w1_i)); const double w1_y(x(w1_i+1*vnum)); const double w1_z(x(w1_i+2*vnum));
+			const double w2_x(x(w2_i)); const double w2_y(x(w2_i+1*vnum)); const double w2_z(x(w2_i+2*vnum));
+
+			const double ep_b_v1_x(x(ep_b_v1_i)); const double ep_b_v1_y(x(ep_b_v1_i+1*vnum)); const double ep_b_v1_z(x(ep_b_v1_i+2*vnum));
+			const double ep_b_v2_x(x(ep_b_v2_i)); const double ep_b_v2_y(x(ep_b_v2_i+1*vnum)); const double ep_b_v2_z(x(ep_b_v2_i+2*vnum));
+			const double ep_f_v1_x(x(ep_f_v1_i)); const double ep_f_v1_y(x(ep_f_v1_i+1*vnum)); const double ep_f_v1_z(x(ep_f_v1_i+2*vnum));
+			const double ep_f_v2_x(x(ep_f_v2_i)); const double ep_f_v2_y(x(ep_f_v2_i+1*vnum)); const double ep_f_v2_z(x(ep_f_v2_i+2*vnum));
+
+			double l1 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx-1]; double l2 = flip_sign_mult*dog.stitched_curves_l[curve_i][edge_idx];
+			double t0;
+			if ((((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_y-v2_y) <= (((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2))*(v1_z-v2_z)+(((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2)-((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_x-v2_x)) {
+	    		t0 = 0.0;
+	  		} else  {
+	    		t0 = pow((((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2))*(v1_z-v2_z)-(((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_y-v2_y)+(((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2)-((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_x-v2_x),2.0)/(delta+pow((((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2))*(v1_z-v2_z)-(((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_x-ep_0_t*v1_x-ep_b_v2_x*(ep_b_t-1.0)+v2_x*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_x-ep_0_t*v1_x-ep_f_v2_x*(ep_f_t-1.0)+v2_x*(ep_0_t-1.0))))/(l1*l2)-((w1_x-w2_x)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_y-v2_y)+(((w1_z-w2_z)*(l2*(ep_b_t*ep_b_v1_y-ep_0_t*v1_y-ep_b_v2_y*(ep_b_t-1.0)+v2_y*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_y-ep_0_t*v1_y-ep_f_v2_y*(ep_f_t-1.0)+v2_y*(ep_0_t-1.0))))/(l1*l2)-((w1_y-w2_y)*(l2*(ep_b_t*ep_b_v1_z-ep_0_t*v1_z-ep_b_v2_z*(ep_b_t-1.0)+v2_z*(ep_0_t-1.0))-l1*(ep_f_t*ep_f_v1_z-ep_0_t*v1_z-ep_f_v2_z*(ep_f_t-1.0)+v2_z*(ep_0_t-1.0))))/(l1*l2))*(v1_x-v2_x),2.0));
+	  		}
+	  		if (t0 > 0.9) return false;
+		}
+	}
+	delta = old_delta;
+	return true;
 }
 
 void FoldingMVBiasConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {

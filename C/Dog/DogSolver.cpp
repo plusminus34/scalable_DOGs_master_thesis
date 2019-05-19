@@ -137,8 +137,8 @@ bool DogSolver::is_folded() {
   return is_folded;
 }
 
-bool DogSolver::is_mountain_valley_correct() {
-  return false;
+bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
+  return foldingMVBiasConstraints.is_mv_assignment_correct(x);
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
@@ -179,6 +179,14 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
+
+  if (p.mv_bias_weight) {
+    if (!is_mountain_valley_correct(x)){
+      std::cout << std::endl << std::endl << "M/V NOT CORRECT!" << std::endl;
+    } else {
+      std::cout << std::endl << std::endl << "M/V IS OK!" << std::endl;
+    }
+  }
 }
 
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
