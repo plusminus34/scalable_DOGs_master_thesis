@@ -126,17 +126,6 @@ void Dog::get_2_inner_vertices_from_edge(const Edge& edge, int &v1_out, int &v2_
 	if (!quadTop.is_bnd_v[e2.v1]) v2_out = e2.v1; else v2_out = e2.v2;
 }
 
-void Dog::V_ren_from_V_and_const(const Eigen::MatrixXd& V, const DogEdgeStitching& fC, Eigen::MatrixXd& V_ren) {
-	int consts_num = fC.edge_coordinates.size();
-	Eigen::MatrixXd V_folds_polygons(consts_num,3);
-	for (int const_i = 0; const_i < consts_num; const_i++) {
-		double t = fC.edge_coordinates[const_i];
-		V_folds_polygons.row(const_i) = t*V.row(fC.edge_const_1[const_i].v1) + (1-t)*V.row(fC.edge_const_1[const_i].v2);
-	}
-	V_ren.resize(V.rows()+consts_num,3);
-	V_ren << V,V_folds_polygons;
-}
-
 void Dog::update_Vren() {
 	int subm_n = submeshVSize.size();
 	// go through the entire submeshes
