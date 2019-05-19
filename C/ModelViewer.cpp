@@ -24,7 +24,7 @@ ModelViewer::ModelViewer(const ModelState& modelState, const DeformationControll
 void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	clear_edges_and_points(viewer);
-	switched_mode = ((viewMode != prevMode) || (first_rendering));
+	if ((viewMode != prevMode) || (first_rendering)) switched_mode = true;
 	prevMode = viewMode;
 	if (first_rendering || switched_mode)  {
 		viewer.data().clear();
@@ -62,7 +62,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	//if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 	if (viewMode == ViewModeMeshWire) {
-		if ( state.dog.has_creases() ) render_dog_wireframe(viewer);
+		if ( state.dog.has_creases() && culled_view) render_dog_wireframe(viewer);
 		else render_wireframe(viewer, dog->getV(), dog->getQuadTopology()); 
 	}
 	render_positional_constraints(viewer);
@@ -70,7 +70,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	if (render_pos_const) {
 		render_edge_points_constraints(viewer);
 	}
-	render_mesh(viewer, dog->getVrendering(),dog->getFrendering());
+	if (culled_view) render_mesh(viewer, dog->getVrendering(),dog->getFrendering()); else render_mesh(viewer, dog->getV(),dog->getFTriangular());
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {

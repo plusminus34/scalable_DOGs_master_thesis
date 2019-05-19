@@ -30,6 +30,8 @@ public:
 	double rulings_planar_eps = 0.05;
 	bool new_rulings = false;
 	bool show_curves = true;
+	bool culled_view = true;
+	bool switched_mode;
 private:
 	void render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void render_crease_pattern(igl::opengl::glfw::Viewer& viewer);
@@ -50,7 +52,6 @@ private:
 	const ModelState& state;
 	const DeformationController& DC;
 	bool first_rendering;
-	bool switched_mode;
 
 	// Used to draw the sphere without directly using opengl routines (but just igl)
 	Eigen::MatrixXd sphereV; Eigen::MatrixXi sphereF;

@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("objective", &state.DC.objective);
       ImGui::Checkbox("Is optimizing?", &is_optimizing);
 
-      ImGui::Checkbox("New rulings", &modelViewer.new_rulings);
+      if (ImGui::Checkbox("Culled view", &modelViewer.culled_view) ) {modelViewer.switched_mode = true;}
       ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
