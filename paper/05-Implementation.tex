@@ -87,7 +87,7 @@ where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_op
 Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\omega}(\x)$ by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \secref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 %
 \begin{align} 
-\label{eq:KKT_us}
+\label{eq:linear_system}
 &{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b}, \ \text{where} \\
 \nonumber
 &{K}=\begin{pmatrix}
@@ -136,7 +136,7 @@ We enforce the dihedral, positional, isometry and patches continuity constraints
 and our results have an average continuity deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns give rise to a large set of additional linear constraints.
  
 The objective we optimize is then:
-\begin{equation}
+\begin{equation} \label{eq:opt}
 f(\x) = w_Hf_\text{H}+w_{pos}f_\text{pos}+w_Df_\text{D}+w_{iso}f_\text{iso}+w_{cont}f_\text{cont}
 \end{equation}
 Throughout the paper, unless stated otherwise, we use $w_H = 1$, $w_\text{pos}=5$,$w_D = 100$, $w_\text{iso}= \frac{20000}{\|E\|}$, $w_{cont} = 1e4$, where $\|E\|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ vertices $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
