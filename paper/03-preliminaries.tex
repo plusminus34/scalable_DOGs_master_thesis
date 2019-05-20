@@ -9,7 +9,7 @@ A surface $S$ is called a curved folded surface if it is locally isometric to th
 By this definition a smooth developable surface is a curved folded surface with a single patch.
 This definition is suitable for various topologies, such as a cylinder, but throughout this paper we work with surfaces that are isometric to a subset of $\R^2$. Borrowing terms from \cite{origami_book,non_pleated}, we often refer to the surface \emph{crease pattern} as the planar domain $P$ isometric to $S$, subdivided into patches $P_i$ (flattened $S_i$), whose intersection curves are the flattened creases (see \figref{fig:crease_pattern}). Flattened creases with nonzero curvature are said to be curved, while those with vanishing curvature are straight. A crease might be partly curved and partly straight, or curved almost everywhere but with inflection points where the curvature vanishes (see \figref{fig:folded_and_not_folded}, the first and third models from the left). The flattened domain boundaries together with the flattened crease curves form a planar arrangement \cite{arrangements}, inducing a planar graph that decomposes $P$ into the planar faces $P_i$. The vertices of this graph are the intersection points of the curves with each other or the boundary curves, which we call \emph{crease vertices}. The \emph{edges} of this graph are the pairwise intersections of the various patches, and we refer to the inner points of these curves as \emph{crease points}, i.e., the points on these curves that are not \emph{crease vertices}. We say that $S$ is \emph{folded} at a crease point $p$ if at that point the patches $S_i,S_j$ sharing it have a tangential discontinuity (see \figref{fig:folded_and_not_folded}).
 
-\begin{figure} [h]
+\begin{figure} [t]
 	\centering
 	\includegraphics[width=\linewidth]{figures/crease_patterns}
 	\caption{Curved crease patterns, decomposing a pattern into multiple components $P_i$ and intersecting at crease vertices. Boundary curves in black, crease curves in blue.}
@@ -23,7 +23,7 @@ We follow the work of \cite{rabi2018shape} by modeling each patch $P_j$ as a dis
 %\MiR{We just do isometry, but this is not constraint.. is writing this way ok?}
 
 %Given a crease pattern, we create a separate DOG for each segment (see the different colors) and use the boundary constraints as in \cite{rabi2018shape}.
-\begin{figure} [h]
+\begin{figure} [t]
 	\centering
 	\includegraphics[width=\linewidth]{figures/dogs_from_creases}
 	\caption{Representation of a discrete curved folded surface, as done in \cite{rabi18}. Top left: a given curve arrangement, representing the domain via its boundary (in black), and two curves intersecting at their inflection point in the center of the domain (in blue). Top center: The curves segment the domain into four patches, each intersecting with two other patches along a segment of a crease curve. Top right: Placing an orthogonal grid on top of the crease pattern. Bottom left: We model the surface by  a separate DOG for each patch, where faces intersecting the crease curves are duplicated for the different patches. Each pair of intersecting DOG patches satisfies the continuity constraints specified in \cite{rabi18}. Bottom center: A closeup on a deformation of the planar model. Bottom right: culling the extraneous parts of the duplicated faces.}
