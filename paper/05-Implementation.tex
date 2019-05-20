@@ -148,7 +148,7 @@ f(\x) = w_\text{H}f_\text{H}+w_\text{pos}f_\text{pos}+w_\text{D}f_\text{D}+w_\te
 \end{equation}
 Throughout the paper, unless stated otherwise, we use $w_\text{H} = 1$, $w_\text{pos}=5$, $w_\text{D} = 100$, $w_\text{iso}= {20000}/{|E|}$, $w_\text{cont} = \text{1e4}$, where $|E|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ vertices $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
 
-\begin{figure} [h]
+\begin{figure} [b]
 	\centering
 	\includegraphics[width=\linewidth]{figures/MV_bias_modeling}
 	\caption{Using the optional mountain/valley assignment input (\secref{sec:MV_assignments}) on a single crease curve. Each crease pattern is deformed with the same positional constraints, induced by a curve constrained flow, but with a different mountain/valley assignment along one crease, enforced by \equref{eq:mountain_valley}. In the banana shaped model (bottom row), the rest of the mountain/valley assignments are then uniquely determined.}
