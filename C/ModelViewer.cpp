@@ -58,7 +58,7 @@ void ModelViewer::clear_edges_and_points(igl::opengl::glfw::Viewer& viewer) {
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
 	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
-	if (render_curved_folding_properties) render_curved_folding_normals(viewer);
+	if (render_curved_folding_properties) render_curved_osculating_planes(viewer);
 	//if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 	if (viewMode == ViewModeMeshWire) {
@@ -137,6 +137,28 @@ void ModelViewer::render_curved_folding_normals(igl::opengl::glfw::Viewer& viewe
 		}
 	}
 	cout << endl << endl;
+}
+
+void ModelViewer::render_curved_osculating_planes(igl::opengl::glfw::Viewer& viewer) {
+	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
+	const Eigen::MatrixXd& V = state.dog.getV();
+	for (int j = 0; j < eS.stitched_curves.size(); j++) {
+		for (int i = 1; i < eS.stitched_curves[j].size()-1; i+=2) {
+			EdgePoint eP =  eS.stitched_curves[j][i], eP_f = eS.stitched_curves[j][i+1], eP_b = eS.stitched_curves[j][i-1];			
+			Eigen::RowVector3d p0 = eP.getPositionInMesh(V), pf = eP_f.getPositionInMesh(V), pb = eP_b.getPositionInMesh(V);
+
+			Eigen::RowVector3d osculating_plane_n = (p0-pf).cross(p0-pb).normalized();
+			Eigen::RowVector3d t1 = (p0-pf).cross(osculating_plane_n).normalized();
+			Eigen::RowVector3d t2 = (t1).cross(osculating_plane_n).normalized();
+
+			double half_l = 0.4; Eigen::RowVector3d plane_color(155./255,198./255,161./255);
+			Eigen::RowVector3d corner_1 = p0+half_l*t1+half_l*t2, corner_2 = p0+half_l*t1-half_l*t2, corner_3 = p0-half_l*t1-half_l*t2, corner_4 = p0-half_l*t1+half_l*t2;
+			viewer.data().add_edges(corner_1, corner_2, plane_color);
+			viewer.data().add_edges(corner_2, corner_3, plane_color);
+			viewer.data().add_edges(corner_3, corner_4, plane_color);
+			viewer.data().add_edges(corner_4, corner_1, plane_color);
+		}
+	}
 }
 
 void ModelViewer::render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& viewer) {

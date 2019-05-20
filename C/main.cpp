@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Folding mode", &state.DC.p.folding_mode);
       ImGui::Checkbox("Flip M/V sign", &state.DC.p.flip_sign);
       ImGui::Checkbox("Render creases", &modelViewer.show_curves);
-      //ImGui::Checkbox("Render curved normals", &modelViewer.render_curved_folding_properties);
+      ImGui::Checkbox("Show creases oscillating plane", &modelViewer.render_curved_folding_properties);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
 
