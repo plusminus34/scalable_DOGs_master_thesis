@@ -120,6 +120,13 @@ This condition is satisfied exactly in flat models and in any piecewise smooth c
 
 In this section we propose tools to constrain the folding angles and their direction (mountain or valley) during deformation, in order to provide designers with additional expressive and intuitive control. We first show how to constrain folding angles, i.e., the angles between the tangent planes around a crease. We implement this by constraining DOG tangent angles, resulting in a simple quadratic constraint. We then devise a tool to differentiate between mountain and valley folds. Our derivations work for both curved and straight origami creases.
 
+\begin{figure} [b]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figures/fold_angles_smooth}
+	\caption{Left: A flattened configuration of a crease curve and its tangent $t$, forming an angle $\alpha$ with surface tangents $t_1,t_2$, which are equal in this flat state ($t_1=t_2$). Right: A folded isometric configuration with a tangent discontinuity  $t_1 \neq t_2$. \lemmaref{lem:tangents_dihedral} shows the connection between the angle $\alpha$ and the folding angle $\theta$ in the smooth case, stating that $\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta$.}
+	\label{fig:fold_angles_smooth}
+\end{figure}
+
 \subsection{Folding angle} \label{sec:folding_angle}
 
 A folding deformation can be seen as a rotation of the surface patches' tangent planes hinged on the tangent of the crease curve. The tangent of a straight fold is constant, and so is the folding angle, while on a curved crease, the tangent varies and often the folding angles change along the crease. In both cases, if the folding angle at a given point is $\theta$, then the surface tangent vectors on both sides of the crease that are orthogonal to the crease tangent form an angle of $\theta$, while the surface tangent vectors that are parallel to the crease remain parallel to each other. The following lemma shows the relation between the angle formed by surface tangent vectors that are equal in the flattened configuration and the folding angle (see \figref{fig:fold_angles_smooth}): 
@@ -140,12 +147,7 @@ A folding deformation can be seen as a rotation of the surface patches' tangent 
 		%
 		The proof is concluded by computing $\langle t_1,t_2 \rangle$ and plugging in the trigonometric identity $\cos\theta = \cos^2{\frac{\theta}{2}}-\sin^2\frac{\theta}{2}$.}\end{proof}
 
-\begin{figure} [h]
-	\centering
-	\includegraphics[width=0.8\linewidth]{figures/fold_angles_smooth}
-	\caption{Left: A flattened configuration of a crease curve (white) tangent $t$, forming an angle $\alpha$ with tangents $t_1,t_2$, which are equal in this flat state ($t_1=t_2$). Right: A folded isometric configuration with a tangent discontinuity  $t_1 \neq t_2$. \lemmaref{lem:tangents_dihedral} shows the connection between the angle $\alpha$ and the folding angle $\theta$ in the smooth case, stating that $\langle t_1, t_2 \rangle = \cos^2\!\alpha + \sin^2\!\alpha \cos\theta$.}
-	\label{fig:fold_angles_smooth}
-\end{figure}
+
 
 We discretize \lemmaref{lem:tangents_dihedral} by looking at angles between edges of the DOG emanating from crease points (see \figref{fig:fold_angle_and_tangent_angles}). Using the notation of \figref{fig:fold_angle_and_tangent_angles}, we discretize the tangent of the crease curve at a given point by looking at the incident edge vectors $e_f, e_b$: 
 \begin{equation} \label{eq:crease_tangent}
@@ -155,10 +157,10 @@ If the two edge vectors $e_b, e_f$ are not collinear, $t$ as above is the tangen
 
 Under an isometric deformation, $t_1,t_2$ are linear in the vertex positions, $\alpha$ is constant and  \equref{eq:tangents_dihedral} is quadratic.
 
-\begin{figure} [h]
+\begin{figure} [t]
 	\centering
 	\includegraphics[width=0.8\linewidth]{figures/fold_angle_and_tangent_angles}
-	\caption{Discretizing \lemmaref{lem:tangents_dihedral} (see \figref{fig:fold_angles_smooth}) at a crease point by using the normalized DOG edges emanating from the crease point as tangents.}
+	\caption{Discretizing \lemmaref{lem:tangents_dihedral} (see \figref{fig:fold_angles_smooth}) at a crease point by using the normalized DOG edges emanating from the crease point as surface tangents.}
 	\label{fig:fold_angle_and_tangent_angles}
 \end{figure}
 
