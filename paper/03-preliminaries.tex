@@ -45,7 +45,8 @@ Our goal is to develop tools for the exploration of curved folded shapes on top 
 %  \item Use simple functionals
 %\end{enumerate}
 \emph{Homotopy based optimization} is motivated both theoretically and empirically: Modeling DOGs requires solving highly constrained and nonlinear optimization problems, yet the theory of DOGs guarantees the existence of nearby solutions if one starts at a feasible point. In fact, generally the shape space of DOGs is a smooth manifold \cite{rabi2018shape}. This observation is useful in practice: DOGs exploration has been demonstrated to perform well using smooth flows or homotopy based optimization methods both for handle based deformation tasks as well for more complicated deformations such as curve-constraining flows \cite{rabi2018shape} (see \figref{fig:homotopy_curve}).
-\begin{figure} [h]
+
+\begin{figure} [t]
 	\centering
 	\includegraphics[width=0.9\linewidth]{figures/homotopy_curve.png}
 	\caption{Setting soft positional constraints on a curve (left). The same optimization algorithm fails completely when setting all constraints at once, returning a mesh that does not satisfy the non-linear DOG constraints (center). In contrast, using a \emph{curve-constraining flow} \cite{rabi2018shape} returns a smooth DOG (right). The latter approach is a homotopy based method that interpolates the positional constraints.} 

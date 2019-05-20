@@ -15,10 +15,10 @@ In practice, deforming this set of DOGs while keeping the geodesic boundary cons
 
 %Section \secref{ At \secref{sec:app}, we show explore a variety of applications for our tools such as wallpaper curved foldings, folding, and modeling while dynamically changing the creased pattern.
 
-\begin{figure} [h]
+\begin{figure} [t]
 	\centering
 	\includegraphics[width=\linewidth]{figures/rulings_problem_curve}
-	\caption{Folding and bending the same curved crease pattern (left) into two different surfaces, with some of their rulings plotted. Methods that model the rulings directly must remesh in order to model these surfaces, since the rulings can change drastically, connecting vertices of different patches to one another. Representing the curved folded surface as a piecewise DOG avoids the need to remesh because a DOG is parameterized by intrinsics invariants (orthogonal geodesics) and does not explicitly encode the developable rulings in its mesh. \OSH{it's confusing that the creases and the rulings are in the same color. Make the crease pattern dark blue like in the next figure?}}
+	\caption{Folding and bending the same curved crease pattern (left) into two different surfaces, with some of their rulings plotted. Methods that model the rulings explicitly must remesh in order to model these surfaces, since the rulings can change drastically, connecting vertices of different patches to one another. Representing the curved folded surface as a piecewise DOG avoids the need to remesh because a DOG is parameterized by intrinsics invariants -- orthogonal geodesics -- and does not explicitly encode the developable rulings in its mesh.}
 	\label{fig:rulings_problem_curve}
 \end{figure}
 
