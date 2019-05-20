@@ -70,12 +70,12 @@ We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{noce
 %
 \begin{equation} \label{eq:KKT_eps}
 \begin{aligned}
-&{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b}, \ \text{where} \\
+&{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}={b}, \ \text{where} \\
 &{K}=\begin{pmatrix}
 {\Delta^2_{xx}\mathcal{L}(x^k,\lambda^k)} & {J^\tr}(\x^k)\\
 {J(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
-\mathbf{b}=\begin{pmatrix}
+{b}=\begin{pmatrix}
 {\nabla f_\omega(x^k)} \\ 
 -\phi_{d_i}(x^k)\\
 \end{pmatrix},
@@ -88,13 +88,13 @@ Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to
 %
 \begin{align} 
 \label{eq:linear_system}
-&{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}=\mathbf{b}, \ \text{where} \\
+&{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}={b}, \ \text{where} \\
 \nonumber
 &{K}=\begin{pmatrix}
 { H^*_{f_\omega}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
 {J^*(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
-\mathbf{b}=\begin{pmatrix}
+{b}=\begin{pmatrix}
 {\nabla f_\omega(x^k)} \\ 
 -\phi_{d_i}(x^k)\\
 \end{pmatrix}.
@@ -114,7 +114,7 @@ with $c_\mu = 1.1$ and $\mu_0 = 0.05$.
 
 \subsection{Objectives and constraints} \label{sec:dog_obj}
 Our objective $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles.
-We use an integrated squared mean curvature bending objective taken from \cite{rabi2018shape}, and we exploit the fact that it is quadratic and convex under isometric deformations (\cite{quadratic_bending}):
+We use an integrated squared mean curvature bending objective taken from \cite{rabi2018shape}, and we exploit the fact that it is quadratic and convex under isometric deformations \cite{quadratic_bending}:
 \begin{equation}
 f_\text{H}(\x) = 0.5\x^t(L^tM^{-1}L)\x,
 \end{equation}
@@ -137,6 +137,6 @@ and our results have an average continuity deviation of $0.0002$ and a maximum o
  
 The objective we optimize is then:
 \begin{equation} \label{eq:opt}
-f(\x) = w_Hf_\text{H}+w_{pos}f_\text{pos}+w_Df_\text{D}+w_{iso}f_\text{iso}+w_{cont}f_\text{cont}
+f(\x) = w_\text{H}f_\text{H}+w_\text{pos}f_\text{pos}+w_\text{D}f_\text{D}+w_\text{iso}f_\text{iso}+w_\text{cont}f_\text{cont}.
 \end{equation}
-Throughout the paper, unless stated otherwise, we use $w_H = 1$, $w_\text{pos}=5$,$w_D = 100$, $w_\text{iso}= \frac{20000}{\|E\|}$, $w_{cont} = 1e4$, where $\|E\|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ vertices $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
+Throughout the paper, unless stated otherwise, we use $w_\text{H} = 1$, $w_\text{pos}=5$, $w_\text{D} = 100$, $w_\text{iso}= \frac{20000}{\|E\|}$, $w_\text{cont} = \text{1e4}$, where $\|E\|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ vertices $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
