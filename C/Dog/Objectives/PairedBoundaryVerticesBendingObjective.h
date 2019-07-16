@@ -3,7 +3,7 @@
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/Objective.h"
 
-// This objective is used to make cylindrical like boundary firrting: 
+// This objective is used to make cylindrical-like boundary glueing: 
 // 	when we bend a planar piece into a cylinder we don't only want to fit two boundaries but also want to make it smooth along the fitted curve
 //	this can be achieved by adding a bending objective along it
 class PairedBoundaryVerticesBendingObjective: public Objective {
