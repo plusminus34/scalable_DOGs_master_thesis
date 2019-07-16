@@ -27,7 +27,7 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, 
 				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 
-	std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
+	//std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);

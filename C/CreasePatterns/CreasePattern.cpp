@@ -325,6 +325,18 @@ std::map<Number_type, Number_type> CreasePattern::snap_coords(std::vector<Number
 	return vertices_to_snapped_vertices;
 }
 
+void CreasePattern::get_visualization_edges(Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
+	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
+	PlanarArrangement grid_with_snapped(orthogonalGrid);
+	grid_with_snapped.add_polylines(clipped_fold_polylines); grid_with_snapped.add_polylines(clipped_bnd_polylines);
+	
+	//std::vector<PlanarArrangement*> arrangements = {&grid_with_snapped ,&clipped_grid_arrangement};
+	std::vector<PlanarArrangement*> arrangements = {&grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
+	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
+	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
+	
+}
+
 void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	
@@ -334,8 +346,8 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 	
 	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly};
 	//std::vector<PlanarArrangement*> arrangements = {&initial_arrangement, &grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
-	//std::vector<PlanarArrangement*> arrangements = {&grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
-	std::vector<PlanarArrangement*> arrangements = {&grid_with_snapped ,&clipped_grid_arrangement};
+	std::vector<PlanarArrangement*> arrangements = {&grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
+	//std::vector<PlanarArrangement*> arrangements = {&grid_with_snapped ,&clipped_grid_arrangement};
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_mesh(arrangements, spacing, V, F,face_colors);
 	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);

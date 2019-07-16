@@ -1,4 +1,4 @@
-#include "PlanarArrangement.h"
+ #include "PlanarArrangement.h"
 
 #include <igl/combine.h>
 #include <igl/polygon_mesh_to_triangle_mesh.h>

@@ -21,8 +21,11 @@ public:
 	const std::vector<Polyline_2>& get_clipped_fold_polylines() const {return clipped_fold_polylines;}
 	const std::vector<Polyline_2>& get_clipped_bnd_polylines() const {return clipped_bnd_polylines;}
 
+	void get_visualization_edges(Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
+
 	void get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors,
 			Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2);
+			
 
 	//void get_submeshes_faces_polygons(std::vector<Polygon_2>& polygons) const;
 	void get_submeshes_faces_polygons(std::vector<Polygon_with_holes_2>& polygons) const {

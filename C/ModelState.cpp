@@ -54,8 +54,11 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 	CreasePattern creasePattern(bbox, polylines, border_polylines, x_res, y_res);
 	dog = dog_from_crease_pattern(creasePattern);
 
+	/*
   	creasePattern.get_visualization_mesh_and_edges(creasesVisualization.V_arr, creasesVisualization.F_arr, 
 											creasesVisualization.faceColors,creasesVisualization.edge_pts1, creasesVisualization.edge_pts2);
+											*/
+	creasePattern.get_visualization_edges(creasesVisualization.edge_pts1, creasesVisualization.edge_pts2);
   	Eigen::MatrixXd creaseVMesh = dog.getVrendering();
   	double spacing = 3*1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
   	creaseVMesh.rowwise() += Eigen::RowVector3d(spacing,0,0);
