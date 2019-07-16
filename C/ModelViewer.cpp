@@ -6,8 +6,6 @@
 #include <igl/per_vertex_normals.h>
 #include <igl/per_corner_normals.h>
 
-#include "Dog/Objectives/PointsRigidAlignmentObjective.h"
-
 using namespace std;
 
 
