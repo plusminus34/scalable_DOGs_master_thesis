@@ -142,6 +142,7 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+  if (!p.folding_mode) p.fold_bias_weight = 0;
   if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
   else return single_iteration_normal(constraints_deviation, objective);
 }
