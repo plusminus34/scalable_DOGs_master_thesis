@@ -92,7 +92,7 @@ int PlanarArrangement::get_vertices_n() {
 	return arr.number_of_vertices();
 }
 
-void PlanarArrangement::get_segments(std::vector<Segment_2>& segments) {
+void PlanarArrangement::get_segments(std::vector<Segment_2>& segments) const {
 	segments.clear();
 	Arrangement_2::Edge_const_iterator eit;
 	//std::cout << arr.number_of_edges() << " edges:" << std::endl;

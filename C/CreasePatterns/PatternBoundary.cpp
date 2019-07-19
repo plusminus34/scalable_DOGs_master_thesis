@@ -73,6 +73,13 @@ Polyline_2 PatternBoundary::filter_and_snap(Polyline_2& polyline, const Number_t
     return polyline_construct(filtered_pts.begin(), filtered_pts.end());
 }
 
+bool PatternBoundary::on_boundary(const Point_2& pt) const {
+	// True if the point is inside the outer boundary but outside the holes (and including the boundary of both)
+	if (outer_boundary.bounded_side(pt) == CGAL::ON_BOUNDARY) return true;
+	for (int i = 0; i < holes.size(); i++) if (holes[i].bounded_side(pt) == CGAL::ON_BOUNDARY) return true;
+	return false;
+}
+
 bool PatternBoundary::inside(const Point_2& pt) {
 	// True if the point is inside the outer boundary but outside the holes (and including the boundary of both)
 	if (outer_boundary.bounded_side(pt) == CGAL::ON_UNBOUNDED_SIDE) return false;

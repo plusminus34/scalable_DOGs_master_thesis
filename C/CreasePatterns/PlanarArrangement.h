@@ -15,7 +15,7 @@ public:
   void add_polylines(const std::vector<Polyline_2>& polylines);
   void add_polyline(const Polyline_2& polylines);
 
-  void get_segments(std::vector<Segment_2>& segments);
+  void get_segments(std::vector<Segment_2>& segments) const;
 
   // Used to visualize the arrangement with libigl
   void get_visualization_mesh(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& colors);
