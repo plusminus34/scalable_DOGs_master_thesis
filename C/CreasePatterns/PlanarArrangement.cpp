@@ -92,6 +92,18 @@ int PlanarArrangement::get_vertices_n() {
 	return arr.number_of_vertices();
 }
 
+void PlanarArrangement::get_segments(std::vector<Segment_2>& segments) {
+	segments.clear();
+	Arrangement_2::Edge_const_iterator eit;
+	//std::cout << arr.number_of_edges() << " edges:" << std::endl;
+	for (eit = arr.edges_begin(); eit != arr.edges_end(); ++eit) {
+		//std::cout << "[" << eit->curve() << "]" << std::endl;
+		//std::cout << "eit->curve().subcurves_begin()->source() " << eit->curve().subcurves_begin()->source() << std::endl;
+		std::vector<Segment_2> edge_segments(eit->curve().subcurves_begin(),eit->curve().subcurves_end());
+		segments.insert(segments.end(),edge_segments.begin(),edge_segments.end());
+	}
+}
+
 void PlanarArrangement::get_face_vertices(Arrangement_2::Face_const_handle f, Eigen::MatrixXd& p) const {
 	typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
 	typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;

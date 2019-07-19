@@ -1,10 +1,10 @@
-#include "CreasePattern.h"
+#include "CreasePattern2.h"
 
 #include "OrthogonalGrid.h"
 
 #include <igl/combine.h>
 
-CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
+CreasePattern2::CreasePattern2(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> polylines, std::vector<Polyline_2> bnd_polylines,
 							int x_res, int y_res) :
 											bbox(bbox), orthogonalGrid(bbox, x_res, y_res) {
 	// Threshold used for snapping
@@ -124,13 +124,13 @@ CreasePattern::CreasePattern(const CGAL::Bbox_2& bbox, std::vector<Polyline_2> p
 	
 }
 
-CreasePattern::CreasePattern(const CreasePattern& cP) : initial_fold_polylines(cP.initial_fold_polylines), initial_bnd_polylines(cP.initial_bnd_polylines), initial_arrangement(cP.initial_arrangement),
+CreasePattern2::CreasePattern2(const CreasePattern2& cP) : initial_fold_polylines(cP.initial_fold_polylines), initial_bnd_polylines(cP.initial_bnd_polylines), initial_arrangement(cP.initial_arrangement),
 					orthogonalGrid(cP.orthogonalGrid), clipped_fold_polylines(cP.clipped_fold_polylines), clipped_bnd_polylines(cP.clipped_bnd_polylines), clipped_grid_arrangement(cP.clipped_grid_arrangement), 
 					bbox(cP.bbox) {
 	// empty
 }
 
-bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& polylines_intersections, Number_type threshold,
+bool CreasePattern2::get_snapped_vertices_locations(const std::vector<Point_2>& polylines_intersections, Number_type threshold,
 	 std::map<Point_2, Point_2>& vertices_to_snapped_vertices) {
 	std::cout << "getting snapped vertices locations" << std::endl;
   	// Find nearby intersection groups and have a map between original vertices and a new coordinate
@@ -183,7 +183,7 @@ bool CreasePattern::get_snapped_vertices_locations(const std::vector<Point_2>& p
   	return should_snap;
 }
 
-std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines) {
+std::vector<Polyline_2> CreasePattern2::merge_nearby_polylines_intersections(std::vector<Polyline_2>& polylines) {
 	std::vector<Polyline_2> new_polylines;
 
 	// First find the vertices intersections
@@ -247,7 +247,7 @@ std::vector<Polyline_2> CreasePattern::merge_nearby_polylines_intersections(std:
 	return new_polylines;
 }
 
-std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines, 
+std::vector<Polyline_2> CreasePattern2::snap_nearby_polylines_start_end_starting_points(std::vector<Polyline_2>& polylines, 
 							std::vector<Point_2>& intersections) {
 	std::vector<std::vector<Point_2>> poly_pts;
 	for (auto poly: polylines) {std::vector<Point_2> pts; PatternBoundary::polyline_to_points(poly, pts); poly_pts.push_back(pts);}
@@ -284,7 +284,7 @@ std::vector<Polyline_2> CreasePattern::snap_nearby_polylines_start_end_starting_
 	return snapped_poly;
 }
 
-std::map<Number_type, Number_type> CreasePattern::snap_coords(std::vector<Number_type>& coords, Number_type threshold) {
+std::map<Number_type, Number_type> CreasePattern2::snap_coords(std::vector<Number_type>& coords, Number_type threshold) {
 	std::map<Number_type, Number_type> vertices_to_snapped_vertices;
 	std::vector<std::set<int> > indices_groups; std::vector<bool> in_group(coords.size(), false);
   	for (int i = 0; i < coords.size(); i++) {
@@ -325,20 +325,19 @@ std::map<Number_type, Number_type> CreasePattern::snap_coords(std::vector<Number
 	return vertices_to_snapped_vertices;
 }
 
-void CreasePattern::get_visualization_edges(Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
+void CreasePattern2::get_visualization_edges(Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
 	PlanarArrangement grid_with_snapped(orthogonalGrid);
 	grid_with_snapped.add_polylines(clipped_fold_polylines); grid_with_snapped.add_polylines(clipped_bnd_polylines);
 	
 	//std::vector<PlanarArrangement*> arrangements = {&grid_with_snapped ,&clipped_grid_arrangement};
-	std::cout << "calling get segments " << std::endl; std::vector<Segment_2> dummy; clipped_grid_arrangement.get_segments(dummy);
 	std::vector<PlanarArrangement*> arrangements = {&grid_with_poly, &grid_with_snapped ,&clipped_grid_arrangement};
 	double spacing = 1.05*CGAL::to_double(bbox.xmax()-bbox.xmin());
 	get_multiple_arrangements_visualization_edges(arrangements, spacing, edge_pts1, edge_pts2);
 	
 }
 
-void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
+void CreasePattern2::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::MatrixXi& F, Eigen::MatrixXd& face_colors,
 				Eigen::MatrixXd& edge_pts1, Eigen::MatrixXd& edge_pts2) {
 	
 	PlanarArrangement grid_with_poly(orthogonalGrid); grid_with_poly.add_polylines(initial_fold_polylines); grid_with_poly.add_polylines(initial_bnd_polylines);
@@ -355,7 +354,7 @@ void CreasePattern::get_visualization_mesh_and_edges(Eigen::MatrixXd& V, Eigen::
 	
 }
 
-void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
+void CreasePattern2::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyline) {
 	Point_2 pt1(bbox.xmin(),bbox.ymin()),pt2(bbox.xmin(),bbox.ymax()),pt3(bbox.xmax(),bbox.ymax()),pt4(bbox.xmax(),bbox.ymin());
 	std::list<Point_2> pts = {pt1,pt2,pt3,pt4,pt1}; // circular list
 	Geom_traits_2 traits;
@@ -364,14 +363,14 @@ void CreasePattern::bbox_to_polyline(const CGAL::Bbox_2& bbox, Polyline_2& polyl
 	polyline = polyline_construct(pts.begin(), pts.end());
 }
 
-bool CreasePattern::is_polyline_closed_with_tolerance(const Polyline_2& poly, Number_type threshold) {
+bool CreasePattern2::is_polyline_closed_with_tolerance(const Polyline_2& poly, Number_type threshold) {
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
 	auto first_pt = poly.subcurves_begin()->source(), last_pt = (poly.subcurves_begin()+(seg_n-1))->target();
 	bool is_closed = (CGAL::squared_distance(first_pt,last_pt) < threshold);
 	return is_closed;
 }
 
-std::vector<Point_2> CreasePattern::align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
+std::vector<Point_2> CreasePattern2::align_crease_vertices_x_y_with_boundary(PatternBoundary& patternBounary, 
 								const std::vector<Point_2>& crease_vertices, int number_of_poly_intersections,
 								 Number_type& threshold) {
 	std::vector<Point_2> snapped_crease_vertices = crease_vertices; std::vector<bool> has_snapped(crease_vertices.size());
@@ -407,7 +406,7 @@ std::vector<Point_2> CreasePattern::align_crease_vertices_x_y_with_boundary(Patt
 	return snapped_crease_vertices;
 }
 
-std::vector<Polyline_2> CreasePattern::snap_polylines_start_end_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
+std::vector<Polyline_2> CreasePattern2::snap_polylines_start_end_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
 		Number_type& threshold) {
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
@@ -423,7 +422,7 @@ std::vector<Polyline_2> CreasePattern::snap_polylines_start_end_to_vertices(std:
 	return snapped_polylines;
 }
 
-std::vector<Polyline_2> CreasePattern::snap_polylines_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
+std::vector<Polyline_2> CreasePattern2::snap_polylines_to_vertices(std::vector<Polyline_2>& polylines, std::vector<Point_2>& vertices,
 		Number_type& threshold) {
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
@@ -458,7 +457,7 @@ std::vector<Polyline_2> CreasePattern::snap_polylines_to_vertices(std::vector<Po
 	return snapped_polylines;
 }
 
-std::vector<Polyline_2> CreasePattern::snap_and_split_curves_to_starting_points(std::vector<Polyline_2>& polylines, Number_type threshold) {
+std::vector<Polyline_2> CreasePattern2::snap_and_split_curves_to_starting_points(std::vector<Polyline_2>& polylines, Number_type threshold) {
 	Geom_traits_2 traits;
 	Geom_traits_2::Construct_curve_2 polyline_construct = traits.construct_curve_2_object();
 	std::vector<Polyline_2> new_polylines;
