@@ -89,7 +89,7 @@ We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{noce
 \end{aligned}
 \end{equation}
 %
-where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the \newt{Hessian of the} Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
+where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \Delta^2_{xx} \phi_{d_i}(x)$ is the \newt{Hessian of the} Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
 
 Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\omega}(\x)$ by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \secref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 %
@@ -98,7 +98,7 @@ Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to
 &{K} \begin{pmatrix} d^{k+1} \\ \lambda^{k+1} \end{pmatrix}={b}, \ \text{where} \\
 \nonumber
 &{K}=\begin{pmatrix}
-{ H^*_{f_\omega}(\x^k)+\sum\lambda_i^{k} \nabla \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
+{ H^*_{f_\omega}(\x^k)+\sum\lambda_i^{k} \Delta^2_{xx} \phi_{d_i}(\x^k)} & {J^{*^\tr}(\x^k)}\\
 {J^*(\x^k)} &  0 \\
 \end{pmatrix}, \ \ 
 {b}=\begin{pmatrix}
