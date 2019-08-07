@@ -12,7 +12,7 @@ We are interested in deformations that fold the surface along all crease curves 
 	\item degenerate edge: crease points on an edge, splitting it into two parts where one is shorter than $\eps_{r}$\% of the other; \label{item:deg_edge}
 	\item degenerate angle with the intersecting DOG tangent: crease points where the tangent directions $t_1,t_2$ form an angle with one of the edges $e_f,e_b$ that is smaller than $\eps_\alpha$. \label{item:deg_tan_angle}
 \end{enumerate}
-We use the constants $\kappa_\epsilon=\text{1e-5}, \eps_r=5\%, \eps_\alpha=3^{\circ}$. We denote the folding constraints by $\phi_{f_j}(\x) = 0, 1 \leq f_j \leq n_f$.
+We use the constants $\kappa_\epsilon=\text{1e-5}, \eps_r=5, \eps_\alpha=3^{\circ}$. We denote the folding constraints by $\phi_{f_j}(\x) = 0, 1 \leq f_j \leq n_f$.
 
 \begin{figure} [h]
 	\centering
@@ -61,7 +61,7 @@ using the fixed parameters $h=1000,\delta = \text{1e-5}$. Our approximation for 
 We refer to the approximated constraints as $\phi^*_{f_j}(\x)$ and replace the optimization problem \eqref{eq:const_opt} with the following problem:
 \begin{equation} \label{eq:const_opt_penalty}
 \begin{aligned}
-& \argmin_x f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|_2^2 \\
+& \argmin_x f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|^2 \\
 & \textrm{subject to} \\
 & \phi_{d_i}(\x) = 0, \ \  i = 1, \ldots, m. \\ 
 \end{aligned}
@@ -71,7 +71,7 @@ Here, $\omega > 0$ is a metaparameter initialized as $\omega_0 = 1$, which doubl
 \subsection{Equality constrained SQP}
 For ease of notation, we use the following to refer to the objective of \equref{eq:const_opt_penalty}:
 \begin{equation}
-f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|_2^2.
+f_\omega(\x) = f(x) + \omega \sum \|\phi^*_{f_j}(\x)\|^2.
 \end{equation}
 We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{nocedal}. Given a set of variables at a given iteration $x^k$ and current values of Lagrange multipliers $\lambda^k$, a line search equality constrained SQP algorithm iteratively finds the next direction for a line search of \equref{eq:const_opt_penalty}, by which it sets the next variables $x^{k+1}$ by solving a KKT system of the form:
 %
@@ -89,7 +89,7 @@ We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{noce
 \end{aligned}
 \end{equation}
 %
-where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
+where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \nabla \phi_{d_i}(x)$ is the \newt{Hessian of the} Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
 
 Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\omega}(\x)$ by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \secref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 %
@@ -138,7 +138,7 @@ Let $e$ be an edge on the net mesh, $l_e$ its length and $l_e^0$ the length in t
 \phi_\text{iso}(\x)_e := l_e^2 - {l_e^0}^2 = 0.
 \end{equation}
 We maintain continuity along the patches with a set of linear equality constraints on duplicated crease points \cite{rabi2018shape}, which we denote by $\phi_\text{cont}(\x) = 0$. Lastly, we allow the user to specify positional constraints on vertices or crease edge points, including constraints requiring two points to have the same coordinate, as used in the creation of the ring at \figref{fig:ring} and the annulus at \figref{fig:teaser} (also see accompanied video). We denote this user defined set of constraints by $\phi_{\text{pos}}(\x) = 0$.
-We enforce the dihedral, positional, isometry and patches continuity constraints in a soft manner by using a penalty on their squared deviation, denoted accordingly by $f_\text{D}(\x), f_\text{pos}(\x), f_\text{iso}(\x), f_\text{cont}(\x)$. These sum of squares objectives are not convex, and we replace their Hessian in our optimization with their Gauss-Newton's Hessian approximation. We do the same for $\sum \|\phi^*_{f_i}(\x)\|_2^2$. Isometry is enforced as a soft constraint $f_\text{iso}(\x)$, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasize that all our results have an average relative edge stretch that is less than $0.003$, and a maximum stretch below $0.004$, where our surfaces are normalized to have an average edge length of $1$. As opposed to \cite{rabi2018shape}, we also encode  $\phi_\text{cont}(\x)$  as a soft constraint, as we have noticed a significant improvement in the quality and smoothness of crease patterns when these are enforced as a soft penalty with a large weight,
+We enforce the dihedral, positional, isometry and patches continuity constraints in a soft manner by using a penalty on their squared deviation, denoted accordingly by $f_\text{D}(\x), f_\text{pos}(\x), f_\text{iso}(\x), f_\text{cont}(\x)$. These sum of squared objectives are not convex, and we replace their Hessian in our optimization with their Gauss-Newton's Hessian approximation. We do the same for $\sum \|\phi^*_{f_i}(\x)\|_2^2$. Isometry is enforced as a soft constraint $f_\text{iso}(\x)$, as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasize that all our results have an average relative edge stretch that is less than $0.003$, and a maximum stretch below $0.004$, where our surfaces are normalized to have an average edge length of $1$. As opposed to \cite{rabi2018shape}, we also encode  $\phi_\text{cont}(\x)$  as a soft constraint, as we have noticed a significant improvement in the quality and smoothness of crease patterns when these are enforced as a soft penalty with a large weight,
 %\MiR{ok to say?, this is mostly important in the curved constrained case for interactivity, as if we run the interpolation much slower then we can still use hard constraints},  
 and our results have an average continuity deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns give rise to a large set of additional linear constraints.
  
@@ -146,7 +146,7 @@ The objective we optimize is then:
 \begin{equation} \label{eq:opt}
 f(\x) = w_\text{H}f_\text{H}+w_\text{pos}f_\text{pos}+w_\text{D}f_\text{D}+w_\text{iso}f_\text{iso}+w_\text{cont}f_\text{cont}.
 \end{equation}
-Throughout the paper, unless stated otherwise, we use $w_\text{H} = 1$, $w_\text{pos}=5$, $w_\text{D} = 100$, $w_\text{iso}= {20000}/{|E|}$, $w_\text{cont} = \text{1e4}$, where $|E|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ vertices $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
+Throughout the paper, unless stated otherwise, we use $w_\text{H} = 1$, $w_\text{pos}=5$, $w_\text{D} = 100$, $w_\text{iso}= {20000}/{|E|}$, $w_\text{cont} = \text{1e4}$, where $|E|$ is the number of edges in the net mesh (i.e., for a mesh with $1000$ edges $w_\text{iso}=20$). Our meshes are always scaled to have an average edge length of $1$ and therefore using a different resolution for the same geometry keeps our bending objective the same, but scales the isometric objective by the number of edges.
 
 \begin{figure} [b]
 	\centering
