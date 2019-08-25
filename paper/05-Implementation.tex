@@ -1,7 +1,7 @@
 % !TEX root =  CurvedFoldedDogs.tex
 
 \section{Optimization} \label{sec:implementation}
-\newt{We employ the tools developed in \secref{sec:folding} and \secref{sec:folding_angles_mountain_valley} to devise a simple folding and bending algorithm for deforming piecewise DOGs.} The algorithm aims to minimize an objective function while keeping the DOG constraints and ensuring the formation of folds along all crease curves \newt{and a specific M/V assignment on a crease when such an assignment is given as input.} 
+We employ the tools developed in \secref{sec:folding} and \secref{sec:folding_angles_mountain_valley} to devise a simple folding and bending algorithm for deforming piecewise DOGs. The algorithm aims to minimize an objective function while keeping the DOG constraints and ensuring the formation of folds along all crease curves and a specific M/V assignment on a crease when such an assignment is given as input.
 
 \subsection{Problem setup}
 We model our curved folded surfaces as a quad mesh, with a separate connected component for each patch. We denote the set of $n$ mesh vertices in $\R^3$ by $V$, the vertex positions (variables) by $\x \in \R^{3n}$, and the quad mesh faces by $F$. Each connected component is a DOG, i.e., it has the connectivity of a subset of $\Z^2$ and satisfies the DOG angle constraints \cite{rabi18}, which we denote as $\phi_{d_i}(\x) = 0, 1 \leq i \leq m$.
@@ -21,9 +21,9 @@ We use the constants $\kappa_\epsilon=\text{1e-5}, \eps_r=5, \eps_\alpha=3^{\cir
 	\label{fig:fold_const_degeneracies}
 \end{figure}
 
-\newt{We only enforce the DOG angle constraints and the folding and mountain/valley constraints as hard constraints. The objective function, which we denote by $f(\x)$, is composed of a weighted sum of a bending objective, soft positional constraints, soft dihedral constraints and soft patch-continuity constraints.}
+We only enforce the DOG angle constraints and the folding and mountain/valley constraints as hard constraints. The objective function, which we denote by $f(\x)$, is composed of a weighted sum of a bending objective, soft positional constraints, soft dihedral constraints and soft patch-continuity constraints.
 
-Isometry is enforced as a soft constraint as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasize that all our results have an average relative edge stretch that is less than $0.003$, and a maximum stretch below \newt{$0.004$}, where our surfaces are normalized to have an average edge length of $1$. As opposed to \cite{rabi2018shape}, we also encode the linnear continuity constraints between patches as a soft constraint, as we have noticed a significant improvement in the quality and smoothness of crease patterns when these are enforced as a soft penalty with a large weight, and our results have an average continuity deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns give rise to a large set of additional linear constraints.
+Isometry is enforced as a soft constraint as advised by the degrees of freedom analysis in \cite{rabi18,rabi2018shape}, but we emphasize that all our results have an average relative edge stretch that is less than $0.003$, and a maximum stretch below $0.004$, where our surfaces are normalized to have an average edge length of $1$. As opposed to \cite{rabi2018shape}, we also encode the linnear continuity constraints between patches as a soft constraint, as we have noticed a significant improvement in the quality and smoothness of crease patterns when these are enforced as a soft penalty with a large weight, and our results have an average continuity deviation of $0.0002$ and a maximum of $0.0035$. We note that the constrained shape space analysis in \cite{rabi2018shape} only concerns the DOG angle constraints, and complicated crease patterns give rise to a large set of additional linear constraints.
 
 The problems we solve in this paper can be written in the form:
 \begin{equation} \label{eq:const_opt}
@@ -34,9 +34,9 @@ The problems we solve in this paper can be written in the form:
 & \phi_{f_j}(\x) = 0, \ \  j = 1, \ldots, n_f, \\ 
 \end{aligned}
 \end{equation}
-\newt{where $f$ is specified in \secref{sec:dog_obj}. We handle the combinatorial constraints $\phi_{f_j}$ by using a penalty based method (\secref{opt:folding}), and solve our problem with an iterative sequential quadratic programming (SQP) solver with a line search (\secref{sec:sqp_alg}). The line search strategy ensures that the DOG angle constraints $\phi_{d_i}$ are satisfied numerically while the combinatorial constraints $\phi_{f_j}$ are satisfied exactly.}
+where $f$ is specified in \secref{sec:dog_obj}. We handle the combinatorial constraints $\phi_{f_j}$ by using a penalty based method (\secref{opt:folding}), and solve our problem with an iterative sequential quadratic programming (SQP) solver with a line search (\secref{sec:sqp_alg}). The line search strategy ensures that the DOG angle constraints $\phi_{d_i}$ are satisfied numerically while the combinatorial constraints $\phi_{f_j}$ are satisfied exactly.
 
-\subsection{Objectives and \newt{convex Hessian approximations}} \label{sec:dog_obj}
+\subsection{Objectives and convex Hessian approximations} \label{sec:dog_obj}
 Our objective $f$ is composed of a weighted sum of various functions measuring bending, stretch, positional constraints and dihedral angles.
 We use an integrated squared mean curvature bending objective taken from \cite{rabi2018shape}, and we exploit the fact that it is quadratic and convex under isometric deformations \cite{quadratic_bending}:
 \begin{equation}
@@ -127,7 +127,7 @@ We minimize \eqref{eq:const_opt_penalty} using SQP with a line search \cite{noce
 \end{aligned}
 \end{equation}
 %
-where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \Delta^2_{xx} \phi_{d_i}(x)$ is the \newt{Hessian of the} Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
+where $J(\x)$ is the Jacobian of the equality constraints in \equref{eq:const_opt_penalty}, $\Delta^2_{xx}\mathcal{L}(x,\lambda) = H_{f_\omega}(x)+\sum\lambda_i^{k} \Delta^2_{xx} \phi_{d_i}(x)$ is the Hessian of the Lagrangian of the problem and $H_{f_\omega}(\x)$ is the Hessian of $f_\omega(\x)$.
 
 Following \cite{rabi2018shape}, we use a minimally modified Jacobian $J^*(x)$ to deal with singularities in DOGs. We also replace the Hessian of the objective $H_{f_\omega}(\x)$ by a convex approximation, which we denote by $H^*_{f_\omega}(\x)$, as detailed in \secref{sec:dog_obj}, and thus replace the system \eqref{eq:KKT_eps} by:
 %
