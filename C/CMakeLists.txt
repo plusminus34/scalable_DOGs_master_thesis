@@ -14,7 +14,7 @@ set(CMAKE_BUILD_TYPE "Release")
 
 find_package(LIBIGL REQUIRED QUIET)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -fno-vectorize -fno-slp-vectorize -fslp-vectorize-aggressive -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -O2")
 
 #set(EIGEN3_VERSION_OK TRUE)
 #set(EIGEN3_INCLUDE_DIR "/Users/michaelrabinovich/libigl/external/eigen")
@@ -38,7 +38,7 @@ set(LIBIGL_EXTERNAL "${LIBIGL_ROOT}/external")
 #add_subdirectory(${LIBIGL_EXTERNAL}/libigl-imgui imgui)
 #target_link_libraries(igl_opengl_glfw_imgui ${IGL_SCOPE} igl_opengl_glfw imgui)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -fno-vectorize -fno-slp-vectorize -fslp-vectorize-aggressive -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math -O2")
 
 # Add your project files
 file(GLOB SRCFILES *.cpp)
@@ -67,8 +67,8 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(MyTarget PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-add_library(libpardiso600-MACOS-X86-64 SHARED IMPORTED)
-set_target_properties(libpardiso600-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "libpardiso600-MACOS-X86-64.dylib")
+add_library(libpardiso600-GNU720-X86-64 SHARED IMPORTED)
+set_target_properties(libpardiso600-GNU720-X86-64 PROPERTIES IMPORTED_LOCATION "./libpardiso600-GNU720-X86-64.so")
 
 #add_library(libifopt_core SHARED IMPORTED)
 #set_target_properties(libifopt_core PROPERTIES IMPORTED_LOCATION "libifopt_core.dylib")
@@ -79,16 +79,21 @@ set_target_properties(libpardiso600-MACOS-X86-64 PROPERTIES IMPORTED_LOCATION "l
 #target_include_directories(ifopt "/Users/michaelrabinovich/ifopt")
 #add_definitions("-fopenmp")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 
 
-add_definitions(-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
-add_definitions(-DOpenMP_CXX_LIB_NAMES="omp")
-add_definitions(-DOpenMP_omp_LIBRARY=/usr/local/opt/libomp/lib/libomp.dylib)
+
+#add_definitions(-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+#add_definitions(-DOpenMP_CXX_LIB_NAMES="omp")
+#add_definitions(-DOpenMP_omp_LIBRARY=/usr/local/opt/libomp/lib/libomp.dylib)
 #add_definitions()
-SET(CMAKE_EXE_LINKER_FLAGS  "-L/usr/local/opt/libomp/lib -I/usr/local/opt/libomp/include")
+#SET(CMAKE_EXE_LINKER_FLAGS  "-L/usr/local/opt/libomp/lib -I/usr/local/opt/libomp/include")
 
-add_library(libomp SHARED IMPORTED)
-set_target_properties(libomp PROPERTIES IMPORTED_LOCATION "libomp.dylib")
+#add_library(libomp SHARED IMPORTED)
+#set_target_properties(libomp PROPERTIES IMPORTED_LOCATION "libomp.dylib")
 
 add_executable(${PROJECT_NAME}_bin ${SRCFILES} ${SRC_OPTIMIZATION} ${SRC_QUAD} ${SRC_DOG} ${SRC_CREASE_PATTERNS} ${SRC_GUI} ${SRC_GEOMETRY_PRIMITIVES} ${SRC_FOLDING})
-target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso600-MACOS-X86-64 libomp)
+target_link_libraries(${PROJECT_NAME}_bin PUBLIC igl::core igl::opengl_glfw igl::opengl_glfw_imgui igl::cgal igl::triangle libpardiso600-GNU720-X86-64 gomp gfortran pthread openblas)
+
+#-lmkl_intel_lp64 -lmkl_lapack95_lp64 -lmkl_sequential -lmkl_core -lm
+#-lgfortran -lgfortran -lm

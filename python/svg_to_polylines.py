@@ -10,11 +10,11 @@ from iglhelpers import *
 
 
 def save_polyline(poly, out_file):
-	print 'saving polyline to file ', out_file
-	#print 'poly = ', poly
+	print ('saving polyline to file ', out_file)
+	#print ('poly = ', poly)
 	V = p2e(add_numpy_zero_z_coord_column(poly))
 	V.setCol(1,-1*V.col(1))
-	#print 'poly = ', V
+	#print ('poly = ', V)
 	igl.writeOBJ(out_file,V,igl.eigen.MatrixXi())
 
 def save_bounding_box(bbox, out_file):
@@ -25,31 +25,31 @@ def save_bounding_box(bbox, out_file):
 
 def svg_creases_to_bounding_box_and_polylines(svg_file):
 	paths, attributes = svg2paths(svg_file)
-	print 'Number of paths = ', len(paths)
+	print ('Number of paths = ', len(paths))
 
 	viewbox = get_svg_view_box(svg_file)
-	print 'viewBox = ', viewbox
+	print ('viewBox = ', viewbox)
 	bounds = viewbox[0],viewbox[1],viewbox[0]+viewbox[2],viewbox[1]+viewbox[3]
-	print 'bounds = ', bounds
+	print ('bounds = ', bounds)
 
 	border_poly = []
 	style_classes = get_style_classes(svg_file)
 	path_lines = []
 	for i in range(len(paths)):
 		path, attrib = paths[i], attributes[i]
-		print 'path = ', path
+		print ('path = ', path)
 		if is_border(attrib, style_classes):
-			print 'Reading border polygon'
+			print ('Reading border polygon')
 			#border_poly.append(handle_border(path))
 			border_poly.append(handle_fold(path,500,bounds))
 		else:
 			try:
-				print 'Reading fold'
+				print ('Reading fold')
 				vertices = handle_fold(path,500,bounds)
-				#print 'vertices = ', vertices
+				#print ('vertices = ', vertices)
 				path_lines.append(vertices)
 			except:
-				print 'Error handling a fold'
+				print ('Error handling a fold')
 
 	return border_poly,path_lines,bounds
 
@@ -63,8 +63,8 @@ if __name__ == "__main__":
 	if len(sys.argv) == 3:
 		svg_file, out_folder = sys.argv[1],sys.argv[2]
 		border_poly,polylines,boundingBox = svg_creases_to_bounding_box_and_polylines(svg_file)
-		print 'border_poly = ', border_poly
-		print 'boundingBox = ', boundingBox
+		print ('border_poly = ', border_poly)
+		print ('boundingBox = ', boundingBox)
 		save_bounding_box(boundingBox, out_folder+"/bbox.obj")
 		#open(out_folder+"/"+str(len(polylines)),'w') # write a file with number of polylines
 		#save_polyline(out_folder+"//"+"border_poly.obj")
@@ -74,8 +74,8 @@ if __name__ == "__main__":
 			cnt +=1
 		cnt = 1
 		for border in border_poly:
-			print 'saving border ', border
+			print ('saving border ', border)
 			save_polyline(border,out_folder+"/"+"borderpoly-"+str(cnt)+".obj")
 			cnt +=1
 	else:
-		print 'Usage: svg_to_polylines.py out_folder'
+		print ('Usage: svg_to_polylines.py out_folder')

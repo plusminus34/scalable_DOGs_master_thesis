@@ -9,9 +9,9 @@
 using namespace std;
 
 
-ModelViewer::ModelViewer(const ModelState& modelState, const DeformationController& DC) : 
+ModelViewer::ModelViewer(const ModelState& modelState, const DeformationController& DC) :
 									state(modelState), DC(DC) {
-	viewMode = ViewModeMeshWire; 
+	viewMode = ViewModeMeshWire;
 	prevMode = viewMode;
 	first_rendering = true;
 
@@ -26,7 +26,7 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
 	prevMode = viewMode;
 	if (first_rendering || switched_mode)  {
 		viewer.data().clear();
-		viewer.core.background_color = Eigen::Vector4f(1, 1, 1, 1);
+		viewer.core().background_color = Eigen::Vector4f(1, 1, 1, 1);
 	}
 
 	if ( (viewMode == ViewModeMesh) || (viewMode == ViewModeMeshWire) ) {
@@ -55,13 +55,13 @@ void ModelViewer::clear_edges_and_points(igl::opengl::glfw::Viewer& viewer) {
 
 void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 	const Dog* dog = DC.getEditedSubmesh();
-	if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
+	if (switched_mode) viewer.core().align_camera_center(dog->getVrendering(), dog->getFrendering());
 	if (render_curved_folding_properties) render_curved_osculating_planes(viewer);
 	//if ( state.dog.has_creases() && (DC.getEditedSubmeshI() <= -1) ) {
 	if (show_curves) render_dog_stitching_curves(viewer, state.dog, Eigen::RowVector3d(0, 0, 0));
 	if (viewMode == ViewModeMeshWire) {
 		if ( state.dog.has_creases() && culled_view) render_dog_wireframe(viewer);
-		else render_wireframe(viewer, dog->getV(), dog->getQuadTopology()); 
+		else render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
 	}
 	render_positional_constraints(viewer);
 	DC.dogEditor->render_pairs();
@@ -72,10 +72,10 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_crease_pattern(igl::opengl::glfw::Viewer& viewer) {
-	if (switched_mode) viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
+	if (switched_mode) viewer.core().align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
 	int submesh_i = DC.getEditedSubmeshI();
 	Dog flattenedDog(state.dog);
-	if (switched_mode) viewer.core.align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
+	if (switched_mode) viewer.core().align_camera_center(flattenedDog.getVrendering(), flattenedDog.getFrendering());
 	if ( (submesh_i >= 0) && (submesh_i < state.dog.get_submesh_n()) ) {
 		int submesh_v_min_i, submesh_v_max_i;
 		flattenedDog.get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
@@ -142,7 +142,7 @@ void ModelViewer::render_curved_osculating_planes(igl::opengl::glfw::Viewer& vie
 	const Eigen::MatrixXd& V = state.dog.getV();
 	for (int j = 0; j < eS.stitched_curves.size(); j++) {
 		for (int i = 1; i < eS.stitched_curves[j].size()-1; i+=2) {
-			EdgePoint eP =  eS.stitched_curves[j][i], eP_f = eS.stitched_curves[j][i+1], eP_b = eS.stitched_curves[j][i-1];			
+			EdgePoint eP =  eS.stitched_curves[j][i], eP_f = eS.stitched_curves[j][i+1], eP_b = eS.stitched_curves[j][i-1];
 			Eigen::RowVector3d p0 = eP.getPositionInMesh(V), pf = eP_f.getPositionInMesh(V), pb = eP_b.getPositionInMesh(V);
 
 			Eigen::RowVector3d osculating_plane_n = (p0-pf).cross(p0-pb).normalized();
@@ -166,8 +166,8 @@ void ModelViewer::render_crease_pattern_svg_reader(igl::opengl::glfw::Viewer& vi
 		viewer.data().set_colors(state.creasesVisualization.faceColors);
 		viewer.data().add_edges(state.creasesVisualization.edge_pts1,state.creasesVisualization.edge_pts2,Eigen::RowVector3d(0,0,0));
 		viewer.data().add_edges(state.creasesVisualization.meshE1,state.creasesVisualization.meshE2,Eigen::RowVector3d(0,0,0));
-		//viewer.core.align_camera_center(state.creasesVisualization.V_arr, state.creasesVisualization.F_arr);
-		viewer.core.align_camera_center(state.creasesVisualization.edge_pts1);
+		//viewer.core().align_camera_center(state.creasesVisualization.V_arr, state.creasesVisualization.F_arr);
+		viewer.core().align_camera_center(state.creasesVisualization.edge_pts1);
 	} else {
 		if (switched_mode) std::cout << "This DOG has no creases" << std::endl;
 	  	render_mesh_and_wireframe(viewer);
@@ -186,7 +186,7 @@ void ModelViewer::render_positional_constraints(igl::opengl::glfw::Viewer& viewe
 		E1.row(i) << constrained_pts_coords_vec(i),constrained_pts_coords_vec(pts_num+i),constrained_pts_coords_vec(2*pts_num+i);
 		E2.row(i) << bc(i),bc(pts_num+i),bc(2*pts_num+i);
 	}
-	
+
 	if (render_pos_const) viewer.data().add_edges(E1,E2,Eigen::RowVector3d(1.,0,0));
 	//viewer.data().add_points(E1,Eigen::RowVector3d(1.,0,0));
 	DC.dogEditor->render_positional_constraints();
@@ -214,17 +214,17 @@ void ModelViewer::render_gauss_map(igl::opengl::glfw::Viewer& viewer) {
   Eigen::Vector3d ambient; ambient << 0,0,0;//0.05*diffuse;
   Eigen::Vector3d specular; specular << 0.05*diffuse;
   viewer.data().uniform_colors(ambient,diffuse,specular);
-  //viewer.core.shininess = 0;
-  
-  if (switched_mode) viewer.core.align_camera_center(dog->getVrendering(), dog->getFrendering());
-  //viewer.core.align_camera_center(sphereV, sphereF);
-  //viewer.core.show_lines = false;
+  //viewer.core().shininess = 0;
+
+  if (switched_mode) viewer.core().align_camera_center(dog->getVrendering(), dog->getFrendering());
+  //viewer.core().align_camera_center(sphereV, sphereF);
+  //viewer.core().show_lines = false;
 
   // TODO support curved folds by looking at normal map of each one separately
   Eigen::MatrixXd VN; igl::per_vertex_normals(dog->getVrendering(),dog->getFrendering(),VN);
   //viewer.data.set_normals(VN);
   render_wireframe(viewer,VN,dog->getQuadTopology(), false);
-  if (switched_mode) viewer.core.align_camera_center(sphereV, sphereF);
+  if (switched_mode) viewer.core().align_camera_center(sphereV, sphereF);
 }
 
 void ModelViewer::center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF) {

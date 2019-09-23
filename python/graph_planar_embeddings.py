@@ -8,12 +8,12 @@ from shapely.geometry.polygon import *
 def graph_to_polygons(G):
 	faces = get_graph_faces(G)
 	tmp_polygons = []
-	#print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
+	#print ("nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos'))
 	positions = nx.get_node_attributes(G,'pos')
 
-	#print 'faces = ', faces
+	#print ('faces = ', faces)
 	for f in faces:
-		#print 'face with ', f
+		#print ('face with ', f)
 		indices = [pt[0] for pt in f]
 		vals = [positions[idx] for idx in indices]
 		tmp_polygons.append(Polygon(vals))
@@ -21,11 +21,11 @@ def graph_to_polygons(G):
 	# remove external face by filtering the larges area (probably will be nicer to do it by orientation)
 	max_area = max([poly.area for poly in tmp_polygons])
 	polygons = []
-	#print '\n\n\t\tnew polygons'
+	#print ('\n\n\t\tnew polygons')
 	for poly in tmp_polygons:
 		if poly.area < max_area:
 			polygons.append(poly)
-			#print 'len(poly) = ', len(poly.exterior.coords[:])
+			#print ('len(poly) = ', len(poly.exterior.coords[:]))
 	return polygons
 
 def get_graph_faces(G):
@@ -43,16 +43,16 @@ def comb_embedding_from_graph(G):
 		v_A = list(A[node][1])
 		nb_pos = [[pos[nb][0],pos[nb][1]] for nb in v_A]
 		
-		#print '--- node = ', node, ' at position = ', origin
-		#print 'nb_pos before = ', nb_pos
-		#print 'v_A before = ', v_A
+		#print ('--- node = ', node, ' at position = ', origin)
+		#print ('nb_pos before = ', nb_pos)
+		#print ('v_A before = ', v_A)
 		
 		v_A = sorted(v_A, key=lambda node: clockwiseangle_and_distance(pos[node],origin))
 		
-		#print 'v_A after = ', v_A
-		#print '------\n'
+		#print ('v_A after = ', v_A)
+		#print ('------\n')
 		comb_emb[node] = v_A
-	#print 'comb_emb = ', comb_emb
+	#print ('comb_emb = ', comb_emb)
 	return comb_emb
 
 def add_curve_vertices_to_graph(G, polylines, vertices):
@@ -61,7 +61,7 @@ def add_curve_vertices_to_graph(G, polylines, vertices):
 	# get unique vertices
 	vertices = unique_rows(vertices)
 	v_n = vertices.shape[0]
-	#print 'v_n = ', v_n
+	#print ('v_n = ', v_n)
 	for v in range(v_n):
 		G.add_node(v, pos = vertices[v,:])
 	return vertices
@@ -74,7 +74,7 @@ def add_curve_edges_to_graph(G,vertices,coords):
 		pos1, pos2 = coords[idx], coords[idx+1]
 		idx1 = vertices_pos_to_index(vertices,pos1)
 		idx2 = vertices_pos_to_index(vertices,pos2)
-		#print 'adding edge between ', idx1, ' and ', idx2
+		#print ('adding edge between ', idx1, ' and ', idx2)
 		G.add_edge(idx1,idx2)
 
 def get_faces(edges,embedding):
@@ -166,17 +166,17 @@ def test_comb_embedding_from_graph():
 	nx.draw(G,pos)
 
 	comb_emb = comb_embedding_from_graph(G)
-	print 'G.edges() = ', G.edges()
+	print ('G.edges() = ', G.edges())
 	faces = get_faces(G.edges(), comb_emb)
 	for f in faces:
-		print 'found face = ', f
-	#print 'faces = ', faces
+		print ('found face = ', f)
+	#print ('faces = ', faces)
 	#pts = [[1,4],[2,4],[3,4],[1,3],[2,3],[3,3],[1,2],[2,2],[3,2]]
-	#print 'pts before = ', pts
+	#print ('pts before = ', pts)
 	#origin = [2,3]
 	#sorted(pts, key=lambda point: clockwiseangle_and_distance(point,origin))
 	#pts = sorted(pts, key=lambda point: clockwiseangle_and_distance(point,origin))
-	#print 'pts after = ', pts
+	#print ('pts after = ', pts)
 	plt.show()
 
 

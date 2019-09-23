@@ -36,14 +36,14 @@ def build_polygons(border_polygon, polylines):
 	"""
 	faces = get_graph_faces(G)
 	polygons = []
-	#print "nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos')
+	#print ("nx.get_node_attributes(G,'pos') = ", nx.get_node_attributes(G,'pos'))
 	positions = nx.get_node_attributes(G,'pos')
-	#print 'faces = ', faces
+	#print ('faces = ', faces)
 	for f in faces:
-		#print 'face with ', f
+		#print ('face with ', f)
 		indices = [pt[0] for pt in f]
 		vals = [positions[idx] for idx in indices]
-		#print 'vals = ', vals
+		#print ('vals = ', vals)
 		new_poly = Polygon(vals)
 		if abs(new_poly.area - border_polygon.area) > 1e-4:
 			polygons.append(new_poly)
@@ -64,7 +64,7 @@ def build_planar_graph(border_polygon, polylines):
 	add_curve_edges_to_graph(G,vertices,pol_v)
 	for coords in lines_v:
 		add_curve_edges_to_graph(G,vertices,coords)
-	#print 'G.edges() = ', G.edges()
+	#print ('G.edges() = ', G.edges())
 	return G
 
 def filter_line_points_outside_polygon(polygon, line):
@@ -90,7 +90,7 @@ def split_polylines_to_each_other(polylines):
 	polylines_new = []
 	for pol_line in polylines:
 		new_line = pol_line
-		#print 'pol_line before = ', new_line
+		#print ('pol_line before = ', new_line)
 		for pol_line2 in polylines:
 			# hack: due to precision errors in line splitting intersections, we need to create a "snapper" that is longer by some epsilon
 			snapper = extend_polyline_by_epsilon_backwards(pol_line2, 1e-4)

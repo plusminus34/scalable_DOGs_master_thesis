@@ -21,7 +21,7 @@ ModelState state;
 ModelViewer modelViewer(state, state.DC);
 
 const int DEFAULT_GRID_RES = 21;
-int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh 
+int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
   state.DC.init_from_new_dog(state.dog);
@@ -179,14 +179,14 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Load workspace", ImVec2(-1,0))) load_workspace(viewer);
       if (ImGui::Button("Save workspace", ImVec2(-1,0))) save_workspace();
       if (ImGui::Button("Setup curve constraints", ImVec2(-1,0))) {state.DC.setup_curve_constraints();is_optimizing = false;}
-      
+
       ImGui::Combo("Edit mode", (int *)(&state.DC.edit_mode), "Select\0Translate\0Vertex Pairs\0Edges Angle\0Dihedral Angle\0 MV Dihedral Angle\0None\0\0");
       ImGui::Combo("Select mode", (int *)(&state.DC.select_mode), "Vertex Picker\0Edge point picker\0Curve picker\0\0");
       //ImGui::Combo("Wallaper type", (int *)(&state.DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {state.DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {state.DC.reset_new_editor_constraint();}
       if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
-      
+
       ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
       ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
@@ -198,14 +198,14 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");
-      
+
       ImGui::InputDouble("Dihedral angle", &state.DC.dst_dihedral_angle, 0, 0, "%.4f");
       ImGui::InputInt("Curve idx", &state.DC.deformed_curve_idx);
       ImGui::InputDouble("Curve k add", &state.DC.curve_k_translation, 0, 0, "%.4f");
       ImGui::InputDouble("Curve k mult", &state.DC.curve_k_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Curve t add", &state.DC.curve_t_addition, 0, 0, "%.4f");
       ImGui::InputInt("Max constrained curve points", &state.DC.max_curve_points);
-      
+
       ImGui::InputDouble("Time step size", &state.DC.deformation_timestep_diff, 0, 0, "%.4f");
       //if (ImGui::InputDouble("Dihedral angle", &state.DC.fold_dihedral_angle, 0, 0, "%.4f") ) {state.DC.update_fold_constraints();};
       if (ImGui::InputDouble("Timestep", &state.DC.deformation_timestep, 0, 0, "%.4f") ) {state.DC.update_time_deformations();};
@@ -234,14 +234,14 @@ int main(int argc, char *argv[]) {
       ImGui::End();
   };
   clear_all_and_set_default_params(viewer);
-  
+
   viewer.data().set_mesh(state.dog.getVrendering(), state.dog.getFrendering());
-  viewer.core.align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
-  
+  viewer.core().align_camera_center(state.dog.getVrendering(), state.dog.getFrendering());
+
   viewer.callback_key_down = callback_key_down;
   viewer.callback_pre_draw = callback_pre_draw; // calls at each frame
-  viewer.core.is_animating = true;
-  viewer.core.animation_max_fps = 30;
+  viewer.core().is_animating = true;
+  viewer.core().animation_max_fps = 30;
   viewer.callback_mouse_down = callback_mouse_down;
   viewer.callback_mouse_move = callback_mouse_move;
   viewer.callback_mouse_up = callback_mouse_up;

@@ -2,6 +2,7 @@ from svgpathtools import svg2paths, wsvg
 from xml.dom import minidom
 import struct
 import numpy as np
+import binascii
 from shapely.ops import polygonize
 """
 >>> from shapely.ops import polygonize
@@ -66,7 +67,7 @@ def get_curve_color(style_classes,attrib):
 	else:
 		color_undecoded = attrib['stroke']
 	# The color information is in the path
-	return struct.unpack('BBB',color_undecoded.strip('#').decode('hex'))
+	return struct.unpack( 'BBB', binascii.unhexlify(color_undecoded.strip('#')) )
 
 def getText(nodelist):                                              
 	rc = []
@@ -85,7 +86,7 @@ def sample_bezier_path_sampling(path, points_num):
 
 def sample_polylines(path,bounds):
 	#print 'len(path) = ', len(path)
-	print 'sampling a polyline!'
+	print ('sampling a polyline!')
 	points = np.empty((len(path)+1,2))
 	#print 'path[0].start.real,path[0].start.imag = ', path[0].start.real,path[0].start.imag
 	points[0,:] = path[0].start.real,path[0].start.imag
@@ -111,9 +112,9 @@ def sample_polylines(path,bounds):
 	return points
 
 def round_if_close(pt,close_pt,eps):
-	print 'pt = ', pt, ' close_pt = ', close_pt
+	print ('pt = ', pt, ' close_pt = ', close_pt)
 	if (abs(pt-close_pt) < eps):
-		print 'rounding to ', close_pt
+		print ('rounding to ', close_pt)
 		return close_pt
 	return pt
 
