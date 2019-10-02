@@ -5,7 +5,7 @@ using namespace std;
 
 DeformationController::DeformationController() : dogEditor(NULL), globalDog(NULL),
 			 editedSubmesh(NULL), dogSolver(NULL), curveConstraintsBuilder(NULL) {
-	// empty on piurpose
+	// empty on purpose
 }
 
 void DeformationController::setup_optimization_measurements(std::string log_file_name) {
@@ -19,12 +19,12 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
 
-	dogEditor = new DogEditor(*viewer, *globalDog, edit_mode, select_mode, 
+	dogEditor = new DogEditor(*viewer, *globalDog, edit_mode, select_mode,
 								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords, z_only_editing);
-	
+
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, 
+	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
 				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 
 	//std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
@@ -42,11 +42,21 @@ bool DeformationController::has_constraints() {
 	return false;
 }
 
+void DeformationController::change_submesh(int submesh_i){
+	if(submesh_i < -1 || submesh_i >= globalDog->get_submesh_n() ){
+		//cycle through available submeshes
+		submesh_i = editedSubmeshI + 1;
+		if( submesh_i < -1 || submesh_i >= globalDog->get_submesh_n() ) submesh_i = -1;
+	}
+	editedSubmeshI = submesh_i;
+	editedSubmesh = globalDog->get_submesh(submesh_i);
+}
+
 void DeformationController::single_optimization() {
 	if ((is_time_dependent_deformation) && (deformation_timestep < 1) ) {
 		deformation_timestep+=deformation_timestep_diff;
 		p.pair_weight = deformation_timestep*0.1*p.soft_pos_weight;
-		// the default of paired_boundary_bending_weight_mult is 1, so we jsut interpolate the weight from 0 to the bending weight
+		// the default of paired_boundary_bending_weight_mult is 1, so we just interpolate the weight from 0 to the bending weight
 		p.paired_boundary_bending_weight = deformation_timestep*paired_boundary_bending_weight_mult*p.bending_weight;
 		//p.paired_boundary_bending_weight = deformation_timestep*paired_boundary_bending_weight_mult*1;//p.bending_weight;
 	}
@@ -63,15 +73,15 @@ void DeformationController::apply_new_editor_constraint() {
 		if ( (dogEditor->pair_vertex_1!= -1) && (dogEditor->pair_vertex_2!= -1) ) {
 			int vnum = globalDog->get_v_num();
 			for (int i = 0; i < 3; i++) {
-					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
+					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));
 			}
 			is_time_dependent_deformation = true;
 			/*
 			if (z_only_editing) {
-				paired_vertices.push_back(std::pair<int,int>(2*vnum+dogEditor->pair_vertex_1,2*vnum+dogEditor->pair_vertex_2));	
+				paired_vertices.push_back(std::pair<int,int>(2*vnum+dogEditor->pair_vertex_1,2*vnum+dogEditor->pair_vertex_2));
 			} else {
 				for (int i = 0; i < 3; i++) {
-					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));	
+					paired_vertices.push_back(std::pair<int,int>(i*vnum+dogEditor->pair_vertex_1,i*vnum+dogEditor->pair_vertex_2));
 				}
 			}
 			*/
@@ -94,7 +104,7 @@ void DeformationController::apply_new_editor_constraint() {
 		}
 	} else if (edit_mode == DogEditor::EDGES_ANGLE) {
 		if ((dogEditor->edge_angle_v1 != -1) && (dogEditor->edge_angle_v2 != -1) && (dogEditor->edge_angle_center != -1) ) {
-			cout << "adding constraint with edge = " << dogEditor->edge_angle_v1 << "," << dogEditor->edge_angle_center << 
+			cout << "adding constraint with edge = " << dogEditor->edge_angle_v1 << "," << dogEditor->edge_angle_center <<
 						"," << dogEditor->edge_angle_v2 << endl;
 			edge_angle_pairs.push_back(pair<Edge,Edge>(Edge(dogEditor->edge_angle_v1,dogEditor->edge_angle_center),
 														Edge(dogEditor->edge_angle_center,dogEditor->edge_angle_v2)));
@@ -108,14 +118,14 @@ void DeformationController::apply_new_editor_constraint() {
 void DeformationController::setup_curve_constraints() {
 	if (curveConstraintsBuilder) delete curveConstraintsBuilder;
 	if (globalDog->has_creases()) {
-		curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(), 
+		curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(),
 															globalDog->getEdgeStitching(), deformed_curve_idx, deformation_timestep,
 															curve_k_translation, curve_k_mult, curve_t_addition, max_curve_points);
 	} else {
 		std::vector<int> v_indices; int n = globalDog->getV().rows();
 		for (int i = 0; i < sqrt(n); i++) v_indices.push_back(i);
 		std::cout << "v_indices.size() = " << v_indices.size() << std::endl;
-		curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(), 
+		curveConstraintsBuilder = new CurveInterpolationConstraintsBuilder(globalDog->getV(),
 															v_indices, deformation_timestep,
 															curve_k_translation, curve_k_mult, curve_t_addition);
 	}
@@ -129,7 +139,7 @@ void DeformationController::setup_curve_constraints() {
 void DeformationController::update_edge_curve_constraints() {
 	if (curveConstraintsBuilder) {
 		SurfaceCurve surfaceCurve;
-		curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);	
+		curveConstraintsBuilder->get_curve_constraints(surfaceCurve, edgeCoords);
 	}
 }
 
@@ -165,7 +175,7 @@ void DeformationController::add_positional_constraints(const Eigen::VectorXi& ne
 	} else {
 		b = new_b; bc = new_bc; // Eigen's concatenate crashes if one of them is empty
 	}
-	
+
 	has_new_constraints = true;
 }
 
@@ -180,25 +190,25 @@ void DeformationController::add_pair_vertices_constraints(const std::vector<std:
 }
 
 void DeformationController::add_pair_vertices_constraint(int v1, int v2) {
-	std::vector<std::pair<int,int>> new_pair_vertices{std::pair<int,int>(v1,v2)}; 
+	std::vector<std::pair<int,int>> new_pair_vertices{std::pair<int,int>(v1,v2)};
 	add_pair_vertices_constraints(new_pair_vertices);
 }
 
 
 void DeformationController::reset_constraints() {
 	b.resize(0);
-	bc.resize(0); 
-	paired_vertices.clear(); 
+	bc.resize(0);
+	paired_vertices.clear();
 	bnd_vertices_pairs.clear();
 	edgePoints.clear();
 	dihedral_constrained.clear();
-	edge_angle_pairs.clear(); 
+	edge_angle_pairs.clear();
 	edge_cos_angles.clear();
 	mv_cos_angles.clear();
 	mvTangentCreaseAngleParams.clear();
-	edgeCoords.resize(0,3); 
-	dogEditor->clearHandles(); 
-	reset_dog_solver(); 
+	edgeCoords.resize(0,3);
+	dogEditor->clearHandles();
+	reset_dog_solver();
 	is_curve_constraint = false;
 }
 
@@ -221,7 +231,7 @@ void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
 	auto vars = dogSolver->get_opt_vars();
 	if (dogSolver) delete dogSolver;
-	cout << "reseting dog solver" << endl;
+	cout << "resetting dog solver" << endl;
 	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
 		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
@@ -239,7 +249,7 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 		int vnum = globalDog->get_v_num();
 		int v1(left_curve[pair_i]),v2(right_curve[pair_i]);
 		for (int axis = 0; axis < 3; axis++) {
-			paired_vertices.push_back(std::pair<int,int>(axis*vnum+v1,axis*vnum+v2));	
+			paired_vertices.push_back(std::pair<int,int>(axis*vnum+v1,axis*vnum+v2));
 		}
 		bnd_vertices_pairs.push_back(std::pair<int,int>(v1,v2));
 

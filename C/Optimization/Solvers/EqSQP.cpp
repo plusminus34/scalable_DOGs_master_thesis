@@ -11,7 +11,7 @@
 using namespace std;
 
 EqSQP::EqSQP(const double& infeasability_epsilon, const double& infeasability_filter, const int& max_newton_iters, const double& merit_p) :
-    infeasability_epsilon(infeasability_epsilon), infeasability_filter(infeasability_filter), 
+    infeasability_epsilon(infeasability_epsilon), infeasability_filter(infeasability_filter),
              max_newton_iters(max_newton_iters) ,merit_p(merit_p), m_solver(ai,aj,K), m_solver2(ai2,aj2,K2) {
     cout << "EqSQP::Constructor" << endl;
     m_solver.set_type(-2);
@@ -68,7 +68,7 @@ double EqSQP::solve_constrained_old(const Eigen::VectorXd& x0, Objective& f, Con
     return ret;
 }
 
-void EqSQP::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV, 
+void EqSQP::build_kkt_system_from_ijv(const std::vector<Eigen::Triplet<double> >& hessian_IJV,
                                      const std::vector<Eigen::Triplet<double> >& const_lambda_hessian, int var_n,
                                      const std::vector<Eigen::Triplet<double> >& jacobian_IJV, int const_n) {
     // build an IJV which contains the hessian, diag matrix along the hessian, jacobian, jacobian transpose,
@@ -111,7 +111,7 @@ void EqSQP::build_kkt_system(const Eigen::SparseMatrix<double>& hessian,
     auto eps_id = 1e-8*id;
 
     Eigen::SparseMatrix<double> H = -hessian - eps_id;
-    
+
     Eigen::SparseMatrix<double> Jt = J.transpose();
 
     Eigen::SparseMatrix<double> H_jt; igl::cat(2,H,Jt, H_jt);
@@ -139,7 +139,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
 
     igl::Timer timer; auto init_time = timer.getElapsedTime(); auto t = init_time;
     // Get Hessian
-    //auto hessian = f.hessian(x); 
+    //auto hessian = f.hessian(x);
     auto hessian_ijv = f.update_and_get_hessian_ijv(x);
     auto lambda_hessian_ijv = constraints.update_and_get_lambda_hessian(x,lambda);
     auto hessian_time = timer.getElapsedTime()-t;
@@ -156,7 +156,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     build_kkt_system_from_ijv(hessian_ijv, lambda_hessian_ijv, var_n,
                         jacobian_ijv, const_n);
 
-    auto kkt_time = timer.getElapsedTime()-t;  
+    auto kkt_time = timer.getElapsedTime()-t;
 
     t = timer.getElapsedTime();
 
@@ -190,30 +190,21 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
         cout << "positive eigen values = " <<  m_solver.iparm[22]  << endl;
         cout << "negative eigen values = " <<  m_solver.iparm[21]  << endl;
         cout << "V.rows() = "<< var_n << endl;
-        cout << "jacobian.rows() = "<< const_n << endl;    
+        cout << "jacobian.rows() = "<< const_n << endl;
         int wait; cin >> wait;
     }
     */
-    /*solver.factorize(A);
-    if(solver.info()!=Eigen::Success) {
-        cout << "Eigen Failure!" << endl;
-        exit(1);
-    }*/
     auto factorize_time = timer.getElapsedTime()-t;
     t = timer.getElapsedTime();
-    
-    //m_solver.factorize();
 
     Eigen::VectorXd constraints_deviation = -1*constraints.Vals(x);
     Eigen::VectorXd rhs_upper = g-jacobian.transpose()*lambda;
     Eigen::VectorXd g_const; igl::cat(1, rhs_upper, constraints_deviation, g_const);
     //g_const = -1*g_const;
-    
+
     Eigen::VectorXd res;
-    //cout << "solving!" << endl;
-    //res = solver.solve(g_const);
     m_solver.solve(g_const,res);
-    
+
     for (int d_i = 0; d_i < g.rows(); d_i++) {d[d_i] = res[d_i];}
     for (int d_i = g.rows(); d_i < res.rows(); d_i++) {lambda_d[d_i-g.rows()] = res[d_i];}
     auto solve_time = timer.getElapsedTime()-t;
@@ -235,7 +226,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //new_e = line_search_l1_directional_derivative(x,d,step_size,f,constraints,current_merit);
     /*
     if (step_size < 1) {
-        
+
         cout << "performing second correction" << endl; //int wait; cin >> wait;
         // Second order correction
         step_size = 1;
@@ -245,7 +236,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
         auto correction_rhs = constraints.Vals(x+d);
         Eigen::VectorXd correction_solve_res; m_solver2.solve(correction_rhs,correction_solve_res);
         auto correction = -jacobian.transpose()*correction_solve_res;
-        cout << "constraints.Vals(x+d).norm() = " << constraints.Vals(x+d).norm() << 
+        cout << "constraints.Vals(x+d).norm() = " << constraints.Vals(x+d).norm() <<
             " constraints.Vals(x+d+correction).norm() = " << constraints.Vals(x+d+correction).norm() << endl;
 
         new_e = exact_l2_merit_linesearch(x,d+correction,step_size,f,constraints,current_merit*10,1);
@@ -269,8 +260,8 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     }
     */
     cout << "step_size = " << step_size << endl;
-    
-    
+
+
     // update lagrange multipliers
     lambda = lambda + step_size*lambda_d;
     auto linesearch_time = timer.getElapsedTime()-t;
@@ -282,7 +273,7 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     cout << "Hessian_compute_time  = " << hessian_time << endl;
     cout << "Jacobian_compute_time  = " << jacobian_time << endl;
     cout << "kkt_system_build_time  = " << kkt_time << endl;
-    
+
     cout << "hessian analyze_pattern_time = " << analyze_pattern_time << endl;
     cout << "factorize_time = " << factorize_time << endl;
     cout << "solve_time  = " << solve_time << endl;
@@ -293,20 +284,20 @@ double EqSQP::one_iter(const Eigen::VectorXd& x0, Objective& f, Constraints& con
     //out_file << igl::matlab_format(g_const,"g_const");
     //std::ofstream out_file(std::string("null_space.m"));
     //out_file << igl::matlab_format(Jt,"Jt");
-    
+
     //std::cout << "NewtonKKT: old_e = " << old_e << " new_e = " << new_e << std::endl;
-    
+
     return new_e;
 }
 
 double EqSQP::kkt_error(const Eigen::VectorXd& x, Objective& obj, Constraints& eq_constraints) {
     auto jacobian = eq_constraints.Jacobian(x);
-    
+
     auto g = obj.grad(x);
     //std::cout << "g.norm() = " << g.norm() << std::endl;
     double grad_error = (g-jacobian.transpose()*lambda).norm();
     double eq_const_error = eq_constraints.Vals(x).norm();
-    
+
     //std::cout << "\tgrad_error = " << grad_error << std::endl;
     //std::cout << "\teq_const_error = " << eq_const_error << std::endl;
     return std::max(grad_error, eq_const_error);

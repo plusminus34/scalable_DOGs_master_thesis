@@ -90,6 +90,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'E':
     exit(1);
     break;
+  case 'U':
+    state.DC.change_submesh();
+    break;
   }
   return false;
 }

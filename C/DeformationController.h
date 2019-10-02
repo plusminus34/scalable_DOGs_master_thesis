@@ -30,6 +30,7 @@ public:
 
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
+	void change_submesh(int submesh_i = -2);
 
 	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};
@@ -78,7 +79,7 @@ public:
 	      Add(edgeCoords,std::string("edgeCoords"));
 	      Add(paired_vertices,std::string("paired_vertices"));
 	      Add(edge_angle_pairs,std::string("edge_angle_pairs")); Add(edge_cos_angles,std::string("edge_cos_angles"));
-	      Add(bnd_vertices_pairs,std::string("bnd_vertices_pairs")); 
+	      Add(bnd_vertices_pairs,std::string("bnd_vertices_pairs"));
 	      Add(init_x0,std::string("init_x0"));
     }
 
@@ -93,7 +94,7 @@ public:
 	bool has_new_constraints = false;
 	bool is_curve_constraint = false;
 	bool is_time_dependent_deformation = false;
-	
+
 	DogEditor* dogEditor;
 	DogSolver::Params p;
 	double deformation_timestep = 0;
@@ -137,13 +138,13 @@ private:
 
 
 	Eigen::VectorXd init_x0;
-	// This needs to reset sometimes. 
+	// This needs to reset sometimes.
 	// For instance when a new soft constraint is added (but not when the constraint value change), or when a entirely new DOG is loaded
 	//	Since this amounts to a different objective/hessian sparsity pattern
 	DogSolver* dogSolver;
 	Dog* globalDog;
 	Dog* editedSubmesh;
-	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh	
+	int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh
 
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 	FoldingDihedralAngleConstraintsBuilder* foldingDihedralAngleConstraintsBuilder;

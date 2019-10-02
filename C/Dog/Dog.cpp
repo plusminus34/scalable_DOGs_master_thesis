@@ -7,12 +7,12 @@ using namespace std;
 
 int DogEdgeStitching::get_vertex_edge_point_deg(Edge& edge) const {
 	int mult_edge_index = edge_to_duplicates.at(edge);
-	int mult_edge_const_start = multiplied_edges_start[mult_edge_index]; 
+	int mult_edge_const_start = multiplied_edges_start[mult_edge_index];
 	int mult_edges_num = multiplied_edges_num[mult_edge_index];
 	return mult_edges_num;
 }
 
-Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching, 
+Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching,
 		const Eigen::MatrixXd& V_ren, const Eigen::MatrixXi& F_ren, std::vector<int> submeshVSize, std::vector<int> submeshFSize,
 		const std::vector< std::vector<int> >& submesh_adjacency) :
 				V(V),F(F),flatV(V), edgeStitching(edgeStitching),V_ren(V_ren), F_ren(F_ren), submeshVSize(submeshVSize), submeshFSize(submeshFSize),
@@ -36,7 +36,7 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching ed
 	setup_uv();
 	cout << "DOG setup complete" << endl;
 }
- 
+
 Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(V), V_ren(V), F_ren(Fsqr_to_F(F)) {
 	submeshVSize.push_back(V.rows()); submeshFSize.push_back(F.rows());
 	vi_to_submesh.assign(V.rows(),0);
@@ -83,6 +83,7 @@ void Dog::setup_stitched_curves_initial_l_angles_length() {
 
 Dog* Dog::get_submesh(int submesh_i) {
 	if (submesh_i >= get_submesh_n()) return NULL;
+	if (submesh_i == -1) return this;
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
 	Eigen::MatrixXd submeshV = V.block(submesh_v_min_i,0,submesh_v_max_i-submesh_v_min_i+1,3);
@@ -147,18 +148,18 @@ void Dog::update_Vren() {
 			//std::cout << "Added row = " << V_ren_list[i].row(submeshVList[i].rows() + eS.submesh_to_edge_pt[i].size() + j)  << std::endl;
 			}
 		}
-		
+
 	}
 }
 
 void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices) {
 	std::vector<int> idx_list;
-	if (vertices) 
+	if (vertices)
 		idx_list = submeshVSize;
 	else
-		idx_list = submeshFSize; 
+		idx_list = submeshFSize;
 
-	int sub_i = 0; submesh_min_i = 0; int submesh_vn = idx_list[0];
+	submesh_min_i = 0; int submesh_vn = idx_list[0];
 	for (int sub_i = 1; sub_i <= submesh_i; sub_i++) {
 		submesh_min_i += submesh_vn;
 		submesh_vn = idx_list[sub_i];
@@ -170,7 +171,7 @@ int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 	double eps = 1e-5;
 	auto coords = V_ren.row(v_idx);
 	for (int i = 0; i < V.rows(); i++) {
-		if ((V.row(i)-coords).norm() < eps) 
+		if ((V.row(i)-coords).norm() < eps)
 			return i;
 	}
 	// did not find matching point
@@ -212,7 +213,7 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 		// make sure the edge is an 'x' or 'y' edge
 		std::cout << "checking edge i = " << i << " out of " << E.rows() << std::endl;
 		if ( abs(V_ren(E(i,0),0)-V_ren(E(i,1),0)) < eps ) {
-			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));	
+			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));
 		} else if ( abs(V_ren(E(i,0),1)-V_ren(E(i,1),1)) < eps ) {
 			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));
 		}
@@ -275,7 +276,7 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 				prev_idx = cur_idx;
 				cur_idx = quadTop.A[cur_idx][i];
 				indices.push_back(cur_idx);
-				more_to_go = true; 
+				more_to_go = true;
 				continue;
 			}
 		}
@@ -291,7 +292,7 @@ void Dog::get_all_curves_on_parameter_line(int v_idx, const Eigen::RowVector3d& 
 			}
 		}
 	}
-	
+
 }
 
 void Dog::setup_uv() {
