@@ -4,7 +4,7 @@
 
 using namespace std;
 
-DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars, 
+DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
@@ -17,7 +17,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
           dog(dog), x(init_variables(init_mesh_vars)),
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
-          constraints(dog, x, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams, 
+          constraints(dog, x, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
                       mv_cos_angles, pairs),
           obj(dog, x, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
@@ -27,6 +27,72 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
     if (time_measurements_log) {
       p.max_newton_iters = 1;
     }
+
+    /*
+    // output to find out how stuff works
+    int v_num = dog.get_v_num();
+    cout << "Dog has " << v_num << " vertices [pos]\n";
+    cout << "dogsolver has x of size " << x.size() << " (and that should be 3x as much as the dog.v_num) [pos]\n";
+    cout << "position constraints of the new dogSolver:\n";
+    if(b.size()>0){
+      for(int i=0;i<b.size();++i)cout << "pos\t" << b[i] << "\t" << bc[i] << "\tin submesh " << dog.v_to_submesh_idx(b[i]%v_num) << endl;
+    }
+    cout << "edge constraints of the new dogSolver: "<<edgePoints.size()<<"\n";
+    cout << "paired vertices of the new dogSolver:\n";
+    if(pairs.size()>0){
+      for(int i=0;i<pairs.size();++i)cout << "pai\t" << pairs[i].first << "\t" << pairs[i].second << endl;
+    }
+    */
+
+    int num_submeshes = dog.get_submesh_n();
+    cout << "DogSolver constructor: There are " << num_submeshes << " submeshes\n";
+    for(int i=0; i<num_submeshes; ++i){
+      int mini,maxi;
+      dog.get_submesh_min_max_i(i, mini, maxi, true);
+      cout << "\tsubmesh " << i << " has (mini, maxi) (" << mini << ", " << maxi << ")\n";
+    }
+
+    if(num_submeshes>1){
+      sub_dog.resize(num_submeshes);
+      sub_dogsolver.resize(num_submeshes);
+
+      // Absolutely no constraints for now
+      empty_xi.resize(0);
+      empty_xd.resize(0);
+      empty_ep.clear();
+      empty_mat.resize(0,3);
+      empty_egg.clear();
+      empty_d.clear();
+      empty_thing.clear();
+      empty_pair.clear();
+
+      for(int i=0; i<num_submeshes; ++i){
+        sub_dog[i] = dog.get_submesh(i);
+        Eigen::VectorXd sub_x = sub_dog[i]->getV_vector();
+
+        sub_dogsolver[i] = new DogSolver(*sub_dog[i], sub_x, p,
+              empty_xi, empty_xd,
+              empty_ep, empty_mat,
+              empty_egg, empty_d,
+              empty_thing, empty_d,
+              empty_pair,
+              empty_pair,
+              NULL);
+      }
+      cout << "Sub_dogsolvers constructed\n";
+    } else {
+      sub_dog.clear();
+      sub_dogsolver.clear();
+    }
+}
+
+DogSolver::~DogSolver(){
+  if(sub_dog.size() > 0){
+    for(int i=0; i<sub_dog.size(); ++i) delete sub_dog[i];
+  }
+  if(sub_dogsolver.size() > 0){
+    for(int i=0; i<sub_dogsolver.size(); ++i) delete sub_dogsolver[i];
+  }
 }
 
 Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars) {
@@ -39,11 +105,11 @@ Eigen::VectorXd DogSolver::init_variables(const Eigen::VectorXd& init_mesh_vars)
 }
 
 DogSolver::Constraints::Constraints(const Dog& dog, const Eigen::VectorXd& init_x0,
-      Eigen::VectorXi& b, Eigen::VectorXd& bc, 
+      Eigen::VectorXi& b, Eigen::VectorXd& bc,
       std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
       std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
       std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
-      std::vector<std::pair<int,int>>& pairs) : 
+      std::vector<std::pair<int,int>>& pairs) :
                     dogConst(dog.getQuadTopology()),
                     stitchingConstraints(dog.getQuadTopology(), dog.getEdgeStitching()),
                     posConst(b,bc),
@@ -65,7 +131,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           FoldingMVBiasConstraints& foldingMVBiasConstraints,
           std::vector<std::pair<int,int>>& bnd_vertices_pairs,
-          const DogSolver::Params& p) : 
+          const DogSolver::Params& p) :
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
         edgePosSoftConstraints(constraints.edgePtConst, init_x0),
@@ -78,7 +144,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         pairedBndVertBendingObj(dog.getQuadTopology(), bnd_vertices_pairs, init_x0, Eigen::Vector3d(1,0,0)),
         //allConstQuadraticObj(constraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
-        
+
         compObj(
           {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&pairedBndVertBendingObj},
           {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.paired_boundary_bending_weight})
@@ -117,7 +183,7 @@ bool DogSolver::is_folded() {
       if ( sign1*sign2 > 0) {
         is_folded = false;
         //cout << "Change!" << endl;
-        
+
         cout << "edge_t = " << edge_t << std::endl;
         cout << "(ep_p-ep_b_p).norm() = " << (ep_p-ep_b_p).norm()  << std::endl;
         cout << "(ep_f_p-ep_p).norm() = " << (ep_f_p-ep_p).norm()  << std::endl;
@@ -127,7 +193,7 @@ bool DogSolver::is_folded() {
         cout << "(ep_f_p-ep_p).normalized().dot(e2.normalized()) " << (ep_f_p-ep_p).normalized().dot(e2.normalized()) << std::endl;
         std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
         cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
-        
+
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;
         break;
       }
@@ -153,12 +219,39 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   if (!is_folded()) {
     cout << "Error: Not folded" << endl; exit(1);
   }
-  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.fold_bias_weight/*,p.fold_bias_weight*/});
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
-  //obj.compObj.update_weights({p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, 0.1*p.soft_pos_weight, p.dihedral_weight, p.fold_bias_weight,1});
-  newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
-  dog.update_V_vector(x.head(3*dog.get_v_num()));
-  
+
+  bool use_subsolvers = (sub_dog.size()>1);
+  if(!use_subsolvers){
+    cout << "no subsolvers\n";
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+    newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
+    dog.update_V_vector(x.head(3*dog.get_v_num()));
+  } else {
+
+    cout << "with subsolvers\n";
+    /*
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+    newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
+    dog.update_V_vector(x.head(3*dog.get_v_num()));
+    */
+
+    int num_submeshes = dog.get_submesh_n();
+    for(int i=0; i<num_submeshes; ++i){
+      cout << "subsolver " << i << " does single iteration\n";
+      sub_dogsolver[i]->set_opt_vars(sub_dog[i]->getV_vector());
+      double sub_cd = constraints_deviation;
+      double sub_obj = objective;
+      sub_dogsolver[i]->single_iteration(sub_cd, sub_obj);
+      cout << " subsolver " << i << " done\n";
+    }
+
+    //propagate local solutions to global dog
+    for(int i=0; i<num_submeshes; ++i){
+  	   dog.update_submesh_V(i, sub_dog[i]->getV());
+    }
+    cout << "all subsolvers done\n";
+  }
+
   if (is_folded()) {
     p.fold_bias_weight = 1;
   } else {
@@ -177,7 +270,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   cout << "Finished: fold bias = " << p.fold_bias_weight << " and is_folded = " << is_folded() << endl;
 
   dog.update_V_vector(x.head(3*dog.get_v_num()));
-  
+
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
 
@@ -196,12 +289,11 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   Eigen::VectorXd x0(x);
 
   obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
-
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   is_folded();
 
   dog.update_V_vector(x.head(3*dog.get_v_num()));
-  
+
   objective = obj.compObj.obj(x);
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   if (time_measurements_log) {

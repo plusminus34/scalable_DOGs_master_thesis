@@ -30,11 +30,11 @@
 #include "../Folding/FoldingMVBiasConstraints.h"
 
 using std::vector;
-
+using std::pair;
 
 class DogSolver {
 public:
-	
+
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
 		double paired_boundary_bending_weight = 1.;
@@ -82,9 +82,13 @@ public:
 		std::vector<std::pair<int,int>>& bnd_vertices_pairs,
 		std::ofstream* time_measurements_log = NULL);
 
+	~DogSolver();
+
+	//DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p);
+
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
 	Eigen::VectorXd get_opt_vars() { return x;}
-	
+
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
@@ -102,7 +106,7 @@ public:
 	void get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T);
 	void set_x_rotation(Eigen::Matrix3d& R);
 	void set_y_rotation(Eigen::Matrix3d& R);
-	
+
 	struct Constraints {
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
@@ -150,11 +154,23 @@ private:
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
-	
+
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
 	DogSolver::Objectives obj;
 	DogSolver::Params& p;
+
+	//for submeshes
+	vector< Dog* > sub_dog;
+	vector< DogSolver* > sub_dogsolver;
+	Eigen::VectorXi empty_xi;
+	Eigen::VectorXd empty_xd;
+	std::vector<EdgePoint> empty_ep;
+	Eigen::MatrixXd empty_mat;
+	std::vector<std::pair<Edge,Edge>> empty_egg;
+	std::vector<MVTangentCreaseFold> empty_thing;
+	std::vector<double> empty_d;
+	std::vector<pair<int,int>> empty_pair;
 
 	// Solvers
 	//NewtonKKT newtonKKT;

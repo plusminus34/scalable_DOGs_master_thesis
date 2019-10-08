@@ -14,7 +14,7 @@
 // Not a complete hessian at the moment (see https://en.wikipedia.org/wiki/Gauss%E2%80%93Newton_algorithm for a matrix notation of the hessian)
 // The hessian here only takes into account the first derivative from the constraint itself, and is of the form 2*Jt*J
 class QuadraticConstraintsSumObjective : public Objective {
-  
+
 public:
 	QuadraticConstraintsSumObjective(Constraints& constraints, const Eigen::VectorXd& x0): cnst(&constraints) {
 		// Need to set some IJV (in some size)
@@ -26,7 +26,7 @@ public:
 	double obj(const Eigen::VectorXd& x) const {
 		return cnst->Vals(x).squaredNorm();
 	}
-	
+
 	Eigen::VectorXd grad(const Eigen::VectorXd& x) const {
 		// The derivative of the sum of squares is twice times the sume of the gradients times the values
 		auto jacob = cnst->Jacobian(x);

@@ -211,7 +211,7 @@ void Dog::setup_rendered_wireframe_edges_from_planar() {
 	Eigen::MatrixXi E; igl::edges(F_ren,E);
 	for (int i = 0; i < E.rows(); i++) {
 		// make sure the edge is an 'x' or 'y' edge
-		std::cout << "checking edge i = " << i << " out of " << E.rows() << std::endl;
+		//std::cout << "checking edge i = " << i << " out of " << E.rows() << std::endl;
 		if ( abs(V_ren(E(i,0),0)-V_ren(E(i,1),0)) < eps ) {
 			rendered_wireframe_edges.push_back(std::pair<int,int>(E(i,0),E(i,1)));
 		} else if ( abs(V_ren(E(i,0),1)-V_ren(E(i,1),1)) < eps ) {

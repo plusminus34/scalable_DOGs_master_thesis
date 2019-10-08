@@ -41,7 +41,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	// For rendering puproses: snap nearby edge points
 	std::vector<Eigen::MatrixXd> V_ren_list; generate_V_ren_list(V, submeshVList,edgeStitching,V_ren_list);
 	std::cout << "generated v ren list" << std::endl;
-	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons, 
+	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren; generate_rendered_mesh_vertices_and_faces(creasePattern, submesh_polygons,
 									V_ren_list, edgeStitching, V_ren, F_ren);
 	std::cout << "Generated constraints" << std::endl;
 
@@ -62,7 +62,7 @@ Dog dog_from_crease_pattern(const CreasePattern& creasePattern) {
 	return Dog(V,F,edgeStitching,V_ren,F_ren,submeshVSize,submeshFSize,submesh_adjacency);
 }
 
-void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons, 
+void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& is_polygon_hole, std::vector<Polygon_2>& gridPolygons,
 						std::vector<std::vector<bool>>& sqr_in_polygon) {
 	// Get the faces' polygons and find their intersections with the faces
 	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
@@ -88,7 +88,7 @@ void set_sqr_in_polygon(const CreasePattern& creasePattern, std::vector<bool>& i
 			// This could be do the inaccuracies converting CGAL to double? (I think there's no conversion here so this is weird)
 			// If we do intersect, we filter those numerical errors
 			if (face_intersection) {
-				cout << "got face intersection" << endl;
+				//cout << "got face intersection" << endl;
 				Polygon_set R;
 				CGAL::intersection(poly, gridPolygons[f_i], std::back_inserter(R));
 				bool all_areas_are_zero = true;
@@ -114,8 +114,8 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 	int submesh_n = sqr_in_polygon.size();
 	submeshVList.resize(submesh_n); submeshFList.resize(submesh_n); submeshV_is_inner.resize(grid_polygons_n);
 
-	
-	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF; 
+
+	Eigen::MatrixXd gridV; Eigen::MatrixXi gridF;
 	init_mesh_vertices_and_faces_from_grid(creasePattern, gridV, gridF);
 
 	int poly_idx = 0;
@@ -125,8 +125,8 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 		submeshF.resize(f_cnt,4); int cnt = 0;
 		for (int fi = 0; fi < submesh_flags.size(); fi++) {
 			if (submesh_flags[fi]) {
-				submeshF.row(cnt++) << gridF.row(fi);	
-			} 
+				submeshF.row(cnt++) << gridF.row(fi);
+			}
 		}
 		Eigen::MatrixXi I,J; // J is s.t slice(V,J,1,NV);
 		igl::remove_unreferenced(gridV,submeshF,submeshV,submeshF,I,J);
@@ -135,7 +135,7 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 		std::cout << "poly_idx = " << poly_idx << std::endl;
 		submeshV_is_inner[poly_idx].resize(submeshV.rows());
-		
+
 		poly_idx++;
 	}
 	igl::combine(submeshVList,submeshFList, V, F);
@@ -144,7 +144,7 @@ void generate_mesh(const CreasePattern& creasePattern, const std::vector<Polygon
 
 
 // Another way to go about it is to get the vertices of the (orth grid + polylines) graph that share more than one face
-void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+void generate_constraints(const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList,
 						const std::vector<Eigen::MatrixXi>& submeshFList, DogEdgeStitching& edgeStitching,
 						std::vector<Point_2>& constrained_pts_non_unique, const Eigen::MatrixXd& V) {
 	// Get all the polylines unique points (vertices will appear twice with each polyline)
@@ -183,13 +183,13 @@ void generate_constraints(const CreasePattern& creasePattern, const std::vector<
 		for (auto subm_i : submeshes_with_pt) {
 			edgeStitching.submesh_to_edge_pt[subm_i].push_back(index_to_one_of_the_edge_pts); // push one of the vertices
 		}
-		
+
 		pt_const_i++;
 	}
-	
+
 	// set stitched_curves (once per edge, even if it is duplicated)
 	edgeStitching.stitched_curves.resize(polylines.size());
-	
+
 	for (int i = 0; i < polylines.size(); i++) {
 		std::vector<Point_2> pts; polyline_to_points(polylines[i],pts);
 		bool is_closed = is_closed_polyline(polylines[i]);
@@ -232,7 +232,7 @@ void get_faces_partitions_to_submeshes(const CreasePattern& creasePattern, std::
 	// Get orth grid and add it the polylines
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
 	PlanarArrangement grid_with_snapped(orthGrid);
-	grid_with_snapped.add_polylines(creasePattern.get_clipped_fold_polylines()); 
+	grid_with_snapped.add_polylines(creasePattern.get_clipped_fold_polylines());
 	grid_with_snapped.add_polylines(creasePattern.get_clipped_bnd_polylines());
 	grid_with_snapped.get_faces_polygons(faces_polygons);
 
@@ -298,7 +298,7 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
 	int squares_num = (gx_coords.size()-1)*(gy_coords.size()-1);
 	//std::cout << "squares_num = " << squares_num << std::endl;
 	gridPolygons.resize(squares_num);
-	
+
 	for (int y_i = 0; y_i < gy_coords.size()-1; y_i++) {
 		for (int x_i = 0; x_i < gx_coords.size()-1; x_i++) {
 			Polygon_2 P;
@@ -314,24 +314,24 @@ void init_grid_polygons(const CreasePattern& creasePattern,std::vector<Polygon_2
 	}
 }
 
-void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList, 
+void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePattern, const std::vector<Eigen::MatrixXd>& submeshVList,
 				std::vector<Edge>& edge_v_indices, Number_type& edge_t, std::vector<int>& submeshes_with_pt) {
 
 	const OrthogonalGrid& orthGrid(creasePattern.get_orthogonal_grid());
-	std::pair<Point_2,Point_2> edge_pts; 
+	std::pair<Point_2,Point_2> edge_pts;
 	if (!orthGrid.get_pt_edge_coordinates(pt, edge_pts,edge_t)) {
 		std::cout << "Error, got a point pt = " << pt << " that is not on the grid " << std::endl;
 		exit(1); // Should never get here, and if so all is lost
 	}
-	std::vector<Polygon_with_holes_2> submeshBnd; 
+	std::vector<Polygon_with_holes_2> submeshBnd;
 	creasePattern.get_submeshes_faces_polygons(submeshBnd);
 	//std::cout << "point p = " << pt << " lies between " << edge_pts.first << " and " << edge_pts.second << " with t = " << t << std::endl;
 	// Now find the indices of both points and add them as constraints
 	// For every point, find all submeshes that contain it. We need to have both points for a submesh to count.
-	
+
 	Eigen::RowVector3d pt1(CGAL::to_double(edge_pts.first.x()),CGAL::to_double(edge_pts.first.y()),0);
 	Eigen::RowVector3d pt2(CGAL::to_double(edge_pts.second.x()),CGAL::to_double(edge_pts.second.y()),0);
-	
+
 	// Go through every submesh
 	int global_idx_base = 0;
 	for (int sub_i = 0; sub_i < submeshVList.size(); sub_i++) {
@@ -353,7 +353,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 			Point_2 offset_xminus = Point_2(pt.x()-Number_type(step_size),pt.y());
 			Point_2 offset_yplus = Point_2(pt.x(),pt.y()+Number_type(step_size));
 			Point_2 offset_yminus = Point_2(pt.x(),pt.y()-Number_type(step_size));
-			
+
 			bool pos_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xplus);//(submeshBnd[sub_i].bounded_side(offset_xplus) == CGAL::ON_BOUNDED_SIDE);
 			bool pos_m_eps_insidex = pt_inside_polygon(submeshBnd[sub_i],offset_xminus);//(submeshBnd[sub_i].bounded_side(offset_xminus) == CGAL::ON_BOUNDED_SIDE);
 			bool pos_eps_insidey = pt_inside_polygon(submeshBnd[sub_i],offset_yplus);//(submeshBnd[sub_i].bounded_side(offset_yplus) == CGAL::ON_BOUNDED_SIDE);
@@ -362,13 +362,13 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 			pt_in_submesh = pt_in_submesh | pos_eps_insidex | pos_m_eps_insidex | pos_eps_insidey | pos_m_eps_insidey;
 
 			//std::cout << "inside and pt_in_submesh = " << pt_in_submesh << std::endl;
-			
+
 			if (pt_in_submesh) {
 				// Insert the (global V) indices
 				edge_v_indices.push_back(Edge(global_idx_base+pt1_idx,global_idx_base+pt2_idx));
 				submeshes_with_pt.push_back(sub_i);
 			}
-			
+
 		}
 		global_idx_base += submeshVList[sub_i].rows();
 	}
@@ -379,7 +379,7 @@ void pt_to_edge_coordinates(const Point_2& pt, const CreasePattern& creasePatter
 		std::cout << "Error, got an edge that is not in a submesh, with pt1 = " << pt1 << " and pt2 = " << pt2 << std::endl;
 		exit(1); // Should not get here, and if so there's really nothing to do but debug the crease pattern
 	}
-	*/	
+	*/
 }
 
 bool is_closed_polyline(const Polyline_2& poly) {
@@ -393,7 +393,7 @@ void polyline_to_points(const Polyline_2& poly, std::vector<Point_2>& points) {
 	// handle closed and open curves differently
 	int seg_n = poly.subcurves_end()-poly.subcurves_begin();
 	int points_n = (is_closed_polyline(poly)) ? seg_n : seg_n+1;
-	
+
 	points.resize(points_n); int cnt = 0;
 	points[cnt++] = poly.subcurves_begin()->source();
 	for (auto seg_i = poly.subcurves_begin(); seg_i!= poly.subcurves_end(); seg_i++) {
@@ -418,7 +418,7 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 			auto coord_x =  t*V(eS.edge_const_1[ei].v1,0) + (1-t)*V(eS.edge_const_1[ei].v2,0);
 			auto coord_y =  t*V(eS.edge_const_1[ei].v1,1) + (1-t)*V(eS.edge_const_1[ei].v2,1);
 			V_ren_list[i].row(submeshVList[i].rows() + j) << CGAL::to_double(coord_x), CGAL::to_double(coord_y),0;
-			//V_ren_list[i].row(submeshVList[i].rows() + j) = 
+			//V_ren_list[i].row(submeshVList[i].rows() + j) =
 			//double t = eS.edge_coordinates[ei];
 			//V_ren_list[i].row(submeshVList[i].rows() + j) = t*V.row(eS.edge_const_1[ei].v1) + (1-t)*V.row(eS.edge_const_1[ei].v2);
 		}
@@ -432,7 +432,7 @@ void generate_V_ren_list(Eigen::MatrixXd& V, std::vector<Eigen::MatrixXd>& subme
 }
 
 
-void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern, 
+void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePattern,
 		const std::vector<SubmeshPoly>& submesh_polygons,
 		std::vector<Eigen::MatrixXd>& V_ren_list, DogEdgeStitching& edgeStitching,
 		Eigen::MatrixXd& V_ren,
@@ -460,7 +460,7 @@ void generate_rendered_mesh_vertices_and_faces(const CreasePattern& creasePatter
 			polygons_v_ren_indices.push_back(std::vector<int>(submesh_poly.size())); int poly_vi = 0;
 			for (auto vptr = submesh_poly.vertices_begin(); vptr != submesh_poly.vertices_end(); vptr++) {
 				PointDouble pt(CGAL::to_double(vptr->x()),CGAL::to_double(vptr->y()));
-				
+
 				if (point_to_sub_V_ren.count(pt)) {
 					polygons_v_ren_indices[poly_n][poly_vi] = point_to_sub_V_ren[pt];
 					//std::cout << "Mapped point to polygon at: (" << pt.first << "," << pt.second << ")" << std::endl;
@@ -508,7 +508,7 @@ Number_type bbox_max_edge(const CGAL::Bbox_2& bbox) {
 std::vector<bool> submesh_is_hole(const CreasePattern& creasePattern) {
 	auto holes = creasePattern.boundary()->get_holes();
 	std::cout << "holes.size() = " << holes.size() << std::endl;
-	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);	
+	std::vector<Polygon_with_holes_2> facePolygons; creasePattern.get_submeshes_faces_polygons(facePolygons);
 	std::vector<bool> submesh_is_hole(facePolygons.size(), false); int poly_i = 0;
 	for (auto poly : facePolygons) {
 		auto bbox_error_threshold = Number_type(1e-2)*bbox_max_edge(poly.bbox());
@@ -546,31 +546,31 @@ void polygon_mesh_to_triangle_mesh_better(const std::vector<std::vector<int> > &
     int k = 0;
    	for (int fi = 0; fi < vF.size(); fi++) {
    	  int poly_vn = vF[fi].size();
-   	  
+
    	  for (auto vi : vF[fi]) std::cout << vi << ","; std::cout << std::endl;
       if(vF[fi].size() >= 3) {
       	// first find the vertex we connect all edges to
       	Eigen::MatrixXd triV(poly_vn,3); for (int i = 0; i < poly_vn; i++) triV.row(i) = V_ren.row(vF[fi][i]);
       	Eigen::MatrixXi triF(poly_vn-2,3);
-      	std::cout << "Face number " << fi << " with triV.rows() = " << triV.rows() << std::endl;
+      	//std::cout << "Face number " << fi << " with triV.rows() = " << triV.rows() << std::endl;
       	double biggest_min_tri_area = 0; int biggest_min_tri_area_i = 0;
       	for (int j = 0; j < poly_vn; j++) {
       		int tri_f_cnt = 0; Eigen::VectorXd dblA;
       		for (int next = (j+1)%poly_vn; (next+1)%poly_vn != j; next = (next+1)%poly_vn ) {
 	      		triF.row(tri_f_cnt++) << j,next,(next+1)%poly_vn;
-      		}	
+      		}
       		igl::doublearea(triV,triF,dblA);
-      		std::cout << "dblA = " << dblA << std::endl;
+      		//std::cout << "dblA = " << dblA << std::endl;
       		double min_tri_area =  dblA.minCoeff();
       		if (min_tri_area > biggest_min_tri_area) {
-      			std::cout << "min_tri_area > biggest_min_tri_area since " << min_tri_area << " > " << biggest_min_tri_area << std::endl;
+      			//std::cout << "min_tri_area > biggest_min_tri_area since " << min_tri_area << " > " << biggest_min_tri_area << std::endl;
       			biggest_min_tri_area = min_tri_area;
       			biggest_min_tri_area_i = j;
       		} else {
-      			std::cout << "min_tri_area not bigger than biggest_min_tri_areasince " << min_tri_area << " not bigger than " << biggest_min_tri_area << std::endl;
+      			//std::cout << "min_tri_area not bigger than biggest_min_tri_areasince " << min_tri_area << " not bigger than " << biggest_min_tri_area << std::endl;
       		}
       	}
-      	std::cout << "biggest_min_tri_area_i = " << biggest_min_tri_area_i <<std::endl;
+      	//std::cout << "biggest_min_tri_area_i = " << biggest_min_tri_area_i <<std::endl;
       	int main_v = biggest_min_tri_area_i;
       	//std::cout << "main_v = " << main_v << std::endl;
       	//if (main_v != 0) {std::cout << "Boom!" << std::endl; int wait; std::cin >> wait;}

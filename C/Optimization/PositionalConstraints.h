@@ -29,7 +29,7 @@ public:
 			IJV[b_i] = Eigen::Triplet<double>(const_n++, var_const_idx, 1);
 		}
 	}
-	
+
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x, const Eigen::VectorXd& lambda) {
 		// Linear constraints have zero second derivative. Empty on purpose
 	};
@@ -49,7 +49,7 @@ public:
 	SoftPositionalConstraints(const Eigen::VectorXi& b, const Eigen::VectorXd& bc) : posConst(b,bc), innerObj(posConst) {}
 
 	double obj(const Eigen::VectorXd& x) const { return innerObj.obj(x);}
-	
+
 	Eigen::VectorXd grad(const Eigen::VectorXd& x) const {return innerObj.grad(x);}
 	virtual Eigen::SparseMatrix<double> hessian(const Eigen::VectorXd& x) const {
 		// The constraints is linear so the hessian is just simple 2*J'*J
