@@ -167,6 +167,12 @@ void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_
 	submesh_max_i = submesh_min_i+submesh_vn-1;
 }
 
+int Dog::v_in_submesh(int v) const {
+	int submesh_i = vi_to_submesh[v];
+	for(int i=1; i<=submesh_i; ++i) v -= submeshVSize[i-1];
+	return v;
+}
+
 int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 	double eps = 1e-5;
 	auto coords = V_ren.row(v_idx);

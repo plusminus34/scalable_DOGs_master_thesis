@@ -68,6 +68,44 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       empty_thing.clear();
       empty_pair.clear();
 
+      const DogEdgeStitching& edgeStitching = dog.getEdgeStitching();
+      for(int j=0;j<edgeStitching.stitched_curves.size(); ++j){
+        for(int k=0;k<edgeStitching.stitched_curves[j].size(); ++k){
+          cout << "edgeStitching.stitched_curves["<<j<<"]["<<k<<"] is\t" << edgeStitching.stitched_curves[j][k].edge.v1 <<"-"<<edgeStitching.stitched_curves[j][k].edge.v2 << " at " << edgeStitching.stitched_curves[j][k].t<<endl;
+        }
+      }
+      for(int i=0; i<num_v; ++i){
+        cout << "v_to_submesh_idx("<<i<<") = " << dog.v_to_submesh_idx(i)<<endl;// gives index of submesh
+        cout << "v_in_submesh("<<i<<") = "<<dog.v_in_submesh(i)<<endl;//gives index of v in its submesh
+      }
+      vector< vector<int> > stored_stitch(num_submeshes);
+      constrained_edge_points.resize(num_submeshes);
+      for(int i=0; i<num_submeshes; ++i) {constrained_edge_points[i].clear(); stored_stitch[i].clear();}
+      for(int j=0; j<edgeStitching.edge_coordinates.size(); ++j){
+        int v11 = edgeStitching.edge_const_1[j].v1;
+        int v12 = edgeStitching.edge_const_1[j].v2;
+        int v21 = edgeStitching.edge_const_2[j].v1;
+        int v22 = edgeStitching.edge_const_2[j].v2;
+        double t = edgeStitching.edge_coordinates[j];
+
+        cout << "edgeStitching " << j << ":\t" << v11 << "-" << v12 << " corresponding to " << v21 << "-" << v22
+            << " at coord " << t <<endl;
+
+        int submesh_1 = dog.v_to_submesh_idx(v11);
+        int submesh_2 = dog.v_to_submesh_idx(v21);
+        constrained_edge_points[submesh_1].push_back(EdgePoint(Edge(dog.v_in_submesh(v11), dog.v_in_submesh(v12)),t));
+        constrained_edge_points[submesh_2].push_back(EdgePoint(Edge(dog.v_in_submesh(v21), dog.v_in_submesh(v22)),t));//1-t?
+
+        stored_stitch[submesh_1].push_back(j);
+        stored_stitch[submesh_2].push_back(j);//.... :/
+      }
+      for(int i=0;i<constrained_edge_points.size();++i){
+        for(int j=0;j<constrained_edge_points[i].size();++j){
+          cout << "ij["<<i<<"]["<<j<<"] is\t" << constrained_edge_points[i][j].edge.v1<<endl;
+        }
+      }
+
+
       for(int i=0; i<num_submeshes; ++i){
         sub_dog[i] = dog.get_submesh(i);
         Eigen::VectorXd sub_x = sub_dog[i]->getV_vector();
@@ -94,12 +132,19 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         }
         */
 
+        Eigen::MatrixXd sub_m = EdgePoint::getPositionInMesh(constrained_edge_points[i], sub_dog[i]->getV());
+        /*
+        for(int j=0; j<sub_m.rows(); ++j){
+          sub_m.rows(j) << constrained_edge_points[i][j].
+        }
+        */
 
         cout << "constructing subsolver "<<i<<endl;
         sub_dogsolver[i] = new DogSolver(*sub_dog[i], sub_x, p,
               //sub_b,sub_bc,
               empty_xi, empty_xd,
-              empty_ep, empty_mat,
+              constrained_edge_points[i], sub_m,
+              //empty_ep, empty_mat,
               empty_egg, empty_d,
               empty_thing, empty_d,
               empty_pair,
@@ -286,7 +331,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
 void DogSolver::single_iteration_subsolvers(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine" << endl;
 	Eigen::VectorXd x0(x);
-
+  //TODO update constrained edge points ...?
   bool use_subsolvers = (sub_dog.size()>1);
   if(!use_subsolvers){
     cout << " no subsolvers\n";
@@ -298,6 +343,9 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
     int num_submeshes = dog.get_submesh_n();
     for(int i=0; i<num_submeshes; ++i){
       cout << "subsolver " << i << " does single iteration\n";
+      Eigen::MatrixXd sub_m = EdgePoint::getPositionInMesh(constrained_edge_points[i], sub_dog[i]->getV());
+      sub_dogsolver[i]->update_edge_coords(sub_m);
+
       sub_dogsolver[i]->set_opt_vars(sub_dog[i]->getV_vector());
       double sub_cd = constraints_deviation;
       double sub_obj = objective;

@@ -169,6 +169,9 @@ private:
 	//for submeshes
 	vector< Dog* > sub_dog;
 	vector< DogSolver* > sub_dogsolver;
+
+	vector< vector< EdgePoint > > constrained_edge_points;
+
 	Eigen::VectorXi empty_xi;
 	Eigen::VectorXd empty_xd;
 	std::vector<EdgePoint> empty_ep;

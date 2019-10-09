@@ -73,6 +73,9 @@ public:
 	int get_submesh_i_size(int submesh_i) const {return submeshVSize[submesh_i];}
 	int v_to_submesh_idx(int v) const {return vi_to_submesh[v];}
 
+	// returns index of vertex v inside the submesh it belongs to
+	int v_in_submesh(int v) const;
+
 	bool has_creases() const {return (edgeStitching.edge_const_1.size()>0);}
 
 	bool is_crease_vertex_flat(int curve_i, int edge_i) const;
