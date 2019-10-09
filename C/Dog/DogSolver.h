@@ -32,6 +32,8 @@
 using std::vector;
 using std::pair;
 
+enum solver_mode {mode_standard, mode_subsolvers};
+
 class DogSolver {
 public:
 
@@ -89,8 +91,11 @@ public:
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
 	Eigen::VectorXd get_opt_vars() { return x;}
 
+	void set_solver_mode(solver_mode mode_new) { mode = mode_new; }
+
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
+	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}
@@ -160,6 +165,7 @@ private:
 	DogSolver::Objectives obj;
 	DogSolver::Params& p;
 
+	solver_mode mode = mode_subsolvers;
 	//for submeshes
 	vector< Dog* > sub_dog;
 	vector< DogSolver* > sub_dogsolver;

@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {state.DC.reset_new_editor_constraint();}
       if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
 
-      ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
+      ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);/*
       ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &state.DC.p.soft_pos_weight, 0, 0, "%.4f");
@@ -224,6 +224,7 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Show creases oscillating plane", &modelViewer.render_curved_folding_properties);
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
+      */
 
       ImGui::InputDouble("Constraints deviation", &state.DC.constraints_deviation);
       ImGui::InputDouble("objective", &state.DC.objective);
@@ -233,6 +234,8 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Rulings length", &modelViewer.rulings_length);
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
+
+      //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
 
       ImGui::End();
   };
