@@ -152,7 +152,6 @@ public:
 	};
 
 private:
-	static Eigen::VectorXd init_variables(const Eigen::VectorXd& init_mesh_vars);
 
 	Dog& dog;
 	Eigen::VectorXd x; // variables
@@ -166,11 +165,15 @@ private:
 	DogSolver::Params& p;
 
 	solver_mode mode = mode_subsolvers;
+
 	//for submeshes
 	vector< Dog* > sub_dog;
 	vector< DogSolver* > sub_dogsolver;
 
 	vector< vector< EdgePoint > > constrained_edge_points;
+	vector< Eigen::MatrixXd > sub_edgeCoords;
+	vector< vector< pair<int,int> > > corresponding_edge_points;//stored as <submesh, idx>
+	void update_sub_edgeCoords();
 
 	Eigen::VectorXi empty_xi;
 	Eigen::VectorXd empty_xd;
