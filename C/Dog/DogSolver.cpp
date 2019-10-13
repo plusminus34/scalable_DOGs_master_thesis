@@ -68,7 +68,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
 
       int v_num = dog.get_v_num();
 
-      // Absolutely no constraints for now
+      // Mostly no constraints for now
       empty_xi.resize(0);
       empty_xd.resize(0);
       empty_ep.clear();
@@ -78,6 +78,36 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       empty_thing.clear();
       empty_pair.clear();
 
+
+      //Subsolver positional constraints from global positional constraints
+      {
+        sub_b.resize(num_submeshes);
+        sub_bc.resize(num_submeshes);
+        for(int i=0; i<num_submeshes; ++i) {
+          sub_b[i].resize(0);// = Eigen::VectorXd(0,0);
+        }
+        for(int i=0; i<b.size()/3; ++i){
+          int submesh_i = dog.v_to_submesh_idx(b[i]);
+          sub_b[submesh_i].resize(sub_b[submesh_i].size()+3);
+        }
+        for(int i=0; i<num_submeshes; ++i) {
+          sub_bc[i].resize(sub_b[i].size());
+        }
+        vector<int> current_j(num_submeshes,0);
+        for(int i=0; i<b.size()/3; ++i){
+          int submesh_i = dog.v_to_submesh_idx(b[i]);
+          int size_i = sub_b[submesh_i].size() / 3;
+          int local_idx = dog.v_in_submesh(b[i]);
+          sub_b[submesh_i][current_j[submesh_i] ] = local_idx;
+          sub_b[submesh_i][current_j[submesh_i] + size_i ] = local_idx + sub_dog[i]->get_v_num();
+          sub_b[submesh_i][current_j[submesh_i] + 2*size_i ] = local_idx + 2*sub_dog[i]->get_v_num();
+          sub_bc[submesh_i][current_j[submesh_i] ] = bc[i];
+          sub_bc[submesh_i][current_j[submesh_i] + size_i ] = bc[i + v_num] ;
+          sub_bc[submesh_i][current_j[submesh_i] + 2*size_i ] = bc[i] + 2*v_num;
+        }
+      }
+
+      //Subsolver edge point constraints from stitching
       const DogEdgeStitching& edgeStitching = dog.getEdgeStitching();
       constrained_edge_points.resize(num_submeshes);
       sub_edgeCoords.resize(num_submeshes);
@@ -109,7 +139,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       }
 
       // initialize sub_edgeCoords
-      //foreach submesh i: sub_edgeCoords[i] = EdgePoint::getPositionInMesh(constrained_edge_points[i], sub_dog[i]->getV());
       for(int i=0; i<num_submeshes; ++i) {
         sub_edgeCoords[i] = Eigen::MatrixXd(constrained_edge_points[i].size(), 3);
       }
@@ -137,39 +166,17 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         int mini, maxi, sub_v_num;
         sub_v_num = sub_dog[i]->get_v_num();
         dog.get_submesh_min_max_i(i, mini, maxi);
-        Eigen::VectorXd sub_x0(3*sub_v_num);//= sub_dog[i]->getV_vector();//TODO split from init_mesh_vars
+        Eigen::VectorXd sub_x0(3*sub_v_num);
         for(int j=0; j<sub_v_num; ++j){
           sub_x0[j] = init_mesh_vars[mini + j];
           sub_x0[j + sub_v_num] = init_mesh_vars[mini + v_num + j];
           sub_x0[j + 2*sub_v_num] = init_mesh_vars[mini + 2*v_num + j];
         }
 
-        /*
-        // PositionalConstraints for submeshes
-        vector<int> sb(0);
-        vector<double> sbc(0);
-        int mini,maxi;
-        dog.get_submesh_min_max_i(i, mini, maxi, true);
-        for(int j=0; j<b.size(); ++j){
-          if(dog.v_to_submesh_idx(b[j]%v_num) == i){
-            sb.push_back( b[j]%v_num - mini + (b[j]/v_num)*sub_dog[i]->get_v_num() );//TODO right is?
-            sbc.push_back(bc[j]);
-            cout << "b[j]:\t" << b[j] << "\t" << bc[j] <<endl;
-            cout << "sb:\t" << sb[sb.size()-1] << "\t" << sbc[sbc.size()-1]<<endl;
-          }
-        }
-        Eigen::VectorXi sub_b(sb.size());
-        Eigen::VectorXd sub_bc(sb.size());
-        for(int j; j<sub_b.size(); ++j){
-          sub_b[j] = sb[j];
-          sub_bc[j] = sbc[j];
-        }
-        */
-
         cout << "constructing subsolver "<<i<<endl;
         sub_dogsolver[i] = new DogSolver(*sub_dog[i], sub_x0, p,
-              //sub_b,sub_bc,
-              empty_xi, empty_xd,
+              sub_b[i], sub_bc[i],
+              //empty_xi, empty_xd,
               constrained_edge_points[i], sub_edgeCoords[i],
               //empty_ep, empty_mat,
               empty_egg, empty_d,
@@ -300,9 +307,12 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
   if(mode == mode_subsolvers) return single_iteration_subsolvers(constraints_deviation, objective);
-  if (!p.folding_mode) p.fold_bias_weight = 0;
-  if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
-  else return single_iteration_normal(constraints_deviation, objective);
+  else {
+    // mode == mode_standard
+    if (!p.folding_mode) p.fold_bias_weight = 0;
+    if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
+    else return single_iteration_normal(constraints_deviation, objective);
+  }
 }
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
@@ -353,7 +363,7 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
   bool use_subsolvers = (sub_dog.size()>1);
   if(!use_subsolvers){
     cout << " no subsolvers\n";
-    //obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
   } else {
@@ -380,7 +390,7 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
     }
     x = dog.getV_vector();
 
-        update_sub_edgeCoords();
+    update_sub_edgeCoords();
 
     cout << "all subsolvers done\n";
   }
@@ -440,5 +450,13 @@ void DogSolver::update_sub_edgeCoords(){
       sub_edgeCoords[i].row(j) = constrained_edge_points[other_submesh][other_index].getPositionInMesh(sub_dog[other_submesh]->getV());
     }
   }
+}
 
+void DogSolver::set_solver_mode(SolverMode mode_new) {
+  mode = mode_new;
+  if(sub_dogsolver.size() > 0){
+    for(int i=0; i<sub_dogsolver.size(); ++i){
+      sub_dogsolver[i]->set_solver_mode(mode_new);
+    }
+  }
 }

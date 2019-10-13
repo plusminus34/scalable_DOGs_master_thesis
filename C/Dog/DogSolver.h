@@ -32,10 +32,10 @@
 using std::vector;
 using std::pair;
 
-enum solver_mode {mode_standard, mode_subsolvers};
-
 class DogSolver {
 public:
+
+	enum SolverMode {mode_standard, mode_subsolvers};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -91,7 +91,7 @@ public:
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
 	Eigen::VectorXd get_opt_vars() { return x;}
 
-	void set_solver_mode(solver_mode mode_new) { mode = mode_new; }
+	void set_solver_mode(SolverMode mode_new);
 
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
@@ -164,11 +164,14 @@ private:
 	DogSolver::Objectives obj;
 	DogSolver::Params& p;
 
-	solver_mode mode = mode_subsolvers;
+	SolverMode mode = mode_subsolvers;
 
 	//for submeshes
 	vector< Dog* > sub_dog;
 	vector< DogSolver* > sub_dogsolver;
+
+	vector< Eigen::VectorXi > sub_b;
+	vector< Eigen::VectorXd > sub_bc;
 
 	vector< vector< EdgePoint > > constrained_edge_points;
 	vector< Eigen::MatrixXd > sub_edgeCoords;
