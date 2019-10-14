@@ -13,8 +13,8 @@ void DeformationController::setup_optimization_measurements(std::string log_file
 }
 
 void DeformationController::init_from_new_dog(Dog& dog) {
-	if (globalDog) delete globalDog;
-	if (editedSubmesh) delete editedSubmesh;
+	//if (globalDog) delete globalDog;
+	//if (editedSubmesh) delete editedSubmesh;
 	globalDog = &dog;
 	editedSubmesh = globalDog;
 	editedSubmeshI = -1; // Editing the global dog
@@ -63,6 +63,7 @@ void DeformationController::single_optimization() {
 	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
 	update_dihedral_constraints();
+	dogSolver->set_solver_mode(solver_mode);
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);

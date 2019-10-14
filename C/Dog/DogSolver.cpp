@@ -55,7 +55,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
     */
 
     int num_submeshes = dog.get_submesh_n();
-    cout << "DogSolverhoi constructor: There are " << num_submeshes << " submeshes\n";
+    cout << "DogSolver constructor: There are " << num_submeshes << " submeshes\n";
     for(int i=0; i<num_submeshes; ++i){
       int mini,maxi;
       dog.get_submesh_min_max_i(i, mini, maxi, true);
@@ -82,11 +82,10 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
 
 
       //Subsolver positional constraints from global positional constraints
-      cout<<"hoi what\n";
       {
-        cout << "hoi WE DO POSCONST\n";
         sub_b.resize(num_submeshes);
         sub_bc.resize(num_submeshes);
+        sub_ij_to_bc.resize(num_submeshes);
         for(int i=0; i<num_submeshes; ++i) {
           sub_b[i].resize(0);
         }
@@ -96,26 +95,24 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         }
         for(int i=0; i<num_submeshes; ++i) {
           sub_bc[i].resize(sub_b[i].size());
+          sub_ij_to_bc[i].resize(sub_b[i].size());
         }
         vector<int> current_j(num_submeshes,0);
-        cout << "hoi before: b has size "<<b.size()<<"\n";
         for(int i=0; i<b.size()/3; ++i){
           int submesh_i = dog.v_to_submesh_idx(b[i]);
           int size_i = sub_b[submesh_i].size() / 3;
           int local_idx = dog.v_in_submesh(b[i]);
-          cout << "hoi writing element " << i << " into [" << submesh_i << "][" << current_j[submesh_i] << ", "<< (current_j[submesh_i] + size_i)
-            <<", "<<(current_j[submesh_i] + 2*size_i)<<"] where sub_b has size "<<sub_b[submesh_i].size()<<"\n";
+          //cout << "writing element " << i << " into [" << submesh_i << "][" << current_j[submesh_i] << ", "<< (current_j[submesh_i] + size_i)<<", "<<(current_j[submesh_i] + 2*size_i)<<"] where sub_b has size "<<sub_b[submesh_i].size()<<"\n";
           sub_b[submesh_i][current_j[submesh_i] ] = local_idx;
           sub_b[submesh_i][ current_j[submesh_i] + size_i ] = local_idx + sub_dog[submesh_i]->get_v_num();
           sub_b[submesh_i][current_j[submesh_i] + 2*size_i ] = local_idx + 2*sub_dog[submesh_i]->get_v_num();
           sub_bc[submesh_i][current_j[submesh_i] ] = bc[i];
           sub_bc[submesh_i][current_j[submesh_i] + size_i ] = bc[i + b.size()/3] ;
           sub_bc[submesh_i][current_j[submesh_i] + 2*size_i ] = bc[i + 2*b.size()/3];
+          sub_ij_to_bc[submesh_i][ current_j[submesh_i] ] = i;
+          sub_ij_to_bc[submesh_i][ current_j[submesh_i] + size_i ] = i + b.size()/3;
+          sub_ij_to_bc[submesh_i][ current_j[submesh_i] + 2*size_i ] = i + 2*b.size()/3;
           ++current_j[submesh_i];
-        }
-
-        for(int i=0; i<num_submeshes; ++i) {
-          cout <<"hoi: sub_b["<<i<<"] has size "<<sub_b[i].size()<<" and sub_bc " << sub_bc[i].size()<<endl;
         }
       }
 
@@ -450,6 +447,18 @@ void DogSolver::get_y_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
   R.row(0) << x(vn+3),x(vn+4),x(vn+5);
   R.row(1) << x(vn+6),x(vn+7),x(vn+8);
   R.row(2) << x(vn+9),x(vn+10),x(vn+11);
+}
+
+void DogSolver::update_point_coords(Eigen::VectorXd& bc){
+  constraints.posConst.update_coords(bc);
+  if(sub_dogsolver.size() > 0){
+    for(int i=0; i<sub_dogsolver.size(); ++i){
+      for(int j=0; j<sub_ij_to_bc[i].size(); ++j){
+        sub_bc[i][j] = bc[sub_ij_to_bc[i][j]];
+      }
+      sub_dogsolver[i]->update_point_coords(sub_bc[i]);
+    }
+  }
 }
 
 void DogSolver::update_sub_edgeCoords(){

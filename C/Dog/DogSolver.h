@@ -98,7 +98,7 @@ public:
 	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
-	void update_point_coords(Eigen::VectorXd& bc) {constraints.posConst.update_coords(bc);}//TODO update subsolvers
+	void update_point_coords(Eigen::VectorXd& bc);
 	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
 	void update_mv_cos_angles(const std::vector<double> cos_angles_i) {constraints.mvTangentCreaseAngleConst.set_angles(cos_angles_i);}
 
@@ -172,6 +172,7 @@ private:
 
 	vector< Eigen::VectorXi > sub_b;
 	vector< Eigen::VectorXd > sub_bc;
+	vector< vector<int> > sub_ij_to_bc;
 
 	vector< vector< EdgePoint > > constrained_edge_points;
 	vector< Eigen::MatrixXd > sub_edgeCoords;
