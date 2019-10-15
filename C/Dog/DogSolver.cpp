@@ -259,7 +259,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj, &allConstQuadraticObj},
           {p.bending_weight,p.isometry_weight, p.soft_pos_weight, p.soft_pos_weight, pair_weight, p.dihedral_weight, p.fold_bias_weight,1})
           */
-          {cout << "objectives done\n";
+          {
     // Empty on purpose
   //std::cout << "p.isometry_weight/dog.getQuadTopology().E.rows() = " << p.isometry_weight/dog.getQuadTopology().E.rows() << std::endl; exit(1);
 }
@@ -374,9 +374,15 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
     obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
+
+    constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
+    objective = obj.compObj.obj(x);
   } else {
     cout << " with subsolvers\n";
     int num_submeshes = dog.get_submesh_n();
+
+    constraints_deviation = 0.0;
+    objective = 0.0;
 
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){
@@ -388,6 +394,8 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
       double sub_cd = constraints_deviation;
       double sub_obj = objective;
       sub_dogsolver[i]->single_iteration_subsolvers(sub_cd, sub_obj);
+      constraints_deviation += sub_cd;
+      objective += sub_obj;
 
       cout << " subsolver " << i << " done\n";
     }
