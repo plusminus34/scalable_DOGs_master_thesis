@@ -29,13 +29,15 @@
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
 
+#include "Objectives/VSADMMConstraints.h"
+
 using std::vector;
 using std::pair;
 
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -54,6 +56,7 @@ public:
 		double convergence_threshold = 1e-6;
 		bool folding_mode = true;
 		bool flip_sign = false;
+		double admm_rho = 1;//TODO more?
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
@@ -92,10 +95,12 @@ public:
 	Eigen::VectorXd get_opt_vars() { return x;}
 
 	void set_solver_mode(SolverMode mode_new);
+	bool is_subsolver(){return (mode != mode_standard && sub_dogsolver.size()<1);}
 
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
 	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
+	void single_iteration_vsadmm(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc);
@@ -112,12 +117,29 @@ public:
 	void set_x_rotation(Eigen::Matrix3d& R);
 	void set_y_rotation(Eigen::Matrix3d& R);
 
+	//VSADMM
+	void set_A(const Eigen::SparseMatrix<double>& smat){ admm_A = smat; constraints.vsadmmConst.setstuff(admm_A, admm_z, admm_lambda, p.admm_rho);}
+	void set_z(const Eigen::VectorXd vec){ admm_z = vec; }
+	Eigen::VectorXd get_z(){return admm_z;}
+	void set_lambda(const Eigen::VectorXd vec){ admm_lambda = vec; }
+	Eigen::VectorXd get_Ax(){return admm_A*x;}
+	Eigen::VectorXd get_lambda(){return admm_lambda;}
+
+
 	struct Constraints {
 		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 			std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 			std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 			std::vector<std::pair<int,int>>& pairs);
+
+
+		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
+			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
+			std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
+			std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
+			std::vector<std::pair<int,int>>& pairs,
+			bool extended);
 
 		DogConstraints dogConst;
 		StitchingConstraints stitchingConstraints;
@@ -126,6 +148,7 @@ public:
 		EdgesAngleConstraints edgeAngleConst;
 		MVTangentCreaseAngleConstraints mvTangentCreaseAngleConst;
 		PointPairConstraints ptPairConst;
+		VSADMMConstraints vsadmmConst;
 		CompositeConstraints compConst;
 	};
 
@@ -187,6 +210,11 @@ private:
 	std::vector<MVTangentCreaseFold> empty_thing;
 	std::vector<double> empty_d;
 	std::vector<pair<int,int>> empty_pair;
+
+	//ADMM
+	Eigen::VectorXd admm_lambda;
+	Eigen::VectorXd admm_z;
+	Eigen::SparseMatrix<double> admm_A;
 
 	// Solvers
 	//NewtonKKT newtonKKT;
