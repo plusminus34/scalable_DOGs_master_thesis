@@ -30,6 +30,7 @@
 #include "../Folding/FoldingMVBiasConstraints.h"
 
 #include "Objectives/VSADMMConstraints.h"
+#include "Objectives/ProxJADMMObjective.h"
 
 using std::vector;
 using std::pair;
@@ -37,7 +38,7 @@ using std::pair;
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -100,7 +101,7 @@ public:
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
 	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
-	void single_iteration_vsadmm(double& constraints_deviation, double& objective);
+	void single_iteration_ADMM(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc);
@@ -118,7 +119,9 @@ public:
 	void set_y_rotation(Eigen::Matrix3d& R);
 
 	//VSADMM
-	void set_A(const Eigen::SparseMatrix<double>& smat);
+	void build_VSADMMObjective(const Eigen::SparseMatrix<double>& A);
+	void build_ProxJADMMObjective(const Eigen::SparseMatrix<double>& P);
+	void remake_compobj();
 	void set_z(const Eigen::VectorXd vec){ admm_z = vec; }
 	Eigen::VectorXd get_z(){return admm_z;}
 	void set_lambda(const Eigen::VectorXd vec){ admm_lambda = vec; }
@@ -205,9 +208,11 @@ private:
 	//ADMM
 	VSADMMConstraints vsadmmConst;
 	QuadraticConstraintsSumObjective *vsadmm_obj = nullptr;
+	ProxJADMMObjective *pjadmm_obj = nullptr;
 	Eigen::VectorXd admm_lambda;
 	Eigen::VectorXd admm_z;
-	Eigen::SparseMatrix<double> admm_A;
+	Eigen::VectorXd admm_x0;
+	Eigen::SparseMatrix<double> admm_A, admm_P;
 
 	// Solvers
 	//NewtonKKT newtonKKT;
