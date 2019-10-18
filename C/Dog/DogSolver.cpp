@@ -174,6 +174,27 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       std::vector< Eigen::SparseMatrix<double> > sub_admm_A(num_submeshes);
 
       for(int i=0; i<num_submeshes; ++i){
+        //building A here ... should probably done elsewhere
+        sub_admm_A[i] = Eigen::SparseMatrix<double>(edgeStitching.edge_coordinates.size(), 3*sub_dog[i]->get_v_num());
+        sub_admm_A[i].reserve(2*sub_admm_A[i].rows());
+      }
+
+      for(int j=0; j<edgeStitching.edge_coordinates.size(); ++j){
+        int v11 = edgeStitching.edge_const_1[j].v1;
+        int v12 = edgeStitching.edge_const_1[j].v2;
+        int v21 = edgeStitching.edge_const_2[j].v1;
+        int v22 = edgeStitching.edge_const_2[j].v2;
+        double t = edgeStitching.edge_coordinates[j];
+        int submesh_1 = dog.v_to_submesh_idx(v11);
+        int submesh_2 = dog.v_to_submesh_idx(v21);
+
+        sub_admm_A[submesh_1].insert(j, dog.v_in_submesh(v11)) = t;
+        sub_admm_A[submesh_1].insert(j, dog.v_in_submesh(v12)) = 1.0-t;
+        sub_admm_A[submesh_2].insert(j, dog.v_in_submesh(v21)) = -t;
+        sub_admm_A[submesh_2].insert(j, dog.v_in_submesh(v22)) = t-1.0;
+      }
+
+      for(int i=0; i<num_submeshes; ++i){
         int mini, maxi, sub_v_num;
         sub_v_num = sub_dog[i]->get_v_num();
         dog.get_submesh_min_max_i(i, mini, maxi);
@@ -183,39 +204,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
           sub_x0[j + sub_v_num] = init_mesh_vars[mini + v_num + j];
           sub_x0[j + 2*sub_v_num] = init_mesh_vars[mini + 2*v_num + j];
         }
-
-        //building A here ... should probably done elsewhere
-        sub_admm_A[i] = Eigen::SparseMatrix<double>(edgeStitching.edge_coordinates.size(), 3*sub_v_num);
-        sub_admm_A[i].reserve(2*sub_admm_A[i].rows());
-        if(i==num_submeshes-1){cout<<"Here starts admm\n";
-
-        //vector<int> current_row(num_submeshes,0);
-        for(int j=0; j<edgeStitching.edge_coordinates.size(); ++j){
-          cout<<"  admm"<<j<<"\n";
-          int v11 = edgeStitching.edge_const_1[j].v1;
-          int v12 = edgeStitching.edge_const_1[j].v2;
-          int v21 = edgeStitching.edge_const_2[j].v1;
-          int v22 = edgeStitching.edge_const_2[j].v2;
-          double t = edgeStitching.edge_coordinates[j];
-          int submesh_1 = dog.v_to_submesh_idx(v11);
-          int submesh_2 = dog.v_to_submesh_idx(v21);
-
-          cout<<"  admm sm "<<submesh_1<<" row "<<current_row[submesh_1] <<"\n";
-          cout<<"  admm sm "<<submesh_2<<" row "<<current_row[submesh_2] <<"\n";
-          sub_admm_A[submesh_1].insert(j, dog.v_in_submesh(v11)) = t;
-          sub_admm_A[submesh_1].insert(j, dog.v_in_submesh(v12)) = 1.0-t;
-          sub_admm_A[submesh_2].insert(j, dog.v_in_submesh(v21)) = -t;
-          sub_admm_A[submesh_2].insert(j, dog.v_in_submesh(v22)) = t-1.0;
-
-          //++current_row[submesh_1];
-          //++current_row[submesh_2];
-        }
-        for(int j=0;j<num_submeshes;++j){
-          cout << "sub_admm_A["<<j<<"] is size " <<sub_admm_A[j].rows()<<"x"<<sub_admm_A[j].cols()<<" with nnz "<<sub_admm_A[j].nonZeros()<<endl;
-
-        }
-        }
-
 
         cout << "constructing subsolver "<<i<<endl;
         sub_dogsolver[i] = new DogSolver(*sub_dog[i], sub_x0, p,
@@ -229,8 +217,8 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
               empty_pair,
               NULL);
 
-        sub_dogsolver[i]->set_lambda(Eigen::VectorXd::Zero(sub_x0.size()));
-        sub_dogsolver[i]->set_z(sub_x0);
+        sub_dogsolver[i]->set_lambda(Eigen::VectorXd::Zero(sub_admm_A[i].rows()));
+        sub_dogsolver[i]->set_z(Eigen::VectorXd::Zero(sub_admm_A[i].rows()));
         sub_dogsolver[i]->set_A(sub_admm_A[i]);
         cout << " constructed subsolver "<<i<<endl;
       }
@@ -242,6 +230,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
 }
 
 DogSolver::~DogSolver(){
+  if(vsadmm_obj) delete vsadmm_obj;
   if(sub_dog.size() > 0){
     for(int i=0; i<sub_dog.size(); ++i) delete sub_dog[i];
   }
@@ -265,26 +254,6 @@ DogSolver::Constraints::Constraints(const Dog& dog, const Eigen::VectorXd& init_
                     ptPairConst(pairs),
                     //compConst({&dogConst, &stitchingConstraints}) /*the positional/edge constraints are soft and go into the objective*/ {
                     compConst({&dogConst}) /*the positional/edge constraints are soft and go into the objective*/ {
-    // Empty on purpose
-}
-
-DogSolver::Constraints::Constraints(const Dog& dog, const Eigen::VectorXd& init_x0,
-      Eigen::VectorXi& b, Eigen::VectorXd& bc,
-      std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-      std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
-      std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
-      std::vector<std::pair<int,int>>& pairs,
-      bool extended) :
-                    dogConst(dog.getQuadTopology()),
-                    stitchingConstraints(dog.getQuadTopology(), dog.getEdgeStitching()),
-                    posConst(b,bc),
-                    edgePtConst(dog.getQuadTopology(),edgePoints, edgeCoords),
-                    edgeAngleConst(dog.getQuadTopology(), init_x0, edge_angle_pairs, edge_cos_angles),
-                    mvTangentCreaseAngleConst(dog.getQuadTopology(), init_x0, mvTangentCreaseAngleParams, mv_cos_angles),
-                    ptPairConst(pairs),
-                    vsadmmConst(),
-                    //compConst({&dogConst, &stitchingConstraints}) /*the positional/edge constraints are soft and go into the objective*/ {
-                    compConst({&dogConst, &vsadmmConst}) /*the positional/edge constraints are soft and go into the objective*/ {
     // Empty on purpose
 }
 
@@ -391,7 +360,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
     cout << "Error: Not folded" << endl; exit(1);
   }
 
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,0});
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -405,7 +374,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
       dog.update_V_vector(x.head(3*dog.get_v_num()));
       cout << "Rolled back and is_folded = " << is_folded() << endl;
       p.fold_bias_weight *= 10;
-      obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight,p.mv_bias_weight,p.paired_boundary_bending_weight});
+      obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight,p.mv_bias_weight,p.paired_boundary_bending_weight,0});
       newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
       dog.update_V_vector(x.head(3*dog.get_v_num()));
     }
@@ -432,7 +401,7 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
   bool use_subsolvers = (sub_dog.size()>1);
   if(!use_subsolvers){
     cout << " no subsolvers\n";
-    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,0});
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -478,7 +447,7 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
 	Eigen::VectorXd x0(x);
   if(is_subsolver()){
     cout << " no subsolvers\n";
-    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,p.admm_rho});
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -491,17 +460,18 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
     constraints_deviation = 0.0;
     objective = 0.0;
     vector<Eigen::VectorXd> sub_Ax(num_submeshes);
-//    Eigen::VectorXd sum_Ax()
+    Eigen::VectorXd sum_Ax;
     vector<Eigen::VectorXd> sub_z(num_submeshes);
+
     for(int i=0; i<num_submeshes; ++i){
       sub_Ax[i] = sub_dogsolver[i]->get_Ax();
+      if(i==0) sum_Ax = sub_Ax[i];
+      else sum_Ax += sub_Ax[i];
     }
     for(int i=0; i<num_submeshes; ++i){
-      sub_z[i] = sub_Ax[i] - 2*sub_dogsolver[i]->get_lambda() / p.admm_rho;
-      for(int j=0;j<num_submeshes;++j) sub_z[i] -= sub_Ax[j] / num_submeshes;
+      sub_z[i] = sub_Ax[i] - sum_Ax/num_submeshes - (2 / p.admm_rho)*sub_dogsolver[i]->get_lambda() ;
       sub_dogsolver[i]->set_z(sub_z[i]);
     }
-    cout << "vsadmm got Ax,z\n";
 
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){
@@ -512,7 +482,6 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
       double sub_cd = constraints_deviation;
       double sub_obj = objective;
 
-      //TODO update z_i
       sub_dogsolver[i]->single_iteration_vsadmm(sub_cd, sub_obj);
 
       constraints_deviation += sub_cd;
@@ -524,8 +493,6 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
 
       cout << " subsolver " << i << " done\n";
     }
-
-    //TODO update lambda_i
 
     //propagate local solutions to global dog
     for(int i=0; i<num_submeshes; ++i){
@@ -543,7 +510,7 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   cout << "running a single optimization routine (normal)" << endl;
   Eigen::VectorXd x0(x);
 
-  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight});
+  obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight,p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,0});
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -614,4 +581,23 @@ void DogSolver::set_solver_mode(SolverMode mode_new) {
       sub_dogsolver[i]->set_solver_mode(mode_new);
     }
   }
+}
+
+void DogSolver::set_A(const Eigen::SparseMatrix<double>& smat){
+  admm_A = smat;
+  vsadmmConst.set_pointers(admm_A, admm_z, admm_lambda, p.admm_rho);
+  if(vsadmm_obj) delete vsadmm_obj;
+  vsadmm_obj = new QuadraticConstraintsSumObjective(vsadmmConst, x);
+  // Replacing the CompositeObjective here is probably dangerous
+  obj.compObj = CompositeObjective(
+    {&obj.bending, &obj.isoObj, &obj.stitchingConstraintsPenalty,
+     &obj.pointsPosSoftConstraints, &obj.edgePosSoftConstraints,
+     &obj.ptPairSoftConst, &obj.edgeAnglesSoftConstraints,
+     &obj.mvTangentCreaseSoftConstraints, &obj.foldingBinormalBiasObj,
+     &obj.foldingMVBiasObj,&obj.pairedBndVertBendingObj, vsadmm_obj},
+    {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
+     p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+     p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+     p.paired_boundary_bending_weight, p.admm_rho});
+
 }

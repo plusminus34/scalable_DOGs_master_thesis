@@ -118,7 +118,7 @@ public:
 	void set_y_rotation(Eigen::Matrix3d& R);
 
 	//VSADMM
-	void set_A(const Eigen::SparseMatrix<double>& smat){ admm_A = smat; constraints.vsadmmConst.setstuff(admm_A, admm_z, admm_lambda, p.admm_rho);}
+	void set_A(const Eigen::SparseMatrix<double>& smat);
 	void set_z(const Eigen::VectorXd vec){ admm_z = vec; }
 	Eigen::VectorXd get_z(){return admm_z;}
 	void set_lambda(const Eigen::VectorXd vec){ admm_lambda = vec; }
@@ -133,14 +133,6 @@ public:
 			std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 			std::vector<std::pair<int,int>>& pairs);
 
-
-		Constraints(const Dog& dog, const Eigen::VectorXd& init_x0, Eigen::VectorXi& b, Eigen::VectorXd& bc,
-			std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
-			std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
-			std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
-			std::vector<std::pair<int,int>>& pairs,
-			bool extended);
-
 		DogConstraints dogConst;
 		StitchingConstraints stitchingConstraints;
 		PositionalConstraints posConst;
@@ -148,7 +140,6 @@ public:
 		EdgesAngleConstraints edgeAngleConst;
 		MVTangentCreaseAngleConstraints mvTangentCreaseAngleConst;
 		PointPairConstraints ptPairConst;
-		VSADMMConstraints vsadmmConst;
 		CompositeConstraints compConst;
 	};
 
@@ -212,6 +203,8 @@ private:
 	std::vector<pair<int,int>> empty_pair;
 
 	//ADMM
+	VSADMMConstraints vsadmmConst;
+	QuadraticConstraintsSumObjective *vsadmm_obj = nullptr;
 	Eigen::VectorXd admm_lambda;
 	Eigen::VectorXd admm_z;
 	Eigen::SparseMatrix<double> admm_A;

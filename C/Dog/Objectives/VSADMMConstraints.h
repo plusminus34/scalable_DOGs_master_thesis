@@ -16,23 +16,16 @@ public:
 		// Linear constraints have zero second derivative. Empty on purpose
 	};
 
-	virtual void setstuff(const Eigen::SparseMatrix<double> &A_i, const Eigen::VectorXd &z_i, const Eigen::VectorXd &lambda_i, double rho_i);
+	//Give addresses of A,z,lambda (and also the double rho)
+	virtual void set_pointers(const Eigen::SparseMatrix<double> &A_i, const Eigen::VectorXd &z_i, const Eigen::VectorXd &lambda_i, double rho_i);
 
 private:
-	/*TODO what do I store?*/
-	//or: where and how are A,z,etc stored?
-	//Eigen::MatrixXd A;
-	bool initd;
-	void initnow();
+	//Delayed initialization because A and others aren't ready during construction
+	void initialize();
+
+	bool ready;
 	const Eigen::SparseMatrix<double> *A;
 	const Eigen::VectorXd *z;
 	const Eigen::VectorXd *lambda;
 	double rho;
-	/*
-	inherited from constraints
-	protected:
-		int const_n;
-		std::vector<Eigen::Triplet<double> > IJV;
-		std::vector<Eigen::Triplet<double> > lambda_hessian_IJV;
-	*/
 };
