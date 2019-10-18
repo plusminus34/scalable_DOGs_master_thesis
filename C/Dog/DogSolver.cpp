@@ -134,8 +134,10 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         int v22 = edgeStitching.edge_const_2[j].v2;
         double t = edgeStitching.edge_coordinates[j];
 
-        cout << "edgeStitching " << j << ":\t" << v11 << "-" << v12 << " corresponding to " << v21 << "-" << v22
-            << " at coord " << t <<endl;
+        /*
+        cout << "edgeStitching " << j << ":\t" << v11 << "-" << v12
+          << " corresponding to " << v21 << "-" << v22 << " at coord " << t <<endl;
+        */
 
         int submesh_1 = dog.v_to_submesh_idx(v11);
         int submesh_2 = dog.v_to_submesh_idx(v21);
@@ -174,7 +176,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       std::vector< Eigen::SparseMatrix<double> > sub_admm_A(num_submeshes);
 
       for(int i=0; i<num_submeshes; ++i){
-        //building A here ... should probably done elsewhere
         sub_admm_A[i] = Eigen::SparseMatrix<double>(edgeStitching.edge_coordinates.size(), 3*sub_dog[i]->get_v_num());
         sub_admm_A[i].reserve(2*sub_admm_A[i].rows());
       }
@@ -344,7 +345,7 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
   if(mode == mode_subsolvers) return single_iteration_subsolvers(constraints_deviation, objective);
-  else if (mode == mode_vsadmm) return single_iteration_vsadmm(constraints_deviation, objective);
+  else if (mode == mode_vsadmm || mode == mode_jadmm) return single_iteration_vsadmm(constraints_deviation, objective);
   else {
     // mode == mode_standard
     if (!p.folding_mode) p.fold_bias_weight = 0;
@@ -447,7 +448,7 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
 	Eigen::VectorXd x0(x);
   if(is_subsolver()){
     cout << " no subsolvers\n";
-    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,p.admm_rho});
+    obj.compObj.update_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,p.admm_rho/2});
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -469,7 +470,8 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
       else sum_Ax += sub_Ax[i];
     }
     for(int i=0; i<num_submeshes; ++i){
-      sub_z[i] = sub_Ax[i] - sum_Ax/num_submeshes - (2 / p.admm_rho)*sub_dogsolver[i]->get_lambda() ;
+      if(mode == mode_vsadmm) sub_z[i] = sub_Ax[i] - sum_Ax/num_submeshes - (2 / p.admm_rho)*sub_dogsolver[i]->get_lambda() ;
+      else if(mode == mode_jadmm) sub_z[i] = sub_Ax[i] - sum_Ax;
       sub_dogsolver[i]->set_z(sub_z[i]);
     }
 
@@ -487,11 +489,23 @@ void DogSolver::single_iteration_vsadmm(double& constraints_deviation, double& o
       constraints_deviation += sub_cd;
       objective += sub_obj;
 
-      Eigen::VectorXd sub_lambda = sub_dogsolver[i]->get_lambda();
-      sub_lambda -= p.admm_rho*(sub_dogsolver[i]->get_Ax() - sub_z[i]);
-      sub_dogsolver[i]->set_lambda(sub_lambda);
+      if(mode == mode_vsadmm){
+        Eigen::VectorXd sub_lambda = sub_dogsolver[i]->get_lambda();
+        sub_lambda -= p.admm_rho*(sub_dogsolver[i]->get_Ax() - sub_z[i]);
+        sub_dogsolver[i]->set_lambda(sub_lambda);
+      }
 
       cout << " subsolver " << i << " done\n";
+    }
+
+    if(mode == mode_jadmm){
+      for(int i=0; i<num_submeshes; ++i){
+        sub_Ax[i] = sub_dogsolver[i]->get_Ax();
+        if(i==0) sum_Ax = sub_Ax[i];
+        else sum_Ax += sub_Ax[i];
+      }
+      Eigen::VectorXd lambda = sub_dogsolver[0]->get_lambda() - p.admm_rho * sum_Ax;
+      for(int i=0; i<num_submeshes; ++i) sub_dogsolver[i]->set_lambda(lambda);
     }
 
     //propagate local solutions to global dog

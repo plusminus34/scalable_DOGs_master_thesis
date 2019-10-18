@@ -37,7 +37,7 @@ using std::pair;
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;

@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
       ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
-      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0");
+      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0");
       //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
 
       ImGui::End();
