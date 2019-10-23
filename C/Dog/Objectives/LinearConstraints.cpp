@@ -31,7 +31,7 @@ void LinearConstraints::set_pointers(const Eigen::SparseMatrix<double> &A_i, con
 }
 
 Eigen::VectorXd LinearConstraints::Vals(const Eigen::VectorXd& x) const {
-	return (*A) * x - *z;//- *lambda / rho;
+	return (*A) * x - *z;
 }
 
 void LinearConstraints::updateJacobianIJV(const Eigen::VectorXd& x) {

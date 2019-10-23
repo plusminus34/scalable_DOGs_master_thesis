@@ -30,13 +30,11 @@ void SomeSerialObjective::set_pointers(const Eigen::SparseMatrix<double> &A_i,
 }
 
 double SomeSerialObjective::obj(const Eigen::VectorXd& x) const {
-	double res = lambda->transpose() * ( (*A) * x );
-	std::cout << "res: "<<res<<"\n";
-	return res;
+	return - lambda->transpose() * ( (*A) * x );
 }
 
 Eigen::VectorXd SomeSerialObjective::grad(const Eigen::VectorXd& x) const {
-	return lambda->transpose() * (*A);
+	return - lambda->transpose() * (*A);
 }
 
 void SomeSerialObjective::updateHessianIJV(const Eigen::VectorXd& x) {

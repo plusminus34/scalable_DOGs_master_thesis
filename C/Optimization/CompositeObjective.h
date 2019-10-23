@@ -4,10 +4,10 @@
 #include <igl/Timer.h>
 
 class CompositeObjective: public Objective {
-  
+
 public:
 	CompositeObjective(){/*empty on purpose*/}
-	CompositeObjective(const std::vector<Objective*>& objectives_i, const std::vector<double>& weights, const int var_range = -1) : 
+	CompositeObjective(const std::vector<Objective*>& objectives_i, const std::vector<double>& weights, const int var_range = -1) :
 				weights(weights), var_range(var_range) {
 		objectives.resize(objectives_i.size());
 		for (int i = 0; i < objectives.size(); i++) {
@@ -17,10 +17,10 @@ public:
 		IJV.resize(ijv_size);
 	}
 
-	void update_weights(const std::vector<double>& weights_i) { 
-		weights = weights_i; 
+	void update_weights(const std::vector<double>& weights_i) {
+		weights = weights_i;
 		if (weights.size()<objectives.size()) {
-			std::cout << "Error in CompositeObjective::update_weights - " << "There are " << objectives.size() << " objectives" << 
+			std::cout << "Error in CompositeObjective::update_weights - " << "There are " << objectives.size() << " objectives" <<
 				" but got " << weights.size() << " new weights " << std::endl;
 
 		}}
@@ -35,7 +35,7 @@ public:
 	}
 
 	void add_objective_permanent(Objective& e, double w = 1.) {
-		objectives.push_back(&e); 
+		objectives.push_back(&e);
 		weights.push_back(w);
 		ijv_size += e.get_hessian_IJV_size();
 		IJV.resize(ijv_size);

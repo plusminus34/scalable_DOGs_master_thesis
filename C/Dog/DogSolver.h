@@ -39,7 +39,7 @@ using std::pair;
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm, mode_serial};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm, mode_serial, mode_experimental};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -106,6 +106,7 @@ public:
 	void single_iteration_ADMM(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void single_iteration_serial(double& constraints_deviation, double& objective);
+	void single_iteration_experimental(double& constraints_deviation, double& objective);
 
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc);
@@ -190,7 +191,7 @@ private:
 	DogSolver::Objectives obj;
 	DogSolver::Params& p;
 
-	SolverMode mode = mode_subsolvers;
+	SolverMode mode = mode_experimental;
 	int iter_i=0;
 
 	//for submeshes
