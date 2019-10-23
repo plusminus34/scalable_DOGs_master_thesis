@@ -2,12 +2,12 @@
 
 #include "../../Optimization/Objective.h"
 
-class ProxJADMMObjective: public Objective {
+class ProximalObjective: public Objective {
 
 public:
-  ProxJADMMObjective();
-	ProxJADMMObjective(const Eigen::SparseMatrix<double> &P_i, const Eigen::VectorXd &x_old_i);
-	virtual ProxJADMMObjective* clone() const {return new ProxJADMMObjective(*this);}
+  ProximalObjective();
+	ProximalObjective(const Eigen::SparseMatrix<double> &P_i, const Eigen::VectorXd &x_old_i);
+	virtual ProximalObjective* clone() const {return new ProximalObjective(*this);}
 
   void set_pointers(const Eigen::SparseMatrix<double> &P_i, const Eigen::VectorXd &x_old_i);
 

@@ -1,13 +1,13 @@
-#include "ProxJADMMObjective.h"
+#include "ProximalObjective.h"
 
 using namespace std;
 
-ProxJADMMObjective::ProxJADMMObjective(): P(nullptr), x_old(nullptr) {
+ProximalObjective::ProximalObjective(): P(nullptr), x_old(nullptr) {
 	IJV.resize(0);
 	ready = false;
 }
 
-ProxJADMMObjective::ProxJADMMObjective(const Eigen::SparseMatrix<double> &P_i,
+ProximalObjective::ProximalObjective(const Eigen::SparseMatrix<double> &P_i,
 	  const Eigen::VectorXd &x_old_i):
  		P(&P_i), x_old(&x_old_i) {
 	if(P == nullptr) {ready = false;}
@@ -17,28 +17,28 @@ ProxJADMMObjective::ProxJADMMObjective(const Eigen::SparseMatrix<double> &P_i,
 	}
 }
 
-void ProxJADMMObjective::initialize() {
+void ProximalObjective::initialize() {
 	if (ready) return;
 	IJV.resize(P->nonZeros());
 	ready = true;
 }
-void ProxJADMMObjective::set_pointers(const Eigen::SparseMatrix<double> &P_i,
+void ProximalObjective::set_pointers(const Eigen::SparseMatrix<double> &P_i,
 	 const Eigen::VectorXd &x_old_i) {
 	P = &P_i;
 	x_old = &x_old_i;
 	initialize();
 }
 
-double ProxJADMMObjective::obj(const Eigen::VectorXd& x) const {
+double ProximalObjective::obj(const Eigen::VectorXd& x) const {
 	Eigen::VectorXd x_diff = x - *x_old;
 	return 0.5 * x_diff.transpose() * (*P) * x_diff;
 }
 
-Eigen::VectorXd ProxJADMMObjective::grad(const Eigen::VectorXd& x) const {
+Eigen::VectorXd ProximalObjective::grad(const Eigen::VectorXd& x) const {
 	return (*P) * (x - *x_old);
 }
 
-void ProxJADMMObjective::updateHessianIJV(const Eigen::VectorXd& x) {
+void ProximalObjective::updateHessianIJV(const Eigen::VectorXd& x) {
 	if (!ready) return;
 	int count = 0;
 	for (int i=0; i < P->outerSize(); ++i) {

@@ -29,8 +29,9 @@
 #include "../Folding/FoldingBinormalBiasConstraints.h"
 #include "../Folding/FoldingMVBiasConstraints.h"
 
-#include "Objectives/VSADMMConstraints.h"
-#include "Objectives/ProxJADMMObjective.h"
+#include "Objectives/LinearConstraints.h"
+#include "Objectives/ProximalObjective.h"
+#include "Objectives/SomeSerialObjective.h"
 
 using std::vector;
 using std::pair;
@@ -38,7 +39,7 @@ using std::pair;
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm, mode_serial};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -57,7 +58,8 @@ public:
 		double convergence_threshold = 1e-6;
 		bool folding_mode = true;
 		bool flip_sign = false;
-		double admm_rho = 1;//TODO more?
+		double admm_rho = 1;
+		double admm_gamma = 1;
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
@@ -103,10 +105,13 @@ public:
 	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
 	void single_iteration_ADMM(double& constraints_deviation, double& objective);
 	void single_iteration_normal(double& constraints_deviation, double& objective);
+	void single_iteration_serial(double& constraints_deviation, double& objective);
+
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc);
 	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
 	void update_mv_cos_angles(const std::vector<double> cos_angles_i) {constraints.mvTangentCreaseAngleConst.set_angles(cos_angles_i);}
+	void update_obj_weights(const std::vector<double>& weights_i);
 
 	Dog& getDog(){return dog;}
 
@@ -120,7 +125,7 @@ public:
 
 	//VSADMM
 	void build_VSADMMObjective(const Eigen::SparseMatrix<double>& A);
-	void build_ProxJADMMObjective(const Eigen::SparseMatrix<double>& P);
+	void build_ProximalObjective(const Eigen::SparseMatrix<double>& P);
 	void remake_compobj();
 	void set_z(const Eigen::VectorXd vec){ admm_z = vec; }
 	Eigen::VectorXd get_z(){return admm_z;}
@@ -165,6 +170,9 @@ public:
       	QuadraticConstraintsSumObjective foldingMVBiasObj;
       	QuadraticConstraintsSumObjective stitchingConstraintsPenalty;
       	PairedBoundaryVerticesBendingObjective pairedBndVertBendingObj;
+				//Plus QuadraticConstraintsSumObjective from LinearConstraints
+				//Plus proximal objective
+				//plus something for the serial mode
       	CompositeObjective compObj;
 	};
 
@@ -172,6 +180,7 @@ private:
 
 	Dog& dog;
 	Eigen::VectorXd x; // variables
+	Eigen::VectorXd x0; // variables at the beginning of time step
 	bool is_constrained;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
@@ -182,6 +191,7 @@ private:
 	DogSolver::Params& p;
 
 	SolverMode mode = mode_subsolvers;
+	int iter_i=0;
 
 	//for submeshes
 	vector< Dog* > sub_dog;
@@ -206,12 +216,12 @@ private:
 	std::vector<pair<int,int>> empty_pair;
 
 	//ADMM
-	VSADMMConstraints vsadmmConst;
+	LinearConstraints vsadmmConst;
 	QuadraticConstraintsSumObjective *vsadmm_obj = nullptr;
-	ProxJADMMObjective *pjadmm_obj = nullptr;
+	ProximalObjective *pjadmm_obj = nullptr;
+	SomeSerialObjective *serial_obj = nullptr;
 	Eigen::VectorXd admm_lambda;
 	Eigen::VectorXd admm_z;
-	Eigen::VectorXd admm_x0;
 	Eigen::SparseMatrix<double> admm_A, admm_P;
 
 	// Solvers
