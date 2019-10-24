@@ -225,6 +225,9 @@ private:
 	Eigen::VectorXd admm_z;
 	Eigen::SparseMatrix<double> admm_A, admm_P;
 
+	//Procrustes
+	std::vector< Eigen::SparseMatrix<double> > proc_T;
+
 	// Solvers
 	//NewtonKKT newtonKKT;
 	EqSQP newtonKKT;

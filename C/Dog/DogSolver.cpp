@@ -1,6 +1,7 @@
 #include "DogSolver.h"
 
 #include <igl/polar_svd.h>
+#include <igl/procrustes.h>
 
 using namespace std;
 
@@ -206,10 +207,33 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         sub_admm_A[submesh_2].insert(j, dog.v_in_submesh(v22) + 2*subsize) = t-1.0;
       }
 
+
+      //2-patch Procrustes stuff
+      if(true){
+        proc_T.resize(2);
+        int num_edgepts = edgeStitching.edge_coordinates.size();
+        proc_T[0].resize(num_edgepts, sub_dog[0]->get_v_num());
+        proc_T[1].resize(num_edgepts, sub_dog[1]->get_v_num());
+        proc_T[0].reserve(2*num_edgepts);
+        proc_T[1].reserve(2*num_edgepts);
+        for(int i=0; i<num_edgepts; ++i){
+          int v11 = edgeStitching.edge_const_1[i].v1;
+          int v12 = edgeStitching.edge_const_1[i].v2;
+          int v21 = edgeStitching.edge_const_2[i].v1;
+          int v22 = edgeStitching.edge_const_2[i].v2;
+          double t = edgeStitching.edge_coordinates[i];
+          proc_T[0].insert(i, dog.v_in_submesh(v11)) = t;
+          proc_T[0].insert(i, dog.v_in_submesh(v12)) = 1.0-t;
+          proc_T[1].insert(i, dog.v_in_submesh(v21)) = t;
+          proc_T[1].insert(i, dog.v_in_submesh(v22)) = 1.0-t;
+        }
+      }
+
       for(int i=0; i<num_submeshes; ++i){
         int mini, maxi, sub_v_num;
         sub_v_num = sub_dog[i]->get_v_num();
         dog.get_submesh_min_max_i(i, mini, maxi);
+
         Eigen::VectorXd sub_x0(3*sub_v_num);
         for(int j=0; j<sub_v_num; ++j){
           sub_x0[j] = init_mesh_vars[mini + j];
@@ -605,7 +629,7 @@ void DogSolver::single_iteration_serial(double& constraints_deviation, double& o
       double sub_cd = constraints_deviation;
       double sub_obj = objective;
 
-      sub_dogsolver[i]->single_iteration_ADMM(sub_cd, sub_obj);
+      sub_dogsolver[i]->single_iteration_serial(sub_cd, sub_obj);
 
       constraints_deviation += sub_cd;
       objective += sub_obj;
@@ -636,66 +660,77 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
   } else {
     cout << " with subsolvers\n";
     int num_submeshes = dog.get_submesh_n();
-
-    double smth = p.admm_gamma;
-    int soso = 30;
-    //if(iter_i % soso == 1) smth *= 0.0;
-    //smth *= (soso - 0.10 - iter_i%soso)/(soso);
-    update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
-      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight,
-      //p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight,
-      p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,
-      0.5*p.admm_rho, 0.0, smth});
-      //0.5*p.admm_rho, 0, 0});
-      //0,p.admm_rho,0});
-
-
-    Eigen::VectorXd sum_Ax = sub_dogsolver[0]->get_Ax();
-    for(int i=1; i<num_submeshes; ++i){
-      sum_Ax += sub_dogsolver[i]->get_Ax();
+    if(num_submeshes != 2) cout <<"WARNING: Experimental currently means 2 submesh serial\n";
+    if(iter_i%2 == -1){
+      single_iteration_subsolvers(constraints_deviation,objective);
+      return;
     }
+    update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight*p.admm_gamma, p.pair_weight, p.dihedral_weight,
+      p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,
+      0, 0, 0});
+      //LinearConstraints, ProximalObjective, SomeSerialObjective});
 
     constraints_deviation = 0.0;
     objective = 0.0;
 
-    //Assumption: patches are already ordered
-    //solve on submeshes
-    for(int i=0; i<num_submeshes; ++i){
-      cout << "subsolver " << i << " does single iteration\n";
+    cout << "solving submesh 0\n";
+    //sub_dogsolver[0]->set_z(-sub_dogsolver[1]->get_Ax());
+    sub_dogsolver[0]->single_iteration_experimental(constraints_deviation, objective);
 
-      sub_dogsolver[i]->update_edge_coords(sub_edgeCoords[i]);
-      sum_Ax -= sub_dogsolver[i]->get_Ax();
-      sub_dogsolver[i]->set_z(-sum_Ax);
+    cout << "  got cd,obj "<<constraints_deviation<<", "<<objective<<"\n";
+    Eigen::MatrixXd V0 = sub_dog[0]->getV();
+    Eigen::MatrixXd V1 = sub_dog[1]->getV();
+    cout << "  V0 of size "<<V0.rows()<<" x "<<V0.cols()<<"\n";
+    cout << "  V1 of size "<<V1.rows()<<" x "<<V1.cols()<<"\n";
 
-      double sub_cd = constraints_deviation;
-      double sub_obj = objective;
+    Eigen::MatrixXd target_Vt = (proc_T[0]*V0);//.transpose();
+    Eigen::MatrixXd source_Vt = (proc_T[1]*V1);//.transpose();
+    cout << "  target_Vt of size "<<target_Vt.rows()<<" x "<<target_Vt.cols()<<"\n";
+    cout << "  source_Vt of size "<<source_Vt.rows()<<" x "<<source_Vt.cols()<<"\n";
 
-      sub_dogsolver[i]->single_iteration_ADMM(sub_cd, sub_obj);
+    Eigen::MatrixXd R;
+    Eigen::VectorXd t;
+    double scale;
+    cout << "Gonna do Procrustes\n";    //scale,reflect
+    igl::procrustes(source_Vt, target_Vt,true,false, scale,R,t);
+    cout << "Procrustes done\n";
+    cout << "  R of size "<<R.rows()<<" x "<<R.cols()<<"\n";
+    V1 = (V1 * scale * R).rowwise() + t.transpose();
+    cout << "New V1 of size "<<V1.rows()<<" x "<<V1.cols()<<"\n";
+    sub_dog[1]->update_V(V1);
+    sub_dogsolver[1]->set_opt_vars(sub_dog[1]->getV_vector());
+    cout << "Set sub_v_1\n";
 
-    	dog.update_submesh_V(i, sub_dog[i]->getV());
-      x = dog.getV_vector();
-      sum_Ax += sub_dogsolver[i]->get_Ax();
+    double sub_cd = 0.0;
+    double sub_obj = 0.0;
+    cout << "Solving submesh 1\n";
+    //sub_dogsolver[1]->set_z(-sub_dogsolver[0]->get_Ax());
+    sub_dogsolver[1]->single_iteration_experimental(sub_cd, sub_obj);
+    constraints_deviation += sub_cd;
+    objective += sub_obj;
 
-      constraints_deviation += sub_cd;
-      objective += sub_obj;
+    cout << "Pretty much done\n";
 
-      cout << " subsolver " << i << " done\n";
-    }
-
-    cout << "Ax sum norm2 "<<sum_Ax.squaredNorm()<<endl;
-    Eigen::VectorXd lambda = sub_dogsolver[0]->get_lambda() - p.admm_rho * sum_Ax;
-    cout << "lambda norm2 "<<lambda.squaredNorm()<<"\n";
-    for(int i=0; i<num_submeshes; ++i) sub_dogsolver[i]->set_lambda(lambda);
-
-    //propagate local solutions to global dog
-    for(int i=0; i<num_submeshes; ++i){
-//  	   dog.update_submesh_V(i, sub_dog[i]->getV());
-    }
+    dog.update_submesh_V(0, sub_dog[0]->getV());
+    dog.update_submesh_V(1, sub_dog[1]->getV());
     x = dog.getV_vector();
 
     update_sub_edgeCoords();
 
     cout << "all subsolvers done\n";
+
+    /*Test: use preprocessing for every step but the very first
+    V0 = sub_dog[0]->getV();
+    V1 = sub_dog[1]->getV();
+    target_Vt = (proc_T[1]*V1);
+    source_Vt = (proc_T[0]*V0);
+
+    igl::procrustes(source_Vt, target_Vt,true,false, scale,R,t);
+    V0 = (V0 * scale * R).rowwise() + t.transpose();
+    sub_dog[0]->update_V(V0);
+    sub_dogsolver[0]->set_opt_vars(sub_dog[0]->getV_vector());
+    */
   }
 }
 
