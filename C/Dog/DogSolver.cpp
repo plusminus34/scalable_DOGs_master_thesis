@@ -666,17 +666,23 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
       return;
     }
     update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
-      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight*p.admm_gamma, p.pair_weight, p.dihedral_weight,
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight,
       p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,p.paired_boundary_bending_weight,
-      0, 0, 0});
+      0.5*p.admm_rho, 0, p.admm_rho});
+      //0,p.admm_rho,0});
       //LinearConstraints, ProximalObjective, SomeSerialObjective});
 
     constraints_deviation = 0.0;
     objective = 0.0;
 
     cout << "solving submesh 0\n";
-    //sub_dogsolver[0]->set_z(-sub_dogsolver[1]->get_Ax());
+    sub_dogsolver[0]->set_z(-sub_dogsolver[1]->get_Ax());
     sub_dogsolver[0]->single_iteration_experimental(constraints_deviation, objective);
+
+    dog.update_submesh_V(0, sub_dog[0]->getV());
+    x = dog.getV_vector();
+    update_sub_edgeCoords();
+    sub_dogsolver[1]->update_edge_coords(sub_edgeCoords[1]);
 
     cout << "  got cd,obj "<<constraints_deviation<<", "<<objective<<"\n";
     Eigen::MatrixXd V0 = sub_dog[0]->getV();
@@ -696,7 +702,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     igl::procrustes(source_Vt, target_Vt,true,false, scale,R,t);
     cout << "Procrustes done\n";
     cout << "  R of size "<<R.rows()<<" x "<<R.cols()<<"\n";
-    V1 = (V1 * scale * R).rowwise() + t.transpose();
+    double alpha=p.admm_gamma;
+    V1 = ((V1 * scale * R).rowwise() + t.transpose())*alpha + (1-alpha)*V1;
     cout << "New V1 of size "<<V1.rows()<<" x "<<V1.cols()<<"\n";
     sub_dog[1]->update_V(V1);
     sub_dogsolver[1]->set_opt_vars(sub_dog[1]->getV_vector());
@@ -705,18 +712,18 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     double sub_cd = 0.0;
     double sub_obj = 0.0;
     cout << "Solving submesh 1\n";
-    //sub_dogsolver[1]->set_z(-sub_dogsolver[0]->get_Ax());
+    sub_dogsolver[1]->set_z(-sub_dogsolver[0]->get_Ax());
     sub_dogsolver[1]->single_iteration_experimental(sub_cd, sub_obj);
     constraints_deviation += sub_cd;
     objective += sub_obj;
 
     cout << "Pretty much done\n";
 
-    dog.update_submesh_V(0, sub_dog[0]->getV());
     dog.update_submesh_V(1, sub_dog[1]->getV());
     x = dog.getV_vector();
 
     update_sub_edgeCoords();
+    sub_dogsolver[0]->update_edge_coords(sub_edgeCoords[0]);
 
     cout << "all subsolvers done\n";
 
