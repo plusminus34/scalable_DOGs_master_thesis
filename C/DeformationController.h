@@ -105,6 +105,9 @@ public:
 	double constraints_deviation;
 	double objective;
 
+	int stored_iterations = 0 ;
+	void store_data(int num_iterations);
+
 	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_x;
 	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
 
@@ -153,4 +156,8 @@ private:
 
 	bool optimization_measurements;
 	std::ofstream* opt_measurements_log;
+
+	// Objective data stored
+	int current_iteration = 0;
+	std::vector<double> obj_data;
 };

@@ -67,6 +67,21 @@ void DeformationController::single_optimization() {
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
 	dogSolver->single_iteration(constraints_deviation, objective);
+
+	if(current_iteration < stored_iterations) obj_data[current_iteration] = objective;
+	if(current_iteration == stored_iterations - 1){
+		cout << "Writing output\n";
+		std::ofstream outfile;
+		outfile.open ("objective_output.txt");
+		outfile << "iteration, objective" << endl;
+		for(int i=0; i<stored_iterations; ++i) {
+			outfile << i << ", " << obj_data[i] << endl;
+		}
+		outfile.close();
+		cout << "Written to objective_output.txt\n";
+	}
+	++current_iteration;
+
 }
 
 void DeformationController::apply_new_editor_constraint() {
@@ -257,4 +272,9 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 	}
 	is_time_dependent_deformation = true;
 	reset_dog_solver();
+}
+
+void DeformationController::store_data(int num_iterations){
+	stored_iterations = num_iterations;
+	obj_data.resize(stored_iterations);
 }

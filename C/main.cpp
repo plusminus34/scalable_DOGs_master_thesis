@@ -146,6 +146,12 @@ int main(int argc, char *argv[]) {
     int x_res,y_res; x_res = y_res = DEFAULT_GRID_RES;
     if (argc > 2) {x_res = y_res = std::stoi(argv[2]);};
     state.init_from_planar(x_res,y_res);
+  } else if (boost::iequals(basename, "testcase")) {
+    is_optimizing = false;
+    state.load_from_workspace("testcase.work");
+    int num_iterations = 1000;
+    if (argc > 2) num_iterations = std::stoi(argv[2]);
+    state.DC.store_data(num_iterations);
   } else {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
