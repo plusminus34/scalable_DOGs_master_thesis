@@ -94,6 +94,9 @@ public:
 
 	//DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p);
 
+	// returns [bending, isometry, sum]
+	Eigen::VectorXd get_obj_parts();
+
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
 	Eigen::VectorXd get_opt_vars() { return x;}
 

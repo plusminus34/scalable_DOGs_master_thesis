@@ -209,7 +209,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
 
 
       //2-patch Procrustes stuff
-      if(true){
+      if(num_submeshes==2){
         proc_T.resize(2);
         int num_edgepts = edgeStitching.edge_coordinates.size();
         proc_T[0].resize(num_edgepts, sub_dog[0]->get_v_num());
@@ -268,6 +268,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       sub_dog.clear();
       sub_dogsolver.clear();
     }
+
 }
 
 DogSolver::~DogSolver(){
@@ -384,20 +385,20 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
-  iter_i++;
+  ++iter_i;
   if(mode == mode_subsolvers) {
-    return single_iteration_subsolvers(constraints_deviation, objective);
+    single_iteration_subsolvers(constraints_deviation, objective);
   } else if (mode == mode_vsadmm || mode == mode_jadmm || mode == mode_proxjadmm) {
-    return single_iteration_ADMM(constraints_deviation, objective);
+    single_iteration_ADMM(constraints_deviation, objective);
   } else if (mode == mode_serial) {
-    return single_iteration_serial(constraints_deviation, objective);
+    single_iteration_serial(constraints_deviation, objective);
   } else if (mode == mode_experimental) {
-    return single_iteration_experimental(constraints_deviation, objective);
+    single_iteration_experimental(constraints_deviation, objective);
   } else {
     // mode == mode_standard
     if (!p.folding_mode) p.fold_bias_weight = 0;
-    if (p.folding_mode) return single_iteration_fold(constraints_deviation, objective);
-    else return single_iteration_normal(constraints_deviation, objective);
+    if (p.folding_mode) single_iteration_fold(constraints_deviation, objective);
+    else single_iteration_normal(constraints_deviation, objective);
   }
 }
 
@@ -536,7 +537,7 @@ void DogSolver::single_iteration_ADMM(double& constraints_deviation, double& obj
     }
     for(int i=0; i<num_submeshes; ++i){
       if (mode == mode_vsadmm) {
-        cout << "subz norms: " << sub_Ax[i].squaredNorm() << " and " << (1.0/num_submeshes * sum_Ax).squaredNorm() << " and "<<(sum_lambda/(p.admm_rho*num_submeshes)).squaredNorm()<<endl;
+        //cout << "subz norms: " << sub_Ax[i].squaredNorm() << " and " << (1.0/num_submeshes * sum_Ax).squaredNorm() << " and "<<(sum_lambda/(p.admm_rho*num_submeshes)).squaredNorm()<<endl;
         sub_z[i] = sub_Ax[i] - 1.0/num_submeshes * (sum_Ax - sum_lambda/p.admm_rho);
         //sub_z[i] = sub_Ax[i] - sum_Ax/num_submeshes - (1 / p.admm_rho) * (sub_dogsolver[i]->get_lambda() + sum_lambda / num_submeshes);
       } else if (mode == mode_jadmm || mode == mode_proxjadmm) {
@@ -857,4 +858,12 @@ void DogSolver::update_obj_weights(const std::vector<double>& weights_i){
       sub_dogsolver[i]->update_obj_weights(weights_i);
     }
   }
+}
+
+Eigen::VectorXd DogSolver::get_obj_parts(){
+  Eigen::VectorXd res(3);
+  res(0) = obj.bending.obj(x);
+  res(1) = obj.isoObj.obj(x);
+  res(2) = obj.compObj.obj(x);
+  return res;
 }

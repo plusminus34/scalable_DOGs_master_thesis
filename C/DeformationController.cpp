@@ -66,19 +66,57 @@ void DeformationController::single_optimization() {
 	dogSolver->set_solver_mode(solver_mode);
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
+
+	Eigen::VectorXd data_i;
+	if(current_iteration < stored_iterations) data_i = dogSolver->get_obj_parts();
 	dogSolver->single_iteration(constraints_deviation, objective);
 
-	if(current_iteration < stored_iterations) obj_data[current_iteration] = objective;
+	if(current_iteration < stored_iterations){
+		obj_data.block(current_iteration,0, 1,3) << data_i[0], data_i[1], data_i[2];
+		if(current_iteration+1 < stored_iterations){
+			obj_data(current_iteration+1,3) = constraints_deviation;
+			obj_data(current_iteration+1,4) = objective;
+		}
+	}
 	if(current_iteration == stored_iterations - 1){
 		cout << "Writing output\n";
 		std::ofstream outfile;
-		outfile.open ("objective_output.txt");
-		outfile << "iteration, objective" << endl;
-		for(int i=0; i<stored_iterations; ++i) {
-			outfile << i << ", " << obj_data[i] << endl;
-		}
+		outfile.open ("output.txt");
+
+		outfile << "Output: "<< stored_iterations << " iterations" << endl;
+
+		outfile << "iteration" << endl;
+		outfile << 0;
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << i;
+		outfile << endl;
+
+		outfile << "bending" << endl;
+		outfile << obj_data(0,0);
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,0);
+		outfile << endl;
+
+		outfile << "isometry" << endl;
+		outfile << obj_data(0,1);
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,1);
+		outfile << endl;
+
+		outfile << "objective (global mesh)" << endl;
+		outfile << obj_data(0,2);
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,2);
+		outfile << endl;
+
+		outfile << "constraints deviation (from iteration)" << endl;
+		outfile << obj_data(0,3);
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,3);
+		outfile << endl;
+
+		outfile << "objective (from iteration)" << endl;
+		outfile << obj_data(0,4);
+		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,4);
+		outfile << endl;
+
 		outfile.close();
-		cout << "Written to objective_output.txt\n";
+		cout << "Written to output.txt\n";
 	}
 	++current_iteration;
 
@@ -276,5 +314,5 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 
 void DeformationController::store_data(int num_iterations){
 	stored_iterations = num_iterations;
-	obj_data.resize(stored_iterations);
+	obj_data = Eigen::MatrixXd::Zero(stored_iterations,5);
 }

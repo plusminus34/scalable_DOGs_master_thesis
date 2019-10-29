@@ -159,5 +159,5 @@ private:
 
 	// Objective data stored
 	int current_iteration = 0;
-	std::vector<double> obj_data;
+	Eigen::MatrixXd obj_data;
 };
