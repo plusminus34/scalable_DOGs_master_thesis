@@ -211,7 +211,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       vector< vector<double> > sub_angles(num_submeshes);
       vector< Eigen::MatrixXd > sub_outsidepts(num_submeshes);
       {
-        //angle_to_submeshes.resize(edge_angle_pairs.size(), 4);
         sub_edge_angle_ww.resize(num_submeshes);
         sub_idx_to_angle_idx.resize(num_submeshes);
         for(int i=0; i<num_submeshes; ++i){
@@ -235,8 +234,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
           Eigen::MatrixXi rep1(sub_edge_angle_ww[submesh_i].rows()+1, 2);
           rep1 << sub_edge_angle_ww[submesh_i], w1, w2;
           sub_edge_angle_ww[submesh_i] = rep1;
-          sub_idx_to_angle_idx[submesh_i].resize(rep1.rows());
-          sub_idx_to_angle_idx[submesh_i](rep1.rows()-1) = i;
+          sub_idx_to_angle_idx[submesh_i].push_back(i);
 
           submesh_i = dog.v_to_submesh_idx(w1);
           sub_v1 = dog.v_in_submesh(w1);
@@ -247,8 +245,7 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
           Eigen::MatrixXi rep2(sub_edge_angle_ww[submesh_i].rows()+1, 2);
           rep2 << sub_edge_angle_ww[submesh_i], v1, v2;
           sub_edge_angle_ww[submesh_i] = rep2;
-          sub_idx_to_angle_idx[submesh_i].resize(rep2.rows());
-          sub_idx_to_angle_idx[submesh_i](rep2.rows()-1) = i;
+          sub_idx_to_angle_idx[submesh_i].push_back(i);
         }
       }
 
@@ -905,7 +902,7 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
       Eigen::MatrixXd w_coords(sub_edge_angle_ww[i].rows(), 6);
 
       for(int j=0; j<sub_idx_to_angle_idx[i].size(); ++j){
-        angles[j] = cos_angles_i[ sub_idx_to_angle_idx[i](j) ];
+        angles[j] = cos_angles_i[ sub_idx_to_angle_idx[i][j] ];
       }
 
       for(int j=0; j<sub_edge_angle_ww[i].rows(); ++j){

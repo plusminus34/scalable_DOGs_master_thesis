@@ -215,7 +215,7 @@ private:
 	vector< vector< pair<int,int> > > corresponding_edge_points;//stored as <submesh, idx>
 	void update_sub_edgeCoords();
 
-	vector< Eigen::VectorXi > sub_idx_to_angle_idx;
+	vector< vector<int> > sub_idx_to_angle_idx;
 	vector< Eigen::MatrixXi > sub_edge_angle_ww;
 
 	Eigen::VectorXi empty_xi;
