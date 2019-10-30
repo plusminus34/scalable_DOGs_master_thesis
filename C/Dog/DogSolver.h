@@ -32,6 +32,7 @@
 #include "Objectives/LinearConstraints.h"
 #include "Objectives/ProximalObjective.h"
 #include "Objectives/SomeSerialObjective.h"
+#include "Objectives/SubEdgesAngleConstraints.h"
 
 using std::vector;
 using std::pair;
@@ -113,9 +114,12 @@ public:
 
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
 	void update_point_coords(Eigen::VectorXd& bc);
-	void update_edge_angles(const std::vector<double> cos_angles_i) {constraints.edgeAngleConst.set_angles(cos_angles_i);}
+	void update_edge_angles(const std::vector<double> cos_angles_i);
 	void update_mv_cos_angles(const std::vector<double> cos_angles_i) {constraints.mvTangentCreaseAngleConst.set_angles(cos_angles_i);}
 	void update_obj_weights(const std::vector<double>& weights_i);
+
+	//for subsolvers
+	void update_w_coords(const Eigen::MatrixXd& W);
 
 	Dog& getDog(){return dog;}
 
@@ -150,6 +154,7 @@ public:
 		PositionalConstraints posConst;
 		EdgePointConstraints edgePtConst;
 		EdgesAngleConstraints edgeAngleConst;
+		SubEdgesAngleConstraints subEdgesAngleConst;
 		MVTangentCreaseAngleConstraints mvTangentCreaseAngleConst;
 		PointPairConstraints ptPairConst;
 		CompositeConstraints compConst;
@@ -209,6 +214,9 @@ private:
 	vector< Eigen::MatrixXd > sub_edgeCoords;
 	vector< vector< pair<int,int> > > corresponding_edge_points;//stored as <submesh, idx>
 	void update_sub_edgeCoords();
+
+	vector< Eigen::VectorXi > sub_idx_to_angle_idx;
+	vector< Eigen::MatrixXi > sub_edge_angle_ww;
 
 	Eigen::VectorXi empty_xi;
 	Eigen::VectorXd empty_xd;
