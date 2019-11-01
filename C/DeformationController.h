@@ -44,6 +44,8 @@ public:
 	void set_cylindrical_boundary_constraints();
 	void set_wallpaper_constraints();
 
+	void add_test_angle();
+
 	void reset_constraints();
 	bool is_folded();
 
@@ -64,6 +66,7 @@ public:
 	      Add(deformation_timestep,std::string("deformation_timestep"));
 	      Add(deformation_timestep_diff,std::string("deformation_timestep_diff"));
 	      Add(paired_boundary_bending_weight_mult,std::string("paired_boundary_bending_weight_mult"));
+	      Add(src_dihedral_angle,std::string("src_dihedral_angle"));
 	      Add(dst_dihedral_angle,std::string("dst_dihedral_angle"));
 	      Add(constraints_deviation,std::string("constraints_deviation"));
 	      Add(objective,std::string("objective"));
@@ -85,7 +88,7 @@ public:
 
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
-	DogSolver::SolverMode solver_mode = DogSolver::mode_experimental;
+	DogSolver::SolverMode solver_mode = DogSolver::mode_standard;
 
 	int deformed_curve_idx = 0;
 	double curve_k_translation = 0; double curve_k_mult = 2; double curve_t_addition = 0;
@@ -101,6 +104,7 @@ public:
 	double deformation_timestep = 0;
 	double deformation_timestep_diff = 0.004;
 	double paired_boundary_bending_weight_mult = 1;
+	double src_dihedral_angle = 0;
 	double dst_dihedral_angle = 0; // Later possibly have a list for every edge_angle_pair, so we could have different ones
 	double constraints_deviation;
 	double objective;

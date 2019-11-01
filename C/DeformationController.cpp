@@ -142,7 +142,7 @@ void DeformationController::apply_new_editor_constraint() {
 		}
 	} else if (edit_mode == DogEditor::DIHEDRAL_ANGLE) {
 		if (dogEditor->picked_edge.t !=-1) {
-			foldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, dst_dihedral_angle);
+			foldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, src_dihedral_angle, dst_dihedral_angle);
 			foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
 			foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
 			dihedral_constrained.push_back(dogEditor->picked_edge);
@@ -150,7 +150,7 @@ void DeformationController::apply_new_editor_constraint() {
 		}
 	} else if (edit_mode == DogEditor::MV_DIHEDRAL_ANGLE) {
 		if (dogEditor->picked_edge.t !=-1) {
-			mvFoldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, dst_dihedral_angle);
+			mvFoldingDihedralAngleConstraintsBuilder->add_constraint(dogEditor->picked_edge, src_dihedral_angle, dst_dihedral_angle);
 			mvFoldingDihedralAngleConstraintsBuilder->get_mv_tangent_crease_folds(mvTangentCreaseAngleParams);
 			mvFoldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(mv_cos_angles);
 			//dihedral_constrained.push_back(dogEditor->picked_edge);
@@ -315,4 +315,15 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 void DeformationController::store_data(int num_iterations){
 	stored_iterations = num_iterations;
 	obj_data = Eigen::MatrixXd::Zero(stored_iterations,5);
+}
+
+void DeformationController::add_test_angle(){
+	Edge test_edge(144,154);
+	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(test_edge, 0.436117), src_dihedral_angle, dst_dihedral_angle);
+	foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
+	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
+	dihedral_constrained.push_back(dogEditor->picked_edge);
+	is_time_dependent_deformation = true;
+	has_new_constraints = true;
+	reset_new_editor_constraint();
 }

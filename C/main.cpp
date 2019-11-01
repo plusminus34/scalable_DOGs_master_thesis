@@ -211,7 +211,8 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");
 */
-      ImGui::InputDouble("Dihedral angle", &state.DC.dst_dihedral_angle, 0, 0, "%.4f");/*
+      ImGui::InputDouble("Dihedral angle (src)", &state.DC.src_dihedral_angle, 0, 0, "%.4f");
+      ImGui::InputDouble("Dihedral angle (dst)", &state.DC.dst_dihedral_angle, 0, 0, "%.4f");/*
       ImGui::InputInt("Curve idx", &state.DC.deformed_curve_idx);
       ImGui::InputDouble("Curve k add", &state.DC.curve_k_translation, 0, 0, "%.4f");
       ImGui::InputDouble("Curve k mult", &state.DC.curve_k_mult, 0, 0, "%.4f");
@@ -244,8 +245,9 @@ int main(int argc, char *argv[]) {
 //      ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
 //      ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
-      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Experimental\0");
+      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Experimental\0");
       //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
+      if (ImGui::Button("Add test angle constraint", ImVec2(-1,0))) state.DC.add_test_angle();
 
       ImGui::End();
   };
