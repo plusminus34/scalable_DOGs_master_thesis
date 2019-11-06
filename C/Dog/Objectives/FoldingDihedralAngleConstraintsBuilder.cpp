@@ -55,9 +55,7 @@ void FoldingDihedralAngleConstraintsBuilder::get_edge_angle_constraints(std::vec
 		double alpha = tangent_angles[i];
 		double dest_dihedral_angle = destination_dihedral_angles[i];
 		double const_dihedral = (1.0-timestep)*source_dihedral_angles[i] + timestep*dest_dihedral_angle;
-		std::cout << "we are at "<<tangent_angles[i]<<" maybe and const is " <<const_dihedral<<"\n";
 		edge_cos_angles[i] = pow(cos(alpha),2)+pow(sin(alpha),2)*cos(const_dihedral);
-
 		//cout << "timestep = " << timestep << endl;
 		//cout << "Getting dihedral angle of  " << const_dihedral << " by getting a tangent angle of " << acos(edge_cos_angles[i]) << endl;
 	}

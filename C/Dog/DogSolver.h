@@ -59,6 +59,7 @@ public:
 		double convergence_threshold = 1e-6;
 		bool folding_mode = true;
 		bool flip_sign = false;
+		double submesh_update_alpha = 1;
 		double admm_rho = 1;
 		double admm_gamma = 1;
 
@@ -211,7 +212,7 @@ private:
 	vector< Eigen::VectorXd > sub_bc;
 	vector< vector<int> > sub_ij_to_bc;
 
-	vector< vector< EdgePoint > > constrained_edge_points;
+	vector< vector< EdgePoint > > constrained_edge_points;//uses local indices
 	vector< Eigen::MatrixXd > sub_edgeCoords;
 	vector< vector< pair<int,int> > > corresponding_edge_points;//stored as <submesh, idx>
 	void update_sub_edgeCoords();

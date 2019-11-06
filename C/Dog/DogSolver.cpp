@@ -29,32 +29,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
       p.max_newton_iters = 1;
     }
 
-    /*
-    // output to find out how stuff works
-    int v_num = dog.get_v_num();
-    cout << "Dog has " << v_num << " vertices [pos]\n";
-    cout << "dogsolver has x of size " << x.size() << " (and that should be 3x as much as the dog.v_num) [pos]\n";
-    cout << "position constraints of the new dogSolver:\n";
-    if(b.size()>0){
-      for(int i=0;i<b.size();++i)cout << "pos\t" << b[i] << "\t" << bc[i] << "\tin submesh " << dog.v_to_submesh_idx(b[i]%v_num) << endl;
-    }
-    cout << "edge constraints of the new dogSolver: "<<edgePoints.size()<<"\n";
-    cout << "paired vertices of the new dogSolver:\n";
-    if(pairs.size()>0){
-      for(int i=0;i<pairs.size();++i)cout << "pai\t" << pairs[i].first << "\t" << pairs[i].second << endl;
-    }
-
-    for(int j=0;j<edgeStitching.stitched_curves.size(); ++j){
-      for(int k=0;k<edgeStitching.stitched_curves[j].size(); ++k){
-        cout << "edgeStitching.stitched_curves["<<j<<"]["<<k<<"] is\t" << edgeStitching.stitched_curves[j][k].edge.v1 <<"-"<<edgeStitching.stitched_curves[j][k].edge.v2 << " at " << edgeStitching.stitched_curves[j][k].t<<endl;
-      }
-    }
-    for(int i=0; i<v_num; ++i){
-      cout << "v_to_submesh_idx("<<i<<") = " << dog.v_to_submesh_idx(i)<<endl;// gives index of submesh
-      cout << "v_in_submesh("<<i<<") = "<<dog.v_in_submesh(i)<<endl;//gives index of v in its submesh
-    }
-    */
-
     int num_submeshes = dog.get_submesh_n();
     cout << "DogSolver constructor: There are " << num_submeshes << " submeshes\n";
     for(int i=0; i<num_submeshes; ++i){
@@ -133,11 +107,6 @@ DogSolver::DogSolver(Dog& dog, const Eigen::VectorXd& init_mesh_vars,
         int v21 = edgeStitching.edge_const_2[j].v1;
         int v22 = edgeStitching.edge_const_2[j].v2;
         double t = edgeStitching.edge_coordinates[j];
-
-        /*
-        cout << "edgeStitching " << j << ":\t" << v11 << "-" << v12
-          << " corresponding to " << v21 << "-" << v22 << " at coord " << t <<endl;
-        */
 
         int submesh_1 = dog.v_to_submesh_idx(v11);
         int submesh_2 = dog.v_to_submesh_idx(v21);
@@ -446,17 +415,15 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
     if (p.folding_mode) single_iteration_fold(constraints_deviation, objective);
     else single_iteration_normal(constraints_deviation, objective);
   }
-  cout << "so says {"<<dog.get_v_num()<<"}\n";
-  obj.compObj.obj(x);
 }
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (fold)" << endl;
 	x0 = x;
   if (!is_folded()) {
-    cout << "Error: Not folded" << endl; exit(1);
+    cout << "Error: Not folded" << endl;
+    exit(1);
   }
-
   update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
     p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
     p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
@@ -484,8 +451,6 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
   }
   cout << "Finished: fold bias = " << p.fold_bias_weight << " and is_folded = " << is_folded() << endl;
 
-  dog.update_V_vector(x.head(3*dog.get_v_num()));//this seems redundant
-
   constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
   objective = obj.compObj.obj(x);
 
@@ -503,8 +468,6 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
 	cout << "running a single optimization routine (subsolvers)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    cout << " no subsolvers\n";
-
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -554,7 +517,6 @@ void DogSolver::single_iteration_ADMM(double& constraints_deviation, double& obj
 	cout << "running a single optimization routine (ADMM)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    cout << " no subsolvers\n";
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -644,7 +606,6 @@ void DogSolver::single_iteration_serial(double& constraints_deviation, double& o
 	cout << "running a single optimization routine (serial)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    cout << " no subsolvers\n";
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -702,7 +663,6 @@ void DogSolver::single_iteration_procrustes(double& constraints_deviation, doubl
 	cout << "running a single optimization routine (procrustes)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    cout << " no subsolvers\n";
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -755,8 +715,6 @@ void DogSolver::single_iteration_procrustes(double& constraints_deviation, doubl
     constraints_deviation += sub_cd;
     objective += sub_obj;
 
-    cout << "Pretty much done\n";
-
     dog.update_submesh_V(1, sub_dog[1]->getV());
     x = dog.getV_vector();
 
@@ -772,7 +730,6 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 	cout << "running a single optimization routine (experimental)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    cout << " no subsolvers\n";
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -781,34 +738,53 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
   } else {
     cout << " with subsolvers\n";
     int num_submeshes = dog.get_submesh_n();
-    if(num_submeshes != 2) cout <<"WARNING: You shouldn't use this solver mode for more than 2 patches\n";
 
+    constraints_deviation = 0.0;
+    objective = 0.0;
 
+    //Do iteration on global mesh as "guess"
+    double d0=0,d1=0;
     if(p.admm_gamma>0.5){
-    double d0,d1;
-    single_iteration_normal(d0,d1);
+      single_iteration_normal(d0,d1);
+    }else{
+      single_iteration_fold(d0,d1);
+    }
     --iter_i;
 
-    //dog.update_submesh_V(0, sub_dogsolver[0]->getDog().getV());
-    //dog.update_submesh_V(1, sub_dogsolver[1]->getDog().getV());
-    //TODO don't use actual x, only edge points
-    Eigen::MatrixXd glob_V = dog.getV();
-    for(int i=0;i<num_submeshes;++i){
-      int mini,maxi;
-      dog.get_submesh_min_max_i(i,mini,maxi);
-      Eigen::VectorXd loc_x;
-      mat2_to_vec(glob_V.block(mini,0, maxi-mini+1, 3),loc_x);
-      sub_dogsolver[i]->set_opt_vars(loc_x);
-    }
+    //update_sub_edgeCoords();//this one uses sub_dog
+    {//this one uses dog
+      const DogEdgeStitching& edgeStitching = dog.getEdgeStitching();
+      vector<int> k(num_submeshes,0);
+      for(int j=0; j<edgeStitching.edge_coordinates.size(); ++j){
+        int v11 = edgeStitching.edge_const_1[j].v1;
+        int v12 = edgeStitching.edge_const_1[j].v2;
+        int v21 = edgeStitching.edge_const_2[j].v1;
+        int v22 = edgeStitching.edge_const_2[j].v2;
+        double t = edgeStitching.edge_coordinates[j];
 
-    update_sub_edgeCoords();
-    x=x0;
-    for(int i=0;i<num_submeshes;++i){
-      int mini,maxi;
-      dog.get_submesh_min_max_i(i,mini,maxi);
-      Eigen::VectorXd loc_x;
-      mat2_to_vec(glob_V.block(mini,0, maxi-mini+1, 3),loc_x);
-      sub_dogsolver[i]->set_opt_vars(loc_x);
+        int submesh_1 = dog.v_to_submesh_idx(v11);
+        int submesh_2 = dog.v_to_submesh_idx(v21);
+        EdgePoint ep1(Edge(v11, v12), t);
+        EdgePoint ep2(Edge(v21, v22), t);
+        sub_edgeCoords[submesh_1].row(k[submesh_1]) = ep1.getPositionInMesh(dog.getV());
+        sub_edgeCoords[submesh_2].row(k[submesh_2]) = ep1.getPositionInMesh(dog.getV());//currently using the same point for both submeshes
+        k[submesh_1]++;
+        k[submesh_2]++;
+      }
+      //for angles
+      if(p.admm_gamma>0.5){
+        for(int i=0;i<sub_dog.size();++i){
+          Eigen::MatrixXd w_coords(sub_edge_angle_ww[i].rows(), 6);
+          int v_num = dog.get_v_num();
+          for(int j=0; j<sub_edge_angle_ww[i].rows(); ++j){
+            int w1 = sub_edge_angle_ww[i](j,0);
+            int w2 = sub_edge_angle_ww[i](j,1);
+            w_coords.row(j) << x(w1), x(w1+v_num), x(w1+2*v_num), x(w2), x(w2+v_num), x(w2+2*v_num);
+          }
+          sub_dogsolver[i]->update_w_coords(w_coords);
+        }
+      }
+
     }
 
     update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
@@ -834,9 +810,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
   	   dog.update_submesh_V(i, sub_dog[i]->getV());
     }
     x = dog.getV_vector();
-  }else{
-    single_iteration_normal(constraints_deviation, objective);
-  }
+
     cout << "all subsolvers done\n";
   }
   ++iter_i;
@@ -858,6 +832,7 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   if (time_measurements_log) {
     *time_measurements_log << objective << "," << constraints_deviation << endl;
   }
+  ++iter_i;
 }
 
 void DogSolver::get_x_rigid_motion(Eigen::Matrix3d& R, Eigen::RowVector3d& T) {
@@ -986,14 +961,13 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
     }
   } else {
     constraints.subEdgesAngleConst.set_angles(cos_angles_i);
-    double eyo = constraints.subEdgesAngleConst.Vals(x).squaredNorm();
   }
 }
 
 void DogSolver::update_w_coords(const Eigen::MatrixXd& W){
   //must be initialized in first iteration
   if(iter_i==0) constraints.subEdgesAngleConst.init_outside_points(W, x);
-  else constraints.subEdgesAngleConst.update_outside_points(W);
+  else constraints.subEdgesAngleConst.update_outside_points(W, p.submesh_update_alpha);
 }
 
 Eigen::VectorXd DogSolver::get_obj_parts(){
