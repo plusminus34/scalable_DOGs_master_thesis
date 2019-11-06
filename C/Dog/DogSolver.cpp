@@ -967,7 +967,7 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
 void DogSolver::update_w_coords(const Eigen::MatrixXd& W){
   //must be initialized in first iteration
   if(iter_i==0) constraints.subEdgesAngleConst.init_outside_points(W, x);
-  else constraints.subEdgesAngleConst.update_outside_points(W, p.submesh_update_alpha);
+  else constraints.subEdgesAngleConst.update_outside_points(W);
 }
 
 Eigen::VectorXd DogSolver::get_obj_parts(){

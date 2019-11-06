@@ -59,7 +59,6 @@ public:
 		double convergence_threshold = 1e-6;
 		bool folding_mode = true;
 		bool flip_sign = false;
-		double submesh_update_alpha = 1;
 		double admm_rho = 1;
 		double admm_gamma = 1;
 

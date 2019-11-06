@@ -207,7 +207,6 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
       //ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
       //ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
-      ImGui::InputDouble("Submesh alpha", &state.DC.p.submesh_update_alpha, 0, 0, "%.4f");
       /*
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");

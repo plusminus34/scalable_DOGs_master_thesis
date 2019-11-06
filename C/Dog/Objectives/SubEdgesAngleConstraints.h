@@ -48,10 +48,7 @@ public:
 			e_lens.push_back(l1*l2);
 		}
 	}
-	virtual void update_outside_points(const Eigen::MatrixXd& V, double alpha=1.0){
-		outside_points *= 1.0 - alpha;
-		outside_points += alpha*V;
-	}
+	virtual void update_outside_points(const Eigen::MatrixXd& V){ outside_points = V; }
 
 	virtual Eigen::VectorXd Vals(const Eigen::VectorXd& x) const {
 		Eigen::VectorXd vals(edges.size());
@@ -66,6 +63,7 @@ public:
 
 			double cos_angle = cos_angles[i];
 			vals(i) = -cos_angle+((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z))/e_len;
+			std::cout << "angles: is " << vals(i)+cos_angle << "\tshould be "<<cos_angle<<"\n";
 		};
 		return vals;
 	}
