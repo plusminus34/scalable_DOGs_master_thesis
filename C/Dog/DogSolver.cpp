@@ -435,6 +435,10 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
     p.fold_bias_weight = 1;
   } else {
     while (!is_folded() && (p.fold_bias_weight < 1e14)) {
+      if (p.fold_bias_weight <= 0.0) {
+        cout << "Error: Nonpositive fold bias weight" << endl;
+        exit(1);
+      }
       cout << "Not folded, fold bias = " << p.fold_bias_weight << " reverting back and making the bias stronger" << endl;
       x = x0;
       cout << "x.norm() = " << x.norm() << endl;

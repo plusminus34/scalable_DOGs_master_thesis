@@ -79,44 +79,7 @@ void DeformationController::single_optimization() {
 		}
 	}
 	if(current_iteration == stored_iterations - 1){
-		cout << "Writing output\n";
-		std::ofstream outfile;
-		outfile.open ("output.txt");
-
-		outfile << "Output: "<< stored_iterations << " iterations" << endl;
-
-		outfile << "iteration" << endl;
-		outfile << 0;
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << i;
-		outfile << endl;
-
-		outfile << "bending" << endl;
-		outfile << obj_data(0,0);
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,0);
-		outfile << endl;
-
-		outfile << "isometry" << endl;
-		outfile << obj_data(0,1);
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,1);
-		outfile << endl;
-
-		outfile << "objective (global mesh)" << endl;
-		outfile << obj_data(0,2);
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,2);
-		outfile << endl;
-
-		outfile << "constraints deviation (from iteration)" << endl;
-		outfile << obj_data(0,3);
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,3);
-		outfile << endl;
-
-		outfile << "objective (from iteration)" << endl;
-		outfile << obj_data(0,4);
-		for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,4);
-		outfile << endl;
-
-		outfile.close();
-		cout << "Written to output.txt\n";
+		write_output_file();
 	}
 	++current_iteration;
 
@@ -315,6 +278,67 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 void DeformationController::store_data(int num_iterations){
 	stored_iterations = num_iterations;
 	obj_data = Eigen::MatrixXd::Zero(stored_iterations,5);
+}
+
+void DeformationController::write_output_file(){
+	cout << "Writing output\n";
+	std::ofstream outfile;
+	outfile.open ("output.txt");
+
+	outfile << "Output: "<< stored_iterations << " iterations" << endl;
+
+	outfile << "Parameters" << endl;
+	outfile << "Bending weight: " << p.bending_weight << endl;
+ 	outfile << "Paired boundary bending weight: " << p.paired_boundary_bending_weight << endl;
+	outfile << "Isometry weight: " << p.isometry_weight << endl;
+	outfile << "Stitching weight: " << p.stitching_weight << endl;
+	outfile << "Soft constraints weight: " << p.soft_pos_weight << endl;
+	outfile << "Dihedral angle weight: " << p.dihedral_weight << endl;
+	outfile << "Pair weight: " << p.pair_weight << endl;
+	outfile << "Fold bias weight: " << p.fold_bias_weight << endl;
+	outfile << "MV bias weight: " << p.mv_bias_weight << endl;
+	//outfile << "Merit p" << p.merit_p << endl;
+	//outfile << "Max Newton iterations: " << p.max_newton_iters << endl;
+	//outfile << "Infeasability epsilon: " << p.infeasability_epsilon << endl;
+	//outfile << "Infeasability filter: " << p.infeasability_filter << endl;
+	//outfile << "Convergence treshold: " << p.convergence_threshold << endl;
+	//outfile << "Folding mode: " << p.folding_mode << endl;
+	//outfile << "Flip sign: " << p.flip_sign << endl;
+	//outfile << "ADMM rho: " << p.admm_rho << endl;
+	//outfile << "ADMM gamma: " << p.admm_gamma << endl;
+
+	outfile << "iteration" << endl;
+	outfile << 0;
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << i;
+	outfile << endl;
+
+	outfile << "bending" << endl;
+	outfile << obj_data(0,0);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,0);
+	outfile << endl;
+
+	outfile << "isometry" << endl;
+	outfile << obj_data(0,1);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,1);
+	outfile << endl;
+
+	outfile << "objective (global mesh)" << endl;
+	outfile << obj_data(0,2);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,2);
+	outfile << endl;
+
+	outfile << "constraints deviation (from iteration)" << endl;
+	outfile << obj_data(0,3);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,3);
+	outfile << endl;
+
+	outfile << "objective (from iteration)" << endl;
+	outfile << obj_data(0,4);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,4);
+	outfile << endl;
+
+	outfile.close();
+	cout << "Written to output.txt\n";
 }
 
 void DeformationController::add_test_angle(){

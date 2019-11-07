@@ -164,4 +164,6 @@ private:
 	// Objective data stored
 	int current_iteration = 0;
 	Eigen::MatrixXd obj_data;
+
+	void write_output_file();
 };
