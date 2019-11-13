@@ -5,14 +5,105 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	const DogEdgeStitching& coarse_es = coarse_dog.getEdgeStitching();
 	const Eigen::MatrixXd& fine_V = fine_dog.getV();
 	const Eigen::MatrixXd& coarse_V = coarse_dog.getV();
+	const QuadTopology& fine_qt = fine_dog.getQuadTopology();
+	const QuadTopology& coarse_qt = coarse_dog.getQuadTopology();
 
+	ftc = Eigen::VectorXi::Constant(fine_V.rows(), -1);
+	ctf = Eigen::VectorXi::Constant(coarse_V.rows(), -1);
+
+	//Start by fixing vertex 0 to be the same in both Dogs
+	int fine_origin = 0; int coarse_origin = 0;
+	ftc(fine_origin) = coarse_origin;
+	ctf(coarse_origin) = fine_origin;
+	//TODO sanity check that this is okay
+
+	//There will be a set of vertices to consider, until it finishes
+	const int UNCHECKED = -1;
+	const int FINEONLY_I = -2;//is between two coarse points
+	const int UNDECIDED = -3;
+	const int WILLBECHECKED = -4;
+	const int FINEONLY_X = -5;//has only fineonly neighbours
+	const int COARSEONLY = -6;
+	const int LINK = -7;
+	//Start by checking the neighbours of the origin
+	vector<int> tocheck(0);
+	vector<int> tocheck_next = fine_qt.A[fine_origin];
+	vector<int> coarse_tocheck(0);
+	vector<int> coarse_tocheck_next = coarse_qt.A[coarse_origin];
+	int flooding_iteration = 0;
+	//Flooding algorithm
+	while(tocheck_next.size() > 0){
+		tocheck = tocheck_next;
+		tocheck_next.clear();
+		++flooding_iteration;
+		cout << "flood: starting iteration "<<flooding_iteration<<"\n";
+
+		if(flooding_iteration%2 == 1){
+			//Every odd iteration has no link points
+			for(int i=0; i<tocheck.size(); ++i){
+				ftc(tocheck[i]) = FINEONLY_I;
+				cout << "flood: "<<tocheck[i]<<" is fine-only and has a coarse neighbour\n";
+			}
+		} else {
+			//Even iterations require more thought
+			for(int i=0; i<tocheck.size(); ++i){
+				ftc(i) = FINEONLY_X;
+				cout << "flood: "<<tocheck[i]<<" is an x unless stated otherwise\n";
+			}
+			//Do a coarse iteration
+			coarse_tocheck = coarse_tocheck_next;
+			coarse_tocheck_next.clear();
+			for(int coarse_i=0; coarse_i<coarse_tocheck.size(); ++coarse_i){
+				int coarse_u = coarse_tocheck[coarse_i];
+				Eigen::RowVector3d coarse_p = coarse_V.row(coarse_u);
+				for(int fine_i=0; fine_i<tocheck.size(); ++fine_i){
+					int fine_u = tocheck[fine_i];
+					Eigen::RowVector3d fine_p = fine_V.row(fine_u);
+					//Compare the current vertices to be checked (coarse and fine) to find link points
+					if( (coarse_p-fine_p).squaredNorm() < 0.0001 ){//TODO better check for equality? include patch check
+						//they are the same
+						ctf(coarse_u) = fine_u;
+						ftc(fine_u) = coarse_u;
+						cout << "flood: linking coarse "<<coarse_u<<" to fine "<<fine_u <<"\n";
+						//TODO check if it's on the patch boundary
+						//       if so, add all duplicates of fine_u and coarse_u to ftc/ctf
+						//              and put their neighbours into (coarse_)tocheck
+					}
+				}
+				for(int j=0; j<coarse_qt.A[coarse_tocheck[coarse_i]].size(); ++j){
+					int coarse_u = coarse_qt.A[coarse_tocheck[coarse_i]][j];
+					if(ctf(coarse_u) == UNCHECKED){
+						ctf(coarse_u) = WILLBECHECKED;
+						coarse_tocheck_next.push_back(coarse_u);
+//						cout << "flood: coarse["<<coarse_u<<"] must be checked next coarse iteration\n";
+					}
+				}
+			}
+			//do coarse flooding iteration and compare coordinates
+		}
+
+		//Set unchecked neighbours to be checked in the next iteration
+		for(int i=0; i<tocheck.size(); ++i){
+			for(int j=0; j<fine_qt.A[tocheck[i]].size(); ++j){
+				int v = fine_qt.A[tocheck[i]][j];
+				if(ftc(v) == UNCHECKED){
+					ftc(v) = WILLBECHECKED;
+					tocheck_next.push_back(v);
+	//				cout << "flood: "<<v<<" must be checked next iteration\n";
+				}
+			}
+		}
+	}
+	//Patch border is dangerous territory as always
+
+	// the rest is curves and stuff
 	int num_curves = fine_es.stitched_curves.size();
 	if(num_curves != coarse_es.stitched_curves.size()){
 		cout << "Error: Coarse Dog has different number of stitched curves\n";
 		return;
 	}
 
-	//ftc_curve and coarse_to_fine for curve edge points on both meshes
+	//fine_to_coarse and coarse_to_fine for curve edge points on both meshes
 	ftc_curve.resize(num_curves);
 	ctf_curve.resize(num_curves);
 	for(int i=0; i<num_curves; ++i){
@@ -106,6 +197,14 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		Eigen::RowVector3d approximate = get_fine_curve_approx(coarse_V, 0,i);
 		Eigen::RowVector3d genuine = fine_es.stitched_curves[0][i].getPositionInMesh(fine_V);
 		cout << "comparison: approx "<<approximate <<"\tvs genuine " <<genuine<<"\n";
+	}
+	for(int i=0; i<ftc.size(); ++i){
+		cout << "fine_to_coarse "<<i;
+		if(ftc[i] > -1) {
+			cout <<" links to " << ftc[i] << " and accordingly coarse_to_fine "<<ftc[i]<<" is "<<ctf[ftc[i]]<<"\n";
+		}else{
+			cout <<" is "<<ftc[i]<<"\n";
+		}
 	}
 }
 

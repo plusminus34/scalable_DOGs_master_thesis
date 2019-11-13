@@ -30,6 +30,10 @@ public:
 
 private:
 
+	//ftc = Fine-To-Coarse
+	Eigen::VectorXi ftc;
+	Eigen::VectorXi ctf;
+
 	vector< vector<int> > ftc_curve;
 	vector< vector<int> > ctf_curve;
 	vector< Eigen::MatrixXi > ctf_curve_vertices;
