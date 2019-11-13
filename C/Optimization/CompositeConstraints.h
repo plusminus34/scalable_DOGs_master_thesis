@@ -13,7 +13,7 @@ public:
 	CompositeConstraints(const std::vector<Constraints*>& constraints_i, const int var_range = -1) : var_range(var_range){
 		constraints.resize(constraints_i.size());
 		for (int i = 0; i < constraints.size(); i++) constraints[i] = constraints_i[i];
-		const_n = 0; 
+		const_n = 0;
 		for (auto cnst: constraints) {const_n+=cnst->getConstNum(); ijv_size += cnst->get_IJV_size();}
 		IJV.resize(ijv_size);
 	};
@@ -36,7 +36,7 @@ public:
 		Eigen::VectorXd x;
 		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);
 		Eigen::VectorXd vals(const_n);
-		int const_cnt = 0; 
+		int const_cnt = 0;
 		for (auto cnst: constraints) {
 			auto cnst_vals = cnst->Vals(x);
 			for (int val_const_i = 0; val_const_i < cnst_vals.rows(); val_const_i++) {vals[const_cnt++] = cnst_vals[val_const_i];}
@@ -54,14 +54,14 @@ public:
 		for (auto cnst: constraints) {
 			cnst->updateJacobianIJV(x);
 			const std::vector<Eigen::Triplet<double> >& cnst_IJV = cnst->JacobianIJV();
-			
+
 			for (auto val : cnst_IJV) {
 				IJV[ijv_idx++] = Eigen::Triplet<double>(val.row() + row_base, val.col(), val.value());
 			}
 			row_base += cnst->getConstNum();
 		}
 	}
-	
+
 	virtual void updateLambdaHessianIJV(const Eigen::VectorXd& x_whole, const Eigen::VectorXd& lambda){
 		Eigen::VectorXd x;
 		if (var_range == -1) x = x_whole; else x = x_whole.head(var_range);

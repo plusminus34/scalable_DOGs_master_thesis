@@ -13,7 +13,7 @@ void ModelState::init_from_mesh(const std::string& mesh_path) {
 	std::cout << "Reading mesh " << mesh_path << endl;
 	Eigen::MatrixXd V; Eigen::MatrixXi F,F_ren;
 	igl::readOBJ(mesh_path, V, F_ren);
-	
+
 	// We either read a triangle mesh or a quad mesh
 	if (F_ren.cols() == 3 ) {
 		F = F_to_Fsqr(F_ren);
@@ -31,7 +31,7 @@ void ModelState::setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::Ma
 	double cur_v_len = edge_l*sqrt(V.rows());
 	auto scaled_V =V* (20. / cur_v_len);
 
-	DogEdgeStitching dogEdgeStitching; // no folds  
+	DogEdgeStitching dogEdgeStitching; // no folds
 	std::vector<pair<int,int>> submesh_min_max; submesh_min_max.push_back(pair<int,int>(0,V.rows()-1)); // only 1 component
 
 	dog = Dog(scaled_V,F);
@@ -49,13 +49,36 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
   	std::vector<Polyline_2> polylines, border_polylines;
 
 	std::cout << "Reading svg " << svg_path << endl;
-	read_svg_crease_pattern(svg_path, bbox, polylines, border_polylines);
+	read_svg_crease_pattern(svg_path, bbox, polylines, border_polylines, cp_polylines, cp_border_polylines);
+
+	std::cout << "polylines: "<<polylines.size()<<"\n";
+	if(polylines.size()>0){
+//		std::cout << "polylines[0] is of size "<<polylines[0].rows()<<" x "<<polylines[0].cols()<<"\n";
+	}
+	std::cout << "border_polylines: "<<border_polylines.size()<<"\n";
+	if(border_polylines.size()>0){
+//		std::cout << "border_polylines[0] is of size "<<border_polylines[0].rows()<<" x "<<border_polylines[0].cols()<<"\n";
+	}
 
 	CreasePattern creasePattern(bbox, polylines, border_polylines, x_res, y_res);
 	dog = dog_from_crease_pattern(creasePattern);
 
+  if(x_res%2 == 0 || y_res%2 == 0) cout << "Warning: Resolution should really be odd\n";
+	int x_res_coarse = (x_res + 1) / 2;
+	int y_res_coarse = (y_res + 1) / 2;
+	CreasePattern coarse_creasePattern(bbox, polylines, border_polylines, x_res_coarse, y_res_coarse);
+	coarse_dog = dog_from_crease_pattern(coarse_creasePattern);
+	fine_coarse = FineCoarseConversion(dog, coarse_dog);
+
+	cp_bb_x_min = bbox.xmin();
+	cp_bb_x_max = bbox.xmax();
+	cp_bb_y_min = bbox.ymin();
+	cp_bb_y_max = bbox.ymax();
+	cp_x_res = x_res;
+	cp_y_res = y_res;
+
 	/*
-  	creasePattern.get_visualization_mesh_and_edges(creasesVisualization.V_arr, creasesVisualization.F_arr, 
+  	creasePattern.get_visualization_mesh_and_edges(creasesVisualization.V_arr, creasesVisualization.F_arr,
 											creasesVisualization.faceColors,creasesVisualization.edge_pts1, creasesVisualization.edge_pts2);
 											*/
 	creasePattern.get_visualization_edges(creasesVisualization.edge_pts1, creasesVisualization.edge_pts2);

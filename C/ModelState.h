@@ -2,6 +2,7 @@
 
 #include "Dog/Dog.h"
 #include "DeformationController.h"
+#include "Dog/FineCoarseConversion.h"
 
 #include "igl/serialize.h"
 
@@ -38,8 +39,26 @@ struct ModelState : public igl::Serializable {
       Add(dog,std::string("_dog"));
       Add(creasesVisualization,std::string("_creasesVisualization"));
       Add(DC,std::string("_DC"));
+			Add(cp_bb_x_min, std::string("_cp_bb_x_min"));
+			Add(cp_bb_x_max, std::string("_cp_bb_x_max"));
+			Add(cp_bb_y_min, std::string("_cp_bb_y_min"));
+			Add(cp_bb_y_max, std::string("_cp_bb_y_max"));
+			Add(cp_polylines, std::string("_cp_polylines"));
+			Add(cp_border_polylines, std::string("_cp_border_polylines"));
+			Add(cp_x_res, std::string("_cp_x_res"));
+			Add(cp_y_res, std::string("_cp_y_res"));
+		  Add(coarse_dog,std::string("_coarse_dog"));
+			//TODO add fine_coarse
     }
+
+  // Crease pattern data
+	double cp_bb_x_min, cp_bb_x_max, cp_bb_y_min, cp_bb_y_max;// bounding box
+	std::vector< Eigen::MatrixXd > cp_polylines, cp_border_polylines;
+	int cp_x_res, cp_y_res;// resolution
+
+	Dog coarse_dog;
+	FineCoarseConversion fine_coarse;
+
 private:
 	void setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
 };
-

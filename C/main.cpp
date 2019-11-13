@@ -93,6 +93,9 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
   case 'U':
     state.DC.change_submesh();
     break;
+  case 'M':
+    state.DC.init_from_new_dog(state.coarse_dog);
+    break;
   }
   return false;
 }
@@ -205,7 +208,7 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Fold bias weight", &state.DC.p.fold_bias_weight, 0, 0, "%.4f");
 //      ImGui::InputDouble("MV bias weight", &state.DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
-      //ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
+      ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
       //ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
       /*
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");

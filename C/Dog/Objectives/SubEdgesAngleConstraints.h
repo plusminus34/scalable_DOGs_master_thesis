@@ -63,7 +63,7 @@ public:
 
 			double cos_angle = cos_angles[i];
 			vals(i) = -cos_angle+((v1_x-v2_x)*(w1_x-w2_x)+(v1_y-v2_y)*(w1_y-w2_y)+(v1_z-v2_z)*(w1_z-w2_z))/e_len;
-			std::cout << "angles: is " << vals(i)+cos_angle << "\tshould be "<<cos_angle<<"\n";
+			//std::cout << "angles("<<i<<"): is " << vals(i)+cos_angle << "\tshould be "<<cos_angle<<"\n";
 		};
 		return vals;
 	}
