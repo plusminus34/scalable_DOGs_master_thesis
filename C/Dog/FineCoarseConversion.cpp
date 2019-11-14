@@ -15,7 +15,38 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	int fine_origin = 0; int coarse_origin = 0;
 	ftc(fine_origin) = coarse_origin;
 	ctf(coarse_origin) = fine_origin;
-	//TODO sanity check that this is okay
+	//TODO check that this is okay
+
+	// Need to know about vertices near the patch boundary in the flooding
+	int num_patches = fine_dog.get_submesh_n();
+	Eigen::MatrixXi fine_vertex_duplicates = Eigen::MatrixXi::Constant(fine_dog.get_v_num(), num_patches, -1);
+	Eigen::MatrixXi coarse_vertex_duplicates = Eigen::MatrixXi::Constant(coarse_dog.get_v_num(), num_patches, -1);
+	//vertex_duplicates(i,j)=v means that v is i's duplicate in submesh j
+	for(int i=0; i<fine_es.edge_const_1.size(); ++i){
+		int va1 = fine_es.edge_const_1[i].v1;
+		int va2 = fine_es.edge_const_1[i].v2;
+		int patch_a = fine_dog.v_to_submesh_idx(va1);
+		int vb1 = fine_es.edge_const_2[i].v1;
+		int vb2 = fine_es.edge_const_2[i].v2;
+		int patch_b = fine_dog.v_to_submesh_idx(vb1);
+		fine_vertex_duplicates(va1, patch_b) = vb1;
+		fine_vertex_duplicates(va2, patch_b) = vb2;
+		fine_vertex_duplicates(vb1, patch_a) = va1;
+		fine_vertex_duplicates(vb2, patch_a) = va2;
+	}
+	for(int i=0; i<coarse_es.edge_const_1.size(); ++i){
+		int va1 = coarse_es.edge_const_1[i].v1;
+		int va2 = coarse_es.edge_const_1[i].v2;
+		int patch_a = coarse_dog.v_to_submesh_idx(va1);
+		int vb1 = coarse_es.edge_const_2[i].v1;
+		int vb2 = coarse_es.edge_const_2[i].v2;
+		int patch_b = coarse_dog.v_to_submesh_idx(vb1);
+		coarse_vertex_duplicates(va1, patch_b) = vb1;
+		coarse_vertex_duplicates(va2, patch_b) = vb2;
+		coarse_vertex_duplicates(vb1, patch_a) = va1;
+		coarse_vertex_duplicates(vb2, patch_a) = va2;
+	}
+	vector<vector<int>> patch_adj = fine_dog.get_submesh_adjacency();
 
 	//There will be a set of vertices to consider, until it finishes
 	const int UNCHECKED = -1;
@@ -31,43 +62,71 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	vector<int> coarse_tocheck(0);
 	vector<int> coarse_tocheck_next = coarse_qt.A[coarse_origin];
 	int flooding_iteration = 0;
-	//Flooding algorithm
+	vector<bool> patch_reached(fine_dog.get_submesh_n(), false);
+	patch_reached[fine_dog.v_to_submesh_idx(fine_origin)] = true;
+
+	//Flooding to determine type of all vertices
 	while(tocheck_next.size() > 0){
 		tocheck = tocheck_next;
 		tocheck_next.clear();
 		++flooding_iteration;
-		cout << "flood: starting iteration "<<flooding_iteration<<"\n";
+		//cout << "flood: starting iteration "<<flooding_iteration<<"\n";
 
 		if(flooding_iteration%2 == 1){
 			//Every odd iteration has no link points
 			for(int i=0; i<tocheck.size(); ++i){
 				ftc(tocheck[i]) = FINEONLY_I;
-				cout << "flood: "<<tocheck[i]<<" is fine-only and has a coarse neighbour\n";
+				//cout << "flood: "<<tocheck[i]<<" is fine-only and has a coarse neighbour\n";
 			}
 		} else {
 			//Even iterations require more thought
 			for(int i=0; i<tocheck.size(); ++i){
-				ftc(i) = FINEONLY_X;
-				cout << "flood: "<<tocheck[i]<<" is an x unless stated otherwise\n";
+				ftc(tocheck[i]) = FINEONLY_X;
+				//cout << "flood: "<<tocheck[i]<<" is an x unless stated otherwise\n";
 			}
 			//Do a coarse iteration
 			coarse_tocheck = coarse_tocheck_next;
 			coarse_tocheck_next.clear();
 			for(int coarse_i=0; coarse_i<coarse_tocheck.size(); ++coarse_i){
 				int coarse_u = coarse_tocheck[coarse_i];
+				int coarse_patch = coarse_dog.v_to_submesh_idx(coarse_u);
 				Eigen::RowVector3d coarse_p = coarse_V.row(coarse_u);
 				for(int fine_i=0; fine_i<tocheck.size(); ++fine_i){
 					int fine_u = tocheck[fine_i];
+					int fine_patch = fine_dog.v_to_submesh_idx(fine_u);
 					Eigen::RowVector3d fine_p = fine_V.row(fine_u);
 					//Compare the current vertices to be checked (coarse and fine) to find link points
-					if( (coarse_p-fine_p).squaredNorm() < 0.0001 ){//TODO better check for equality? include patch check
-						//they are the same
+					if(coarse_patch==fine_patch && (coarse_p-fine_p).squaredNorm() < 0.0001){//TODO better check for equality?
+						// They are the same
 						ctf(coarse_u) = fine_u;
 						ftc(fine_u) = coarse_u;
 						cout << "flood: linking coarse "<<coarse_u<<" to fine "<<fine_u <<"\n";
-						//TODO check if it's on the patch boundary
-						//       if so, add all duplicates of fine_u and coarse_u to ftc/ctf
-						//              and put their neighbours into (coarse_)tocheck
+
+
+						//Try to cross the border between submeshes
+						for(int i=0; i<patch_adj[fine_patch].size(); ++i){
+							int other_patch = patch_adj[fine_patch][i];
+							if( !patch_reached[other_patch] && fine_vertex_duplicates(fine_u, other_patch) != -1){
+								// There are a duplicate of vertices fine_u,coarse_u on other_patch
+								patch_reached[other_patch] = true;
+								int other_fine_u = fine_vertex_duplicates(fine_u, other_patch);
+								int other_coarse_u = coarse_vertex_duplicates(coarse_u, other_patch);
+								ftc(other_fine_u) = other_coarse_u;
+								ctf(other_coarse_u) = other_fine_u;
+								// Check neighbours on the other patch in the next iteration
+								for(int j=0; j<fine_qt.A[other_fine_u].size(); ++j){
+									int willcheck = fine_qt.A[other_fine_u][j];
+									ftc(willcheck) = WILLBECHECKED;
+									tocheck_next.push_back(willcheck);
+								}
+								for(int j=0; j<coarse_qt.A[other_coarse_u].size(); ++j){
+									int willcheck = coarse_qt.A[other_coarse_u][j];
+									ctf(willcheck) = WILLBECHECKED;
+									coarse_tocheck_next.push_back(willcheck);
+								}
+							}
+						}
+
 					}
 				}
 				for(int j=0; j<coarse_qt.A[coarse_tocheck[coarse_i]].size(); ++j){
@@ -79,7 +138,6 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 					}
 				}
 			}
-			//do coarse flooding iteration and compare coordinates
 		}
 
 		//Set unchecked neighbours to be checked in the next iteration
@@ -94,9 +152,8 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			}
 		}
 	}
-	//Patch border is dangerous territory as always
 
-	// the rest is curves and stuff
+	// The rest is curves and some output later
 	int num_curves = fine_es.stitched_curves.size();
 	if(num_curves != coarse_es.stitched_curves.size()){
 		cout << "Error: Coarse Dog has different number of stitched curves\n";
@@ -127,7 +184,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		}
 	}
 
-
+	// Preparing approximation of fine curve points using coarse ones
 	ctf_curve_vertices.resize(num_curves);
 	ctf_curve_weights.resize(num_curves);
 	for(int i=0; i<num_curves; ++i){
@@ -193,6 +250,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	}
 
 	//TEST output
+	/*
 	for(int i=0; i<fine_es.stitched_curves[0].size(); ++i){
 		Eigen::RowVector3d approximate = get_fine_curve_approx(coarse_V, 0,i);
 		Eigen::RowVector3d genuine = fine_es.stitched_curves[0][i].getPositionInMesh(fine_V);
@@ -202,10 +260,12 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		cout << "fine_to_coarse "<<i;
 		if(ftc[i] > -1) {
 			cout <<" links to " << ftc[i] << " and accordingly coarse_to_fine "<<ftc[i]<<" is "<<ctf[ftc[i]]<<"\n";
+			cout << "  and the coords\t"<<fine_V.row(i)<<"\tvs\t"<<coarse_V.row(ftc[i])<<"\n";
 		}else{
 			cout <<" is "<<ftc[i]<<"\n";
 		}
 	}
+	*/
 }
 
 //TODO implement this

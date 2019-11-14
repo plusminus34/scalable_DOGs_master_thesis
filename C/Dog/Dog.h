@@ -61,7 +61,7 @@ public:
 	void update_V(const Eigen::MatrixXd& V_new) {V = V_new; update_rendering_v();}
 	void update_V_vector(const Eigen::VectorXd& x) {vec_to_mat2(x,V); update_rendering_v();}
 	void update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV);
-	std::vector<std::vector <int> > get_submesh_adjacency() {return submesh_adjacency;}
+	std::vector<std::vector <int> > get_submesh_adjacency() const {return submesh_adjacency;}
 
 	Dog* get_submesh(int submesh_i);
 
@@ -107,7 +107,7 @@ public:
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
-      Add(V,std::string("_uv"));
+      Add(V,std::string("_uv"));//uv is V?
       Add(flatV,std::string("_flatV"));
       Add(left_bnd,std::string("_left_bnd"));
       Add(right_bnd,std::string("_right_bnd"));
@@ -116,7 +116,7 @@ public:
       Add(quadTop,std::string("_quadTop"));
       Add(V_ren,std::string("_V_ren"));
       Add(F_ren,std::string("_F_ren"));
-      Add(rendered_wireframe_edges,std::string("_rendered_wireframe_edgesn"));
+      Add(rendered_wireframe_edges,std::string("_rendered_wireframe_edgesn"));//edgesn?
       Add(submeshVSize,std::string("_submeshVSize"));
       Add(submeshFSize,std::string("_submeshFSize"));
       Add(submesh_adjacency,std::string("_submesh_adjacency"));
