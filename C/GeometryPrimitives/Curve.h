@@ -34,11 +34,15 @@ public:
 	// Return a curve coordinates given rigid motion data (translation and rotation frame)
 	// The translation and rotation are for the second point on the curve (need a point with an osculation plane)
 	Eigen::MatrixXd getCoords(const Eigen::RowVector3d& T, const Eigen::Matrix3d& F);
+	// T,F as for getCoords, offsets contains values between 0 and 1 and says how to interpolate
+	//   e.g. offsets[3][i]=0.33 means there's an interpolated point a third of the way between curve pts 3 and 4
+	Eigen::MatrixXd getInterpolatedCoords(const Eigen::RowVector3d& T, const Eigen::Matrix3d& F,
+		const std::vector< std::vector<double> >& offsets);
 
 	static void getTranslationAndFrameFromCoords(const Eigen::MatrixXd& coords, Eigen::RowVector3d& T, Eigen::Matrix3d& F);
 
 	void print_geometric_represenation();
-	
+
 	// edge lengths, vertex curvature, edge torsion
 	std::vector<double> len, k, t;
 private:

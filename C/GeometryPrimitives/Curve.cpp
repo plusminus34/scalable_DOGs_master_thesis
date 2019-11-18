@@ -29,7 +29,7 @@ Curve::Curve(const Eigen::MatrixXd& coords) {
 			auto old_b = cur_frame.col(2); auto new_b = new_frame.col(2);
 			//std::cout << "old_b = " << old_b << " new_b = " << new_b << std::endl;
 			if (old_b.dot(new_b) < 0) {
-				k[i] = -1*k[i]; 
+				k[i] = -1*k[i];
 				k_sign = -1*k_sign;
 			}
 			cur_frame = new_frame;
@@ -103,11 +103,11 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 		Eigen::RowVector3d e_bb = coords.row(i-2)-coords.row(i-3), e_b = coords.row(i-1)-coords.row(i-2);
 
 		// Todo: here, needs a way to deal with straight lines.. shouldn't be hard. We can first decide on some binormal and always use this one while flat
-		/*double angle_eb_ebb = get_angle(e_bb,e_b); 
+		/*double angle_eb_ebb = get_angle(e_bb,e_b);
 		if ((angle_eb_ebb > 1e-10) && (angle_eb_ebb < M_PI- 1e-10)) (get_angle(e_b)) {
 
 		}*/
-		
+
 		double euc_l = e_b.norm();
 		double edge_torsion = t[i-3];
 		double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
@@ -125,6 +125,86 @@ Eigen::MatrixXd Curve::getCoords(const Eigen::RowVector3d& T, const Eigen::Matri
 		coords.row(i) = coords.row(i-1)+len[i-1]*(e_f.normalized());
 		old_b = b;
 	}
+	return coords;
+}
+
+Eigen::MatrixXd Curve::getInterpolatedCoords(const Eigen::RowVector3d& T,
+  const Eigen::Matrix3d& F, const std::vector< std::vector<double> >& offsets){
+	int vn = 0;
+	for(int i=0; i<offsets.size(); ++i) vn += offsets[i].size();
+	Eigen::MatrixXd coords(vn, 3);
+	int coords_i = 0;
+
+	//as in getCoords
+	Eigen::MatrixXd core_pts(len.size()+1, 3);
+	double alpha = get_angle_from_lengths_and_k(len[0],len[1],k[0]);
+	core_pts.row(1) = T;
+	Eigen::RowVector3d T1 = F.col(0), N1 = F.col(1);
+	core_pts.row(0) = core_pts.row(1) + len[0]*(-cos(0.5*alpha)*T1+sin(0.5*alpha)*N1);
+	core_pts.row(2) = core_pts.row(1) + len[1]*(cos(0.5*alpha)*T1+sin(0.5*alpha)*N1);
+	Eigen::RowVector3d old_b = F.col(2);
+	Eigen::RowVector3d zero3d; zero3d.setZero();
+
+	//interpolate points for the first few offsets
+	//By putting a circle through the 3 of them
+	//First: convert into a 2d coordinate system to find circle
+	double x0 = -len[0]*cos(0.5*alpha);
+	double y0 = len[0]*sin(0.5*alpha);
+	double x1 = 0.0;
+	double y1 = 0.0;
+	double x2 = len[1]*cos(0.5*alpha);
+	double y2 = len[1]*sin(0.5*alpha);
+	double aa = x0*(y1-y2) - y0*(x1-x2) + x1*y2 - x2*y1;
+	double bb = (x0*x0+y0*y0)*(y2-y1)+(x1*x1+y1*y1)*(y0-y2)+(x2*x2+y2*y2)*(y1-y0);
+	double cc = (x0*x0+y0*y0)*(x1-x2)+(x1*x1+y1*y1)*(x2-x0)+(x2*x2+y2*y2)*(x0-x1);
+	double xm = -0.5 * bb / aa;
+	double ym = -0.5 * cc / aa;
+	Eigen::RowVector3d circle_m = core_pts.row(1) + xm*T1 + ym*N1;
+	Eigen::RowVector3d circle_u = core_pts.row(0) - circle_m;
+	Eigen::RowVector3d circle_v = old_b.cross(circle_u);
+	double r = circle_u.norm();
+	double angle_1 = acos( (core_pts.row(1)-circle_m).dot(circle_u)/(r*r) );
+	double angle_2 = acos( (core_pts.row(2)-circle_m).dot(core_pts.row(1)-circle_m)/(r*r) );
+	//Then: use the circle to interpolate between the first three points
+	for(int j=0; j<offsets[0].size(); ++j){
+		double angle = offsets[0][j] * angle_1;
+		coords.row(coords_i++) = circle_m + cos(angle)*circle_u + sin(angle)*circle_v;
+	}
+	for(int j=0; j<offsets[1].size(); ++j){
+		double angle = angle_1 + offsets[1][j] * angle_2;
+		coords.row(coords_i++) = circle_m + cos(angle)*circle_u + sin(angle)*circle_v;
+	}
+	//Iterations
+	for (int i = 3; i <= len.size(); i++) {
+		Eigen::RowVector3d e_bb = core_pts.row(i-2)-core_pts.row(i-3);
+		Eigen::RowVector3d e_b = core_pts.row(i-1)-core_pts.row(i-2);
+		double euc_l = e_b.norm();
+		for(int j=0; j<offsets[i-1].size(); ++j){
+			//Interpolate between core points
+			double edge_torsion = (1.0-offsets[i-1][j])*t[i-3] + offsets[i-1][j]*t[i-2];
+			double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
+			Eigen::RowVector3d b = old_b;
+			if (t_alpha) {
+				b = rotate_vec(old_b, zero3d, e_b.normalized(), t_alpha);
+			}
+			double k_j = (1.0-offsets[i-1][j])*k[i-2] + offsets[i-1][j]*k[i-1];
+			double k_alpha = get_angle_from_lengths_and_k(len[i-2],len[i-1]*offsets[i][j], k_j);
+			Eigen::RowVector3d e_f = rotate_vec(e_b, zero3d, b, k_alpha);
+			coords.row(coords_i++) = core_pts.row(i-1) + len[i-1]*offsets[i-1][j]*(e_f.normalized());
+		}
+		//Compute next core point as in the standard getCoords
+		double edge_torsion = t[i-3];
+		double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
+		Eigen::RowVector3d b = old_b;
+		if (t_alpha) {
+			b = rotate_vec(old_b, zero3d, e_b.normalized(), t_alpha);
+		}
+		double k_alpha = get_angle_from_lengths_and_k(len[i-2],len[i-1],k[i-2]);
+		Eigen::RowVector3d e_f = rotate_vec(e_b, zero3d, b, k_alpha);
+		if(i<core_pts.rows()) core_pts.row(i) = core_pts.row(i-1)+len[i-1]*(e_f.normalized());
+		old_b = b;
+	}
+
 	return coords;
 }
 
