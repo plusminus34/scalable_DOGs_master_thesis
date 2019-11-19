@@ -299,9 +299,13 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       // position constraints
       vector<int> which_b(0);
       int bthird = b.size()/3;
+      coarse_b_to_bi.clear();
       for(int i=0; i<bthird; ++i){
         int coarse_v = fine_coarse.fine_to_coarse(b[i]);
-        if(coarse_v > -1) which_b.push_back(coarse_v);
+        if(coarse_v > -1) {
+          which_b.push_back(coarse_v);
+          coarse_b_to_bi.push_back(i);
+        }
         else cout << "Warning: Position constraint "<<i<<" is not in coarse: fine "<<b[i]<<"   coarse "<<coarse_v<<"\n";
       }
       coarse_b.resize(which_b.size()*3);
@@ -310,10 +314,9 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         coarse_b(i) = which_b[i];
         coarse_b(i + which_b.size()) = which_b[i] + coarse_dog.get_v_num();
         coarse_b(i + 2*which_b.size()) = which_b[i] + 2*coarse_dog.get_v_num();
-        //TODO still wrong?
-        coarse_bc(i) = bc(i)*0.5;//coarse scale
-        coarse_bc(i + which_b.size()) = bc(i + bthird)*0.5;//coarse scale
-        coarse_bc(i + 2*which_b.size()) = bc(i + 2*bthird)*0.5;//coarse scale
+        coarse_bc(i) = bc(coarse_b_to_bi[i])*0.5;//coarse scale
+        coarse_bc(i + which_b.size()) = bc(coarse_b_to_bi[i] + bthird)*0.5;//coarse scale
+        coarse_bc(i + 2*which_b.size()) = bc(coarse_b_to_bi[i] + 2*bthird)*0.5;//coarse scale
       }
 
       coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
@@ -939,7 +942,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     double d0,d1;
     coarse_solver->single_iteration_fold(d0,d1);
 
-    //TODO update stitching constraint coordinates
+    // update stitching constraint coordinates
     const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
     for(int i=0; i<coarse_curves.size(); ++i){
       cout << "building coarse_coords\n";
@@ -1068,9 +1071,9 @@ void DogSolver::update_point_coords(Eigen::VectorXd& bc){
   if(coarse_solver){
     for(int i=0; i<coarse_bc.size()/3; ++i){
       //TODO probably wrong (see in constructor)
-      coarse_bc(i) = bc(i)*0.5;//coarse scale
-      coarse_bc(i + coarse_bc.size()/3) = bc(i + bc.size()/3)*0.5;//coarse scale
-      coarse_bc(i + 2*(coarse_bc.size()/3)) = bc(i + 2*(bc.size()/3))*0.5;//coarse scale
+      coarse_bc(i) = bc(coarse_b_to_bi[i])*0.5;//coarse scale
+      coarse_bc(i + coarse_bc.size()/3) = bc(coarse_b_to_bi[i] + bc.size()/3)*0.5;//coarse scale
+      coarse_bc(i + 2*(coarse_bc.size()/3)) = bc(coarse_b_to_bi[i] + 2*(bc.size()/3))*0.5;//coarse scale
     }
     coarse_solver->update_point_coords(coarse_bc);
   }

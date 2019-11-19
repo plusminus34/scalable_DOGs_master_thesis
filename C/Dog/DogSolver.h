@@ -256,6 +256,7 @@ private:
 	vector<SurfaceCurve> coarse_curves;
 	vector< vector< vector<double> > > offsets;
 	Eigen::VectorXi coarse_b;
+	vector<int> coarse_b_to_bi;
 	Eigen::VectorXd coarse_bc;
 
 	// Solvers
