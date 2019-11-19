@@ -20,7 +20,7 @@ class DeformationController : public igl::Serializable {
 public:
 	DeformationController();
 	~DeformationController() {if (dogSolver) delete dogSolver;}
-	void init_from_new_dog(Dog& dog);
+	void init_from_new_dog(Dog& dog, Dog& coarse_dog);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
 	void apply_new_editor_constraint();
 	void reset_new_editor_constraint() {dogEditor->reset_new_constraint();}
@@ -88,7 +88,7 @@ public:
 
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
-	DogSolver::SolverMode solver_mode = DogSolver::mode_standard;
+	DogSolver::SolverMode solver_mode = DogSolver::mode_experimental;
 
 	int deformed_curve_idx = 0;
 	double curve_k_translation = 0; double curve_k_mult = 2; double curve_t_addition = 0;

@@ -12,7 +12,7 @@ void DeformationController::setup_optimization_measurements(std::string log_file
 	opt_measurements_log = new ofstream(log_file_name);
 }
 
-void DeformationController::init_from_new_dog(Dog& dog) {
+void DeformationController::init_from_new_dog(Dog& dog, Dog& coarse_dog) {
 	//if (globalDog) delete globalDog;
 	//if (editedSubmesh) delete editedSubmesh;
 	globalDog = &dog;
@@ -24,8 +24,9 @@ void DeformationController::init_from_new_dog(Dog& dog) {
 
 	init_x0 = dog.getV_vector();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
-				mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
+	dogSolver = new DogSolver(dog, coarse_dog, init_x0, p, b, bc, edgePoints,
+		    edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
+				mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 
 	//std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
 
@@ -246,11 +247,13 @@ EdgePoint DeformationController::find_most_equally_spaced_edge_on_fold_curve(int
 
 void DeformationController::reset_dog_solver() {
 	Dog& dog = dogSolver->getDog();
+	Dog& coarse_dog = dogSolver->getCoarseDog();
 	auto vars = dogSolver->get_opt_vars();
 	if (dogSolver) delete dogSolver;
 	cout << "resetting dog solver" << endl;
-	dogSolver = new DogSolver(dog,init_x0, p, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
-		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
+	dogSolver = new DogSolver(dog, coarse_dog, init_x0, p, b, bc, edgePoints,
+		 edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
+		 mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
 	//int wait; cin >> wait;
 	dogSolver->set_opt_vars(vars);

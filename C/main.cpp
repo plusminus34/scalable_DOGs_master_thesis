@@ -24,7 +24,7 @@ const int DEFAULT_GRID_RES = 21;
 int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  state.DC.init_from_new_dog(state.dog);
+  state.DC.init_from_new_dog(state.dog, state.coarse_dog);
 }
 
 void save_workspace() {
@@ -92,9 +92,6 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'U':
     state.DC.change_submesh();
-    break;
-  case 'M':
-    state.DC.init_from_new_dog(state.coarse_dog);
     break;
   }
   return false;
@@ -248,7 +245,7 @@ int main(int argc, char *argv[]) {
 //      ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
 //      ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
-      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Experimental\0");
+      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Global guess (cheat)\0Global guess (coarse) - Experimental\0");
       //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
       if (ImGui::Button("Add test angle constraint", ImVec2(-1,0))) state.DC.add_test_angle();
       if (ImGui::Button("Reset timestep", ImVec2(-1,0))) {state.DC.deformation_timestep=0;}

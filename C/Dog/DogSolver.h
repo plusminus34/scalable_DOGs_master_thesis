@@ -34,13 +34,15 @@
 #include "Objectives/SomeSerialObjective.h"
 #include "Objectives/SubEdgesAngleConstraints.h"
 
+#include "FineCoarseConversion.h"
+
 using std::vector;
 using std::pair;
 
 class DogSolver {
 public:
 
-	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm, mode_serial, mode_procrustes, mode_experimental};
+	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm, mode_proxjadmm, mode_serial, mode_procrustes, mode_cheatguess, mode_experimental};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -82,14 +84,14 @@ public:
 		}
 	};
 
-	DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p,
-		Eigen::VectorXi& b, Eigen::VectorXd& bc,
+	DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_x0,
+		DogSolver::Params& p, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
 		std::vector<std::pair<int,int>>& bnd_vertices_pairs,
-		std::ofstream* time_measurements_log = NULL);
+		std::ofstream* time_measurements_log = NULL, bool ismainsolver = true);
 
 	~DogSolver();
 
@@ -102,7 +104,7 @@ public:
 	Eigen::VectorXd get_opt_vars() { return x;}
 
 	void set_solver_mode(SolverMode mode_new);
-	bool is_subsolver(){return (mode != mode_standard && sub_dogsolver.size()<1);}
+	bool is_subsolver(){return (mode != mode_standard && !is_main_solver);}
 
 	void single_iteration(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
@@ -111,6 +113,7 @@ public:
 	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void single_iteration_serial(double& constraints_deviation, double& objective);
 	void single_iteration_procrustes(double& constraints_deviation, double& objective);
+	void single_iteration_cheat_guess(double& constraints_deviation, double& objective);
 	void single_iteration_experimental(double& constraints_deviation, double& objective);
 
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -123,6 +126,7 @@ public:
 	void update_w_coords(const Eigen::MatrixXd& W);
 
 	Dog& getDog(){return dog;}
+	Dog& getCoarseDog(){return coarse_dog;}
 
 	bool is_folded();
 	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
@@ -192,6 +196,7 @@ private:
 	Eigen::VectorXd x; // variables
 	Eigen::VectorXd x0; // variables at the beginning of time step
 	bool is_constrained;
+	bool is_main_solver;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
 
@@ -227,6 +232,7 @@ private:
 	std::vector<MVTangentCreaseFold> empty_thing;
 	std::vector<double> empty_d;
 	std::vector<pair<int,int>> empty_pair;
+	Dog empty_dog;
 
 	//ADMM
 	LinearConstraints vsadmmConst;
@@ -239,6 +245,14 @@ private:
 
 	//Procrustes
 	std::vector< Eigen::SparseMatrix<double> > proc_T;
+
+	//Coarse
+	Dog& coarse_dog;
+	FineCoarseConversion fine_coarse;
+	DogSolver* coarse_solver;
+	vector<Eigen::MatrixXi> curve_ep_to_sub_edgeCoords;//rows are [submesh1 row1 submesh2 row2]
+	vector<SurfaceCurve> coarse_curves;
+	vector< vector< vector<double> > > offsets;
 
 	// Solvers
 	//NewtonKKT newtonKKT;

@@ -174,6 +174,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			if( (fine_p - coarse_p).squaredNorm() < 1e-5 ){
 				//These points have same coordinates, so they're assumed to be the same
 				ctf_curve[i][coarse_j] = fine_j;
+				cout << "ctf_curve "<<i<<" "<<coarse_j<<" of "<<ctf_curve[i].size()<<"   is now "<<fine_j<<"\n";
 				ftc_curve[i][fine_j] = coarse_j++;
 				if(coarse_j < coarse_es.stitched_curves[i].size())
 				  coarse_p = coarse_es.stitched_curves[i][coarse_j].getPositionInMesh(coarse_V);
@@ -250,7 +251,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	}
 
 	//TEST output
-	/*
+/*
 	for(int i=0; i<fine_es.stitched_curves[0].size(); ++i){
 		Eigen::RowVector3d approximate = get_fine_curve_approx(coarse_V, 0,i);
 		Eigen::RowVector3d genuine = fine_es.stitched_curves[0][i].getPositionInMesh(fine_V);
@@ -268,14 +269,16 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	*/
 }
 
-//TODO implement this
 int FineCoarseConversion::fine_to_coarse(int fine){
-	return -1;
+	return ftc(fine);
 }
 
-//TODO implement this
 int FineCoarseConversion::coarse_to_fine(int coarse){
-	return -1;
+	return ctf(coarse);
+}
+
+int FineCoarseConversion::coarse_to_fine_curve(int curve_idx, int ep_idx){
+	return ctf_curve[curve_idx][ep_idx];
 }
 
 //TODO implement this

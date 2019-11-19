@@ -68,7 +68,6 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 	int y_res_coarse = (y_res + 1) / 2;
 	CreasePattern coarse_creasePattern(bbox, polylines, border_polylines, x_res_coarse, y_res_coarse);
 	coarse_dog = dog_from_crease_pattern(coarse_creasePattern);
-	fine_coarse = FineCoarseConversion(dog, coarse_dog);
 
 	cp_bb_x_min = bbox.xmin();
 	cp_bb_x_max = bbox.xmax();
@@ -94,4 +93,6 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 	const double edge_l = (dog.getV().row(quadTop.bnd_loop[1]) - dog.getV().row(quadTop.bnd_loop[0])).norm();
 	auto scaledV = dog.getV()*1./edge_l;
 	dog.update_V(scaledV);
+	auto coarse_scaledV = coarse_dog.getV()*1./edge_l;
+	coarse_dog.update_V(coarse_scaledV);
 }

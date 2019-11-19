@@ -175,36 +175,36 @@ Eigen::MatrixXd Curve::getInterpolatedCoords(const Eigen::RowVector3d& T,
 		coords.row(coords_i++) = circle_m + cos(angle)*circle_u + sin(angle)*circle_v;
 	}
 	//Iterations
-	for (int i = 3; i <= len.size(); i++) {
-		Eigen::RowVector3d e_bb = core_pts.row(i-2)-core_pts.row(i-3);
-		Eigen::RowVector3d e_b = core_pts.row(i-1)-core_pts.row(i-2);
+	for (int i = 2; i < offsets.size(); ++i) {
+		Eigen::RowVector3d e_bb = core_pts.row(i-1)-core_pts.row(i-2);
+		Eigen::RowVector3d e_b = core_pts.row(i)-core_pts.row(i-1);
 		double euc_l = e_b.norm();
-		for(int j=0; j<offsets[i-1].size(); ++j){
+		for(int j=0; j<offsets[i].size(); ++j){
 			//Interpolate between core points
-			double edge_torsion = (1.0-offsets[i-1][j])*t[i-3] + offsets[i-1][j]*t[i-2];
+			double edge_torsion = t[i-2];//hope this is correct
 			double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
 			Eigen::RowVector3d b = old_b;
 			if (t_alpha) {
 				b = rotate_vec(old_b, zero3d, e_b.normalized(), t_alpha);
 			}
-			double k_j = (1.0-offsets[i-1][j])*k[i-2] + offsets[i-1][j]*k[i-1];
-			double k_alpha = get_angle_from_lengths_and_k(len[i-2],len[i-1]*offsets[i][j], k_j);
+			double k_j = (1.0-offsets[i][j]) * k[i-2] + offsets[i][j] * k[i-1];
+			double k_alpha = get_angle_from_lengths_and_k(len[i-1],len[i]*offsets[i][j], k_j);
 			Eigen::RowVector3d e_f = rotate_vec(e_b, zero3d, b, k_alpha);
-			coords.row(coords_i++) = core_pts.row(i-1) + len[i-1]*offsets[i-1][j]*(e_f.normalized());
+			coords.row(coords_i++) = core_pts.row(i) + len[i]*offsets[i][j]*(e_f.normalized());
 		}
+		if(coords_i == vn) break;
 		//Compute next core point as in the standard getCoords
-		double edge_torsion = t[i-3];
+		double edge_torsion = t[i-2];
 		double t_alpha = asin(clip(edge_torsion*euc_l,-1,1));
 		Eigen::RowVector3d b = old_b;
 		if (t_alpha) {
 			b = rotate_vec(old_b, zero3d, e_b.normalized(), t_alpha);
 		}
-		double k_alpha = get_angle_from_lengths_and_k(len[i-2],len[i-1],k[i-2]);
+		double k_alpha = get_angle_from_lengths_and_k(len[i-1], len[i], k[i-1]);
 		Eigen::RowVector3d e_f = rotate_vec(e_b, zero3d, b, k_alpha);
-		if(i<core_pts.rows()) core_pts.row(i) = core_pts.row(i-1)+len[i-1]*(e_f.normalized());
+		if(i+1<core_pts.rows()) core_pts.row(i+1) = core_pts.row(i)+len[i]*(e_f.normalized());
 		old_b = b;
 	}
-
 	return coords;
 }
 

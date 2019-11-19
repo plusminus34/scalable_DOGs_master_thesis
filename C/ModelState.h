@@ -2,7 +2,6 @@
 
 #include "Dog/Dog.h"
 #include "DeformationController.h"
-#include "Dog/FineCoarseConversion.h"
 
 #include "igl/serialize.h"
 
@@ -48,7 +47,6 @@ struct ModelState : public igl::Serializable {
 			Add(cp_x_res, std::string("_cp_x_res"));
 			Add(cp_y_res, std::string("_cp_y_res"));
 		  Add(coarse_dog,std::string("_coarse_dog"));
-			//TODO add fine_coarse
     }
 
   // Crease pattern data
@@ -57,7 +55,6 @@ struct ModelState : public igl::Serializable {
 	int cp_x_res, cp_y_res;// resolution
 
 	Dog coarse_dog;
-	FineCoarseConversion fine_coarse;
 
 private:
 	void setup_non_creased_dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
