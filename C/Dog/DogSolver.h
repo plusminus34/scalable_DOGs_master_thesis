@@ -255,6 +255,8 @@ private:
 	vector<Eigen::MatrixXi> curve_ep_to_sub_edgeCoords;//rows are [submesh1 row1 submesh2 row2]
 	vector<SurfaceCurve> coarse_curves;
 	vector< vector< vector<double> > > offsets;
+	Eigen::VectorXi coarse_b;
+	Eigen::VectorXd coarse_bc;
 
 	// Solvers
 	//NewtonKKT newtonKKT;

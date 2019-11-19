@@ -298,21 +298,22 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
 
       // position constraints
       vector<int> which_b(0);
-      for(int i=0; i<b.size()/3; ++i){
+      int bthird = b.size()/3;
+      for(int i=0; i<bthird; ++i){
         int coarse_v = fine_coarse.fine_to_coarse(b[i]);
         if(coarse_v > -1) which_b.push_back(coarse_v);
         else cout << "Warning: Position constraint "<<i<<" is not in coarse: fine "<<b[i]<<"   coarse "<<coarse_v<<"\n";
       }
-      Eigen::VectorXi coarse_b(which_b.size()*3);
-      Eigen::VectorXd coarse_bc(coarse_b.size());
+      coarse_b.resize(which_b.size()*3);
+      coarse_bc.resize(coarse_b.size());
       for(int i=0; i<which_b.size(); ++i){
-        cout <<"whichb "<<i<<" "<<which_b[i]<<"\n";
         coarse_b(i) = which_b[i];
-        coarse_b(i + which_b.size()) = which_b[i] + which_b.size();
-        coarse_b(i + 2*which_b.size()) = which_b[i] + 2*which_b.size();
+        coarse_b(i + which_b.size()) = which_b[i] + coarse_dog.get_v_num();
+        coarse_b(i + 2*which_b.size()) = which_b[i] + 2*coarse_dog.get_v_num();
+        //TODO still wrong?
         coarse_bc(i) = bc(i)*0.5;//coarse scale
-        coarse_bc(i + which_b.size()) = bc(i + v_num)*0.5;//coarse scale
-        coarse_bc(i + 2*which_b.size()) = bc(i + 2*v_num)*0.5;//coarse scale
+        coarse_bc(i + which_b.size()) = bc(i + bthird)*0.5;//coarse scale
+        coarse_bc(i + 2*which_b.size()) = bc(i + 2*bthird)*0.5;//coarse scale
       }
 
       coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
@@ -522,6 +523,7 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (fold)" << endl;
 	x0 = x;
+  constraints.posConst.output(x);
   if (!is_folded()) {
     cout << "Error: Not folded" << endl;
     exit(1);
@@ -919,7 +921,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 	cout << "running a single optimization routine (experimental)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    //constraints.posConst.output(x);
+    constraints.posConst.output(x);
     constraints.edgePtConst.output(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
@@ -960,8 +962,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
         int submesh_2 = curve_ep_to_sub_edgeCoords[i](j,2);
         int k2 = curve_ep_to_sub_edgeCoords[i](j,3);
 
-        sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j) ;///0.5;//coarse scale
-        sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j) ;///0.5;//coarse scale
+        sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j) /0.5;//coarse scale
+        sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j) /0.5;//coarse scale
       }
     }
 
@@ -1062,6 +1064,15 @@ void DogSolver::update_point_coords(Eigen::VectorXd& bc){
       }
       sub_dogsolver[i]->update_point_coords(sub_bc[i]);
     }
+  }
+  if(coarse_solver){
+    for(int i=0; i<coarse_bc.size()/3; ++i){
+      //TODO probably wrong (see in constructor)
+      coarse_bc(i) = bc(i)*0.5;//coarse scale
+      coarse_bc(i + coarse_bc.size()/3) = bc(i + bc.size()/3)*0.5;//coarse scale
+      coarse_bc(i + 2*(coarse_bc.size()/3)) = bc(i + 2*(bc.size()/3))*0.5;//coarse scale
+    }
+    coarse_solver->update_point_coords(coarse_bc);
   }
 }
 
