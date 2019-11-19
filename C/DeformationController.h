@@ -20,7 +20,7 @@ class DeformationController : public igl::Serializable {
 public:
 	DeformationController();
 	~DeformationController() {if (dogSolver) delete dogSolver;}
-	void init_from_new_dog(Dog& dog, Dog& coarse_dog);
+	void init_from_new_dog(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion);
 	void init_viewer(igl::opengl::glfw::Viewer& viewer_i) {viewer = &viewer_i;}
 	void apply_new_editor_constraint();
 	void reset_new_editor_constraint() {dogEditor->reset_new_constraint();}
@@ -31,6 +31,7 @@ public:
 	const Dog* getEditedSubmesh() const {return editedSubmesh;}
 	int getEditedSubmeshI() const {return editedSubmeshI;}
 	void change_submesh(int submesh_i = -2);
+	void setDog(Dog* what){editedSubmesh=what;}
 
 	void get_positional_constraints(Eigen::VectorXi& b_out, Eigen::VectorXd& bc_out) const {b_out=b;bc_out = bc;};
 	void get_edge_point_constraints(std::vector<EdgePoint>& edgePoints_out, Eigen::MatrixXd& edgeCoords_out) const {edgePoints_out = edgePoints; edgeCoords_out = edgeCoords;};

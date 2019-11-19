@@ -256,17 +256,20 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		Eigen::RowVector3d approximate = get_fine_curve_approx(coarse_V, 0,i);
 		Eigen::RowVector3d genuine = fine_es.stitched_curves[0][i].getPositionInMesh(fine_V);
 		cout << "comparison: approx "<<approximate <<"\tvs genuine " <<genuine<<"\n";
-	}
+	}*/
+	print();
+
+}
+
+void FineCoarseConversion::print(){
 	for(int i=0; i<ftc.size(); ++i){
 		cout << "fine_to_coarse "<<i;
 		if(ftc[i] > -1) {
 			cout <<" links to " << ftc[i] << " and accordingly coarse_to_fine "<<ftc[i]<<" is "<<ctf[ftc[i]]<<"\n";
-			cout << "  and the coords\t"<<fine_V.row(i)<<"\tvs\t"<<coarse_V.row(ftc[i])<<"\n";
 		}else{
 			cout <<" is "<<ftc[i]<<"\n";
 		}
 	}
-	*/
 }
 
 int FineCoarseConversion::fine_to_coarse(int fine){

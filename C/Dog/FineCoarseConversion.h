@@ -20,6 +20,8 @@ public:
 
 	int coarse_to_fine_curve(int curve_idx, int ep_idx);
 
+	void print();
+
 	Eigen::RowVector3d get_fine_approx(const Eigen::MatrixXd& V, int fine_v);
 	Eigen::RowVector3d get_fine_curve_approx(const Eigen::MatrixXd& V, int curve_idx, int ep_idx);
 

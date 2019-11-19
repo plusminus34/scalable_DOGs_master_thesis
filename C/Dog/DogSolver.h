@@ -84,7 +84,7 @@ public:
 		}
 	};
 
-	DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_x0,
+	DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion, const Eigen::VectorXd& init_x0,
 		DogSolver::Params& p, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
@@ -127,6 +127,7 @@ public:
 
 	Dog& getDog(){return dog;}
 	Dog& getCoarseDog(){return coarse_dog;}
+	FineCoarseConversion& getConversion(){return fine_coarse;}
 
 	bool is_folded();
 	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
@@ -233,6 +234,7 @@ private:
 	std::vector<double> empty_d;
 	std::vector<pair<int,int>> empty_pair;
 	Dog empty_dog;
+	FineCoarseConversion empty_conversion;
 
 	//ADMM
 	LinearConstraints vsadmmConst;
@@ -248,8 +250,8 @@ private:
 
 	//Coarse
 	Dog& coarse_dog;
-	FineCoarseConversion fine_coarse;
 	DogSolver* coarse_solver;
+	FineCoarseConversion& fine_coarse;
 	vector<Eigen::MatrixXi> curve_ep_to_sub_edgeCoords;//rows are [submesh1 row1 submesh2 row2]
 	vector<SurfaceCurve> coarse_curves;
 	vector< vector< vector<double> > > offsets;

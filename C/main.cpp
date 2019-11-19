@@ -16,6 +16,8 @@ using namespace std;
 bool is_optimizing = true;
 bool optimization_measurements = false;
 
+bool showing_coarse = false;
+
 ModelState state;
 //DogEditor dogEditor;
 ModelViewer modelViewer(state, state.DC);
@@ -24,7 +26,7 @@ const int DEFAULT_GRID_RES = 21;
 int editedSubmeshI = -1; // -1 means the entire mesh, i means the i connected component submesh
 
 void clear_all_and_set_default_params(igl::opengl::glfw::Viewer& viewer) {
-  state.DC.init_from_new_dog(state.dog, state.coarse_dog);
+  state.DC.init_from_new_dog(state.dog, state.coarse_dog, state.conversion);
 }
 
 void save_workspace() {
@@ -91,7 +93,10 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     exit(1);
     break;
   case 'U':
-    state.DC.change_submesh();
+    showing_coarse = !showing_coarse;
+    if(showing_coarse) state.DC.setDog(&state.coarse_dog);
+    else state.DC.setDog(&state.dog);
+    //state.DC.change_submesh();
     break;
   }
   return false;

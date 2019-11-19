@@ -5,8 +5,8 @@
 
 using namespace std;
 
-DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh_vars,
-        DogSolver::Params& p,
+DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion,
+        const Eigen::VectorXd& init_mesh_vars, DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
@@ -15,7 +15,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh
         std::vector<pair<int,int>>& bnd_vertices_pairs,
         std::ofstream* time_measurements_log, bool ismainsolver) :
 
-          dog(dog), coarse_dog(coarse_dog), x(dog.getV_vector()),
+          dog(dog), coarse_dog(coarse_dog), fine_coarse(conversion), x(dog.getV_vector()),
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
           constraints(dog, init_mesh_vars, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
@@ -266,7 +266,8 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh
         }
 
         cout << "constructing subsolver "<<i<<endl;
-        sub_dogsolver[i] = new DogSolver(*sub_dog[i], empty_dog, sub_x0, p,
+        sub_dogsolver[i] = new DogSolver(*sub_dog[i], empty_dog, empty_conversion,
+              sub_x0, p,
               sub_b[i], sub_bc[i],
               //empty_xi, empty_xd,
               constrained_edge_points[i], sub_edgeCoords[i],
@@ -292,7 +293,6 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh
       cout << "Sub dogsolvers constructed\n";
 
       // Construct coarse solver
-      fine_coarse = FineCoarseConversion(dog, coarse_dog);
       Eigen::VectorXd coarse_init_x(coarse_dog.get_v_num()*3);
       coarse_init_x = coarse_dog.getV_vector();//change to get from init_mesh_vars?
 
@@ -301,20 +301,22 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh
       for(int i=0; i<b.size()/3; ++i){
         int coarse_v = fine_coarse.fine_to_coarse(b[i]);
         if(coarse_v > -1) which_b.push_back(coarse_v);
-        else cout << "Warning: Position constraint "<<i<<" is not in coarse\n";
+        else cout << "Warning: Position constraint "<<i<<" is not in coarse: fine "<<b[i]<<"   coarse "<<coarse_v<<"\n";
       }
       Eigen::VectorXi coarse_b(which_b.size()*3);
       Eigen::VectorXd coarse_bc(coarse_b.size());
       for(int i=0; i<which_b.size(); ++i){
+        cout <<"whichb "<<i<<" "<<which_b[i]<<"\n";
         coarse_b(i) = which_b[i];
         coarse_b(i + which_b.size()) = which_b[i] + which_b.size();
         coarse_b(i + 2*which_b.size()) = which_b[i] + 2*which_b.size();
-        coarse_bc(i) = bc(i);
-        coarse_bc(i + which_b.size()) = bc(i + v_num);
-        coarse_bc(i + 2*which_b.size()) = bc(i + 2*v_num);
+        coarse_bc(i) = bc(i)*0.5;//coarse scale
+        coarse_bc(i + which_b.size()) = bc(i + v_num)*0.5;//coarse scale
+        coarse_bc(i + 2*which_b.size()) = bc(i + 2*v_num)*0.5;//coarse scale
       }
 
-      coarse_solver = new DogSolver(coarse_dog, empty_dog, coarse_init_x, p,
+      coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
+            coarse_init_x, p,
             coarse_b, coarse_bc,
             empty_ep, empty_mat,
             empty_egg, empty_d,//TODO angles should be included somehow
@@ -372,6 +374,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, const Eigen::VectorXd& init_mesh
           for(int k=0;k<offsets[i][j].size(); ++k)
             cout <<"offsets["<<i<<"]["<<j<<"]["<<k<<"] =\t"<<offsets[i][j][k]<<endl;
             */
+      coarse_dog.update_V(coarse_dog.getV()* 0.5);//coarse scale
     } else {
       sub_dog.clear();
       sub_dogsolver.clear();
@@ -916,6 +919,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 	cout << "running a single optimization routine (experimental)" << endl;
 	x0 = x;
   if(is_subsolver()){
+    //constraints.posConst.output(x);
+    constraints.edgePtConst.output(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -955,8 +960,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
         int submesh_2 = curve_ep_to_sub_edgeCoords[i](j,2);
         int k2 = curve_ep_to_sub_edgeCoords[i](j,3);
 
-        sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
-        sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
+        sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j) ;///0.5;//coarse scale
+        sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j) ;///0.5;//coarse scale
       }
     }
 
