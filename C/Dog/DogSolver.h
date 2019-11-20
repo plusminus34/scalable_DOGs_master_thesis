@@ -126,6 +126,8 @@ public:
 	void update_w_coords(const Eigen::MatrixXd& W);
 
 	Dog& getDog(){return dog;}
+
+	//for coarse
 	Dog& getCoarseDog(){return coarse_dog;}
 	FineCoarseConversion& getConversion(){return fine_coarse;}
 
@@ -254,7 +256,7 @@ private:
 	FineCoarseConversion& fine_coarse;
 	vector<Eigen::MatrixXi> curve_ep_to_sub_edgeCoords;//rows are [submesh1 row1 submesh2 row2]
 	vector<SurfaceCurve> coarse_curves;
-	vector< vector< vector<double> > > offsets;
+	vector< vector< vector<double> > > &offsets;
 	Eigen::VectorXi coarse_b;
 	vector<int> coarse_b_to_bi;
 	Eigen::VectorXd coarse_bc;

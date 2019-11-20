@@ -22,7 +22,8 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
                       mv_cos_angles, pairs),
           obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
-          time_measurements_log(time_measurements_log), is_main_solver(ismainsolver)
+          time_measurements_log(time_measurements_log), is_main_solver(ismainsolver),
+          offsets(fine_coarse.getCurveOffsets())
            {
     is_constrained = (b.rows() + edgePoints.size())>0;
     if (time_measurements_log) {
@@ -329,56 +330,11 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
             empty_pair,
             NULL, false);
 
-      const DogEdgeStitching& coarse_es = coarse_solver->getDog().getEdgeStitching();
+      const DogEdgeStitching& coarse_es = coarse_dog.getEdgeStitching();
       coarse_curves.resize(coarse_es.stitched_curves.size());
       for(int i=0; i<coarse_curves.size(); ++i)
         coarse_curves[i].edgePoints = coarse_es.stitched_curves[i];
 
-      // build offsets for interpolating from coarse curve
-      offsets.resize(coarse_curves.size());
-      //cout <<"offsets.size()= "<<offsets.size()<<"\n";
-      for(int i=0; i<coarse_curves.size(); ++i){
-        SurfaceCurve fine_s_curve;
-        fine_s_curve.edgePoints = edgeStitching.stitched_curves[i];
-        Curve coarse_curve(coarse_curves[i], coarse_dog.getV());
-        Curve fine_curve(fine_s_curve, dog.getV());
-        offsets[i].resize(coarse_curve.len.size());
-        //cout <<"offsets["<<i<<"].size()= "<<offsets[i].size()<<"\n";
-        //cout << " the coarse edgestitching has "<<coarse_es.stitched_curves[i].size()<<" points\n";
-        //cout << " meanwhile, the fine edgestitching has "<<edgeStitching.stitched_curves[i].size()<<" points\n";
-        int current_coarse = 0;
-        int next_coarse = 1;
-        offsets[i][0].push_back(0.0);
-        while(next_coarse < coarse_curves[i].edgePoints.size()){
-          //cout << "  start coarse "<<current_coarse<<"\n";
-          int fine_begin = fine_coarse.coarse_to_fine_curve(i, current_coarse);
-          int fine_end = fine_coarse.coarse_to_fine_curve(i, next_coarse);
-          //cout << " coarse "<<current_coarse<<" - "<<next_coarse<<"\tfine "<<fine_begin<<" - "<<fine_end<<"\n";
-          if(fine_begin < fine_end){
-            int n_steps = fine_end - fine_begin;
-            vector<double> sum_len(n_steps);
-            sum_len[0] = fine_curve.len[fine_begin];
-            for(int j=1; j < n_steps; ++j){
-              sum_len[j] = sum_len[j-1] + fine_curve.len[j+fine_begin];
-            }
-            double total_fine_len = sum_len[sum_len.size()-1];
-            for(int j=0; j < n_steps; ++j){
-              double offset = sum_len[j] / total_fine_len;
-              //cout << "  offset "<<i<<" "<<current_coarse<<" "<<j<<" = "<<offset<<"\n";
-              offsets[i][current_coarse].push_back(offset);
-            }
-          }
-          current_coarse = next_coarse;
-          ++next_coarse;
-        }
-      }
-      /*
-      for(int i=0;i<offsets.size(); ++i)
-        for(int j=0;j<offsets[i].size(); ++j)
-          for(int k=0;k<offsets[i][j].size(); ++k)
-            cout <<"offsets["<<i<<"]["<<j<<"]["<<k<<"] =\t"<<offsets[i][j][k]<<endl;
-            */
-      coarse_dog.update_V(coarse_dog.getV()* 0.5);//coarse scale
     } else {
       sub_dog.clear();
       sub_dogsolver.clear();

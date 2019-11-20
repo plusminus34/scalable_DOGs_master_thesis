@@ -19,6 +19,7 @@ public:
 	int coarse_to_fine(int coarse);
 
 	int coarse_to_fine_curve(int curve_idx, int ep_idx);
+	vector< vector< vector<double> > >& getCurveOffsets(){return ctf_curve_offsets;}
 
 	void print();
 
@@ -32,6 +33,7 @@ public:
     Add(ctf_curve, std::string("coarse_to_fine_stitched_curves"));
 		Add(ctf_curve_vertices, std::string("curve_interpolation_vertices"));
 		Add(ctf_curve_weights, std::string("curve_interpolation_weights"));
+		Add(ctf_curve_offsets, std::string("curve_offsets"));
   }
 
 private:
@@ -44,4 +46,6 @@ private:
 	vector< vector<int> > ctf_curve;
 	vector< Eigen::MatrixXi > ctf_curve_vertices;
 	vector< Eigen::MatrixXd > ctf_curve_weights;
+
+	vector< vector< vector<double> > > ctf_curve_offsets;
 };

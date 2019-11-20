@@ -1,5 +1,7 @@
 #include "FineCoarseConversion.h"
 
+#include "../GeometryPrimitives/Curve.h"
+
 FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coarse_dog){
 	const DogEdgeStitching& fine_es = fine_dog.getEdgeStitching();
 	const DogEdgeStitching& coarse_es = coarse_dog.getEdgeStitching();
@@ -249,6 +251,47 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			}
 		}
 	}
+
+	// Find curve offsets for interpolating from coarse curve
+	vector<SurfaceCurve> coarse_curves(coarse_es.stitched_curves.size());
+	for(int i=0; i<coarse_curves.size(); ++i)
+		coarse_curves[i].edgePoints = coarse_es.stitched_curves[i];
+	ctf_curve_offsets.resize(coarse_curves.size());
+	for(int i=0; i<coarse_curves.size(); ++i){
+		SurfaceCurve fine_s_curve;
+		fine_s_curve.edgePoints = fine_es.stitched_curves[i];
+		Curve coarse_curve(coarse_curves[i], coarse_V);
+		Curve fine_curve(fine_s_curve, fine_V);
+		ctf_curve_offsets[i].resize(coarse_curve.len.size());
+		int current_coarse = 0;
+		int next_coarse = 1;
+		ctf_curve_offsets[i][0].push_back(0.0);
+		while(next_coarse < coarse_curves[i].edgePoints.size()){
+			int fine_begin = ctf_curve[i][current_coarse];
+			int fine_end = ctf_curve[i][next_coarse];
+			if(fine_begin < fine_end){
+				int n_steps = fine_end - fine_begin;
+				vector<double> sum_len(n_steps);
+				sum_len[0] = fine_curve.len[fine_begin];
+				for(int j=1; j < n_steps; ++j){
+					sum_len[j] = sum_len[j-1] + fine_curve.len[j+fine_begin];
+				}
+				double total_fine_len = sum_len[sum_len.size()-1];
+				for(int j=0; j < n_steps; ++j){
+					double offset = sum_len[j] / total_fine_len;
+					ctf_curve_offsets[i][current_coarse].push_back(offset);
+				}
+			}
+			current_coarse = next_coarse;
+			++next_coarse;
+		}
+	}
+	      /*
+	      for(int i=0;i<offsets.size(); ++i)
+	        for(int j=0;j<offsets[i].size(); ++j)
+	          for(int k=0;k<offsets[i][j].size(); ++k)
+	            cout <<"offsets["<<i<<"]["<<j<<"]["<<k<<"] =\t"<<offsets[i][j][k]<<endl;
+	            */
 
 	//TEST output
 /*
