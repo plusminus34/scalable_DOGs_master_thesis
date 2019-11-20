@@ -21,10 +21,12 @@ void DeformationController::init_from_new_dog(Dog& dog, Dog& coarse_dog, FineCoa
 
 	dogEditor = new DogEditor(*viewer, *globalDog, edit_mode, select_mode,
 								has_new_constraints,b,bc,paired_vertices,edgePoints,edgeCoords, z_only_editing);
-
-	init_x0 = dog.getV_vector();
+	Eigen::VectorXd x0_after = dog.getV_vector();
+	if(init_x0.size() != x0_after.size()) init_x0 = x0_after;//Not generally correct, would have to compare dog QuadTopology or something
+	Eigen::VectorXd coarse_x0_after = coarse_dog.getV_vector();
+	if(coarse_x0.size() != coarse_x0_after.size()) coarse_x0 = coarse_x0_after;
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, p, b, bc, edgePoints,
+	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p, b, bc, edgePoints,
 		    edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
 				mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 
@@ -252,7 +254,7 @@ void DeformationController::reset_dog_solver() {
 	auto vars = dogSolver->get_opt_vars();
 	if (dogSolver) delete dogSolver;
 	cout << "resetting dog solver" << endl;
-	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, p, b, bc, edgePoints,
+	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p, b, bc, edgePoints,
 		 edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
 		 mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;

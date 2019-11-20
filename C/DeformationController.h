@@ -85,6 +85,7 @@ public:
 	      Add(edge_angle_pairs,std::string("edge_angle_pairs")); Add(edge_cos_angles,std::string("edge_cos_angles"));
 	      Add(bnd_vertices_pairs,std::string("bnd_vertices_pairs"));
 	      Add(init_x0,std::string("init_x0"));
+	      Add(coarse_x0,std::string("coarse_x0"));
     }
 
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
@@ -146,7 +147,7 @@ private:
 	std::vector<std::pair<int,int>> bnd_vertices_pairs;
 
 
-	Eigen::VectorXd init_x0;
+	Eigen::VectorXd init_x0, coarse_x0;
 	// This needs to reset sometimes.
 	// For instance when a new soft constraint is added (but not when the constraint value change), or when a entirely new DOG is loaded
 	//	Since this amounts to a different objective/hessian sparsity pattern

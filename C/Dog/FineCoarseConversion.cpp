@@ -306,12 +306,15 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 
 void FineCoarseConversion::print(){
 	for(int i=0; i<ftc.size(); ++i){
-		cout << "fine_to_coarse "<<i;
+		cout << "fine_to_coarse: "<<i;
 		if(ftc[i] > -1) {
 			cout <<" links to " << ftc[i] << " and accordingly coarse_to_fine "<<ftc[i]<<" is "<<ctf[ftc[i]]<<"\n";
 		}else{
 			cout <<" is "<<ftc[i]<<"\n";
 		}
+	}
+	for(int i=0; i<ctf.size(); ++i){
+		if(ctf[i]<0) cout << "coarse_to_fine: coarse "<<i<<" is sad and alone "<<ctf[i]<<"\n";
 	}
 }
 

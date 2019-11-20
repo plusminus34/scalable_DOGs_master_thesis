@@ -85,7 +85,7 @@ public:
 	};
 
 	DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion, const Eigen::VectorXd& init_x0,
-		DogSolver::Params& p, Eigen::VectorXi& b, Eigen::VectorXd& bc,
+		const Eigen::VectorXd& coarse_x0, DogSolver::Params& p, Eigen::VectorXi& b, Eigen::VectorXd& bc,
 		std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
 		std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,

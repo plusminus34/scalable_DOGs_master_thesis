@@ -6,7 +6,7 @@
 using namespace std;
 
 DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion,
-        const Eigen::VectorXd& init_mesh_vars, DogSolver::Params& p,
+        const Eigen::VectorXd& init_mesh_vars, const Eigen::VectorXd& coarse_x0, DogSolver::Params& p,
         Eigen::VectorXi& b, Eigen::VectorXd& bc,
         std::vector<EdgePoint>& edgePoints, Eigen::MatrixXd& edgeCoords,
         std::vector<std::pair<Edge,Edge>>& edge_angle_pairs, std::vector<double>& edge_cos_angles,
@@ -268,7 +268,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
 
         cout << "constructing subsolver "<<i<<endl;
         sub_dogsolver[i] = new DogSolver(*sub_dog[i], empty_dog, empty_conversion,
-              sub_x0, p,
+              sub_x0, empty_xd, p,
               sub_b[i], sub_bc[i],
               //empty_xi, empty_xd,
               constrained_edge_points[i], sub_edgeCoords[i],
@@ -294,8 +294,6 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       cout << "Sub dogsolvers constructed\n";
 
       // Construct coarse solver
-      Eigen::VectorXd coarse_init_x(coarse_dog.get_v_num()*3);
-      coarse_init_x = coarse_dog.getV_vector();//change to get from init_mesh_vars?
 
       // position constraints
       vector<int> which_b(0);
@@ -321,7 +319,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       }
 
       coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
-            coarse_init_x, p,
+            coarse_x0, empty_xd, p,
             coarse_b, coarse_bc,
             empty_ep, empty_mat,
             empty_egg, empty_d,//TODO angles should be included somehow
@@ -881,7 +879,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 	x0 = x;
   if(is_subsolver()){
     constraints.posConst.output(x);
-    constraints.edgePtConst.output(x);
+    //constraints.edgePtConst.output(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -950,15 +948,15 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     x = dog.getV_vector();
 
     //update coarse mesh?
-    /*
+/*
     Eigen::MatrixXd ncoarse_V(coarse_dog.get_v_num(), 3);
     for(int i=0; i<dog.get_v_num(); ++i){
       int c = fine_coarse.fine_to_coarse(i);
-      if(i > -1) ncoarse_V.row(c) = dog.getV().row(i);
+      if(i > -1) ncoarse_V.row(c) = dog.getV().row(i) *0.5;//coarse scale
     }
     coarse_dog.update_V(ncoarse_V);
     coarse_solver->set_opt_vars(coarse_dog.getV_vector());
-    */
+*/
 
     cout << "all subsolvers done\n";
   }
