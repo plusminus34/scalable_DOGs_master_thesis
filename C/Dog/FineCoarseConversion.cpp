@@ -49,6 +49,19 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		coarse_vertex_duplicates(vb2, patch_a) = va2;
 	}
 	vector<vector<int>> patch_adj = fine_dog.get_submesh_adjacency();
+	//Also needed vertex-vertex adjacency
+	vector<vector<int>> fine_vv(fine_V.rows());
+	vector<vector<int>> coarse_vv(coarse_V.rows());
+	for(int i=0; i<fine_vv.size(); ++i) fine_vv[i].clear();
+	for(int i=0; i<coarse_vv.size(); ++i) coarse_vv[i].clear();
+	for(int i=0; i<fine_qt.E.rows(); ++i){
+		fine_vv[fine_qt.E(i,0)].push_back(fine_qt.E(i,1));
+		fine_vv[fine_qt.E(i,1)].push_back(fine_qt.E(i,0));
+	}
+	for(int i=0; i<coarse_qt.E.rows(); ++i){
+		coarse_vv[coarse_qt.E(i,0)].push_back(coarse_qt.E(i,1));
+		coarse_vv[coarse_qt.E(i,1)].push_back(coarse_qt.E(i,0));
+	}
 
 	//There will be a set of vertices to consider, until it finishes
 	const int UNCHECKED = -1;
@@ -60,9 +73,9 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	const int LINK = -7;
 	//Start by checking the neighbours of the origin
 	vector<int> tocheck(0);
-	vector<int> tocheck_next = fine_qt.A[fine_origin];
+	vector<int> tocheck_next = fine_vv[fine_origin];
 	vector<int> coarse_tocheck(0);
-	vector<int> coarse_tocheck_next = coarse_qt.A[coarse_origin];
+	vector<int> coarse_tocheck_next = coarse_vv[coarse_origin];
 	int flooding_iteration = 0;
 	vector<bool> patch_reached(fine_dog.get_submesh_n(), false);
 	patch_reached[fine_dog.v_to_submesh_idx(fine_origin)] = true;
@@ -116,13 +129,13 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 								ftc(other_fine_u) = other_coarse_u;
 								ctf(other_coarse_u) = other_fine_u;
 								// Check neighbours on the other patch in the next iteration
-								for(int j=0; j<fine_qt.A[other_fine_u].size(); ++j){
-									int willcheck = fine_qt.A[other_fine_u][j];
+								for(int j=0; j<fine_vv[other_fine_u].size(); ++j){
+									int willcheck = fine_vv[other_fine_u][j];
 									ftc(willcheck) = WILLBECHECKED;
 									tocheck_next.push_back(willcheck);
 								}
-								for(int j=0; j<coarse_qt.A[other_coarse_u].size(); ++j){
-									int willcheck = coarse_qt.A[other_coarse_u][j];
+								for(int j=0; j<coarse_vv[other_coarse_u].size(); ++j){
+									int willcheck = coarse_vv[other_coarse_u][j];
 									ctf(willcheck) = WILLBECHECKED;
 									coarse_tocheck_next.push_back(willcheck);
 								}
@@ -131,8 +144,8 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 
 					}
 				}
-				for(int j=0; j<coarse_qt.A[coarse_tocheck[coarse_i]].size(); ++j){
-					int coarse_u = coarse_qt.A[coarse_tocheck[coarse_i]][j];
+				for(int j=0; j<coarse_vv[coarse_tocheck[coarse_i]].size(); ++j){
+					int coarse_u = coarse_vv[coarse_tocheck[coarse_i]][j];
 					if(ctf(coarse_u) == UNCHECKED){
 						ctf(coarse_u) = WILLBECHECKED;
 						coarse_tocheck_next.push_back(coarse_u);
@@ -144,8 +157,8 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 
 		//Set unchecked neighbours to be checked in the next iteration
 		for(int i=0; i<tocheck.size(); ++i){
-			for(int j=0; j<fine_qt.A[tocheck[i]].size(); ++j){
-				int v = fine_qt.A[tocheck[i]][j];
+			for(int j=0; j<fine_vv[tocheck[i]].size(); ++j){
+				int v = fine_vv[tocheck[i]][j];
 				if(ftc(v) == UNCHECKED){
 					ftc(v) = WILLBECHECKED;
 					tocheck_next.push_back(v);
@@ -305,17 +318,29 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 }
 
 void FineCoarseConversion::print(){
+	int links = 0;
+	int fineonly = 0;
+	int coarseonly = 0;
 	for(int i=0; i<ftc.size(); ++i){
 		cout << "fine_to_coarse: "<<i;
 		if(ftc[i] > -1) {
+			++links;
 			cout <<" links to " << ftc[i] << " and accordingly coarse_to_fine "<<ftc[i]<<" is "<<ctf[ftc[i]]<<"\n";
 		}else{
+			++fineonly;
 			cout <<" is "<<ftc[i]<<"\n";
 		}
 	}
 	for(int i=0; i<ctf.size(); ++i){
-		if(ctf[i]<0) cout << "coarse_to_fine: coarse "<<i<<" is sad and alone "<<ctf[i]<<"\n";
+		if(ctf[i]<0){
+			++coarseonly;
+			cout << "coarse_to_fine: coarse "<<i<<" is sad and alone "<<ctf[i]<<"\n";
+		}else{
+			cout << "coarse_to_fine: coarse "<<i<<" links to "<<ctf[i]<<" and accordingly fine_to_coarse "<<ctf[i]<<" is "<<ftc[ctf[i]]<<"\n";
+		}
 	}
+	cout << "From "<<ftc.size()<<" fine vertices and "<<ctf.size()<<" coarse vertices:\n";
+	cout << "There are "<<links<<" link vertices, "<<fineonly<<" fine-only and "<<coarseonly<<" coarse-only vertices.\n";
 }
 
 int FineCoarseConversion::fine_to_coarse(int fine){
