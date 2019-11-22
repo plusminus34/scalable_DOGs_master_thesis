@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
 //      ImGui::InputDouble("MV bias weight", &state.DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
       ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
-      //ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
+      ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
       /*
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
 //      ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
 //      ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
-      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Global guess (cheat)\0Global guess (coarse) - Experimental\0");
+      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Global guess (cheat)\0Global guess (coarse)\0Coarse guess+Procrustes - Experimental\0");
       //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
       if (ImGui::Button("Add test angle constraint", ImVec2(-1,0))) state.DC.add_test_angle();
       if (ImGui::Button("Reset timestep", ImVec2(-1,0))) {state.DC.deformation_timestep=0;}
