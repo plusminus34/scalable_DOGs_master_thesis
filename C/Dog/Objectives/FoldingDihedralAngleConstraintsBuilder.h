@@ -4,7 +4,6 @@
 #include "../../QuadMesh/Quad.h"
 #include "../../Optimization/Constraints.h"
 
-// For now the class assumes the initialization is flat (so it linearly interpolates dihedral angles from 0 to that)
 // This class also translates between a dihedral angles along a fold to tangent angles between tangents across the curve
 class FoldingDihedralAngleConstraintsBuilder {
 public:
