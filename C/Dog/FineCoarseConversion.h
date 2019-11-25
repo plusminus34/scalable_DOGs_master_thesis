@@ -15,11 +15,11 @@ public:
 	FineCoarseConversion(const Dog& fine_dog, const Dog& coarse_dog);
 
 	//Get vertex indices in other mesh (negative value if it isn't there)
-	int fine_to_coarse(int fine);
-	int coarse_to_fine(int coarse);
+	int fine_to_coarse(int fine) const {return ftc(fine);}
+	int coarse_to_fine(int coarse) const {return ctf(coarse);}
 
 	//Maps certain fine-only points to an edge in the coarse Dog
-	int fine_to_coarse_edge(int fine) {return ftc_edge[fine];}
+	int fine_to_coarse_edge(int fine) const {return ftc_edge[fine];}
 
 	int coarse_to_fine_curve(int curve_idx, int ep_idx);
 	vector< vector< vector<double> > >& getCurveOffsets(){return ctf_curve_offsets;}

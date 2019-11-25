@@ -109,11 +109,16 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 				ftc(tocheck[i]) = FINEONLY_X;
 				//cout << "flood: "<<tocheck[i]<<" is an x unless stated otherwise\n";
 			}
+			/*
+			TODO find out why exactly coarse flooding fails (brute force method used until then)
 			//Do a coarse iteration
 			coarse_tocheck = coarse_tocheck_next;
 			coarse_tocheck_next.clear();
 			for(int coarse_i=0; coarse_i<coarse_tocheck.size(); ++coarse_i){
 				int coarse_u = coarse_tocheck[coarse_i];
+				*/
+			for(int coarse_i = 0; coarse_i<coarse_V.rows(); ++coarse_i){
+				int coarse_u = coarse_i;
 				int coarse_patch = coarse_dog.v_to_submesh_idx(coarse_u);
 				Eigen::RowVector3d coarse_p = coarse_V.row(coarse_u);
 				for(int fine_i=0; fine_i<tocheck.size(); ++fine_i){
@@ -145,13 +150,14 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 								for(int j=0; j<coarse_vv[other_coarse_u].size(); ++j){
 									int willcheck = coarse_vv[other_coarse_u][j];
 									ctf(willcheck) = WILLBECHECKED;
-									coarse_tocheck_next.push_back(willcheck);
+//									coarse_tocheck_next.push_back(willcheck);
 								}
 							}
 						}
 
 					}
 				}
+				/*
 				for(int j=0; j<coarse_vv[coarse_tocheck[coarse_i]].size(); ++j){
 					int coarse_u = coarse_vv[coarse_tocheck[coarse_i]][j];
 					if(ctf(coarse_u) == UNCHECKED){
@@ -160,6 +166,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 //						cout << "flood: coarse["<<coarse_u<<"] must be checked next coarse iteration\n";
 					}
 				}
+				*/
 			}
 		}
 
@@ -175,15 +182,6 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			}
 		}
 	}
-	//Something is wrong with the flooding, so here's some relabelling
-	//TODO find out why this is needed
-	for(int i=0;i<ftc.size();++i){
-		if(ftc(i) > -1)continue;
-		ftc(i) = FINEONLY_X;
-		for(int j=0; j<fine_vv[i].size(); ++j)
-			if(ftc(fine_vv[i][j]) > -1) ftc(i)=FINEONLY_I;
-	}
-
 
 	int num_curves = fine_es.stitched_curves.size();
 	if(num_curves != coarse_es.stitched_curves.size()){
@@ -403,14 +401,6 @@ void FineCoarseConversion::print(){
 	}
 	cout << "From "<<ftc.size()<<" fine vertices and "<<ctf.size()<<" coarse vertices:\n";
 	cout << "There are "<<links<<" link vertices, "<<fineonly<<" fine-only and "<<coarseonly<<" coarse-only vertices.\n";
-}
-
-int FineCoarseConversion::fine_to_coarse(int fine){
-	return ftc(fine);
-}
-
-int FineCoarseConversion::coarse_to_fine(int coarse){
-	return ctf(coarse);
 }
 
 int FineCoarseConversion::coarse_to_fine_curve(int curve_idx, int ep_idx){
