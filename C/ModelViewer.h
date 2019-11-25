@@ -30,6 +30,7 @@ public:
 	double rulings_planar_eps = 0.05;
 	bool new_rulings = false;
 	bool show_curves = true;
+	bool show_conversion = false;
 	bool culled_view = true;
 	bool switched_mode;
 private:
@@ -41,6 +42,8 @@ private:
 	void render_edge_points_constraints(igl::opengl::glfw::Viewer& viewer);
 	void render_dog_wireframe(igl::opengl::glfw::Viewer& viewer);
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
+
+	void render_conversion(igl::opengl::glfw::Viewer& viewer);
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 	void render_curved_osculating_planes(igl::opengl::glfw::Viewer& viewer);

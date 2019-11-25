@@ -240,6 +240,7 @@ int main(int argc, char *argv[]) {
       ImGui::Checkbox("Render constraints", &modelViewer.render_pos_const);
       //ImGui::InputInt("Edited component", &dogEditor.edited_mesh);
       */
+      ImGui::Checkbox("Render conversion", &modelViewer.show_conversion);
 
       ImGui::InputDouble("Constraints deviation", &state.DC.constraints_deviation);
       ImGui::InputDouble("objective", &state.DC.objective);

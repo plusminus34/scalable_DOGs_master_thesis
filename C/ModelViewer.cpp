@@ -63,6 +63,7 @@ void ModelViewer::render_mesh_and_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		if ( state.dog.has_creases() && culled_view) render_dog_wireframe(viewer);
 		else render_wireframe(viewer, dog->getV(), dog->getQuadTopology());
 	}
+	if (show_conversion) render_conversion(viewer);
 	render_positional_constraints(viewer);
 	DC.dogEditor->render_pairs();
 	if (render_pos_const) {
@@ -250,4 +251,20 @@ void ModelViewer::render_dog_wireframe(igl::opengl::glfw::Viewer& viewer) {
 		E2.row(i) = V_ren.row(wire_edges_i[i].second);
 	}
 	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0,0,0));
+}
+
+void ModelViewer::render_conversion(igl::opengl::glfw::Viewer& viewer) {
+	Eigen::MatrixXd V = state.dog.getV();
+	Eigen::MatrixXd colors(V.rows(), 3);
+	for(int i=0; i<V.rows(); ++i){
+		int c = state.conversion.fine_to_coarse(i);
+		if(c > -1){
+			colors.row(i) << 0.0, 0.7, 0.3;
+		} else if (c == -2) {
+			colors.row(i) << 0.0, 0.0, 0.4;
+		} else {
+			colors.row(i) << 0.3, 0.0, 0.0;
+		}
+	}
+	viewer.data().add_points(V, colors);
 }
