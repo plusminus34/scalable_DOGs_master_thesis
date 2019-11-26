@@ -19,7 +19,7 @@ public:
 	int coarse_to_fine(int coarse) const {return ctf(coarse);}
 
 	//Maps certain fine-only points to an edge in the coarse Dog
-	int fine_to_coarse_edge(int fine) const {return ftc_edge[fine];}
+	int fine_to_coarse_edge(int fine) const {return ftc_edge(fine);}
 
 	int coarse_to_fine_curve(int curve_idx, int ep_idx);
 	vector< vector< vector<double> > >& getCurveOffsets(){return ctf_curve_offsets;}

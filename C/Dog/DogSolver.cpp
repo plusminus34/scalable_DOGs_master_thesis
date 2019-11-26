@@ -314,8 +314,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       cout << "Sub dogsolvers constructed\n";
 
       // Construct coarse solver
-
-      // position constraints
+      //position constraints
       vector<int> which_b(0);
       int bthird = b.size()/3;
       coarse_b_to_bi.clear();
@@ -338,11 +337,46 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         coarse_bc(i + 2*which_b.size()) = bc(coarse_b_to_bi[i] + 2*bthird)*0.5;//coarse scale
       }
 
+      //angle constraints
+      const QuadTopology& coarse_qt = coarse_dog.getQuadTopology();
+      vector<std::pair<Edge,Edge>> coarse_edge_angle_pairs(0);
+      vector<double> coarse_edge_cos_angles(0);
+      coarse_angle_idx.clear();
+      for(int i=0; i<edge_angle_pairs.size(); ++i){
+        cout << "Edge angle "<<i<<"\n";
+        int v1 = edge_angle_pairs[i].first.v1;
+        int v2 = edge_angle_pairs[i].first.v2;
+        int c_v1 = fine_coarse.fine_to_coarse(v1);
+        int c_v2 = fine_coarse.fine_to_coarse(v2);
+        if(c_v1 < 0 && c_v2 < 0) continue;//One vertex has to be a link point for now
+        int w1 = edge_angle_pairs[i].second.v1;
+        int w2 = edge_angle_pairs[i].second.v2;
+        int c_w1 = fine_coarse.fine_to_coarse(w1);
+        int c_w2 = fine_coarse.fine_to_coarse(w2);
+        if(c_v2 > -1){
+          //v1/w1 should be the link point
+          swap(v1, v2);
+          swap(c_v1, c_v2);//eh
+          swap(w1, w2);
+          swap(c_w1, c_w2);//eh
+        }
+        cout << "It's good, link is "<<v1<<"/"<<w1<<" to "<<c_v1<<"/"<<c_w1<<"\n";
+        int edge_idx_v = fine_coarse.fine_to_coarse_edge(v2);
+        int edge_idx_w = fine_coarse.fine_to_coarse_edge(w2);
+        cout << "Edges are "<<edge_idx_v<<" and "<<edge_idx_w<<"\n";
+        Edge ev = Edge(coarse_qt.E(edge_idx_v, 0), coarse_qt.E(edge_idx_v, 1));
+        Edge ew = Edge(coarse_qt.E(edge_idx_w, 0), coarse_qt.E(edge_idx_w, 1));
+        cout << "Edge vertices "<<ev.v1<<", "<<ev.v2<<" and "<<ew.v1<<", "<<ew.v2<<"\n";
+        coarse_edge_angle_pairs.push_back(pair<Edge,Edge>(ev, ew));
+        coarse_edge_cos_angles.push_back(edge_cos_angles[i]);
+        coarse_angle_idx.push_back(i);
+      }
+
       coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
             coarse_x0, empty_xd, p,
             coarse_b, coarse_bc,
             empty_ep, empty_mat,
-            empty_egg, empty_d,//TODO angles should be included somehow
+            coarse_edge_angle_pairs, coarse_edge_cos_angles,
             empty_thing, empty_d,
             empty_pair,
             empty_pair,
@@ -1240,6 +1274,11 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
 
       sub_dogsolver[i]->update_edge_angles(angles);
     }
+    vector<double> angles(coarse_angle_idx.size());
+    for(int i=0; i<coarse_angle_idx.size(); ++i){
+      angles[i] = cos_angles_i[ coarse_angle_idx[i] ];
+    }
+    coarse_solver->update_edge_angles(angles);
   } else {
     constraints.subEdgesAngleConst.set_angles(cos_angles_i);
   }

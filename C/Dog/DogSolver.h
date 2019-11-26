@@ -263,6 +263,7 @@ private:
 	Eigen::VectorXi coarse_b;
 	vector<int> coarse_b_to_bi;
 	Eigen::VectorXd coarse_bc;
+	vector<int> coarse_angle_idx;
 
 	// Solvers
 	//NewtonKKT newtonKKT;
