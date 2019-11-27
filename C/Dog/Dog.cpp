@@ -152,7 +152,7 @@ void Dog::update_Vren() {
 	}
 }
 
-void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices) {
+void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices) const {
 	std::vector<int> idx_list;
 	if (vertices)
 		idx_list = submeshVSize;

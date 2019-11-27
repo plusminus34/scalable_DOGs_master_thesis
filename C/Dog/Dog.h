@@ -68,7 +68,7 @@ public:
 	int get_v_num() const {return V.rows();}
 
 	// If true, gives the min/max in terms of submesh vertices, otherwise faces
-	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices = true);
+	void get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices = true) const;
 	int get_submesh_n() const { return submeshVSize.size();}
 	int get_submesh_i_size(int submesh_i) const {return submeshVSize[submesh_i];}
 	int v_to_submesh_idx(int v) const {return vi_to_submesh[v];}
