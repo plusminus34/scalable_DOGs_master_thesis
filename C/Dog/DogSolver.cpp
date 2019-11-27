@@ -539,7 +539,6 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (fold)" << endl;
 	x0 = x;
-  //constraints.posConst.output(x);
   if (!is_folded()) {
     cout << "Error: Not folded" << endl;
     exit(1);
@@ -937,8 +936,6 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
 	cout << "running a single optimization routine (coarse guess)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    //constraints.posConst.output(x);
-    constraints.edgePtConst.output(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -1026,8 +1023,6 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 	cout << "running a single optimization routine (experimental)" << endl;
 	x0 = x;
   if(is_subsolver()){
-    //constraints.posConst.output(x);
-    //constraints.edgePtConst.output(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
