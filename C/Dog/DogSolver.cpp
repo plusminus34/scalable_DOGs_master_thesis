@@ -513,22 +513,23 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
-  if(mode == mode_subsolvers) {
-    single_iteration_subsolvers(constraints_deviation, objective);
-  } else if (mode == mode_vsadmm || mode == mode_jadmm || mode == mode_proxjadmm) {
-    single_iteration_ADMM(constraints_deviation, objective);
-  } else if (mode == mode_serial) {
-    single_iteration_serial(constraints_deviation, objective);
-  } else if (mode == mode_procrustes) {
-    single_iteration_procrustes(constraints_deviation, objective);
-  } else if (mode == mode_cheatguess) {
-    single_iteration_cheat_guess(constraints_deviation, objective);
-  } else if (mode == mode_coarseguess) {
-    single_iteration_coarse_guess(constraints_deviation, objective);
-  } else if (mode == mode_experimental) {
-    single_iteration_experimental(constraints_deviation, objective);
+  if( dog.get_submesh_n() > 1 && mode != mode_standard) {
+    if(mode == mode_subsolvers) {
+      single_iteration_subsolvers(constraints_deviation, objective);
+    } else if (mode == mode_vsadmm || mode == mode_jadmm || mode == mode_proxjadmm) {
+      single_iteration_ADMM(constraints_deviation, objective);
+    } else if (mode == mode_serial) {
+      single_iteration_serial(constraints_deviation, objective);
+    } else if (mode == mode_procrustes) {
+      single_iteration_procrustes(constraints_deviation, objective);
+    } else if (mode == mode_cheatguess) {
+      single_iteration_cheat_guess(constraints_deviation, objective);
+    } else if (mode == mode_coarseguess) {
+      single_iteration_coarse_guess(constraints_deviation, objective);
+    } else if (mode == mode_experimental) {
+      single_iteration_experimental(constraints_deviation, objective);
+    }
   } else {
-    // mode == mode_standard
     if (!p.folding_mode) p.fold_bias_weight = 0;
     if (p.folding_mode) single_iteration_fold(constraints_deviation, objective);
     else single_iteration_normal(constraints_deviation, objective);
@@ -1081,25 +1082,18 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     for(int i=0; i<num_submeshes; ++i){
       cout << "subsolver " << i << " does single iteration\n";
 
-
       Eigen::MatrixXd target_Vt = target_coords[i];
 
       Eigen::MatrixXd Vi = sub_dog[i]->getV();
       Eigen::MatrixXd source_Vt = proc_T[i] * Vi;
-      /*
-      cout << "target V "<<target_Vt.rows()<<" x "<<target_Vt.cols()<<"\n";
-      cout << "source V "<<source_Vt.rows()<<" x "<<source_Vt.cols()<<"\n";
-      Eigen::MatrixXd shown(target_Vt.rows(), 6);
-      shown << target_Vt, source_Vt;
-      cout << shown<<"\n";
-      */
+
       Eigen::MatrixXd R;
       Eigen::VectorXd t;
       double scale;
       //                                   scale, reflect
       igl::procrustes(source_Vt, target_Vt, false,false, scale,R,t);
-      double alpha=p.admm_gamma;
-      Vi = ((Vi * scale * R).rowwise() + t.transpose())*alpha + (1-alpha)*Vi;
+      //double alpha=p.admm_gamma;
+      Vi = (Vi /* scale*/ * R).rowwise() + t.transpose();
       sub_dog[i]->update_V(Vi);
       sub_dogsolver[i]->set_opt_vars(sub_dog[i]->getV_vector());
 
@@ -1252,12 +1246,14 @@ void DogSolver::update_obj_weights(const std::vector<double>& weights_i){
 }
 
 void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
+  if(cos_angles_i.size() == 0) return;
   constraints.edgeAngleConst.set_angles(cos_angles_i);
 
   if(!is_subsolver()){
     int v_num = dog.get_v_num();
 
     for(int i=0; i<sub_dogsolver.size(); ++i){
+
       vector<double> angles(sub_idx_to_angle_idx[i].size());
       Eigen::MatrixXd w_coords(sub_edge_angle_ww[i].rows(), 6);
 
@@ -1280,6 +1276,7 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
     }
     coarse_solver->update_edge_angles(angles);
   } else {
+    //TODO not for coarse_solver
     constraints.subEdgesAngleConst.set_angles(cos_angles_i);
   }
 }
