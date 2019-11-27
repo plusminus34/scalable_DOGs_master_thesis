@@ -150,6 +150,7 @@ void Dog::update_Vren() {
 		}
 
 	}
+	V_ren *= render_scale;
 }
 
 void Dog::get_submesh_min_max_i(int submesh_i, int& submesh_min_i, int& submesh_max_i, bool vertices) const {
@@ -177,7 +178,7 @@ int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 	double eps = 1e-5;
 	auto coords = V_ren.row(v_idx);
 	for (int i = 0; i < V.rows(); i++) {
-		if ((V.row(i)-coords).norm() < eps)
+		if ((V.row(i)/render_scale-coords).norm() < eps)
 			return i;
 	}
 	// did not find matching point
@@ -187,7 +188,7 @@ int Dog::v_ren_idx_to_v_idx(int v_idx) const {
 
 int Dog::v_ren_idx_to_edge(int v_idx, EdgePoint& edgePt) const {
 	double eps = 1e-10;
-	auto coords = V_ren.row(v_idx);
+	auto coords = V_ren.row(v_idx) / render_scale;
 	for (auto curve_v: edgeStitching.stitched_curves) {
 		for (auto ep : curve_v) {
 			if ((ep.getPositionInMesh(V)-coords).norm() < eps) {

@@ -94,8 +94,13 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     break;
   case 'U':
     showing_coarse = !showing_coarse;
-    if(showing_coarse) state.DC.setDog(&state.coarse_dog);
-    else state.DC.setDog(&state.dog);
+    if(showing_coarse) {
+      state.DC.setDog(&state.coarse_dog);
+      state.DC.display_mode = display_coarse;
+    } else {
+      state.DC.setDog(&state.dog);
+      state.DC.display_mode = display_default;
+    }
     //state.DC.change_submesh();
     break;
   }

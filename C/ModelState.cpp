@@ -96,4 +96,5 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 	dog.update_V(scaledV);
 	auto coarse_scaledV = (coarse_dog.getV()*1./edge_l) *0.5;//coarse scale
 	coarse_dog.update_V(coarse_scaledV);
+	coarse_dog.set_render_scale(2.0);//coarse scale
 }

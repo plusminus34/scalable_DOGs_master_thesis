@@ -104,6 +104,8 @@ public:
 	const std::vector< std::pair<int,int> >& get_rendered_wireframe_edges() const {return rendered_wireframe_edges;}
 	void setup_boundary_curves_indices();
 
+	void set_render_scale(double scale){render_scale = scale;}
+
 	void InitSerialization() {
       Add(V,std::string("_V"));
       Add(F,std::string("_F"));
@@ -125,6 +127,7 @@ public:
       Add(stitched_curves_angles,std::string("stitched_curves_angles"));
       Add(stitched_curves_curvature,std::string("stitched_curves_curvature"));
       Add(vi_to_submesh,std::string("_vi_to_submesh"));
+			Add(render_scale, std::string("render_scale"));
     }
 
 	// The initial length/angles/curvatures of the initial stitched curves
@@ -147,6 +150,7 @@ private:
 	QuadTopology quadTop;
 	// The initial rendered (triangular) mesh
 	Eigen::MatrixXd V_ren; Eigen::MatrixXi F_ren;
+	double render_scale = 1.0;
 	// The rendered quad wireframe
 	std::vector< std::pair<int,int> > rendered_wireframe_edges;
 

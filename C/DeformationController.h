@@ -8,13 +8,7 @@
 #include "Dog/Objectives/MVFoldingDihedralAngleConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
-
-enum WallapaperType {
-	XY = 0,
-	UXY = 1,
-	UXUY = 2,
-	XUY = 3
-};
+enum DisplayMode {display_default, display_coarse, display_submesh};
 
 class DeformationController : public igl::Serializable {
 public:
@@ -53,6 +47,8 @@ public:
 	void InitSerialization() {
 	      Add(edit_mode,std::string("edit_mode"));
 	      Add(select_mode,std::string("select_mode"));
+	      Add(solver_mode, std::string("solver_mode"));
+	      Add(display_mode, std::string("display_mode"));
 	      Add(deformed_curve_idx,std::string("deformed_curve_idx"));
 
 	      Add(curve_k_translation,std::string("curve_k_translation")); Add(curve_k_mult,std::string("curve_k_mult")); Add(curve_t_addition,std::string("curve_t_addition"));
@@ -91,6 +87,7 @@ public:
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
 	DogSolver::SolverMode solver_mode = DogSolver::mode_experimental;
+	DisplayMode display_mode = display_default;
 
 	int deformed_curve_idx = 0;
 	double curve_k_translation = 0; double curve_k_mult = 2; double curve_t_addition = 0;
