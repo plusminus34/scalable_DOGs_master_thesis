@@ -32,6 +32,7 @@ public:
 	void InitSerialization() {
 		Add(ftc, std::string("fine_to_coarse"));
 		Add(ctf, std::string("coarse_to_fine"));
+    Add(ftc_edge, std::string("fine_to_coarse_edge"));
     Add(ftc_curve, std::string("fine_to_coarse_stitched_curves"));
     Add(ctf_curve, std::string("coarse_to_fine_stitched_curves"));
 		Add(ctf_curve_vertices, std::string("curve_interpolation_vertices"));
