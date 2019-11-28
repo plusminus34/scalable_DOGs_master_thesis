@@ -11,7 +11,8 @@ enum ViewMode {
 	ViewModeCreases = 2,
 	ViewModeGauss = 3,
 	CreasesSVGReader = 4,
-	ViewRulings = 5
+	ViewRulings = 5,
+	ViewCurves = 6
 };
 
 class ModelViewer {
@@ -44,6 +45,7 @@ private:
 	void center_and_scale_gauss_sphere(Eigen::MatrixXd& GV, Eigen::MatrixXi& GF);
 
 	void render_conversion(igl::opengl::glfw::Viewer& viewer);
+	void render_curves(igl::opengl::glfw::Viewer& viewer);
 
 	void render_curved_folding_normals(igl::opengl::glfw::Viewer& viewer);
 	void render_curved_osculating_planes(igl::opengl::glfw::Viewer& viewer);

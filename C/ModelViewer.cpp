@@ -43,6 +43,8 @@ void ModelViewer::render(igl::opengl::glfw::Viewer& viewer) {
     	igl::per_vertex_normals(dog->getV(),dog->getFTriangular(),VN);
 		plot_vertex_based_rulings(viewer, dog->getV(), VN,
 						dog->getQuadTopology(), new_rulings, rulings_length, rulings_mod, rulings_planar_eps);
+	} else if (viewMode == ViewCurves){
+		render_curves(viewer);
 	}
 
 	first_rendering = false;
@@ -267,4 +269,31 @@ void ModelViewer::render_conversion(igl::opengl::glfw::Viewer& viewer) {
 		}
 	}
 	viewer.data().add_points(V, colors);
+}
+
+void ModelViewer::render_curves(igl::opengl::glfw::Viewer& viewer) {
+	const Eigen::MatrixXd& V = state.dog.getV();
+	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
+	int num_curves = eS.stitched_curves.size();
+	int num_edges = -num_curves;
+	for(int i=0; i<num_curves; ++i) num_edges += eS.stitched_curves[i].size();
+	//state available
+	//DC available
+	Eigen::MatrixXd E1(num_edges, 3), E2(num_edges, 3);
+	Eigen::MatrixXd EP(num_edges + num_curves, 3);
+	int i = 0; int ip = 0;
+	for (int j = 0; j < num_curves; ++j) {
+		Eigen::RowVector3d p0 = eS.stitched_curves[j][0].getPositionInMesh(V);
+		EP.row(ip++) = p0;
+		for(int k=1; k<eS.stitched_curves[j].size(); ++k){
+			Eigen::RowVector3d p1 = eS.stitched_curves[j][k].getPositionInMesh(V);
+			E1.row(i) = p0;
+			E2.row(i) = p1;
+			++i;
+			EP.row(ip++) = p1;
+			p0 = p1;
+		}
+	}
+	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0,0,0));
+	viewer.data().add_points(EP, Eigen::RowVector3d(0.3,0,0));
 }

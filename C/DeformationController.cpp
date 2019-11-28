@@ -348,8 +348,8 @@ void DeformationController::write_output_file(){
 }
 
 void DeformationController::add_test_angle(){
-	Edge test_edge(144,154);
-	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(test_edge, 0.436117), src_dihedral_angle, dst_dihedral_angle);
+	Edge test_edge(143,153);
+	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(test_edge, 0.464063), src_dihedral_angle, dst_dihedral_angle);
 	foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
 	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
 	dihedral_constrained.push_back(dogEditor->picked_edge);
