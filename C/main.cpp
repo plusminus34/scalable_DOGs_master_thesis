@@ -16,8 +16,6 @@ using namespace std;
 bool is_optimizing = true;
 bool optimization_measurements = false;
 
-bool showing_coarse = false;
-
 ModelState state;
 //DogEditor dogEditor;
 ModelViewer modelViewer(state, state.DC);
@@ -93,8 +91,7 @@ bool callback_key_down(igl::opengl::glfw::Viewer& viewer, unsigned char key, int
     exit(1);
     break;
   case 'U':
-    showing_coarse = !showing_coarse;
-    if(showing_coarse) {
+    if(state.DC.display_mode != display_coarse) {
       state.DC.setDog(&state.coarse_dog);
       state.DC.display_mode = display_coarse;
     } else {

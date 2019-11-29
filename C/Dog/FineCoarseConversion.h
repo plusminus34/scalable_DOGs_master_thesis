@@ -21,10 +21,11 @@ public:
 	//Maps certain fine-only points to an edge in the coarse Dog
 	int fine_to_coarse_edge(int fine) const {return ftc_edge(fine);}
 
-	int coarse_to_fine_curve(int curve_idx, int ep_idx);
-	vector< vector< vector<double> > >& getCurveOffsets(){return ctf_curve_offsets;}
+	int coarse_to_fine_curve(int curve_idx, int ep_idx) const;
+	const vector< vector< vector<double> > >& getCurveOffsets() const {return ctf_curve_offsets;}
+	Eigen::MatrixXd getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const;
 
-	void print();
+	void print() const;
 
 	//This one is deprecated
 	Eigen::RowVector3d get_fine_curve_approx(const Eigen::MatrixXd& V, int curve_idx, int ep_idx);

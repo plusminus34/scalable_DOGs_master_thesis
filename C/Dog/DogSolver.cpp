@@ -22,8 +22,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
                       mv_cos_angles, pairs),
           obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
-          time_measurements_log(time_measurements_log), is_main_solver(ismainsolver),
-          offsets(fine_coarse.getCurveOffsets())
+          time_measurements_log(time_measurements_log), is_main_solver(ismainsolver)
            {
     is_constrained = (b.rows() + edgePoints.size())>0;
     if (time_measurements_log) {
@@ -955,19 +954,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     // update stitching constraint coordinates
     const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
     for(int i=0; i<coarse_curves.size(); ++i){
-      cout << "building coarse_coords\n";
-      Eigen::MatrixXd coarse_coords = coarse_curves[i].get_curve_coords(coarse_V);
-      cout << "building curve\n";
-      Curve curve(coarse_coords);
-      cout << "built curve\n";
-      Eigen::RowVector3d T;
-      Eigen::Matrix3d F;
-      cout << "getting F,T\n";
-      curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
-      cout << "getting fine_coords\n";
-      Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, offsets[i]);
-      //cout <<"We have fine coords "<<i<<"\n"<<fine_coords<<"\n";
-      //cout <<" from coarse coords "<<i<<"\n"<<coarse_coords<<"\n";
+      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i);
 
       for(int j=0; j<fine_coords.rows(); ++j){
         int submesh_1 = curve_ep_to_sub_edgeCoords[i](j,0);
@@ -1044,14 +1031,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     for(int i=0; i<num_submeshes; ++i) target_coords[i].resize(proc_T[i].rows(), 3);
     const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
     for(int i=0; i<coarse_curves.size(); ++i){
-      Eigen::MatrixXd coarse_coords = coarse_curves[i].get_curve_coords(coarse_V);
-      Curve curve(coarse_coords);
-      Eigen::RowVector3d T;
-      Eigen::Matrix3d F;
-      curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
-      Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, offsets[i]);
-      //cout <<"We have fine coords "<<i<<"\n"<<fine_coords<<"\n";
-      //cout <<" from coarse coords "<<i<<"\n"<<coarse_coords<<"\n";
+      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i);
 
       for(int j=0; j<fine_coords.rows(); ++j){
         int submesh_1 = curve_ep_to_sub_edgeCoords[i](j,0);
@@ -1071,7 +1051,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     update_obj_weights({p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
       p.stitching_weight, p.soft_pos_weight, 0.5*p.stitching_weight, p.pair_weight,
       p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
-      p.paired_boundary_bending_weight, 0, p.admm_rho, 0});
+      p.paired_boundary_bending_weight, 0, 0, 0});
 
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){

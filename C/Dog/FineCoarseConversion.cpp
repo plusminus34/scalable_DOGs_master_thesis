@@ -375,7 +375,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 
 }
 
-void FineCoarseConversion::print(){
+void FineCoarseConversion::print() const {
 	int links = 0;
 	int fineonly = 0;
 	int coarseonly = 0;
@@ -403,14 +403,21 @@ void FineCoarseConversion::print(){
 	cout << "There are "<<links<<" link vertices, "<<fineonly<<" fine-only and "<<coarseonly<<" coarse-only vertices.\n";
 }
 
-int FineCoarseConversion::coarse_to_fine_curve(int curve_idx, int ep_idx){
+int FineCoarseConversion::coarse_to_fine_curve(int curve_idx, int ep_idx) const {
 	return ctf_curve[curve_idx][ep_idx];
 }
 
-Eigen::RowVector3d FineCoarseConversion::get_fine_curve_approx(const Eigen::MatrixXd& coarse_V, int curve_idx, int ep_idx){
-	Eigen::RowVector3d res;
-	res = coarse_V.row(ctf_curve_vertices[curve_idx](ep_idx,0)) * ctf_curve_weights[curve_idx](ep_idx, 0) +
-	  coarse_V.row(ctf_curve_vertices[curve_idx](ep_idx, 1)) * ctf_curve_weights[curve_idx](ep_idx, 1) +
-		coarse_V.row(ctf_curve_vertices[curve_idx](ep_idx, 2)) * ctf_curve_weights[curve_idx](ep_idx, 2);
-	return res;
+Eigen::MatrixXd FineCoarseConversion::getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const{
+	const DogEdgeStitching& fine_es = fine_dog.getEdgeStitching();
+	const DogEdgeStitching& coarse_es = coarse_dog.getEdgeStitching();
+	Eigen::MatrixXd coarse_coords(coarse_es.stitched_curves[curve_idx].size(), 3);
+	for(int i=0; i<coarse_coords.rows(); ++i){
+		coarse_coords.row(i) = coarse_es.stitched_curves[curve_idx][i].getPositionInMesh(coarse_dog.getV());
+	}
+	Curve curve(coarse_coords);
+	Eigen::RowVector3d T;
+	Eigen::Matrix3d F;
+	curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
+	Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, ctf_curve_offsets[curve_idx]);
+	return fine_coords;
 }

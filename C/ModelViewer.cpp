@@ -272,28 +272,54 @@ void ModelViewer::render_conversion(igl::opengl::glfw::Viewer& viewer) {
 }
 
 void ModelViewer::render_curves(igl::opengl::glfw::Viewer& viewer) {
-	const Eigen::MatrixXd& V = state.dog.getV();
-	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
-	int num_curves = eS.stitched_curves.size();
+	// get coarse curve
+	const Eigen::MatrixXd& coarse_V = state.coarse_dog.getV() *2;//coarse scale
+	const DogEdgeStitching& coarse_eS = state.coarse_dog.getEdgeStitching();
+	int num_curves = coarse_eS.stitched_curves.size();
 	int num_edges = -num_curves;
-	for(int i=0; i<num_curves; ++i) num_edges += eS.stitched_curves[i].size();
-	//state available
-	//DC available
-	Eigen::MatrixXd E1(num_edges, 3), E2(num_edges, 3);
-	Eigen::MatrixXd EP(num_edges + num_curves, 3);
-	int i = 0; int ip = 0;
+	for(int i=0; i<num_curves; ++i) num_edges += coarse_eS.stitched_curves[i].size();
+	Eigen::MatrixXd coarse_E1(num_edges, 3), coarse_E2(num_edges, 3);
+	int ie = 0;
 	for (int j = 0; j < num_curves; ++j) {
-		Eigen::RowVector3d p0 = eS.stitched_curves[j][0].getPositionInMesh(V);
-		EP.row(ip++) = p0;
-		for(int k=1; k<eS.stitched_curves[j].size(); ++k){
-			Eigen::RowVector3d p1 = eS.stitched_curves[j][k].getPositionInMesh(V);
-			E1.row(i) = p0;
-			E2.row(i) = p1;
-			++i;
-			EP.row(ip++) = p1;
+		Eigen::RowVector3d p0 = coarse_eS.stitched_curves[j][0].getPositionInMesh(coarse_V);
+		for(int k=1; k<coarse_eS.stitched_curves[j].size(); ++k){
+			Eigen::RowVector3d p1 = coarse_eS.stitched_curves[j][k].getPositionInMesh(coarse_V);
+			coarse_E1.row(ie) = p0;
+			coarse_E2.row(ie) = p1;
+			++ie;
 			p0 = p1;
 		}
 	}
+	// get fine curve (aka the one you see normally)
+	const Eigen::MatrixXd& V = state.dog.getV();
+	const DogEdgeStitching& eS = state.dog.getEdgeStitching();
+	num_edges = -num_curves;
+	for(int i=0; i<num_curves; ++i) num_edges += eS.stitched_curves[i].size();
+	Eigen::MatrixXd E1(num_edges, 3), E2(num_edges, 3);
+	ie = 0;
+	for (int j = 0; j < num_curves; ++j) {
+		Eigen::RowVector3d p0 = eS.stitched_curves[j][0].getPositionInMesh(V);
+		for(int k=1; k<eS.stitched_curves[j].size(); ++k){
+			Eigen::RowVector3d p1 = eS.stitched_curves[j][k].getPositionInMesh(V);
+			E1.row(ie) = p0;
+			E2.row(ie) = p1;
+			++ie;
+			p0 = p1;
+		}
+	}
+	// get interpolated curve
+	Eigen::MatrixXd approx_E1(num_edges, 3), approx_E2(num_edges, 3);
+	ie = 0;
+	for (int j = 0; j < num_curves; ++j) {
+		Eigen::MatrixXd interpolated_points = state.conversion.getInterpolatedCurveCoords(state.dog, state.coarse_dog, j);
+		for(int k=1; k<interpolated_points.rows(); ++k){
+			approx_E1.row(ie) = interpolated_points.row(k-1) *2;//coarse scale
+			approx_E2.row(ie) = interpolated_points.row(k) *2;//coarse scale
+			++ie;
+		}
+	}
+	// figure out what to display: Everything
 	viewer.data().add_edges(E1, E2, Eigen::RowVector3d(0,0,0));
-	viewer.data().add_points(EP, Eigen::RowVector3d(0.3,0,0));
+	viewer.data().add_edges(coarse_E1, coarse_E2, Eigen::RowVector3d(0.75,0,0));
+	viewer.data().add_edges(approx_E1, approx_E2, Eigen::RowVector3d(0.25,0.75,0.25));
 }
