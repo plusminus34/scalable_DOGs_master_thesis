@@ -465,6 +465,9 @@ bool DogSolver::is_folded() {
     for (int e_idx = 1; e_idx < foldingCurve.size()-1; e_idx++) {
       auto ep_b = foldingCurve[e_idx-1]; auto ep_f = foldingCurve[e_idx+1];
       auto edge_pt = foldingCurve[e_idx]; double edge_t = edge_pt.t;
+      // Skip degenerate edges where ep is too close to one vertex
+      if ( (edge_t < 0.05 ) || ( edge_t > 0.95) ) continue;
+
       if ((eS.get_vertex_edge_point_deg(edge_pt.edge) == 1) && dog.is_crease_vertex_flat(fold_curve_idx,e_idx) ) continue;
       int v1,v2,w1,w2; dog.get_2_submeshes_vertices_from_edge(edge_pt.edge, v1,v2,w1,w2);
       Eigen::VectorXd V1_p(dog.getV().row(v1)), V2_p(dog.getV().row(v2));
@@ -475,15 +478,20 @@ bool DogSolver::is_folded() {
       Eigen::VectorXd e1 = V1_p-V2_p, e2 = W1_p-W2_p;
       //std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
       double sign1 = B.dot(e1), sign2 = B.dot(e2); double flat_tolerance = 1e-12; // ignore flat points..
-      //if ( (sign1*sign2 > 0) && (((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() > flat_tolerance) ) {
-      if ( (abs((ep_p-ep_b_p).normalized().dot(e1.normalized())) > 0.9995) || (abs((ep_p-ep_b_p).normalized().dot(e1.normalized()))>0.9995) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
-      if ( (edge_t < 0.05 ) || ( edge_t > 0.95) ) continue;
+      // Skip degenerate angles, where curve and edge are almost parallel
+      if ( (abs((ep_p-ep_b_p).normalized().dot(e1.normalized())) > 0.9995) ||
+           (abs((ep_f_p-ep_p).normalized().dot(e1.normalized())) > 0.9995) ) continue;
+      auto bp_dir = (ep_b_p-ep_p).normalized(); auto pf_dir = (ep_p-ep_f_p).normalized();
+      double curve_angle = acos( bp_dir.dot(pf_dir) );
+      double curvature = sin(curve_angle) / (ep_f_p - ep_b_p).norm();
+      // Skip degenerate osculating plane, where both curve segments have too similar direction
+      if ( curvature < 1e-5 ) continue;
       //if ( ((ep_p-ep_b_p).normalized().dot(e1.normalized()) < 0.1) || ((ep_p-ep_b_p).normalized().dot(e1.normalized())<0.1) ) {std::cout << "e_idx = " << e_idx << std::endl; continue;}
       if ( sign1*sign2 > 0) {
         is_folded = false;
         //cout << "Change!" << endl;
-
-        cout << "edge_t = " << edge_t << std::endl;
+        //cout << "Edge: "<<v1<<", "<<v2<<" on one submesh, "<<w1<<", "<<w2<<" on the other\n";
+        /*
         cout << "(ep_p-ep_b_p).norm() = " << (ep_p-ep_b_p).norm()  << std::endl;
         cout << "(ep_f_p-ep_p).norm() = " << (ep_f_p-ep_p).norm()  << std::endl;
         cout << "(ep_p-ep_b_p).normalized().dot(e1.normalized()) " << (ep_p-ep_b_p).normalized().dot(e1.normalized()) << std::endl;
@@ -491,6 +499,7 @@ bool DogSolver::is_folded() {
         cout << "(ep_p-ep_b_p).normalized().dot(e2.normalized()) " << (ep_p-ep_b_p).normalized().dot(e2.normalized()) << std::endl;
         cout << "(ep_f_p-ep_p).normalized().dot(e2.normalized()) " << (ep_f_p-ep_p).normalized().dot(e2.normalized()) << std::endl;
         std::cout << "((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() = " << ((ep_p-ep_b_p).cross(ep_f_p-ep_p)).norm() << endl;
+        */
         cout << "Curve = " << fold_curve_idx << ", e_idx = " << e_idx << ": sign1 = " << sign1 << " sign2 = " << sign2 << " sign1*sign2 = " << sign1*sign2 << endl;
 
         //cout << "The entire curve's length is " << foldingCurve.size() << endl;
