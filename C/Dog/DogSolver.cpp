@@ -959,7 +959,8 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
       p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
       p.paired_boundary_bending_weight, 0, 0, 0});
     double d0,d1;
-    coarse_solver->single_iteration_fold(d0,d1);
+    if(p.folding_mode) coarse_solver->single_iteration_fold(d0,d1);
+    else coarse_solver->single_iteration_normal(d0,d1);
 
     // update stitching constraint coordinates
     const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
@@ -1032,7 +1033,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 
     cout << "coarse solver does global iteration\n";
     double d0,d1;
-    coarse_solver->single_iteration_fold(d0,d1);
+    if(p.folding_mode) coarse_solver->single_iteration_fold(d0,d1);
+    else coarse_solver->single_iteration_normal(d0,d1);
 
     // update stitching constraint coordinates
     vector<Eigen::MatrixXd> target_coords(num_submeshes);
