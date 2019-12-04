@@ -25,10 +25,9 @@ public:
 	const vector< vector< vector<double> > >& getCurveOffsets() const {return ctf_curve_offsets;}
 	Eigen::MatrixXd getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const;
 
-	void print() const;
+	vector<int> getFineNeighboursOfCoarseOnly(int coarse) const;
 
-	//This one is deprecated
-	Eigen::RowVector3d get_fine_curve_approx(const Eigen::MatrixXd& V, int curve_idx, int ep_idx);
+	void print() const;
 
 	void InitSerialization() {
 		Add(ftc, std::string("fine_to_coarse"));
@@ -36,9 +35,9 @@ public:
     Add(ftc_edge, std::string("fine_to_coarse_edge"));
     Add(ftc_curve, std::string("fine_to_coarse_stitched_curves"));
     Add(ctf_curve, std::string("coarse_to_fine_stitched_curves"));
-		Add(ctf_curve_vertices, std::string("curve_interpolation_vertices"));
-		Add(ctf_curve_weights, std::string("curve_interpolation_weights"));
-		Add(ctf_curve_offsets, std::string("curve_offsets"));
+
+		Add(coarseonly_adjacent_links, std::string("CO_adjacent_links"));
+		Add(coarseonly_adjacent_fineonly, std::string("CO_adjacent_FOIs"));
   }
 
 private:
@@ -50,8 +49,8 @@ private:
 
 	vector< vector<int> > ftc_curve;
 	vector< vector<int> > ctf_curve;
-	vector< Eigen::MatrixXi > ctf_curve_vertices;
-	vector< Eigen::MatrixXd > ctf_curve_weights;
-
 	vector< vector< vector<double> > > ctf_curve_offsets;
+
+	vector< vector<int> > coarseonly_adjacent_links;//link indices from fine mesh
+	vector< vector<int> > coarseonly_adjacent_fineonly;
 };

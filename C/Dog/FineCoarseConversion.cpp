@@ -214,72 +214,6 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		}
 	}
 
-	//deprecated
-	// Preparing approximation of fine curve points using coarse ones
-	ctf_curve_vertices.resize(num_curves);
-	ctf_curve_weights.resize(num_curves);
-	for(int i=0; i<num_curves; ++i){
-		ctf_curve_vertices[i] = -1 * Eigen::MatrixXi::Ones(ftc_curve[i].size(), 3);
-		ctf_curve_weights[i] = Eigen::MatrixXd::Zero(ftc_curve[i].size(), 3);
-
-		int j_b = 0;//coarse point before
-		for(int j=0; j<ftc_curve[i].size(); ++j){
-			if(ftc_curve[i][j] == -1){
-				//This is an edge point with no coarse equivalent: Let's approximate it
-				// in the end it's a linear combination of three coarse vertices (that might be ... bad)
-				int vb1,vb2,va1,va2;//v1,v2 , before,after
-				vb1 = coarse_es.stitched_curves[i][j_b].edge.v1;
-				vb2 = coarse_es.stitched_curves[i][j_b].edge.v2;
-				va1 = coarse_es.stitched_curves[i][j_b+1].edge.v1;
-				va2 = coarse_es.stitched_curves[i][j_b+1].edge.v2;
-
-				// the target
-				Eigen::RowVector3d fine_p = fine_es.stitched_curves[i][j].getPositionInMesh(fine_V);
-				// to be expressed as a weighted sum of these
-				Eigen::RowVector3d p0 = coarse_V.row(vb1);
-				Eigen::RowVector3d p1 = coarse_V.row(vb2);
-				Eigen::RowVector3d p2 = coarse_V.row(va1);
-				Eigen::RowVector3d p3 = coarse_V.row(va2);
-
-				Eigen::VectorXi parts(4); parts << vb1, vb2, va1, va2;
-				Eigen::VectorXd weights(4);
-
-				//Quite possibly two of the vertices involved are the same
-				// if so, put one duplicate at the end
-				int eq_b = -1, eq_a = -1;
-				if(vb1==va1){ eq_b=0; eq_a=2; swap(p2, p3); swap(va1, va2);}
-				else if(vb1==va2){ eq_b=0; eq_a=3; }
-				else if(vb2==va1){ eq_b=1; eq_a=2; swap(p2, p3); swap(va1, va2);}
-				else if(vb2==va2){ eq_b=1; eq_a=3; }
-
- 				Eigen::VectorXd b(3); b << fine_p[0], fine_p[1], 1.0;
-				if(eq_b != -1){
-					Eigen::MatrixXd A(3,3);
-					A << p0[0], p1[0], p2[0],
-					     p0[1], p1[1], p2[1],
-							   1.0,   1.0,   1.0;
-					weights << A.householderQr().solve(b) , 0.0;
-				} else {
-					Eigen::MatrixXd A(3,4);
-					A << p0[0], p1[0], p2[0], p3[0],
-					     p0[1], p1[1], p2[1], p3[1],
-							   1.0,   1.0,   1.0,   1.0;
-					weights = A.householderQr().solve(b);
-				}
-//				cout << "ftc: vb1,vb2,va1,va2 are "<<vb1<<","<<vb2<<","<<va1<<","<<va2<<"\n";
-//				cout << " ftc ctf: ["<<i<<"]["<<j<<"] is "<<weights[0]<<", "<<weights[1]<<", "<<weights[2]<<", "<<weights[3]<<"\n";
-				ctf_curve_vertices[i].row(j) << vb1, vb2, va1;
-				ctf_curve_weights[i].row(j) << weights[0], weights[1], weights[2];
-			} else {
-				j_b = ftc_curve[i][j];
-				// Just use the corresponding coarse edge point
-				EdgePoint coarse_ep = coarse_es.stitched_curves[i][j_b];
-				ctf_curve_vertices[i].row(j) << coarse_ep.edge.v1 , coarse_ep.edge.v2, 0;
-				ctf_curve_weights[i].row(j) << coarse_ep.t, 1.0-coarse_ep.t, 0;
-			}
-		}
-	}
-
 	// Find curve offsets for interpolating from coarse curve
 	vector<SurfaceCurve> coarse_curves(coarse_es.stitched_curves.size());
 	for(int i=0; i<coarse_curves.size(); ++i)
@@ -316,10 +250,17 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	}
 
 
-	// Here comes fine_to_coarse_edge
+	// Here comes fine_to_coarse_edge plus data to update COARSEONLY later
+	coarseonly_adjacent_links.resize(ctf.size());
+	coarseonly_adjacent_fineonly.resize(ctf.size());
+	for(int i=0; i<ctf.size(); ++i){
+		coarseonly_adjacent_links[i].clear();
+		coarseonly_adjacent_fineonly[i].clear();
+	}
 	//get list of FINEONLY_I vertices
 	vector<int> I_vertex(0);
 	for(int i=0; i<ftc.size(); ++i) if(ftc(i) == FINEONLY_I) I_vertex.push_back(i);
+
 	for(int i=0; i<I_vertex.size(); ++i){
 		int u = I_vertex[i];
 		int first_link_nb = -1;
@@ -349,6 +290,10 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			Eigen::RowVector3d b = coarse_V.row(coarse_v);
 			double dot = (a-p).dot(b-p);
 			if (dot>0){
+				//add data for COARSEONLY update
+				coarseonly_adjacent_fineonly[coarse_v].push_back(u);
+				coarseonly_adjacent_links[coarse_v].push_back(first_link_nb);
+				//and the edge mapping as expected
 				int coarse_nb_2 = coarse_v;
 				if(coarse_nb_1 > coarse_nb_2) swap(coarse_nb_1, coarse_nb_2);
 				ftc_edge(u) = coarse_edge_to_row.at(pair<int,int>(coarse_nb_1, coarse_nb_2));
@@ -376,6 +321,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 }
 
 void FineCoarseConversion::print() const {
+	/*
 	int links = 0;
 	int fineonly = 0;
 	int coarseonly = 0;
@@ -401,6 +347,12 @@ void FineCoarseConversion::print() const {
 	}
 	cout << "From "<<ftc.size()<<" fine vertices and "<<ctf.size()<<" coarse vertices:\n";
 	cout << "There are "<<links<<" link vertices, "<<fineonly<<" fine-only and "<<coarseonly<<" coarse-only vertices.\n";
+	*/
+	for(int i=0; i<ftc_curve.size(); ++i){
+		for(int j=0;j<ftc_curve[i].size(); ++j){
+			cout << "ftc curve ["<<i<<"]["<<j<<"] = "<<ftc_curve[i][j]<<"\n";
+		}
+	}
 }
 
 int FineCoarseConversion::coarse_to_fine_curve(int curve_idx, int ep_idx) const {
@@ -420,4 +372,16 @@ Eigen::MatrixXd FineCoarseConversion::getInterpolatedCurveCoords(const Dog& fine
 	curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
 	Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, ctf_curve_offsets[curve_idx]);
 	return fine_coords;
+}
+
+vector<int> FineCoarseConversion::getFineNeighboursOfCoarseOnly(int coarse) const {
+	if(ctf(coarse) >= 0) cout << "Error: Not a coarse-only vertex\n";
+	vector<int> res(0);
+	//Resulting vector has 0-4 fine LINK vertices, each followed by a FINEONLY_I vertex
+	int n = coarseonly_adjacent_links[coarse].size();
+	for(int i=0; i<n; ++i){
+		res.push_back(coarseonly_adjacent_links[coarse][i]);
+		res.push_back(coarseonly_adjacent_fineonly[coarse][i]);
+	}
+	return res;
 }
