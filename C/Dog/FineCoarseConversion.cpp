@@ -14,11 +14,24 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	ctf = Eigen::VectorXi::Constant(coarse_V.rows(), -1);
 	ftc_edge = Eigen::VectorXi::Constant(fine_V.rows(), -1);
 
-	//Start by fixing vertex 0 to be the same in both Dogs
+	//Usually vertex 0 is the same in both Dogs
 	int fine_origin = 0; int coarse_origin = 0;
+	// sometimes it isn't
+	while( (fine_V.row(fine_origin) - coarse_V.row(coarse_origin) ).squaredNorm() > 0.0001
+			|| fine_dog.v_to_submesh_idx(fine_origin) != coarse_dog.v_to_submesh_idx(coarse_origin)){
+		++fine_origin;
+		if(fine_origin == fine_V.rows()){
+			fine_origin = 0;
+			++coarse_origin;
+			if(coarse_origin == coarse_V.rows()){
+				coarse_origin = 0;
+				cout << "Error: Couldn't find suitable origin for fine-to-coarse conversion\n";
+				break;
+			}
+		}
+	}
 	ftc(fine_origin) = coarse_origin;
 	ctf(coarse_origin) = fine_origin;
-	//TODO check that this is okay
 
 	// Need to know about vertices near the patch boundary in the flooding
 	int num_patches = fine_dog.get_submesh_n();
@@ -203,7 +216,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			if( (fine_p - coarse_p).squaredNorm() < 1e-5 ){
 				//These points have same coordinates, so they're assumed to be the same
 				ctf_curve[i][coarse_j] = fine_j;
-				cout << "ctf_curve "<<i<<" "<<coarse_j<<" of "<<ctf_curve[i].size()<<"   is now "<<fine_j<<"\n";
+				//cout << "ctf_curve "<<i<<" "<<coarse_j<<" of "<<ctf_curve[i].size()<<"   is now "<<fine_j<<"\n";
 				ftc_curve[i][fine_j] = coarse_j++;
 				if(coarse_j < coarse_es.stitched_curves[i].size())
 				  coarse_p = coarse_es.stitched_curves[i][coarse_j].getPositionInMesh(coarse_V);

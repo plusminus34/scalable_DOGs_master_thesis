@@ -35,7 +35,7 @@ public:
     Add(ftc_edge, std::string("fine_to_coarse_edge"));
     Add(ftc_curve, std::string("fine_to_coarse_stitched_curves"));
     Add(ctf_curve, std::string("coarse_to_fine_stitched_curves"));
-
+    Add(ctf_curve_offsets, std::string("coarse_to_fine_curve_offsets"));
 		Add(coarseonly_adjacent_links, std::string("CO_adjacent_links"));
 		Add(coarseonly_adjacent_fineonly, std::string("CO_adjacent_FOIs"));
   }
