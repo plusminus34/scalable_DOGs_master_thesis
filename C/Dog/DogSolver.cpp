@@ -379,7 +379,6 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       coarse_curves.resize(coarse_es.stitched_curves.size());
       for(int i=0; i<coarse_curves.size(); ++i)
         coarse_curves[i].edgePoints = coarse_es.stitched_curves[i];
-      update_coarse_adjust();
 
     } else {
       sub_dog.clear();
@@ -546,6 +545,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
     cout << "Error: Not folded" << endl;
     exit(1);
   }
+  //TODO coarse solver might need this with different parameters
   update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
     p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
     p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
@@ -954,9 +954,8 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
 
     cout << "coarse solver does global iteration\n";
     update_obj_weights({p.bending_weight, p.isometry_weight/coarse_dog.getQuadTopology().E.rows(),
-      p.stitching_weight * p.stitching_coarse_adjust, p.soft_pos_weight * p.softpos_coarse_adjust,
-      p.soft_pos_weight * p.softpos_coarse_adjust, p.pair_weight, p.dihedral_weight,
-      p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
       p.paired_boundary_bending_weight, 0, 0, 0});
     double d0,d1;
     if(p.folding_mode) coarse_solver->single_iteration_fold(d0,d1);
@@ -1003,7 +1002,6 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
 
     //update coarse mesh?
     //fine_to_coarse_update();
-    update_coarse_adjust();
 
     cout << "all subsolvers done\n";
   }
@@ -1026,9 +1024,8 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     objective = 0.0;
 
     update_obj_weights({p.bending_weight, p.isometry_weight/coarse_dog.getQuadTopology().E.rows(),
-      p.stitching_weight * p.stitching_coarse_adjust, p.soft_pos_weight * p.softpos_coarse_adjust,
-      p.soft_pos_weight * p.softpos_coarse_adjust, p.pair_weight, p.dihedral_weight,
-      p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
       p.paired_boundary_bending_weight, 0, 0, 0});
 
     cout << "coarse solver does global iteration\n";
@@ -1099,7 +1096,6 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     x = dog.getV_vector();
 
     //if(p.admm_gamma < -1) fine_to_coarse_update();//TODO something about this
-    update_coarse_adjust();
 
     cout << "all subsolvers done\n";
   }
@@ -1110,10 +1106,12 @@ void DogSolver::single_iteration_normal(double& constraints_deviation, double& o
   cout << "running a single optimization routine (normal)" << endl;
   x0 = x;
 
-  update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
-    p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
-    p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
-    p.paired_boundary_bending_weight, 0, 0, 0});
+  if(!is_subsolver()){
+    update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.paired_boundary_bending_weight, 0, 0, 0});
+  }
   newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
   dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -1231,6 +1229,7 @@ void DogSolver::update_obj_weights(const std::vector<double>& weights_i){
     for(int i=0; i<sub_dogsolver.size(); ++i){
       sub_dogsolver[i]->update_obj_weights(weights_i);
     }
+    coarse_solver->update_obj_weights(weights_i);
   }
 }
 
@@ -1325,19 +1324,15 @@ void DogSolver::fine_to_coarse_update(){
   Eigen::VectorXd new_V = coarse_dog.getV_vector();
 }
 
+double DogSolver::get_bending_obj_val() const {
+  return obj.bending.obj(x);
+}
+double DogSolver::get_isometry_obj_val() const {
+  return obj.isoObj.obj(x);
+}
 double DogSolver::get_pos_obj_val() const {
   return obj.pointsPosSoftConstraints.obj(x) + obj.edgePosSoftConstraints.obj(x);
 }
 double DogSolver::get_stitching_obj_val() const {
   return obj.stitchingConstraintsPenalty.obj(x);
-}
-
-void DogSolver::update_coarse_adjust(){
-  double c0, c1, f0, f1;
-  c0 = coarse_solver->get_pos_obj_val();
-  c1 = coarse_solver->get_stitching_obj_val();
-  f0 = get_pos_obj_val();
-  f1 = get_stitching_obj_val();
-  p.softpos_coarse_adjust = (c0 != 0.0 ? f0 / c0 : 1);
-  p.stitching_coarse_adjust = (c1 != 0.0 ? f1 / c1 : 1);
 }

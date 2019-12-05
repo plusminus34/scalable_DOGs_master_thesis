@@ -65,8 +65,6 @@ public:
 		bool flip_sign = false;
 		double admm_rho = 1;
 		double admm_gamma = 1;
-		double softpos_coarse_adjust = 1.0;
-		double stitching_coarse_adjust = 1.0;
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
@@ -87,8 +85,6 @@ public:
 			Add(flip_sign,std::string("flip_sign"));
 			Add(admm_rho, std::string("ADMM_rho"));
 			Add(admm_gamma, std::string("ADMM_gamma"));
-			Add(softpos_coarse_adjust, std::string("softpos_coarse_adjust"));
-			Add(stitching_coarse_adjust, std::string("stitching_coarse_adjust"));
 		}
 	};
 
@@ -139,8 +135,6 @@ public:
 	//for coarse
 	Dog& getCoarseDog(){return coarse_dog;}
 	FineCoarseConversion& getConversion(){return fine_coarse;}
-	double get_pos_obj_val() const;
-	double get_stitching_obj_val() const;
 
 	bool is_folded();
 	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
@@ -202,6 +196,10 @@ public:
 				//plus something for the serial mode
       	CompositeObjective compObj;
 	};
+	double get_bending_obj_val() const;
+	double get_isometry_obj_val() const;
+	double get_pos_obj_val() const;
+	double get_stitching_obj_val() const;
 
 private:
 
@@ -271,8 +269,6 @@ private:
 	Eigen::VectorXd coarse_bc;
 	vector<int> coarse_angle_idx;
 	void fine_to_coarse_update();
-	// adjust coarse weights to make results equal to fine ones
-	void update_coarse_adjust();
 
 	// Solvers
 	//NewtonKKT newtonKKT;
