@@ -593,7 +593,7 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
 void DogSolver::single_iteration_subsolvers(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (subsolvers)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -642,7 +642,7 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
 void DogSolver::single_iteration_ADMM(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (ADMM)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -731,7 +731,7 @@ void DogSolver::single_iteration_ADMM(double& constraints_deviation, double& obj
 void DogSolver::single_iteration_serial(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (serial)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -788,7 +788,7 @@ void DogSolver::single_iteration_serial(double& constraints_deviation, double& o
 void DogSolver::single_iteration_procrustes(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (procrustes)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -855,7 +855,7 @@ void DogSolver::single_iteration_procrustes(double& constraints_deviation, doubl
 void DogSolver::single_iteration_cheat_guess(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (global cheat iteration)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -939,7 +939,7 @@ void DogSolver::single_iteration_cheat_guess(double& constraints_deviation, doub
 void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (coarse guess)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -1011,7 +1011,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
 void DogSolver::single_iteration_experimental(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (experimental)" << endl;
 	x0 = x;
-  if(is_subsolver()){
+  if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -1105,8 +1105,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
 void DogSolver::single_iteration_normal(double& constraints_deviation, double& objective) {
   cout << "running a single optimization routine (normal)" << endl;
   x0 = x;
-
-  if(!is_subsolver()){
+  if(is_main_solver){
     update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
       p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
       p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
@@ -1225,7 +1224,7 @@ void DogSolver::remake_compobj(){
 
 void DogSolver::update_obj_weights(const std::vector<double>& weights_i){
   obj.compObj.update_weights(weights_i);
-  if(!is_subsolver()){
+  if(is_main_solver){
     for(int i=0; i<sub_dogsolver.size(); ++i){
       sub_dogsolver[i]->update_obj_weights(weights_i);
     }
@@ -1237,7 +1236,7 @@ void DogSolver::update_edge_angles(const std::vector<double> cos_angles_i) {
   if(cos_angles_i.size() == 0) return;
   constraints.edgeAngleConst.set_angles(cos_angles_i);
 
-  if(!is_subsolver()){
+  if(is_main_solver){
     int v_num = dog.get_v_num();
 
     for(int i=0; i<sub_dogsolver.size(); ++i){
