@@ -44,7 +44,7 @@ public:
 
 	enum SolverMode {mode_standard, mode_subsolvers, mode_vsadmm, mode_jadmm,
 		 mode_proxjadmm, mode_serial, mode_procrustes, mode_cheatguess,
-		 mode_coarseguess, mode_experimental};
+		 mode_coarseguess, mode_coarseprocrustes, mode_experimental};
 
 	struct Params : public igl::Serializable {
 		double bending_weight = 1.;
@@ -111,14 +111,16 @@ public:
 	bool is_subsolver(){return (mode != mode_standard && !is_main_solver);}
 
 	void single_iteration(double& constraints_deviation, double& objective);
+	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void single_iteration_fold(double& constraints_deviation, double& objective);
+
 	void single_iteration_subsolvers(double& constraints_deviation, double& objective);
 	void single_iteration_ADMM(double& constraints_deviation, double& objective);
-	void single_iteration_normal(double& constraints_deviation, double& objective);
 	void single_iteration_serial(double& constraints_deviation, double& objective);
 	void single_iteration_procrustes(double& constraints_deviation, double& objective);
 	void single_iteration_cheat_guess(double& constraints_deviation, double& objective);
 	void single_iteration_coarse_guess(double& constraints_deviation, double& objective);
+	void single_iteration_coarse_procrustes(double& constraints_deviation, double& objective);
 	void single_iteration_experimental(double& constraints_deviation, double& objective);
 
 	void update_edge_coords(Eigen::MatrixXd& edgeCoords) {constraints.edgePtConst.update_coords(edgeCoords);}
@@ -269,6 +271,14 @@ private:
 	Eigen::VectorXd coarse_bc;
 	vector<int> coarse_angle_idx;
 	void fine_to_coarse_update();
+
+	//Anderson Acceleration
+	int aa_m = 5;// number of previous iterations used
+	Eigen::VectorXd aa_x;// x as given by AA
+	Eigen::MatrixXd aa_dF, aa_dG;// steps between earlier F,G
+	Eigen::VectorXd aa_scale;//scale of dF?
+	Eigen::MatrixXd aa_M;// least squares thing
+	void anderson_acceleration();
 
 	// Solvers
 	//NewtonKKT newtonKKT;

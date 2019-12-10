@@ -235,7 +235,9 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Convergence threshold", &state.DC.p.convergence_threshold);
       ImGui::InputInt("Max Newton iterations", &state.DC.p.max_newton_iters);
       //ImGui::InputInt("Penalty repetitions", &state.DC.p.penalty_repetitions);
+      */
       ImGui::Checkbox("Folding mode", &state.DC.p.folding_mode);
+      /*
       ImGui::Checkbox("Flip M/V sign", &state.DC.p.flip_sign);
       ImGui::Checkbox("Render creases", &modelViewer.show_curves);
       ImGui::Checkbox("Show creases oscillating plane", &modelViewer.render_curved_folding_properties);
@@ -253,7 +255,7 @@ int main(int argc, char *argv[]) {
 //      ImGui::InputInt("Rulings modulo", &modelViewer.rulings_mod);
 //      ImGui::InputDouble("Rulings planar threshold", &modelViewer.rulings_planar_eps);
 
-      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Global guess (cheat)\0Global guess (coarse)\0Coarse guess+Procrustes - Experimental\0");
+      ImGui::Combo("Solver mode", (int *)(&state.DC.solver_mode), "Standard\0Subsolvers\0Variable Splitting ADMM\0Jacobian ADMM\0Proximal Jacobian ADMM\0Serial\0Serial 2-patch Procrustes\0Global guess (cheat)\0Global guess (coarse)\0Coarse guess + Procrustes\0Experimental\0");
       //ImGui::Checkbox("Use subsolvers", &TODOfindagoodplace); or use some dropdown menu
       if (ImGui::Button("Add test angle constraint", ImVec2(-1,0))) state.DC.add_test_angle();
       if (ImGui::Button("Reset timestep", ImVec2(-1,0))) {state.DC.deformation_timestep=0;}

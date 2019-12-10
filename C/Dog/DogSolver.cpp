@@ -386,6 +386,12 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       coarse_solver = nullptr;
     }
 
+  // Anderson Acceleration
+  aa_dF.resize(x.size(), aa_m);
+  aa_dG.resize(x.size(), aa_m);
+  aa_x = x;
+  aa_M.resize(aa_m, aa_m); aa_M.setZero();
+  aa_scale.resize(aa_m); aa_scale.setZero();
 }
 
 DogSolver::~DogSolver(){
@@ -528,6 +534,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
       single_iteration_cheat_guess(constraints_deviation, objective);
     } else if (mode == mode_coarseguess) {
       single_iteration_coarse_guess(constraints_deviation, objective);
+    } else if (mode == mode_coarseprocrustes) {
+      single_iteration_coarse_procrustes(constraints_deviation, objective);
     } else if (mode == mode_experimental) {
       single_iteration_experimental(constraints_deviation, objective);
     }
@@ -1008,13 +1016,12 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
   ++iter_i;
 }
 
-void DogSolver::single_iteration_experimental(double& constraints_deviation, double& objective) {
-	cout << "running a single optimization routine (experimental)" << endl;
+void DogSolver::single_iteration_coarse_procrustes(double& constraints_deviation, double& objective) {
+	cout << "running a single optimization routine (coarse + procrustes)" << endl;
 	x0 = x;
   if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
-
     constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
     objective = obj.compObj.obj(x);
   } else {
@@ -1039,7 +1046,7 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     for(int i=0; i<num_submeshes; ++i) target_coords[i].resize(proc_T[i].rows(), 3);
     const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
     for(int i=0; i<coarse_curves.size(); ++i){
-      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i);
+      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
 
       for(int j=0; j<fine_coords.rows(); ++j){
         int submesh_1 = curve_ep_to_sub_edgeCoords[i](j,0);
@@ -1048,11 +1055,102 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
         int k2 = curve_ep_to_sub_edgeCoords[i](j,3);
 
         target_coords[submesh_1].row(row_i[submesh_1]++) =
-         sub_edgeCoords[submesh_1].row(k1) =
-         fine_coords.row(j) /0.5;//coarse scale
+         sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
         target_coords[submesh_2].row(row_i[submesh_2]++) =
-         sub_edgeCoords[submesh_2].row(k2) =
-         fine_coords.row(j) /0.5;//coarse scale
+         sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
+      }
+    }
+
+    update_obj_weights({p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
+      p.stitching_weight, p.soft_pos_weight, 0.5*p.stitching_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.paired_boundary_bending_weight, 0, 0, 0});
+
+    //solve on submeshes
+    for(int i=0; i<num_submeshes; ++i){
+      cout << "subsolver " << i << " does single iteration\n";
+
+      Eigen::MatrixXd target_Vt = target_coords[i];
+
+      Eigen::MatrixXd Vi = sub_dog[i]->getV();
+      Eigen::MatrixXd source_Vt = proc_T[i] * Vi;
+
+      Eigen::MatrixXd R;
+      Eigen::VectorXd t;
+      double scale;
+      //                                   scale, reflect
+      igl::procrustes(source_Vt, target_Vt, false,false, scale,R,t);
+      //double alpha=p.admm_gamma;
+      Vi = (Vi /* scale*/ * R).rowwise() + t.transpose();
+      sub_dog[i]->update_V(Vi);
+      sub_dogsolver[i]->set_opt_vars(sub_dog[i]->getV_vector());
+
+      sub_dogsolver[i]->update_edge_coords(sub_edgeCoords[i]);
+      double sub_cd = constraints_deviation;
+      double sub_obj = objective;
+      sub_dogsolver[i]->single_iteration_coarse_procrustes(sub_cd, sub_obj);
+      constraints_deviation += sub_cd;
+      objective += sub_obj;
+
+      cout << " subsolver " << i << " done\n";
+    }
+    //propagate local solutions to global dog
+    for(int i=0; i<num_submeshes; ++i){
+      dog.update_submesh_V(i, sub_dog[i]->getV());
+    }
+    x = dog.getV_vector();
+
+    //if(p.admm_gamma < -1) fine_to_coarse_update();//TODO something about this
+
+    cout << "all subsolvers done\n";
+  }
+  ++iter_i;
+}
+
+void DogSolver::single_iteration_experimental(double& constraints_deviation, double& objective) {
+	cout << "running a single optimization routine (experimental)" << endl;
+	x0 = x;
+  if(!is_main_solver){
+    newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
+    dog.update_V_vector(x.head(3*dog.get_v_num()));
+
+    constraints_deviation = constraints.compConst.Vals(x).squaredNorm();
+    objective = obj.compObj.obj(x);
+  } else {
+    cout << " with subsolvers\n";
+    int num_submeshes = dog.get_submesh_n();
+    constraints_deviation = 0.0;
+    objective = 0.0;
+
+    update_obj_weights({p.bending_weight, p.isometry_weight/coarse_dog.getQuadTopology().E.rows(),
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.paired_boundary_bending_weight, 0, 0, 0});
+
+    cout << "coarse solver does global iteration\n";
+    double d0,d1;
+    if(p.folding_mode) coarse_solver->single_iteration_fold(d0,d1);
+    else coarse_solver->single_iteration_normal(d0,d1);
+    coarse_solver->anderson_acceleration();
+
+    // update stitching constraint coordinates
+    vector<Eigen::MatrixXd> target_coords(num_submeshes);
+    vector<int> row_i(num_submeshes, 0);
+    for(int i=0; i<num_submeshes; ++i) target_coords[i].resize(proc_T[i].rows(), 3);
+    const Eigen::MatrixXd& coarse_V = coarse_solver->getDog().getV();
+    for(int i=0; i<coarse_curves.size(); ++i){
+      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
+
+      for(int j=0; j<fine_coords.rows(); ++j){
+        int submesh_1 = curve_ep_to_sub_edgeCoords[i](j,0);
+        int k1 = curve_ep_to_sub_edgeCoords[i](j,1);
+        int submesh_2 = curve_ep_to_sub_edgeCoords[i](j,2);
+        int k2 = curve_ep_to_sub_edgeCoords[i](j,3);
+
+        target_coords[submesh_1].row(row_i[submesh_1]++) =
+         sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
+        target_coords[submesh_2].row(row_i[submesh_2]++) =
+         sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
       }
     }
 
@@ -1095,7 +1193,6 @@ void DogSolver::single_iteration_experimental(double& constraints_deviation, dou
     }
     x = dog.getV_vector();
 
-    //if(p.admm_gamma < -1) fine_to_coarse_update();//TODO something about this
 
     cout << "all subsolvers done\n";
   }
@@ -1334,4 +1431,97 @@ double DogSolver::get_pos_obj_val() const {
 }
 double DogSolver::get_stitching_obj_val() const {
   return obj.stitchingConstraintsPenalty.obj(x);
+}
+
+void DogSolver::anderson_acceleration(){
+  //and now comes Anderson Acceleration
+  Eigen::VectorXd aa_G = x;
+  Eigen::VectorXd aa_F = aa_G - aa_x;
+  if(iter_i == 1){
+    // iteration 0 (or 1, because it's increased earlier apparently)
+    aa_dF.col(0) = -aa_F;
+    aa_dG.col(0) = -aa_G;
+    aa_x = aa_G;
+  } else {
+    // later iterations
+    int col_idx = (iter_i+ aa_m-2) % aa_m;
+    cout << "aa iteration "<<iter_i <<" uses col "<<col_idx<<"\n";
+    aa_dF.col(col_idx) += aa_F;
+    aa_dG.col(col_idx) += aa_G;
+    double eps = 1e-10;
+
+    double scale = aa_dF.col(col_idx).norm();
+    if(scale < eps){cout << "aa scale is "<<scale<<"\tyeah, that's gonna be a problem\n";scale=eps;}
+    aa_dF.col(col_idx) /= scale;
+    aa_scale(col_idx) = scale;
+
+    int m = std::min(aa_m, iter_i-1);
+
+    Eigen::VectorXd thetas(m); thetas.setZero();
+    if (m == 1) {
+      //iteration 1
+      aa_M(0, 0) = aa_dF.col(0).squaredNorm();//=1 it seems
+      //cout << "aa_M 00: "<<aa_M(0,0)<<endl;
+      //if(aa_scale(col_idx)>eps) thetas(0) = aa_dF.col(col_idx).dot(aa_F);
+      //cout << "aa dfcol 0: "<<aa_dF.col(0).norm()<<endl;
+      //cout << "aa F: "<<aa_F.norm()<<endl;
+      thetas(0) = aa_dF.col(0).dot(aa_F);
+      //cout << "aa thetas 0: "<<thetas(0)<<"\n";
+    } else {
+      //normal case
+      Eigen::VectorXd new_col = (aa_dF.col(col_idx).transpose() * aa_dF.block(0, 0, x.size(), m)).transpose();
+      cout << " aa newcol "<<new_col.transpose()<<"\n";
+      aa_M.block(col_idx, 0, 1, m) = new_col.transpose();
+      aa_M.block(0, col_idx, m, 1) = new_col;
+
+      //Eigen::MatrixXd A = aa_M.block(0, 0, m, m);
+      //Eigen::MatrixXd b = aa_dF.block(0, 0, x.size(), m).transpose() * aa_F;
+
+      // Solve normal equation
+      //Eigen::CompleteOrthogonalDecomposition<Eigen::MatrixXd> cod;//TODO why is this not working?
+      //Eigen::ColPivHouseholderQR<Eigen::MatrixXd> ls_solver;
+      //ls_solver.compute(A);//.compute(M)?
+      //thetas.head(m) = ls_solver.solve(b);
+      //thetas = aa_M.block(0, 0, m, m).colPivHouseholderQr().solve(aa_dF.block(0, 0, x.size(), m).transpose() * aa_F);
+      //cout << "aa_dF size "<<aa_dF.rows()<<" x "<<aa_dF.cols()<<"\n";
+      //cout << "aa_F size "<<aa_F.size()<<" and btw m="<<m<<"\n";
+      //cout << "aa A size "<<A.rows()<<" x "<<A.cols()<<"\n";
+      //Eigen::MatrixXd A = aa_dF.block(0,0,aa_dF.rows(),m);
+
+      //Eigen::ColPivHouseholderQR<Eigen::MatrixXd> ls_solver;
+      //ls_solver.compute(A.transpose()*A);
+      //thetas = ls_solver.solve(A.transpose()*aa_F);
+      //thetas = (A.transpose()*A).ldlt().solve(A.transpose()*aa_F);//best result yet
+      thetas = (aa_M.block(0, 0, m, m)*aa_M.block(0, 0, m, m)).colPivHouseholderQr().solve(aa_M.block(0, 0, m, m)*aa_F);
+
+      //thetas = (A.transpose()*A).ldlt().solve(b);
+    }
+    // and a result
+    cout << "aa thetas "<<thetas.transpose()<<"\n";
+
+    aa_x = aa_G - aa_dG.block(0, 0, x.size(), m)
+                * ((thetas.head(m).array() / aa_scale.head(m).array())
+                    .matrix());
+
+    //aa_x = aa_G - thetas*aa_dG.block(0,0,aa_dG.rows(),m);
+
+    int next_col_idx = (col_idx+1) % aa_m;
+    aa_dF.col(next_col_idx) = -aa_F;
+    aa_dG.col(next_col_idx) = -aa_G;
+    //cout << "aa_G "<<aa_G.size()<<"   "<<aa_G.norm()<<"\n";
+    //cout << "aa_dG "<<aa_dG.rows()<<" x "<<aa_dG.cols()<<"\n";
+    //cout << "thetas "<<thetas<<"\n";
+    //cout << "aa_scale "<<aa_scale.transpose()<<"\n";
+    //cout << "aa_x "<<aa_x.head(7).transpose()<<"\n";
+  }
+  double glob_obj = obj.compObj.obj(x);
+  double aa_obj = obj.compObj.obj(aa_x);
+  cout << "Obj comparison "<<glob_obj<<" <-global  aa-> "<<aa_obj<<endl;
+  if(aa_obj < glob_obj){
+    cout << "  yaaay\n";
+    x = aa_x;
+    dog.update_V_vector(x);
+  } else {
+    aa_x = x;
+  }
 }
