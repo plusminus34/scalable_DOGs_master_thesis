@@ -62,13 +62,14 @@ void ModelState::init_from_svg(const std::string& svg_path, int x_res, int y_res
 
 	CreasePattern creasePattern(bbox, polylines, border_polylines, x_res, y_res);
 	dog = dog_from_crease_pattern(creasePattern);
-
+/*
   if(x_res%2 == 0 || y_res%2 == 0) cout << "Warning: Resolution should really be odd\n";
 	int x_res_coarse = (x_res + 1) / 2;
 	int y_res_coarse = (y_res + 1) / 2;
 	CreasePattern coarse_creasePattern(bbox, polylines, border_polylines, x_res_coarse, y_res_coarse);
 	coarse_dog = dog_from_crease_pattern(coarse_creasePattern);
-	conversion = FineCoarseConversion(dog, coarse_dog);
+	conversion = FineCoarseConversion(dog, coarse_dog);*/
+	coarse_dog = conversion.init_from_fine_dog(dog);
 
 	cp_bb_x_min = bbox.xmin();
 	cp_bb_x_max = bbox.xmax();
