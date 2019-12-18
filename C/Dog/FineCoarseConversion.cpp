@@ -583,9 +583,14 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 		for(int j=0; j<fine_coords.rows(); ++j)
 			fine_coords.row(j) = fine_es.stitched_curves[i][j].getPositionInMesh(fine_V);
 		//actual offset computation
+		/*
 		for(int coarse_j=0; coarse_j < entire_coarse_curve_i[i].size()-1; ++coarse_j){
 			int fine_begin = entire_coarse_curve_i[i][coarse_j];
 			int fine_end = entire_coarse_curve_i[i][coarse_j+1];
+			*/
+		for(int coarse_j=0; coarse_j < coarse_es.stitched_curves[i].size()-1; ++coarse_j){
+			int fine_begin = ctf_curve[i][coarse_j];
+			int fine_end = ctf_curve[i][coarse_j+1];
 			if(fine_begin < fine_end){
 				int n_steps = fine_end - fine_begin;
 				vector<double> sum_len(n_steps);
@@ -623,14 +628,13 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 	}
 
 	cout << "Ready to build coarse_dog\n";
-	Dog coarse_dog(coarse_V, coarse_F, coarse_es, coarse_V, coarse_F_ren,
+	/*Dog coarse_dog(coarse_V, coarse_F, coarse_es, coarse_V, coarse_F_ren,
 		coarse_submeshVSize, coarse_submeshFSize, submesh_adjacency);
 	getInterpolatedCurveCoords(fine_dog,coarse_dog,0);
 	return coarse_dog;
-	/*
+	*/
 	return Dog(coarse_V, coarse_F, coarse_es, coarse_V, coarse_F_ren,
 		coarse_submeshVSize, coarse_submeshFSize, submesh_adjacency);
-		*/
 }
 
 void FineCoarseConversion::print() const {
@@ -671,15 +675,19 @@ void FineCoarseConversion::print() const {
 Eigen::MatrixXd FineCoarseConversion::getCoarseCurveCoords(const Dog& coarse_dog, int curve_idx) const {
 	const DogEdgeStitching& es = coarse_dog.getEdgeStitching();
 	const Eigen::MatrixXd& V = coarse_dog.getV();
-	Eigen::MatrixXd coarse_coords(entire_coarse_curve_i[curve_idx].size(), 3);
+	//Eigen::MatrixXd coarse_coords(entire_coarse_curve_i[curve_idx].size(), 3);
+	Eigen::MatrixXd coarse_coords(es.stitched_curves[curve_idx].size(), 3);
 	coarse_coords.setZero();
 	for(int i=0; i<coarse_coords.rows(); ++i){
+		coarse_coords.row(i) = es.stitched_curves[curve_idx][i].getPositionInMesh(V);
+		/*
 		int row = entire_coarse_curve_i[curve_idx][i];
 			for(int j=0; j<4; ++j){
 			double weight = entire_coarse_curve_w[curve_idx](row,j);
 			if(weight>0)
 				coarse_coords.row(i) += weight * V.row(entire_coarse_curve_v[curve_idx](row,j));
 		}
+		*/
 	}
 	return coarse_coords;
 }

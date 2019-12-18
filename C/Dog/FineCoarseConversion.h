@@ -32,7 +32,7 @@ public:
 	//Maps certain fine-only points to an edge in the coarse Dog
 	int fine_to_coarse_edge(int fine) const {return ftc_edge(fine);}
 
-	//int coarse_to_fine_curve(int curve_idx, int ep_idx) const {return ctf_curve[curve_idx][ep_idx];}
+	int coarse_to_fine_curve(int curve_idx, int ep_idx) const {return ctf_curve[curve_idx][ep_idx];}
 	//const vector< vector< vector<double> > >& getCurveOffsets() const {return ctf_curve_offsets;}
 	Eigen::MatrixXd getCoarseCurveCoords(const Dog& coarse_dog, int curve_idx) const;
 	Eigen::MatrixXd getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const;

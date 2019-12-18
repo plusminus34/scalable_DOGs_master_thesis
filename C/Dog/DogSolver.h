@@ -137,6 +137,7 @@ public:
 	//for coarse
 	Dog& getCoarseDog(){return coarse_dog;}
 	FineCoarseConversion& getConversion(){return fine_coarse;}
+	void use_sub_edgepoint_constraint(int i, bool val){constraints.edgePtConst.set_enabled(i,val);}
 
 	bool is_folded();
 	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
@@ -274,6 +275,7 @@ private:
 	vector<vector<int>> coarse_angle_vertices;//coarse_angle_vertices[i] is {v1,v2, w1,w2}
 	vector<vector<double>> coarse_angle_t;//coarse_angle_t is {t_v, t_w}
 	void update_sub_w_coords_from_coarse();
+	vector<int> skipped_pts, truncated_pts;
 
 	//Anderson Acceleration
 	int aa_m = 5;// number of previous iterations used

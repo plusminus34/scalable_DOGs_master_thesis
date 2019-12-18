@@ -101,6 +101,16 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         constrained_edge_points[i].clear();
         corresponding_edge_points[i].clear();
       }
+      int num_curves = edgeStitching.stitched_curves.size();
+      skipped_pts.resize(num_curves);
+      truncated_pts.resize(num_curves);
+      for(int i=0; i<num_curves;++i){
+        int finetotal = edgeStitching.stitched_curves[i].size();
+        skipped_pts[i] = fine_coarse.coarse_to_fine_curve(i,0);
+        int coarse_end = coarse_es.stitched_curves[i].size()-1;
+        truncated_pts[i] = finetotal - fine_coarse.coarse_to_fine_curve(i,coarse_end) - 1;
+        cout << "sub "<<i<<" skip "<<skipped_pts[i]<<" trunc "<<truncated_pts[i]<<endl;
+      }
 
       for(int i=0; i<edgeStitching.edge_coordinates.size(); ++i){
         int v1 = edgeStitching.edge_const_1[i].v1;
@@ -121,7 +131,10 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
 
       // initialize sub_edgeCoords and curve_ep_to_sub_edgeCoords
       for(int i=0; i<num_submeshes; ++i) {
-        sub_edgeCoords[i] = Eigen::MatrixXd(constrained_edge_points[i].size(), 3);
+        sub_edgeCoords[i].resize(constrained_edge_points[i].size(), 3);
+        sub_edgeCoords[i].setConstant(-42);
+        cout << "here at init sub_edgeCoords "<<i<<" have size "<<sub_edgeCoords[i].size()<<" and rows "<<sub_edgeCoords[i].rows()<<endl;
+        cout << "  sub_edgeCoords made from "<<skipped_pts[i]<<" skip and trunc "<<truncated_pts[i]<<endl;
       }
       curve_ep_to_sub_edgeCoords.resize(edgeStitching.stitched_curves.size());
       for(int i=0; i<edgeStitching.stitched_curves.size(); ++i){
@@ -153,7 +166,6 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
           }
         }
       }
-cout << "meme sub_edgeCoords[0] have "<<sub_edgeCoords[0].size()<<endl;
       is_constrained = (is_constrained || edgeStitching.edge_coordinates.size()>0);
 
       std::vector< Eigen::SparseMatrix<double> > sub_admm_A(num_submeshes);
@@ -306,6 +318,19 @@ cout << "meme sub_edgeCoords[0] have "<<sub_edgeCoords[0].size()<<endl;
         I_i.setIdentity(); I_i *= 0.1*(num_submeshes-1) *0.01;
         sub_dogsolver[i]->build_ProximalObjective(I_i);
         sub_dogsolver[i]->remake_compobj();
+
+        //TODO not just for 1 curve
+        cout << "eee\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(0, false);cout<<"0done\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(1, false);cout<<"1done\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(2, false);cout<<"2done\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(24, false);cout<<"24done\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(25, false);cout<<"25done\n";
+        sub_dogsolver[i]->use_sub_edgepoint_constraint(26, false);cout<<"26done\n";
+        cout << "sub_edgeCoords "<<i<<" has size "<<sub_edgeCoords[i].size()<<" and rows "<<sub_edgeCoords[i].rows()<<endl;
+        /*for(int j=0;j<sub_edgeCoords[i].rows();++j){
+          cout << "subedge "<<j<<": "<<sub_edgeCoords[i].row(j)<<endl;
+        }*/
         cout << " constructed subsolver "<<i<<endl;
       }
 
@@ -422,11 +447,8 @@ cout << "meme sub_edgeCoords[0] have "<<sub_edgeCoords[0].size()<<endl;
       cout << "go\n";
       for(int i=0; i<coarse_curves.size(); ++i)
         coarse_curves[i].edgePoints = coarse_es.stitched_curves[i];
-        cout<<"main solver done\n";
 
-        for(int i=0;i<edgeStitching.stitched_curves[0].size();++i){
-          cout << "edg init "<<i<<" "<<edgeStitching.stitched_curves[0][i].getPositionInMesh(dog.getV())<<endl;
-        }
+        cout<<"main solver done\n";
 
     } else {
       sub_dog.clear();
@@ -601,7 +623,6 @@ void DogSolver::single_iteration_fold(double& constraints_deviation, double& obj
     cout << "Error: Not folded" << endl;
     exit(1);
   }
-  //TODO coarse solver might need this with different parameters
   update_obj_weights({p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
     p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
     p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
@@ -1023,9 +1044,9 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
       Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
       for(int j=0; j<fine_coords.rows(); ++j){
         int submesh_1 = curve_ep_to_sub_edgeCoords[i](j,0);
-        int k1 = curve_ep_to_sub_edgeCoords[i](j,1);
+        int k1 = curve_ep_to_sub_edgeCoords[i](j,1)-3;//TODO that -3 is a problem
         int submesh_2 = curve_ep_to_sub_edgeCoords[i](j,2);
-        int k2 = curve_ep_to_sub_edgeCoords[i](j,3);
+        int k2 = curve_ep_to_sub_edgeCoords[i](j,3)-3;
 
         sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
         cout << "subedg "<<k1<<" to "<<sub_edgeCoords[submesh_1].row(k1)<<endl;
@@ -1041,6 +1062,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){
       cout << "subsolver " << i << " does single iteration\n";
+      cout << "sub edgeCoords "<<i<<" has size "<<sub_edgeCoords[i].size()<<endl;
       sub_dogsolver[i]->update_edge_coords(sub_edgeCoords[i]);
       double sub_cd = constraints_deviation;
       double sub_obj = objective;
