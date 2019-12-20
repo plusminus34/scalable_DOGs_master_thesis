@@ -69,7 +69,7 @@ public:
 				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v1, 0);
 				IJV[ijv_cnt++] = Eigen::Triplet<double>(const_row, v2, 0);
 				IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vnum+v1, 0);
-				IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vnum+v2, 1-t);
+				IJV[ijv_cnt++] = Eigen::Triplet<double>(edge_points_n+const_row, vnum+v2, 0);
 				IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vnum+v1, 0);
 				IJV[ijv_cnt++] = Eigen::Triplet<double>(2*edge_points_n+const_row, 2*vnum+v2, 0);
 			}

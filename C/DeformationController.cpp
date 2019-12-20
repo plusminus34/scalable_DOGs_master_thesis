@@ -29,11 +29,11 @@ void DeformationController::init_from_new_dog(Dog& dog, Dog& coarse_dog, FineCoa
 	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p, b, bc, edgePoints,
 		    edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
 				mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
-
 	//std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
+	positionalConstraintsBuilder = new PositionalConstraintsBuilder(*globalDog, deformation_timestep);
 }
 
 bool DeformationController::has_constraints() {
@@ -66,26 +66,24 @@ void DeformationController::single_optimization() {
 	if (has_new_constraints) reset_dog_solver();
 	if (is_curve_constraint) update_edge_curve_constraints();
 	update_dihedral_constraints();
+	positionalConstraintsBuilder->get_constraint_positions(bc);
 	dogSolver->set_solver_mode(solver_mode);
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
-
 	Eigen::VectorXd data_i;
 	if(current_iteration < stored_iterations) data_i = dogSolver->get_obj_parts();
 	dogSolver->single_iteration(constraints_deviation, objective);
-
 	if(current_iteration < stored_iterations){
-		obj_data.block(current_iteration,0, 1,3) << data_i[0], data_i[1], data_i[2];
+		obj_data.block(current_iteration,0, 1, 3) << data_i[0], data_i[1], data_i[2];
 		if(current_iteration+1 < stored_iterations){
-			obj_data(current_iteration+1,3) = constraints_deviation;
-			obj_data(current_iteration+1,4) = objective;
+			obj_data(current_iteration + 1, 3) = constraints_deviation;
+			obj_data(current_iteration + 1, 4) = objective;
 		}
 	}
 	if(current_iteration == stored_iterations - 1){
 		write_output_file();
 	}
 	++current_iteration;
-
 }
 
 void DeformationController::apply_new_editor_constraint() {
@@ -191,11 +189,23 @@ void DeformationController::add_positional_constraints(const Eigen::VectorXi& ne
 	Eigen::VectorXi old_b = b; Eigen::VectorXd old_bc = bc;
 	b.resize(old_b.rows()+new_b.rows()); bc.resize(b.rows());
 	if (old_b.rows()) {
-		b << old_b,new_b; bc << old_bc,new_bc;
+		//rebuild b,bc s.t. b is sorted
+		int oi=0;
+		int ni=0;
+		for(int i=0; i<b.size(); ++i){
+			bool have_old = (oi<old_b.size());
+			bool have_new = (ni<new_b.size());
+			if( have_new && (!have_old || new_b[ni] < old_b[oi]) ){
+				b[i] = new_b[ni];
+				bc[i] = new_bc[ni++];
+			} else if( have_old && (!have_new || new_b[ni] >= old_b[oi]) ){
+				b[i] = old_b[oi];
+				bc[i] = old_bc[oi++];
+			} else {cout << "Error: Something went terribly wrong while adding new positional constraints\n";}
+		}
 	} else {
 		b = new_b; bc = new_bc; // Eigen's concatenate crashes if one of them is empty
 	}
-
 	has_new_constraints = true;
 }
 
@@ -348,11 +358,43 @@ void DeformationController::write_output_file(){
 }
 
 void DeformationController::add_test_angle(){
+	// for 1_curve
 	Edge test_edge(143,153);
 	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(test_edge, 0.464063), src_dihedral_angle, dst_dihedral_angle);
 	foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
 	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
 	dihedral_constrained.push_back(dogEditor->picked_edge);
+	/* parallel_curves_4
+	Edge edge1(52,73), edge2(207,228);
+	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(edge1, 0.5), src_dihedral_angle, dst_dihedral_angle);
+	foldingDihedralAngleConstraintsBuilder->add_constraint(EdgePoint(edge2, 0.5), src_dihedral_angle, dst_dihedral_angle);
+	foldingDihedralAngleConstraintsBuilder->get_edge_angle_pairs(edge_angle_pairs);
+	foldingDihedralAngleConstraintsBuilder->get_edge_angle_constraints(edge_cos_angles);
+	dihedral_constrained.push_back(dogEditor->picked_edge);
+	*/
+	is_time_dependent_deformation = true;
+	has_new_constraints = true;
+	reset_new_editor_constraint();
+}
+
+void DeformationController::add_test_position(){
+	// for 1_curve
+	int v_num = globalDog->get_v_num();
+	int v_a = 0, v_b = 2, v_c = 494;
+	Eigen::RowVector3d from_pos_a(globalDog->getV().row(v_a));
+	Eigen::RowVector3d from_pos_b(globalDog->getV().row(v_b));
+	Eigen::RowVector3d from_pos_c(globalDog->getV().row(v_c));
+	Eigen::RowVector3d to_pos_c; to_pos_c << 16.1452, -2.98356, 0.366968;
+	positionalConstraintsBuilder->add_constraint(b.size()/3, from_pos_a, from_pos_a);
+	positionalConstraintsBuilder->add_constraint(b.size()/3+1, from_pos_b, from_pos_b);
+	positionalConstraintsBuilder->add_constraint(b.size()/3+2, from_pos_c, to_pos_c);
+	Eigen::VectorXi new_b(9); new_b << v_a, v_b, v_c,
+	 																		v_a + v_num, v_b + v_num, v_c + v_num,
+																			v_a + 2*v_num, v_b + 2*v_num, v_c + 2*v_num;
+	Eigen::VectorXd new_bc(9); new_bc << from_pos_a(0), from_pos_b(0), from_pos_c(0),
+																			 from_pos_a(1), from_pos_b(1), from_pos_c(1),
+																		   from_pos_a(2), from_pos_b(2), from_pos_c(2);
+	add_positional_constraints(new_b, new_bc);
 	is_time_dependent_deformation = true;
 	has_new_constraints = true;
 	reset_new_editor_constraint();

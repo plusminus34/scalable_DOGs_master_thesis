@@ -6,6 +6,7 @@
 #include "Dog/Objectives/CurveInterpolationConstraintsBuilder.h"
 #include "Dog/Objectives/FoldingDihedralAngleConstraintsBuilder.h"
 #include "Dog/Objectives/MVFoldingDihedralAngleConstraintsBuilder.h"
+#include "Dog/Objectives/PositionalConstraintsBuilder.h"
 #include "Gui/DogEditor.h"
 
 enum DisplayMode {display_default, display_coarse, display_submesh};
@@ -40,6 +41,7 @@ public:
 	void set_wallpaper_constraints();
 
 	void add_test_angle();
+	void add_test_position();
 
 	void reset_constraints();
 	bool is_folded();
@@ -86,7 +88,7 @@ public:
 
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
-	DogSolver::SolverMode solver_mode = DogSolver::mode_experimental;
+	DogSolver::SolverMode solver_mode = DogSolver::mode_coarseguess;
 	DisplayMode display_mode = display_default;
 
 	int deformed_curve_idx = 0;
@@ -156,6 +158,7 @@ private:
 	CurveInterpolationConstraintsBuilder* curveConstraintsBuilder;
 	FoldingDihedralAngleConstraintsBuilder* foldingDihedralAngleConstraintsBuilder;
 	MVFoldingDihedralAngleConstraintsBuilder* mvFoldingDihedralAngleConstraintsBuilder;
+	PositionalConstraintsBuilder* positionalConstraintsBuilder;
 
 	bool optimization_measurements;
 	std::ofstream* opt_measurements_log;
