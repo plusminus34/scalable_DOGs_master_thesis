@@ -315,7 +315,6 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 }
 
 Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
-	//TODO do this
 	const int fine_v_num = fine_dog.get_v_num();
 	const DogEdgeStitching& fine_es = fine_dog.getEdgeStitching();
 	const Eigen::MatrixXd& fine_V = fine_dog.getV();
@@ -365,16 +364,12 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 	}
 	// ctf_curve_offsets come later
 	DogEdgeStitching coarse_es;
-	vector<int> coarse_submeshVSize(num_submeshes, 0);
-	vector<int> coarse_submeshFSize(num_submeshes, 0);
-	vector<vector<int>> submesh_adjacency = fine_dog.get_submesh_adjacency();
 
 	//use something as origin
 	int fine_origin = 0;
 	for(int i=0;i<fine_v_num;++i){
 		if(fine_vv[i].size()==2&&fine_duplicates[i].size()==0){fine_origin=i;break;}
 	}
-	cout <<"origin: "<<fine_origin<<endl;
 	//Spread out from the origin
 	// Each fine quad has a LINK vertex, two FINEONLY_I and one FINEONLY_X
 	fine_label[fine_origin] = LINK;
@@ -427,11 +422,9 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 			ftc(i) = coarse_i;
 			ctf(coarse_i) = i;
 			coarse_V.row(coarse_i++) = fine_V.row(i);
-			++coarse_submeshVSize[fine_dog.v_to_submesh_idx(i)];
 		} else if (fine_label[i] == FINEONLY_X){
 			if(fine_qt.VF[i].size() == 4) {
 				coarse_quad_centers.push_back(i);
-				++coarse_submeshFSize[fine_dog.v_to_submesh_idx(i)];
 			}
 		}
 	}
@@ -619,8 +612,6 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 		cout << "ftc curve and its edgp is "<<ep.edge.v1<<" - "<<ep.edge.v2 <<"    t="<<ep.t<<endl;
 	}
 
-	//Eigen::MatrixXd coarse_V_ren = coarse_V;
-	Eigen::MatrixXi coarse_F_ren = Fsqr_to_F(coarse_F);
 	coarse_es.edge_coordinates_precise.clear();
 	for(int i=0; i<ftc.size(); ++i){
 		if (fine_label[i]== FINEONLY_I) ftc(i)=FINEONLY_I;
@@ -628,13 +619,7 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 	}
 
 	cout << "Ready to build coarse_dog\n";
-	/*Dog coarse_dog(coarse_V, coarse_F, coarse_es, coarse_V, coarse_F_ren,
-		coarse_submeshVSize, coarse_submeshFSize, submesh_adjacency);
-	getInterpolatedCurveCoords(fine_dog,coarse_dog,0);
-	return coarse_dog;
-	*/
-	return Dog(coarse_V, coarse_F, coarse_es, coarse_V, coarse_F_ren,
-		coarse_submeshVSize, coarse_submeshFSize, submesh_adjacency);
+	return Dog(coarse_V, coarse_F, coarse_es);
 }
 
 void FineCoarseConversion::print() const {

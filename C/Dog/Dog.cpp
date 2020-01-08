@@ -44,6 +44,60 @@ Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F),flatV(
 	setup_rendered_wireframe_edges_from_planar();
 }
 
+Dog::Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching) :
+				V(V), F(F), flatV(V), edgeStitching(edgeStitching), V_ren(V),  F_ren(Fsqr_to_F(F)) {
+	quad_topology(V,F,quadTop);
+	//find connected components / assign vertices to submeshes
+	int num_submeshes = 0;
+	vi_to_submesh.resize(V.rows(), -1);
+	for(int i=0; i<V.rows(); ++i){
+		if(vi_to_submesh[i] > -1) continue;
+		int submesh = num_submeshes++;
+		vector<int> tocheck(1,i);
+		while(tocheck.size()>0){
+			int v = tocheck[0];
+			tocheck[0] = tocheck[tocheck.size()-1];
+			tocheck.pop_back();
+			vi_to_submesh[v] = submesh;
+			for(int j=0; j<quadTop.VF[v].size(); ++j){
+				int face = quadTop.VF[v][j];
+				for(int k=0; k<4; ++k){
+					int w = F(face, k);
+					if(vi_to_submesh[w]==-1){
+						vi_to_submesh[w]=-2;
+						tocheck.push_back(w);
+					}
+				}
+			}
+		}
+	}
+	// set submesh sizes
+	submeshVSize.resize(num_submeshes, 0);
+	submeshFSize.resize(num_submeshes, 0);
+	submesh_adjacency.resize(num_submeshes);
+	for(int i=0; i<V.rows(); ++i) ++submeshVSize[vi_to_submesh[i]];
+	for(int i=0; i<F.rows(); ++i) ++submeshFSize[vi_to_submesh[F(i,0)]];
+	// and submesh_adjacency
+	Eigen::MatrixXi submesh_A(num_submeshes, num_submeshes); submesh_A.setConstant(0);
+	for(int i=0; i<edgeStitching.edge_const_1.size(); ++i){
+		int submesh_1 = vi_to_submesh[edgeStitching.edge_const_1[i].v1];
+		int submesh_2 = vi_to_submesh[edgeStitching.edge_const_2[i].v1];
+		submesh_A(submesh_1, submesh_2) = 1;
+	}
+	for(int i=0;i<num_submeshes;++i){
+		for(int j=i+1;j<num_submeshes;++j){
+			if(submesh_A(i,j)==1){
+				submesh_adjacency[i].push_back(j);
+				submesh_adjacency[j].push_back(i);
+			}
+		}
+	}
+	// rest like in full constructor
+	setup_stitched_curves_initial_l_angles_length();
+	setup_rendered_wireframe_edges_from_planar();
+	setup_uv();
+}
+
 Dog::Dog(const Dog& d) : V(d.V),F(d.F),flatV(d.flatV),quadTop(d.quadTop),V_ren(d.V_ren), F_ren(d.F_ren), rendered_wireframe_edges(d.rendered_wireframe_edges),
 						submeshVSize(d.submeshVSize), submeshFSize(d.submeshFSize),
 						submesh_adjacency(d.submesh_adjacency), edgeStitching(d.edgeStitching),

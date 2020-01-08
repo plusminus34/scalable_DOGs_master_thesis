@@ -55,6 +55,7 @@ public:
 		std::vector<int> submeshVSize, std::vector<int> submeshFSize, const std::vector< std::vector<int> >& submesh_adjacency);
 	Dog(const Dog& dog);
 	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F);
+	Dog(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, DogEdgeStitching edgeStitching);
 	Dog(){/*Needed for deserilization*/};
 
 	void update_Vren();
