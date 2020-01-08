@@ -65,6 +65,7 @@ public:
 	std::vector<std::vector <int> > get_submesh_adjacency() const {return submesh_adjacency;}
 
 	Dog* get_submesh(int submesh_i);
+	Dog* get_curve_submesh(int curve_i);
 
 	int get_v_num() const {return V.rows();}
 

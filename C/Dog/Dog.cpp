@@ -153,6 +153,78 @@ Dog* Dog::get_submesh(int submesh_i) {
 	return submeshDog;
 }
 
+Dog* Dog::get_curve_submesh(int curve_i) {
+	if (curve_i < 0 || curve_i >= edgeStitching.stitched_curves.size()) return NULL;
+	// find all vertices/faces along curve
+	vector<int> v_to_local(V.rows(), -1);
+	vector<int> f_to_local(F.rows(), -1);
+	vector<EdgePoint> curve = edgeStitching.stitched_curves[curve_i];
+	for(int i=0; i<curve.size(); ++i){
+		int where = edgeStitching.edge_to_duplicates.at(curve[i].edge);
+		Edge e1 = edgeStitching.edge_const_1[where];
+		Edge e2 = edgeStitching.edge_const_2[where];
+		for(int j=0; j<quadTop.VF[e1.v1].size(); ++j){
+			for(int k=0; k<quadTop.VF[e1.v2].size(); ++k){
+				if(quadTop.VF[e1.v1][j] == quadTop.VF[e1.v2][k]){
+					f_to_local[quadTop.VF[e1.v1][j]] = -2;
+				}
+			}
+		}
+		for(int j=0; j<quadTop.VF[e2.v1].size(); ++j){
+			for(int k=0; k<quadTop.VF[e2.v2].size(); ++k){
+				if(quadTop.VF[e2.v1][j] == quadTop.VF[e2.v2][k]){
+					f_to_local[quadTop.VF[e2.v1][j]] = -2;
+				}
+			}
+		}
+	}
+	for(int i=0;i<F.rows();++i){
+		if(f_to_local[i] == -2)
+			for(int j=0;j<4;++j) v_to_local[F(i,j)] = -2;
+	}
+	//fill them into curve_V and curve_F
+	int count = 0;
+	for(int i=0; i<V.rows(); ++i){
+		if(v_to_local[i] == -2) v_to_local[i] = count++;
+	}
+	Eigen::MatrixXd curve_V(count,3);
+	count = 0;
+	for(int i=0; i<F.rows(); ++i){
+		if(f_to_local[i] == -2) f_to_local[i] = count++;
+	}
+	Eigen::MatrixXi curve_F(count,4);
+	for(int i=0; i<V.rows(); ++i){
+		if(v_to_local[i] > -1) curve_V.row(v_to_local[i]) = V.row(i);
+	}
+	for(int i=0; i<F.rows(); ++i){
+		if(f_to_local[i] > -1) {
+			for(int j=0; j<4; ++j) curve_F(f_to_local[i], j) = v_to_local[F(i,j)];
+		}
+	}
+
+	// curve_eS is basically edgeStitching, but remove everything but curve i
+	DogEdgeStitching curve_eS;
+	curve_eS.stitched_curves.push_back(curve);
+	curve_eS.multiplied_edges_start.resize(curve.size());
+	curve_eS.multiplied_edges_num.resize(curve.size(), 1);
+	for(int i=0; i<curve.size(); ++i){
+		int where = edgeStitching.edge_to_duplicates.at(curve[i].edge);
+		Edge e1 = edgeStitching.edge_const_1[where];
+		Edge e2 = edgeStitching.edge_const_2[where];
+		Edge local_e1(v_to_local[e1.v1], v_to_local[e1.v2]);
+		Edge local_e2(v_to_local[e2.v1], v_to_local[e2.v2]);
+		curve_eS.edge_to_duplicates[local_e1] = i;
+		curve_eS.edge_to_duplicates[local_e2] = i;
+		curve_eS.edge_const_1.push_back(local_e1);
+		curve_eS.edge_const_2.push_back(local_e2);
+		curve_eS.edge_coordinates.push_back(curve[i].t);
+		curve_eS.multiplied_edges_start[i] = i;
+	}
+	//missing other less important stuff
+	Dog* submeshDog = new Dog(curve_V, curve_F, curve_eS);
+	return submeshDog;
+}
+
 void Dog::update_submesh_V(int submesh_i, const Eigen::MatrixXd& submeshV) {
 	int submesh_v_min_i, submesh_v_max_i;
 	get_submesh_min_max_i(submesh_i, submesh_v_min_i, submesh_v_max_i, true);
