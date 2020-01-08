@@ -380,20 +380,18 @@ void DeformationController::add_test_angle(){
 void DeformationController::add_test_position(){
 	// for 1_curve
 	int v_num = globalDog->get_v_num();
-	int v_a = 0, v_b = 2, v_c = 494;
+	int v_a = 0, v_b = 2, v_c = v_num-1;
 	Eigen::RowVector3d from_pos_a(globalDog->getV().row(v_a));
-	Eigen::RowVector3d from_pos_b(globalDog->getV().row(v_b));
 	Eigen::RowVector3d from_pos_c(globalDog->getV().row(v_c));
-	Eigen::RowVector3d to_pos_c; to_pos_c << 16.1452, -2.98356, 0.366968;
+	Eigen::RowVector3d to_pos_c; to_pos_c << 0.6*from_pos_c(0), 0.5*(from_pos_c(1)+from_pos_a(1)), 0.4*(from_pos_c(1)+from_pos_a(1));
 	positionalConstraintsBuilder->add_constraint(b.size()/3, from_pos_a, from_pos_a);
-	positionalConstraintsBuilder->add_constraint(b.size()/3+1, from_pos_b, from_pos_b);
-	positionalConstraintsBuilder->add_constraint(b.size()/3+2, from_pos_c, to_pos_c);
-	Eigen::VectorXi new_b(9); new_b << v_a, v_b, v_c,
-	 																		v_a + v_num, v_b + v_num, v_c + v_num,
-																			v_a + 2*v_num, v_b + 2*v_num, v_c + 2*v_num;
-	Eigen::VectorXd new_bc(9); new_bc << from_pos_a(0), from_pos_b(0), from_pos_c(0),
-																			 from_pos_a(1), from_pos_b(1), from_pos_c(1),
-																		   from_pos_a(2), from_pos_b(2), from_pos_c(2);
+	positionalConstraintsBuilder->add_constraint(b.size()/3+1, from_pos_c, to_pos_c);
+	Eigen::VectorXi new_b(6); new_b << v_a, v_c,
+	 																		v_a + v_num, v_c + v_num,
+																			v_a + 2*v_num, v_c + 2*v_num;
+	Eigen::VectorXd new_bc(6); new_bc << from_pos_a(0), from_pos_c(0),
+																			 from_pos_a(1), from_pos_c(1),
+																		   from_pos_a(2), from_pos_c(2);
 	add_positional_constraints(new_b, new_bc);
 	is_time_dependent_deformation = true;
 	has_new_constraints = true;

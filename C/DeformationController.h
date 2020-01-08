@@ -88,7 +88,7 @@ public:
 
 	DogEditor::EditMode edit_mode = DogEditor::NONE;
 	DogEditor::SelectMode select_mode = DogEditor::VertexPicker;
-	DogSolver::SolverMode solver_mode = DogSolver::mode_coarseguess;
+	DogSolver::SolverMode solver_mode = DogSolver::mode_standard;
 	DisplayMode display_mode = display_default;
 
 	int deformed_curve_idx = 0;
