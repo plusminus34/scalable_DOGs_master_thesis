@@ -365,10 +365,11 @@ Dog FineCoarseConversion::init_from_fine_dog(const Dog& fine_dog){
 	// ctf_curve_offsets come later
 	DogEdgeStitching coarse_es;
 
-	//use something as origin
+	//use as origin: vertex with lowest x/y
 	int fine_origin = 0;
-	for(int i=0;i<fine_v_num;++i){
-		if(fine_vv[i].size()==2&&fine_duplicates[i].size()==0){fine_origin=i;break;}
+	for(int i=1; i<fine_v_num; ++i){
+		if(fine_V(i,0) < fine_V(fine_origin, 0) || fine_V(i,1) < fine_V(fine_origin, 1))
+			fine_origin = i;
 	}
 	//Spread out from the origin
 	// Each fine quad has a LINK vertex, two FINEONLY_I and one FINEONLY_X
