@@ -37,6 +37,9 @@ public:
 	Eigen::MatrixXd getCoarseCurveCoords(const Dog& coarse_dog, int curve_idx) const;
 	Eigen::MatrixXd getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const;
 
+	// Computes coarse_V given fine_V, extrapolating the coarseonly vertices
+	Eigen::MatrixXd coarsen(const Eigen::MatrixXd& fine_V) const;
+
 	void print() const;
 
 	void InitSerialization() {
@@ -58,5 +61,9 @@ private:
 	vector< vector<int> > ftc_curve;
 	vector< vector<int> > ctf_curve;
 	vector< vector< vector<double> > > ctf_curve_offsets;
+
+	//Data for fine-to-coarse update at coarse-only vertices
+	vector< vector<int> > ftc_update_vertices;
+	vector< vector<double> > ftc_update_weights;
 
 };

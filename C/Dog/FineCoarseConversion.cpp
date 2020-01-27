@@ -336,6 +336,92 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		if(fine > -1 && fine < ftc_edge.size()) ftc_edge[fine] = i;
 	}
 
+	// prepare data for fine-to-coarse update
+	ftc_update_vertices.resize(ctf.size());
+	ftc_update_weights.resize(ctf.size());
+	for(int i=0; i<ctf.size(); ++i){
+		if(ctf[i] < 0){
+			// coarse only vertices have to be approximated
+			int patch = coarse_dog.v_to_submesh_idx(i);
+			int x_idx = round( (coarse_V(i,0) - min_x[patch]) / dx );//in fine grid
+			int y_idx = round( (coarse_V(i,1) - min_y[patch]) / dy );
+			cout << "coarse vertex "<<i<<" is at finegrid "<<x_idx<<" "<<y_idx<<endl;
+			cout<<"    coarse row "<<i<<"   "<<coarse_V.row(i)<<endl;
+			int num_fine_quads = 0;
+			// check adjacent coarse quads;
+			for(int j=0; j<coarse_qt.VF[i].size(); ++j){
+				int cq = coarse_qt.VF[i][j];// row cq of coarse_F
+				cout << "  coarse quad "<<cq <<" is adjacent\n";
+				// get the grid coordinates of the associated fineonly-X vertex
+				double x_mid = 0.5*(coarse_V(coarse_F(cq,0), 0) + coarse_V(coarse_F(cq,2), 0));
+				double y_mid = 0.5*(coarse_V(coarse_F(cq,0), 1) + coarse_V(coarse_F(cq,2), 1));
+				int xp_x_idx = round( (x_mid - min_x[patch]) / dx );
+				int xp_y_idx = round( (y_mid - min_y[patch]) / dy );
+				int xp = fine_grid[patch](xp_x_idx, xp_y_idx);
+				//cout<<"wate "<<coarse_F.rows()<<" <-coarsefrows cq-> "<<cq<<"\n";
+				int k; for(int l=0;l<4;++l){if(coarse_F(cq,l) == i) {k = l;}}
+				for(int l=1; l<4; ++l){
+					int ll = (k+l) % 4;
+					if(ctf[coarse_F(cq, ll)] < 0) continue;
+					// LINK-vertex implies a fine quad within the coarse quad
+					++num_fine_quads;
+					int link_vertex = ctf[coarse_F(cq, ll)];
+					int link_x_idx = round( (fine_V(link_vertex, 0) - min_x[patch]) / dx );
+					int link_y_idx = round( (fine_V(link_vertex, 1) - min_y[patch]) / dy );
+					if(l == 2){
+						cout << "    fine corner is inside\n";
+						//it's a corner
+						int other_a = fine_grid[patch](xp_x_idx, link_y_idx);
+						int other_b = fine_grid[patch](link_x_idx, xp_y_idx);
+						// variant "minimal vertices"
+						ftc_update_vertices[i].push_back(link_vertex);
+						ftc_update_weights[i].push_back(-1.0);
+						ftc_update_vertices[i].push_back(xp);
+						ftc_update_weights[i].push_back(2.0);
+						//cout <<"pushback corner "<<link_vertex<<" and "<<xp<<endl;
+						/*
+						cout <<"    xp and link "<<xp<<"  "<<link_vertex<<endl;
+						cout << "    made from fine "<<xp<<"   "<<fine_V.row(xp)<<endl;
+						cout << "     and from fine "<<link_vertex<<"   "<<fine_V.row(link_vertex)<<endl;
+						*/
+						cout<<"    " << (coarse_V.row(i) - (2*fine_V.row(xp)-fine_V.row(link_vertex))).norm()<<endl;
+					} else {
+						int midpoint = fine_grid[patch]((x_idx+link_x_idx)/2, (y_idx+link_y_idx)/2);
+						if(midpoint>-1){
+						cout << "    fine noncorner is inside\n";
+						//not a corner
+						cout << "    link "<<link_vertex<<": "<<link_x_idx<<" "<<link_y_idx<<endl;
+						cout << "    main "<<i<<": "<<x_idx<<" "<<y_idx<<endl;
+						cout << "     res "<<midpoint<<": "<<(x_idx+link_x_idx)/2<<" "<<(y_idx+link_y_idx)/2<<endl;
+						//cout <<"pushback noncorner "<<link_vertex<<" and "<<midpoint<<endl;
+						// variant "minimal vertices"
+						ftc_update_vertices[i].push_back(link_vertex);
+						ftc_update_weights[i].push_back(-1.0);
+						ftc_update_vertices[i].push_back(midpoint);
+						ftc_update_weights[i].push_back(2.0);
+						/*
+						cout <<"    midpoint and link "<<midpoint<<"  "<<link_vertex<<endl;
+						cout << "    made from fine "<<midpoint<<"   "<<fine_V.row(midpoint)<<endl;
+						cout << "     and from fine "<<link_vertex<<"   "<<fine_V.row(link_vertex)<<endl;
+						*/
+						cout<<"    " << (coarse_V.row(i) - (2*fine_V.row(midpoint)-fine_V.row(link_vertex))).norm()<<endl;
+					}else{num_fine_quads--;}
+					}
+				}
+			}
+			for(int j=0; j<ftc_update_weights[i].size(); ++j){
+				// equal weights for all close fine quads
+				ftc_update_weights[i][j] /= num_fine_quads;
+			}
+		} else {
+			// link vertices are easy
+			//cout << "coarse vertex "<<i<<" is a link point\n";
+			//cout <<"pushback link "<<ctf[i]<<endl;
+			ftc_update_vertices[i].push_back(ctf[i]);
+			ftc_update_weights[i].push_back(1);
+		}
+	}
+
 }
 
 void FineCoarseConversion::print() const {
@@ -401,4 +487,15 @@ Eigen::MatrixXd FineCoarseConversion::getInterpolatedCurveCoords(const Dog& fine
 	curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
 	Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, ctf_curve_offsets[curve_idx]);
 	return fine_coords;
+}
+
+Eigen::MatrixXd FineCoarseConversion::coarsen(const Eigen::MatrixXd& fine_V) const{
+	Eigen::MatrixXd coarse_V;
+	coarse_V.setZero(ctf.size(), 3);
+	for(int i=0; i<coarse_V.rows(); ++i){
+		for(int j=0; j<ftc_update_weights[i].size(); ++j){
+			coarse_V.row(i) += ftc_update_weights[i][j] * fine_V.row(ftc_update_vertices[i][j]);
+		}
+	}
+	return coarse_V *0.5;//coarse scale
 }

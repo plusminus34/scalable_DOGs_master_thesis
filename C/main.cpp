@@ -201,9 +201,9 @@ int main(int argc, char *argv[]) {
       //ImGui::Combo("Wallaper type", (int *)(&state.DC.wallpaperType), "XY\0XUY\0XUYU\0XYU\0");
       if (ImGui::Button("Apply new constraint", ImVec2(-1,0))) {state.DC.apply_new_editor_constraint();}
       if (ImGui::Button("Cancel new constraint", ImVec2(-1,0))) {state.DC.reset_new_editor_constraint();}
-      if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
+      //if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
 
-      ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
+      //ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
       ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &state.DC.p.soft_pos_weight, 0, 0, "%.4f");
@@ -212,8 +212,8 @@ int main(int argc, char *argv[]) {
       ImGui::InputDouble("Fold bias weight", &state.DC.p.fold_bias_weight, 0, 0, "%.4f");
 //      ImGui::InputDouble("MV bias weight", &state.DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
-      ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
+      //ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
+      //ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
       /*
       ImGui::InputDouble("Paired boundary smoothness bending multiply", &state.DC.paired_boundary_bending_weight_mult, 0, 0, "%.4f");
       ImGui::InputDouble("Paired boundary smoothness", &state.DC.p.paired_boundary_bending_weight, 0, 0, "%.4f");
@@ -237,6 +237,7 @@ int main(int argc, char *argv[]) {
       //ImGui::InputInt("Penalty repetitions", &state.DC.p.penalty_repetitions);
       */
       ImGui::Checkbox("Folding mode", &state.DC.p.folding_mode);
+      ImGui::Checkbox("Fine-to-coarse update", &state.DC.p.ftc_update);
       /*
       ImGui::Checkbox("Flip M/V sign", &state.DC.p.flip_sign);
       ImGui::Checkbox("Render creases", &modelViewer.show_curves);

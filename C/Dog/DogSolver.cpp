@@ -1059,7 +1059,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     x = dog.getV_vector();
 
     //update coarse mesh?
-    //fine_to_coarse_update();
+    if(p.ftc_update) fine_to_coarse_update();
 
     cout << "all subsolvers done\n";
   }
@@ -1150,7 +1150,7 @@ void DogSolver::single_iteration_coarse_procrustes(double& constraints_deviation
     }
     x = dog.getV_vector();
 
-    //if(p.admm_gamma < -1) fine_to_coarse_update();//TODO something about this
+    if(p.ftc_update) fine_to_coarse_update();
 
     cout << "all subsolvers done\n";
   }
@@ -1447,40 +1447,13 @@ void DogSolver::coarse_to_fine_update(){
 }
 
 void DogSolver::fine_to_coarse_update(){
-  int v_num = dog.get_v_num();
-  Eigen::MatrixXd coarse_V = coarse_dog.getV();
-  for(int i=0; i<v_num; ++i){
-    int coarse_i = fine_coarse.fine_to_coarse(i);
-    if(coarse_i > -1) {
-      //cout << "from "<<coarse_V.row(coarse_i)<< "\tto\t"<<dog.getV().row(i) *0.5<<"\n";
-      coarse_V.row(coarse_i) = dog.getV().row(i) *0.5;//coarse scale
-    }
-  }
-  //COARSEONLY vertices have to be updated too!
-  //cout<<"coarseonly:\n";
-  auto ces = coarse_dog.getQuadTopology();
-  Eigen::MatrixXi cF = coarse_dog.getF();
+  Eigen::MatrixXd coarse_V = fine_coarse.coarsen(dog.getV());
   for(int i=0; i<coarse_V.rows(); ++i){
-    if(fine_coarse.coarse_to_fine(i) > -1) continue;
-    //take the first quad
-    /*
-    li -- l1
-     |     |
-    l2 -- lo
-    To get li: start from lo, then add l1-lo and l2-lo
-    Yes, this works only assuming the quad is a ... parallelogram (in English?)
-    */
-    int quad = ces.VF[i][0];
-    int li = 0;
-    for(int j=0;j<4;++j) if (cF(quad,j)==i) li = j;
-//    cout << "quad "<<i<<": "<<cF.row(i)<<"\t\talso there are VF: "<<ces.VF[i].size()<<"\n";
-    int lo = (li+2)%4;
-    Eigen::RowVector3d dings = -coarse_V.row(cF(quad,lo));
-    int l1 = (li+1)%4;
-    int l2 = (li+3)%4;
-    dings += coarse_V.row(cF(quad,l1)) + coarse_V.row(cF(quad,l2));
-//    cout << "from "<<coarse_V.row(i)<< "\tto\t"<<dings<<"\n";
-    coarse_V.row(i) = dings;
+    auto bro = coarse_V.row(i);
+    auto oro = coarse_dog.getV().row(i);
+    if((bro-oro).norm() > 0.01){
+      cout << "row "<<i<<" has problem: old "<<oro<<"   vs new "<<bro<<endl;
+    }
   }
   coarse_dog.update_V(coarse_V);
   coarse_solver->set_opt_vars(coarse_dog.getV_vector());

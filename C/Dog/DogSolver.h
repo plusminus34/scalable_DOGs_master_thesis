@@ -65,6 +65,7 @@ public:
 		bool flip_sign = false;
 		double admm_rho = 1;
 		double admm_gamma = 1;
+		bool ftc_update = false;
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
@@ -85,6 +86,7 @@ public:
 			Add(flip_sign,std::string("flip_sign"));
 			Add(admm_rho, std::string("ADMM_rho"));
 			Add(admm_gamma, std::string("ADMM_gamma"));
+			Add(ftc_update, std::string("fine-to-coarse_update"));
 		}
 	};
 
