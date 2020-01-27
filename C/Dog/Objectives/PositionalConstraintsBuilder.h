@@ -6,12 +6,11 @@
 //   linear interpolation from initial position to terminal position
 class PositionalConstraintsBuilder {
 public:
-	PositionalConstraintsBuilder(const Dog& dog, const double& timestep);
+	PositionalConstraintsBuilder(const double& timestep);
 
 	void add_constraint(int row, const Eigen::RowVector3d& src, const Eigen::RowVector3d& dst);
 	void get_constraint_positions(Eigen::VectorXd& bc);
 private:
-	int v_num;
 	// between 0 and 1
 	const double& timestep;
 	std::vector<int> row_i;

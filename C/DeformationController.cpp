@@ -33,7 +33,7 @@ void DeformationController::init_from_new_dog(Dog& dog, Dog& coarse_dog, FineCoa
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
 	mvFoldingDihedralAngleConstraintsBuilder = new MVFoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
-	positionalConstraintsBuilder = new PositionalConstraintsBuilder(*globalDog, deformation_timestep);
+	positionalConstraintsBuilder = new PositionalConstraintsBuilder(deformation_timestep);
 }
 
 bool DeformationController::has_constraints() {
