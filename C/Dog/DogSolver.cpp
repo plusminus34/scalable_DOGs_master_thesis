@@ -1011,7 +1011,6 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
 	cout << "running a single optimization routine (coarse guess)" << endl;
 	x0 = x;
   if(!is_main_solver){
-    constraints.edgePtConst.print(x);
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
     dog.update_V_vector(x.head(3*dog.get_v_num()));
 
@@ -1034,20 +1033,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     else coarse_solver->single_iteration_normal(d0,d1);
 
     // update stitching constraint coordinates
-    for(int i=0; i<coarse_curves.size(); ++i){
-      Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
-      int coarse_start = fine_coarse.coarse_to_fine_curve(i,0);
-      for(int j=0; j<fine_coords.rows(); ++j){
-        int submesh_1 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 0);
-        int k1 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 1);
-        int submesh_2 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 2);
-        int k2 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 3);
-
-        sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
-        cout << "subedg "<<k1<<" to "<<sub_edgeCoords[submesh_1].row(k1)<<endl;
-        sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
-      }
-    }
+    coarse_to_fine_update();
 
     update_obj_weights({p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
       p.stitching_weight, p.soft_pos_weight, 0.5*p.stitching_weight, p.pair_weight,
@@ -1057,7 +1043,6 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){
       cout << "subsolver " << i << " does single iteration\n";
-      cout << "sub edgeCoords "<<i<<" has size "<<sub_edgeCoords[i].size()<<endl;
       sub_dogsolver[i]->update_edge_coords(sub_edgeCoords[i]);
       double sub_cd = constraints_deviation;
       double sub_obj = objective;
@@ -1443,6 +1428,22 @@ Eigen::VectorXd DogSolver::get_obj_parts(){
   res(1) = obj.isoObj.obj(x);
   res(2) = obj.compObj.obj(x);
   return res;
+}
+
+void DogSolver::coarse_to_fine_update(){
+  for(int i=0; i<coarse_curves.size(); ++i){
+    Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
+    int coarse_start = fine_coarse.coarse_to_fine_curve(i,0);
+    for(int j=0; j<fine_coords.rows(); ++j){
+      int submesh_1 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 0);
+      int k1 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 1);
+      int submesh_2 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 2);
+      int k2 = curve_ep_to_sub_edgeCoords[i](j + coarse_start, 3);
+
+      sub_edgeCoords[submesh_1].row(k1) = fine_coords.row(j);
+      sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
+    }
+  }
 }
 
 void DogSolver::fine_to_coarse_update(){

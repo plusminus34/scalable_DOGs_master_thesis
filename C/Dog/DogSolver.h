@@ -271,6 +271,7 @@ private:
 	vector<int> coarse_b_to_bi;
 	Eigen::VectorXd coarse_bc;
 	vector<int> coarse_angle_idx;
+	void coarse_to_fine_update();
 	void fine_to_coarse_update();
 	vector<vector<int>> coarse_angle_vertices;//coarse_angle_vertices[i] is {v1,v2, w1,w2}
 	vector<vector<double>> coarse_angle_t;//coarse_angle_t is {t_v, t_w}
