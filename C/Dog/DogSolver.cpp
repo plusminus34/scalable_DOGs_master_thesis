@@ -1447,13 +1447,51 @@ void DogSolver::coarse_to_fine_update(){
 }
 
 void DogSolver::fine_to_coarse_update(){
-  Eigen::MatrixXd coarse_V = fine_coarse.coarsen(dog.getV());
+  //Eigen::MatrixXd coarse_V = fine_coarse.coarsen(dog.getV());
+  Eigen::MatrixXd coarse_V = p.admm_rho*fine_coarse.coarsen(dog.getV()) + (1-p.admm_rho)*coarse_dog.getV();
+  /* output rows that change a lot
   for(int i=0; i<coarse_V.rows(); ++i){
     auto bro = coarse_V.row(i);
     auto oro = coarse_dog.getV().row(i);
-    if((bro-oro).norm() > 0.01){
+    if((bro-oro).norm() < 0.1){}else{
       cout << "row "<<i<<" has problem: old "<<oro<<"   vs new "<<bro<<endl;
+      if(fine_coarse.coarse_to_fine(i)<0) cout<<"   and it's a coarseonly\n";
     }
+  }
+  */
+  // don't actually update coarseonly vertices fully
+  if(false){
+    for(int i=0; i<coarse_V.rows(); ++i){
+      if(fine_coarse.coarse_to_fine(i)<0){
+        //coarse_V.row(i) = coarse_dog.getV().row(i);
+        coarse_V.row(i) = p.admm_rho*coarse_V.row(i) + (1-p.admm_rho)*coarse_dog.getV().row(i);
+      }
+    }
+  }
+  if(false){//procrustes?
+    const Eigen::MatrixXd& old_V = coarse_dog.getV();
+    Eigen::Matrix3d R; Eigen::RowVector3d t; double scale;
+    igl::procrustes(old_V, coarse_V,true,false, scale,R,t);
+    cout<<"iter "<<iter_i<<" R,t:\n"<<R<<endl<<t<<"  <- t, norm "<<t.norm()<<endl;
+  }
+  if(false){//data gathering
+    int num_coarseonly=0;
+    int num_other=0;
+    double sum_a=0;
+    double sum_b=0;
+    for(int i=0; i<coarse_V.rows(); ++i){
+      auto bro = coarse_V.row(i);
+      auto oro = coarse_dog.getV().row(i);
+      if(fine_coarse.coarse_to_fine(i)<0){
+        ++num_coarseonly;
+        sum_a+=(oro-bro).norm();
+      }else{
+        ++num_other;
+        sum_b+=(oro-bro).norm();
+      }
+    }
+    cout << "soso: "<<num_coarseonly<<" coarseonly have average diff "<<sum_a/num_coarseonly<<endl;
+    cout << "soso: "<<num_other<<" links have average diff "<<sum_b/num_other<<endl;
   }
   coarse_dog.update_V(coarse_V);
   coarse_solver->set_opt_vars(coarse_dog.getV_vector());
