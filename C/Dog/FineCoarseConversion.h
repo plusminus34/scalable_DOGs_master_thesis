@@ -49,6 +49,8 @@ public:
     Add(ftc_curve, std::string("fine_to_coarse_stitched_curves"));
     Add(ctf_curve, std::string("coarse_to_fine_stitched_curves"));
     Add(ctf_curve_offsets, std::string("coarse_to_fine_curve_offsets"));
+		Add(ftc_update_vertices, std::string("ftc_update_vertices"));
+		Add(ftc_update_weights, std::string("ftc_update_weights"));
   }
 
 private:

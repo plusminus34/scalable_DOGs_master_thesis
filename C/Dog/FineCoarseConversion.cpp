@@ -386,29 +386,56 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 						int link_vertex = ctf[coarse_F(cq, ll)];
 						int link_x_idx = round( (fine_V(link_vertex, 0) - min_x[patch]) / dx );
 						int link_y_idx = round( (fine_V(link_vertex, 1) - min_y[patch]) / dy );
+						bool variant_minimal_vertices = true;
 						if(l == 2){
 							int other_a = fine_grid[patch](xp_x_idx, link_y_idx);
 							int other_b = fine_grid[patch](link_x_idx, xp_y_idx);
 							if(other_a > -1 && other_b > -1){
 								//it's a corner
-								// variant "minimal vertices"
-								ftc_update_vertices[i].push_back(link_vertex);
-								ftc_update_weights[i].push_back(-1.0);
-								ftc_update_vertices[i].push_back(xp);
-								ftc_update_weights[i].push_back(2.0);
-								//TODO variant 2
+								if(variant_minimal_vertices){
+									// variant "minimal vertices"
+									ftc_update_vertices[i].push_back(link_vertex);
+									ftc_update_weights[i].push_back(-1.0);
+									ftc_update_vertices[i].push_back(xp);
+									ftc_update_weights[i].push_back(2.0);
+								} else {
+									// variant 2
+									ftc_update_vertices[i].push_back(link_vertex);
+									ftc_update_weights[i].push_back(-2.0);
+									ftc_update_vertices[i].push_back(xp);
+									ftc_update_weights[i].push_back(1.0);
+									ftc_update_vertices[i].push_back(other_a);
+									ftc_update_weights[i].push_back(1.0);
+									ftc_update_vertices[i].push_back(other_b);
+									ftc_update_weights[i].push_back(1.0);
+								}
 							} else {
 								--num_fine_quads;
 							}
 						} else {
 							int midpoint = fine_grid[patch]((x_idx+link_x_idx)/2, (y_idx+link_y_idx)/2);
-							if(midpoint>-1){
+							//          xp		other				link	other
+							// target  mid   link		or		mid		xp
+							//													target
+							int other = fine_grid[patch](link_x_idx, xp_y_idx);
+							if(x_idx == link_x_idx) other = fine_grid[patch](xp_x_idx, link_y_idx);
+							if(midpoint>-1 && other >-1){
 								//not a corner
-								// variant "minimal vertices"
-								ftc_update_vertices[i].push_back(link_vertex);
-								ftc_update_weights[i].push_back(-1.0);
-								ftc_update_vertices[i].push_back(midpoint);
-								ftc_update_weights[i].push_back(2.0);
+								if(variant_minimal_vertices){
+									// variant "minimal vertices"
+									ftc_update_vertices[i].push_back(link_vertex);
+									ftc_update_weights[i].push_back(-1.0);
+									ftc_update_vertices[i].push_back(midpoint);
+									ftc_update_weights[i].push_back(2.0);
+								} else {
+									// variant 2
+									ftc_update_vertices[i].push_back(xp);
+									ftc_update_weights[i].push_back(1.0);
+									ftc_update_vertices[i].push_back(other);
+									ftc_update_weights[i].push_back(-1.0);
+									ftc_update_vertices[i].push_back(midpoint);
+									ftc_update_weights[i].push_back(1.0);
+								}
 							} else {
 								--num_fine_quads;
 							}
