@@ -76,10 +76,10 @@ void DeformationController::single_optimization() {
 	}
 	if(current_iteration == stored_iterations - 1){
 		write_output_file();
-		int cont=0;
-		cout<<"continue? ";
+		char cont;
+		cout<<"continue (y/n)? ";
 		cin>>cont;
-		if(cont==0 || cont=='n' || cont=='N') exit(0);
+		if(cont=='n' || cont=='N') exit(0);
 	}
 	++current_iteration;
 }
@@ -289,8 +289,9 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 	reset_dog_solver();
 }
 
-void DeformationController::store_data(int num_iterations){
-	stored_iterations = num_iterations;
+void DeformationController::store_data(){
+	current_iteration = 0;
+	stored_iterations = iterations_to_store;
 	obj_data = Eigen::MatrixXd::Zero(stored_iterations, 6);
 }
 

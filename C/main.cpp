@@ -156,9 +156,9 @@ int main(int argc, char *argv[]) {
   } else if (boost::iequals(basename, "testcase")) {
     is_optimizing = false;
     state.load_from_workspace("testcase.work");
-    int num_iterations = 1000;
-    if (argc > 2) num_iterations = std::stoi(argv[2]);
-    state.DC.store_data(num_iterations);
+    state.DC.iterations_to_store = 1000;
+    if (argc > 2) state.DC.iterations_to_store = std::stoi(argv[2]);
+    state.DC.store_data();
   } else {
     // Assume obj/off or other types
     state.init_from_mesh(input_path);
@@ -261,6 +261,9 @@ int main(int argc, char *argv[]) {
       if (ImGui::Button("Add test angle constraint", ImVec2(-1,0))) state.DC.add_test_angle();
       if (ImGui::Button("Add test position constraint", ImVec2(-1,0))) state.DC.add_test_position();
       if (ImGui::Button("Reset timestep", ImVec2(-1,0))) {state.DC.deformation_timestep=0;}
+
+      ImGui::InputInt("Number of iterations in output", &state.DC.iterations_to_store);
+      if (ImGui::Button("Begin storing storing data", ImVec2(-1,0))) {state.DC.store_data();}
 
       ImGui::End();
   };

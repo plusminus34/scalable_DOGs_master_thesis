@@ -110,8 +110,8 @@ public:
 	double constraints_deviation;
 	double objective;
 
-	int stored_iterations = 0 ;
-	void store_data(int num_iterations);
+	int iterations_to_store = 0;
+	void store_data();
 
 	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_x;
 	std::pair<std::vector<int>,std::vector<int>> matching_curve_pts_y;
@@ -164,6 +164,7 @@ private:
 	std::ofstream* opt_measurements_log;
 
 	// Objective data stored
+	int stored_iterations = 0;
 	int current_iteration = 0;
 	Eigen::MatrixXd obj_data;
 	void store_output_row();
