@@ -103,9 +103,6 @@ public:
 
 	//DogSolver(Dog& dog, const Eigen::VectorXd& init_x0, DogSolver::Params& p);
 
-	// returns [bending, isometry, sum]
-	Eigen::VectorXd get_obj_parts();
-
 	void set_opt_vars(const Eigen::VectorXd& x_i) { x = x_i;}
 	Eigen::VectorXd get_opt_vars() { return x;}
 
@@ -201,10 +198,13 @@ public:
 				//plus something for the serial mode
       	CompositeObjective compObj;
 	};
+	double get_obj_val() const;
 	double get_bending_obj_val() const;
 	double get_isometry_obj_val() const;
 	double get_pos_obj_val() const;
 	double get_stitching_obj_val() const;
+
+	double get_last_iteration_time() const;
 
 private:
 
@@ -286,6 +286,9 @@ private:
 	Eigen::VectorXd aa_scale;//scale of dF?
 	Eigen::MatrixXd aa_M;// least squares thing
 	void anderson_acceleration();
+
+	//Timing
+	double iteration_time = 0.0;
 
 	// Solvers
 	//NewtonKKT newtonKKT;

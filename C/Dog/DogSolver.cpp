@@ -585,6 +585,9 @@ bool DogSolver::is_mountain_valley_correct(const Eigen::VectorXd& x) {
 }
 
 void DogSolver::single_iteration(double& constraints_deviation, double& objective) {
+  igl::Timer timer;
+  double init_time = timer.getElapsedTime();
+  double t = init_time;
   if( dog.get_submesh_n() > 1 && mode != mode_standard) {
     if(mode == mode_subsolvers) {
       single_iteration_subsolvers(constraints_deviation, objective);
@@ -608,6 +611,8 @@ void DogSolver::single_iteration(double& constraints_deviation, double& objectiv
     if (p.folding_mode) single_iteration_fold(constraints_deviation, objective);
     else single_iteration_normal(constraints_deviation, objective);
   }
+  t = timer.getElapsedTime();
+  iteration_time = t - init_time;
 }
 
 void DogSolver::single_iteration_fold(double& constraints_deviation, double& objective) {
@@ -1422,14 +1427,6 @@ void DogSolver::update_w_coords(const Eigen::MatrixXd& W){
   ;cout <<"wcoords target: "<<W<<"\n";
 }
 
-Eigen::VectorXd DogSolver::get_obj_parts(){
-  Eigen::VectorXd res(3);
-  res(0) = obj.bending.obj(x);
-  res(1) = obj.isoObj.obj(x);
-  res(2) = obj.compObj.obj(x);
-  return res;
-}
-
 void DogSolver::coarse_to_fine_update(){
   for(int i=0; i<coarse_curves.size(); ++i){
     Eigen::MatrixXd fine_coords = fine_coarse.getInterpolatedCurveCoords(dog, coarse_dog, i) /0.5;//coarse scale
@@ -1498,6 +1495,9 @@ void DogSolver::fine_to_coarse_update(){
   Eigen::VectorXd new_V = coarse_dog.getV_vector();
 }
 
+double DogSolver::get_obj_val() const {
+  return obj.compObj.obj(x);
+}
 double DogSolver::get_bending_obj_val() const {
   return obj.bending.obj(x);
 }
@@ -1509,6 +1509,10 @@ double DogSolver::get_pos_obj_val() const {
 }
 double DogSolver::get_stitching_obj_val() const {
   return obj.stitchingConstraintsPenalty.obj(x);
+}
+
+double DogSolver::get_last_iteration_time() const {
+  return iteration_time;
 }
 
 void DogSolver::anderson_acceleration(){

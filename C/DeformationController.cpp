@@ -70,18 +70,16 @@ void DeformationController::single_optimization() {
 	dogSolver->set_solver_mode(solver_mode);
 	dogSolver->update_point_coords(bc);
 	dogSolver->update_edge_coords(edgeCoords);
-	Eigen::VectorXd data_i;
-	if(current_iteration < stored_iterations) data_i = dogSolver->get_obj_parts();
 	dogSolver->single_iteration(constraints_deviation, objective);
 	if(current_iteration < stored_iterations){
-		obj_data.block(current_iteration,0, 1, 3) << data_i[0], data_i[1], data_i[2];
-		if(current_iteration+1 < stored_iterations){
-			obj_data(current_iteration + 1, 3) = constraints_deviation;
-			obj_data(current_iteration + 1, 4) = objective;
-		}
+		store_output_row();
 	}
 	if(current_iteration == stored_iterations - 1){
 		write_output_file();
+		int cont=0;
+		cout<<"continue? ";
+		cin>>cont;
+		if(cont==0 || cont=='n' || cont=='N') exit(0);
 	}
 	++current_iteration;
 }
@@ -293,7 +291,16 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 
 void DeformationController::store_data(int num_iterations){
 	stored_iterations = num_iterations;
-	obj_data = Eigen::MatrixXd::Zero(stored_iterations,5);
+	obj_data = Eigen::MatrixXd::Zero(stored_iterations, 6);
+}
+
+void DeformationController::store_output_row(){
+	obj_data(current_iteration, 0) = constraints_deviation;
+	obj_data(current_iteration, 1) = objective;
+	obj_data(current_iteration, 2) = dogSolver->get_bending_obj_val();
+	obj_data(current_iteration, 3) = dogSolver->get_isometry_obj_val();
+	obj_data(current_iteration, 4) = dogSolver->get_obj_val();
+	obj_data(current_iteration, 5) = dogSolver->get_last_iteration_time();
 }
 
 void DeformationController::write_output_file(){
@@ -329,28 +336,33 @@ void DeformationController::write_output_file(){
 	outfile << endl;
 
 	outfile << "bending" << endl;
-	outfile << obj_data(0,0);
-	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,0);
-	outfile << endl;
-
-	outfile << "isometry" << endl;
-	outfile << obj_data(0,1);
-	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,1);
-	outfile << endl;
-
-	outfile << "objective (global mesh)" << endl;
 	outfile << obj_data(0,2);
 	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,2);
 	outfile << endl;
 
-	outfile << "constraints deviation (from iteration)" << endl;
+	outfile << "isometry" << endl;
 	outfile << obj_data(0,3);
 	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,3);
 	outfile << endl;
 
-	outfile << "objective (from iteration)" << endl;
+	outfile << "objective (global mesh)" << endl;
 	outfile << obj_data(0,4);
 	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,4);
+	outfile << endl;
+
+	outfile << "constraints deviation (from iteration)" << endl;
+	outfile << obj_data(0,0);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,0);
+	outfile << endl;
+
+	outfile << "objective (from iteration)" << endl;
+	outfile << obj_data(0,1);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,1);
+	outfile << endl;
+
+	outfile << "iteration time [s]" << endl;
+	outfile << obj_data(0,5);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,5);
 	outfile << endl;
 
 	outfile.close();
