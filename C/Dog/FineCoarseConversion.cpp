@@ -345,8 +345,6 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			int patch = coarse_dog.v_to_submesh_idx(i);
 			int x_idx = round( (coarse_V(i,0) - min_x[patch]) / dx );//in fine grid
 			int y_idx = round( (coarse_V(i,1) - min_y[patch]) / dy );
-			cout << "coarse vertex "<<i<<" is at finegrid "<<x_idx<<" "<<y_idx<<endl;
-			cout<<"    coarse row "<<i<<"   "<<coarse_V.row(i)<<endl;
 			int num_fine_quads = 0;
 			// check adjacent coarse quads;
 			for(int j=0; j<coarse_qt.VF[i].size(); ++j){
@@ -461,6 +459,14 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		cout<<"coarse patch "<<i<<":\n"<<coarse_grid[i]<<endl;
 	}
 	*/
+	num_fineonly = 0;
+	num_coarseonly = 0;
+	num_links = 0;
+	for(int i=0; i<ctf.size(); ++i){
+		if(ctf[i] > -1) ++num_links;
+		else if (ctf[i] == COARSEONLY) ++num_coarseonly;
+	}
+	num_fineonly = ftc.size() - num_links;
 }
 
 void FineCoarseConversion::print() const {
@@ -526,6 +532,34 @@ Eigen::MatrixXd FineCoarseConversion::getInterpolatedCurveCoords(const Dog& fine
 	curve.getTranslationAndFrameFromCoords(coarse_coords, T, F);
 	Eigen::MatrixXd fine_coords = curve.getInterpolatedCoords(T, F, ctf_curve_offsets[curve_idx]);
 	return fine_coords;
+}
+
+Eigen::VectorXi FineCoarseConversion::get_fine_link_b() const {
+	Eigen::VectorXi res(3 * num_links);
+	int j = 0;
+	for(int i=0; i<ftc.size(); ++i){
+		if(ftc[i] > -1){
+			res(j) = i;
+			res(j + num_links) = i + ftc.size();
+			res(j + 2 * num_links) = i + 2 * ftc.size();
+			++j;
+		}
+	}
+	return res;
+}
+
+Eigen::VectorXi FineCoarseConversion::get_coarse_link_b() const {
+	Eigen::VectorXi res(3 * num_links);
+	int j = 0;
+	for(int i=0; i<ctf.size(); ++i){
+		if(ctf[i] > -1){
+			res(j) = i;
+			res(j + num_links) = i + ctf.size();
+			res(j + 2 * num_links) = i + 2 * ctf.size();
+			++j;
+		}
+	}
+	return res;
 }
 
 Eigen::MatrixXd FineCoarseConversion::coarsen(const Eigen::MatrixXd& fine_V) const{

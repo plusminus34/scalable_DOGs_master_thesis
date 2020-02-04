@@ -66,6 +66,7 @@ public:
 		double admm_rho = 1;
 		double admm_gamma = 1;
 		bool ftc_update = false;
+		double ftc_weight = 0.001;
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
@@ -87,6 +88,7 @@ public:
 			Add(admm_rho, std::string("ADMM_rho"));
 			Add(admm_gamma, std::string("ADMM_gamma"));
 			Add(ftc_update, std::string("fine-to-coarse_update"));
+			Add(ftc_weight, std::string("link_vertices_weight"));
 		}
 	};
 
@@ -97,6 +99,7 @@ public:
 		std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
 		std::vector<std::pair<int,int>>& pairs,
 		std::vector<std::pair<int,int>>& bnd_vertices_pairs,
+		Eigen::VectorXi& link_b,
 		std::ofstream* time_measurements_log = NULL, bool ismainsolver = true);
 
 	~DogSolver();
@@ -137,6 +140,7 @@ public:
 	Dog& getCoarseDog(){return coarse_dog;}
 	FineCoarseConversion& getConversion(){return fine_coarse;}
 	void use_sub_edgepoint_constraint(int i, bool val){constraints.edgePtConst.set_enabled(i,val);}
+	void update_link_vertices_constraints(Eigen::VectorXd& bc){linkVerticesConst.update_coords(bc);}
 
 	bool is_folded();
 	bool is_mountain_valley_correct(const Eigen::VectorXd& x);
@@ -180,6 +184,7 @@ public:
 	  			FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
 	  			FoldingMVBiasConstraints& foldingMVBiasConstraints,
 	  			std::vector<std::pair<int,int>>& bnd_vertices_pairs,
+					PositionalConstraints& linkVerticesConstraints,
 	  			const DogSolver::Params& p);
 
 	  	SimplifiedBendingObjective bending;
@@ -193,6 +198,7 @@ public:
       	QuadraticConstraintsSumObjective foldingMVBiasObj;
       	QuadraticConstraintsSumObjective stitchingConstraintsPenalty;
       	PairedBoundaryVerticesBendingObjective pairedBndVertBendingObj;
+	      QuadraticConstraintsSumObjective linkVerticesObj;
 				//Plus QuadraticConstraintsSumObjective from LinearConstraints
 				//Plus proximal objective
 				//plus something for the serial mode
@@ -215,6 +221,8 @@ private:
 	bool is_main_solver;
 	FoldingBinormalBiasConstraints foldingBinormalBiasConstraints;
 	FoldingMVBiasConstraints foldingMVBiasConstraints;
+	Eigen::VectorXd link_bc;
+	PositionalConstraints linkVerticesConst;
 
 	// The constraints needs to be defined before the objectives, as some of the objective are dependent on constraints
 	DogSolver::Constraints constraints;
@@ -278,6 +286,7 @@ private:
 	vector<vector<int>> coarse_angle_vertices;//coarse_angle_vertices[i] is {v1,v2, w1,w2}
 	vector<vector<double>> coarse_angle_t;//coarse_angle_t is {t_v, t_w}
 	void update_sub_w_coords_from_coarse();
+	vector<int> sub_links_size;
 
 	//Anderson Acceleration
 	int aa_m = 5;// number of previous iterations used

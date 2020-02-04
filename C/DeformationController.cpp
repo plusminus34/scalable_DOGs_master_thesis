@@ -25,10 +25,12 @@ void DeformationController::init_from_new_dog(Dog& dog, Dog& coarse_dog, FineCoa
 	if(init_x0.size() != x0_after.size()) init_x0 = x0_after;//Not generally correct, would have to compare dog QuadTopology or something
 	Eigen::VectorXd coarse_x0_after = coarse_dog.getV_vector();
 	if(coarse_x0.size() != coarse_x0_after.size()) coarse_x0 = coarse_x0_after;
+	Eigen::VectorXi link_b = conversion.get_fine_link_b();
 	if (dogSolver) delete dogSolver;
-	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p, b, bc, edgePoints,
-		    edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
-				mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
+	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p,
+		 		b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
+			 	mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices,
+			 	bnd_vertices_pairs, link_b, opt_measurements_log);
 	//std::cout << "setting up boundary curves!" << std::endl; dogSolver->getDog().setup_boundary_curves_indices();
 
 	foldingDihedralAngleConstraintsBuilder = new FoldingDihedralAngleConstraintsBuilder(*globalDog, deformation_timestep);
@@ -261,10 +263,12 @@ void DeformationController::reset_dog_solver() {
 	FineCoarseConversion& conversion = dogSolver->getConversion();
 	auto vars = dogSolver->get_opt_vars();
 	if (dogSolver) delete dogSolver;
+	Eigen::VectorXi link_b = conversion.get_fine_link_b();
 	cout << "resetting dog solver" << endl;
-	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p, b, bc, edgePoints,
-		 edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
-		 mv_cos_angles, paired_vertices, bnd_vertices_pairs, opt_measurements_log);
+	dogSolver = new DogSolver(dog, coarse_dog, conversion, init_x0, coarse_x0, p,
+		 b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles,
+		 mvTangentCreaseAngleParams, mv_cos_angles, paired_vertices,
+		 bnd_vertices_pairs, link_b, opt_measurements_log);
 	//cout << "edge_cos_angles.size() = "<< edge_cos_angles.size() << endl;
 	//int wait; cin >> wait;
 	dogSolver->set_opt_vars(vars);

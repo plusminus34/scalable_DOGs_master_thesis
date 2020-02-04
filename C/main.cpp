@@ -204,14 +204,15 @@ int main(int argc, char *argv[]) {
       //if (ImGui::Button("Set cylindrical boundary constraints ", ImVec2(-1,0))) {state.DC.set_cylindrical_boundary_constraints();}
 
       //ImGui::Checkbox("Z only edit", &state.DC.z_only_editing);
-      ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
-      ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
+  //    ImGui::InputDouble("Bending", &state.DC.p.bending_weight, 0, 0, "%.4f");
+    //  ImGui::InputDouble("Isometry", &state.DC.p.isometry_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Soft constraints", &state.DC.p.soft_pos_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Dihedral weight", &state.DC.p.dihedral_weight, 0, 0, "%.4f");
 //      ImGui::InputDouble("Pairs weight", &state.DC.p.pair_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Fold bias weight", &state.DC.p.fold_bias_weight, 0, 0, "%.4f");
 //      ImGui::InputDouble("MV bias weight", &state.DC.p.mv_bias_weight, 0, 0, "%.4f");
       ImGui::InputDouble("Stitching weight", &state.DC.p.stitching_weight, 0, 0, "%.4f");
+      ImGui::InputDouble("ftc weight", &state.DC.p.ftc_weight, 0, 0, "%.4f");
       //ImGui::InputDouble("ADMM rho", &state.DC.p.admm_rho, 0, 0, "%.4f");
       //ImGui::InputDouble("JADMM gamma", &state.DC.p.admm_gamma, 0, 0, "%.4f");
       /*

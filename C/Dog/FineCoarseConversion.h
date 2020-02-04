@@ -37,6 +37,14 @@ public:
 	Eigen::MatrixXd getCoarseCurveCoords(const Dog& coarse_dog, int curve_idx) const;
 	Eigen::MatrixXd getInterpolatedCurveCoords(const Dog& fine_dog, const Dog& coarse_dog, int curve_idx) const;
 
+	// Used for one weak constraint
+	Eigen::VectorXi get_fine_link_b() const;
+	Eigen::VectorXi get_coarse_link_b() const;
+
+	int get_num_fineonly() const {return num_fineonly;}
+	int get_num_coarseonly() const {return num_coarseonly;}
+	int get_num_links() const {return num_links;}
+
 	// Computes coarse_V given fine_V, extrapolating the coarseonly vertices
 	Eigen::MatrixXd coarsen(const Eigen::MatrixXd& fine_V) const;
 
@@ -51,6 +59,9 @@ public:
     Add(ctf_curve_offsets, std::string("coarse_to_fine_curve_offsets"));
 		Add(ftc_update_vertices, std::string("ftc_update_vertices"));
 		Add(ftc_update_weights, std::string("ftc_update_weights"));
+		Add(num_fineonly, std::string("num_fineonly"));
+		Add(num_coarseonly, std::string("num_coarseonly"));
+		Add(num_links, std::string("num_links"));
   }
 
 private:
@@ -67,5 +78,10 @@ private:
 	//Data for fine-to-coarse update at coarse-only vertices
 	vector< vector<int> > ftc_update_vertices;
 	vector< vector<double> > ftc_update_weights;
+
+	//number of vertices of different types
+	int num_fineonly;
+	int num_coarseonly;
+	int num_links;// same in both resolutions
 
 };

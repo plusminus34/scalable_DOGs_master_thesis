@@ -13,14 +13,15 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         std::vector<MVTangentCreaseFold>& mvTangentCreaseAngleParams, std::vector<double>& mv_cos_angles,
         std::vector<std::pair<int,int>>& pairs,
         std::vector<pair<int,int>>& bnd_vertices_pairs,
+        Eigen::VectorXi& link_b,
         std::ofstream* time_measurements_log, bool ismainsolver) :
-
           dog(dog), coarse_dog(coarse_dog), fine_coarse(conversion), x(dog.getV_vector()),
           foldingBinormalBiasConstraints(dog),
           foldingMVBiasConstraints(dog, p.flip_sign), p(p),
+          link_bc(link_b.size()), linkVerticesConst(link_b, link_bc),
           constraints(dog, init_mesh_vars, b, bc, edgePoints, edgeCoords, edge_angle_pairs, edge_cos_angles, mvTangentCreaseAngleParams,
                       mv_cos_angles, pairs),
-          obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, p),
+          obj(dog, init_mesh_vars, constraints, foldingBinormalBiasConstraints, foldingMVBiasConstraints, bnd_vertices_pairs, linkVerticesConst, p),
           newtonKKT(p.infeasability_epsilon,p.infeasability_filter, p.max_newton_iters, p.merit_p),
           time_measurements_log(time_measurements_log), is_main_solver(ismainsolver)
            {
@@ -231,6 +232,39 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         }
       }
 
+      //link vertex "constraints" (they're more like a suggestion)
+      Eigen::VectorXi fine_link_b = fine_coarse.get_fine_link_b();
+      Eigen::VectorXi coarse_link_b = fine_coarse.get_coarse_link_b();
+      vector<Eigen::VectorXi> sub_link_b(num_submeshes);
+      vector<Eigen::VectorXd> sub_link_bc(num_submeshes);
+      {
+        sub_links_size.resize(num_submeshes, 0);
+        int num_links = fine_link_b.size() / 3;
+        for(int i=0; i<num_links; ++i){
+          link_bc[i] = x[fine_link_b[i]];
+          link_bc[i + num_links] = x[fine_link_b[i + num_links]];
+          link_bc[i + 2 * num_links] = x[fine_link_b[i + 2 * num_links]];
+          ++sub_links_size[dog.v_to_submesh_idx(fine_link_b[i])];
+        }
+        update_link_vertices_constraints(link_bc);
+        for(int i=0; i<num_submeshes; ++i){
+          sub_link_b[i].resize(3 * sub_links_size[i]);
+          sub_link_bc[i].resize(3 * sub_links_size[i]);
+        }
+        vector<int> sub_i(num_submeshes, 0);
+        for(int i=0; i<num_links; ++i){
+          int u = fine_link_b[i];
+          int patch = dog.v_to_submesh_idx(u);
+          sub_link_b[patch][sub_i[patch]] = dog.v_in_submesh(u);
+          sub_link_b[patch][sub_i[patch] + sub_links_size[patch]] = dog.v_in_submesh(u) + sub_dog[patch]->get_v_num();
+          sub_link_b[patch][sub_i[patch] + 2 * sub_links_size[patch]] = dog.v_in_submesh(u) + 2 * sub_dog[patch]->get_v_num();
+          sub_link_bc[patch][sub_i[patch]] = x[u];
+          sub_link_bc[patch][sub_i[patch] + sub_links_size[patch]] = x[u + v_num];
+          sub_link_bc[patch][sub_i[patch] + 2 * sub_links_size[patch]] = x[u + 2 * v_num];
+          ++sub_i[patch];
+        }
+      }
+
       // Procrustes stuff
       proc_T.resize(sub_dog.size());
       vector<int> T_i(sub_dog.size(), 0);
@@ -296,7 +330,10 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
               empty_thing, empty_d,
               empty_pair,
               empty_pair,
+              sub_link_b[i],
               NULL, false);
+
+        sub_dogsolver[i]->update_link_vertices_constraints(sub_link_bc[i]);
 
         sub_dogsolver[i]->set_lambda(Eigen::VectorXd::Zero(sub_admm_A[i].rows()));
         sub_dogsolver[i]->set_z(Eigen::VectorXd::Zero(sub_admm_A[i].rows()));
@@ -305,7 +342,7 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
         Eigen::SparseMatrix<double> I_i(sub_x0.size(), sub_x0.size());
         I_i.setIdentity(); I_i *= 0.1*(num_submeshes-1) *0.01;
         sub_dogsolver[i]->build_ProximalObjective(I_i);
-        sub_dogsolver[i]->remake_compobj();
+        //sub_dogsolver[i]->remake_compobj();//incompatible with link vertex constraints
 
         cout << " constructed subsolver "<<i<<endl;
       }
@@ -313,11 +350,11 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       cout << "Sub dogsolvers constructed\n";
 
       // Construct coarse solver
+      int coarse_v_num = coarse_dog.get_v_num();
       //position constraints
       vector<int> which_b(0);
       int bthird = b.size()/3;
       coarse_b_to_bi.clear();
-      cout << "wichb\n";
       for(int i=0; i<bthird; ++i){
         int coarse_v = fine_coarse.fine_to_coarse(b[i]);
         if(coarse_v > -1) {
@@ -328,18 +365,16 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       }
       coarse_b.resize(which_b.size()*3);
       coarse_bc.resize(coarse_b.size());
-      cout << "coarse_b\n";
       for(int i=0; i<which_b.size(); ++i){
         coarse_b(i) = which_b[i];
-        coarse_b(i + which_b.size()) = which_b[i] + coarse_dog.get_v_num();
-        coarse_b(i + 2*which_b.size()) = which_b[i] + 2*coarse_dog.get_v_num();
+        coarse_b(i + which_b.size()) = which_b[i] + coarse_v_num;
+        coarse_b(i + 2*which_b.size()) = which_b[i] + 2*coarse_v_num;
         coarse_bc(i) = bc(coarse_b_to_bi[i])*0.5;//coarse scale
         coarse_bc(i + which_b.size()) = bc(coarse_b_to_bi[i] + bthird)*0.5;//coarse scale
         coarse_bc(i + 2*which_b.size()) = bc(coarse_b_to_bi[i] + 2*bthird)*0.5;//coarse scale
       }
 
       //coarse angle constraints
-      cout <<"using coarse_qt\n";
       const QuadTopology& coarse_qt = coarse_dog.getQuadTopology();
       vector<std::pair<Edge,Edge>> coarse_edge_angle_pairs(0);
       vector<double> coarse_edge_cos_angles(0);
@@ -347,36 +382,20 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
       coarse_angle_vertices.clear();
       coarse_angle_t.clear();
       for(int i=0; i<edge_angle_pairs.size(); ++i){
-        cout << "i "<<i<<"\n";
         int v1 = edge_angle_pairs[i].first.v1;
         int v2 = edge_angle_pairs[i].first.v2;
         int c_v1 = fine_coarse.fine_to_coarse(v1);
         int c_v2 = fine_coarse.fine_to_coarse(v2);
         if(c_v1 < 0 && c_v2 < 0) continue;//One vertex has to be a link point
-        cout <<"  continue to stage 2\n";
         int w1 = edge_angle_pairs[i].second.v1;
         int w2 = edge_angle_pairs[i].second.v2;
         int edge_idx_v, edge_idx_w;
         vector<double> c_t(2,0.5);//coarse scale ?
         if(c_v2 < 0){
-          //LINK
-          //v1 --- v2
-          //cv1 ------- cv2
           edge_idx_v = fine_coarse.fine_to_coarse_edge(v2);
           edge_idx_w = fine_coarse.fine_to_coarse_edge(w2);
           c_t[0] = 1;
-          //v1 = 1* cv1 + 0* cv2
-          //v2 = 0.5* cv1 + 0.5* cv2
-          //v1/w1 should be the link point
-//          swap(v1, v2);
-//          swap(w1, w2);
-  //        cout<<"fizflip\n";
         } else {
-          //      LINK
-          //v1 --- v2
-    //cv1   ---   cv2
-          // v1 = 0.5 * cv1 + 0.5 * cv2
-          // v2 = 0* cv1 + 1* cv2
           edge_idx_v = fine_coarse.fine_to_coarse_edge(v1);
           edge_idx_w = fine_coarse.fine_to_coarse_edge(w1);
           c_t[1] = 0;
@@ -396,18 +415,13 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
 
         coarse_angle_vertices.push_back(c_points);
         coarse_angle_t.push_back(c_t);
-        cout << "fiz: v1:"<<dog.getV().row(v1) << "\tv2: "<<dog.getV().row(v2)<<endl;
-        cout << "fiz: w1:"<<dog.getV().row(w1) << "\tw2: "<<dog.getV().row(w2)<<endl;
         Eigen::RowVector3d cv1 = 2* ( c_t[0]*coarse_dog.getV().row(c_points[0]) +(1-c_t[0])*coarse_dog.getV().row(c_points[1]) );
         Eigen::RowVector3d cv2 = 2* ( c_t[1]*coarse_dog.getV().row(c_points[0]) +(1-c_t[1])*coarse_dog.getV().row(c_points[1]) );
-        cout<<"fizcoarse: v1: "<<cv1 <<"\tv2: "<<cv2<<endl;
         Eigen::RowVector3d cw1 = 2* ( c_t[0]*coarse_dog.getV().row(c_points[2]) +(1-c_t[0])*coarse_dog.getV().row(c_points[3]) );
         Eigen::RowVector3d cw2 = 2* ( c_t[1]*coarse_dog.getV().row(c_points[2]) +(1-c_t[1])*coarse_dog.getV().row(c_points[3]) );
-        cout<<"fizcoarse: w1: "<<cw1 <<"\tw2: "<<cw2<<endl;
-        cout<<"fizcoarse: c0 =c2"<<coarse_dog.getV().row(c_points[0])*2<<endl;
-        cout<<"fizcoarse: c1 =c3"<<coarse_dog.getV().row(c_points[1])*2<<endl;
 
       }
+
       cout << "building coarse solver\n";
       coarse_solver = new DogSolver(coarse_dog, empty_dog, empty_conversion,
             coarse_x0, empty_xd, p,
@@ -417,10 +431,14 @@ DogSolver::DogSolver(Dog& dog, Dog& coarse_dog, FineCoarseConversion& conversion
             empty_thing, empty_d,
             empty_pair,
             empty_pair,
+            coarse_link_b,
             NULL, false);
       cout << "Coarse solver constructed\n";
+      for(int i=0; i<link_bc.size(); ++i){
+        link_bc[i] = coarse_x0[coarse_link_b[i]];
+      }
+      coarse_solver->update_link_vertices_constraints(link_bc);
       coarse_curves.resize(coarse_es.stitched_curves.size());
-      cout << "go\n";
       for(int i=0; i<coarse_curves.size(); ++i)
         coarse_curves[i].edgePoints = coarse_es.stitched_curves[i];
 
@@ -497,6 +515,7 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
           FoldingBinormalBiasConstraints& foldingBinormalBiasConstraints,
           FoldingMVBiasConstraints& foldingMVBiasConstraints,
           std::vector<std::pair<int,int>>& bnd_vertices_pairs,
+          PositionalConstraints& linkVerticesConstraints,
           const DogSolver::Params& p) :
         bending(dog.getQuadTopology(), init_x0), isoObj(dog.getQuadTopology(), init_x0),
         pointsPosSoftConstraints(constraints.posConst, init_x0),
@@ -508,12 +527,20 @@ DogSolver::Objectives::Objectives(const Dog& dog, const Eigen::VectorXd& init_x0
         foldingMVBiasObj(foldingMVBiasConstraints, init_x0),
         stitchingConstraintsPenalty(constraints.stitchingConstraints, init_x0),
         pairedBndVertBendingObj(dog.getQuadTopology(), bnd_vertices_pairs, init_x0, Eigen::Vector3d(1,0,0)),
+        linkVerticesObj(linkVerticesConstraints, init_x0),
         //allConstQuadraticObj(constraints, init_x0),
         /*curvedFoldingBiasObj(curvedFoldingBiasObj),*/
 
         compObj(
-          {&bending, &isoObj, &stitchingConstraintsPenalty, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints, &foldingBinormalBiasObj, &foldingMVBiasObj,&pairedBndVertBendingObj},
-          {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(), p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight, p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight, p.paired_boundary_bending_weight})
+          {&bending, &isoObj, &stitchingConstraintsPenalty,
+           &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst,
+           &edgeAnglesSoftConstraints, &mvTangentCreaseSoftConstraints,
+           &foldingBinormalBiasObj, &foldingMVBiasObj,&pairedBndVertBendingObj,
+           &linkVerticesObj},
+          {p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
+           p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+           p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight,
+           p.mv_bias_weight, p.paired_boundary_bending_weight, 0.0})
           /*
         compObj(
           {&bending, &isoObj, &pointsPosSoftConstraints, &edgePosSoftConstraints, &ptPairSoftConst, &edgeAnglesSoftConstraints, &foldingBinormalBiasObj, &allConstQuadraticObj},
@@ -717,6 +744,7 @@ void DogSolver::single_iteration_subsolvers(double& constraints_deviation, doubl
 
 void DogSolver::single_iteration_ADMM(double& constraints_deviation, double& objective) {
 	cout << "running a single optimization routine (ADMM)" << endl;
+  cout << "WARNING: This method is no longer supported (honestly, it wasn't good in the first place)\n";
 	x0 = x;
   if(!is_main_solver){
     newtonKKT.solve_constrained(x0, obj.compObj, constraints.compConst, x, p.convergence_threshold);
@@ -1032,7 +1060,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     update_obj_weights({p.bending_weight, p.isometry_weight/coarse_dog.getQuadTopology().E.rows(),
       p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
       p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
-      p.paired_boundary_bending_weight, 0, 0, 0});
+      p.paired_boundary_bending_weight, p.ftc_weight});
     double d0,d1;
     if(p.folding_mode) coarse_solver->single_iteration_fold(d0,d1);
     else coarse_solver->single_iteration_normal(d0,d1);
@@ -1043,7 +1071,7 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     update_obj_weights({p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
       p.stitching_weight, p.soft_pos_weight, 0.5*p.stitching_weight, p.pair_weight,
       0, 0, p.fold_bias_weight, p.mv_bias_weight,// no angle constraints on subsolvers!
-      p.paired_boundary_bending_weight, 0, 0, 0});
+      p.paired_boundary_bending_weight, p.ftc_weight});
 
     //solve on submeshes
     for(int i=0; i<num_submeshes; ++i){
@@ -1367,11 +1395,11 @@ void DogSolver::remake_compobj(){
      &obj.ptPairSoftConst, &obj.edgeAnglesSoftConstraints,
      &obj.mvTangentCreaseSoftConstraints, &obj.foldingBinormalBiasObj,
      &obj.foldingMVBiasObj,&obj.pairedBndVertBendingObj,
-     vsadmm_obj, pjadmm_obj, serial_obj},
+     &obj.linkVerticesObj, vsadmm_obj, pjadmm_obj, serial_obj},
     {p.bending_weight,p.isometry_weight/dog.getQuadTopology().E.rows(),
      p.stitching_weight,p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
-     p.paired_boundary_bending_weight, p.admm_rho, p.admm_rho, 1});
+     p.paired_boundary_bending_weight, 0, p.admm_rho, p.admm_rho, 1});
 }
 
 void DogSolver::update_obj_weights(const std::vector<double>& weights_i){
@@ -1424,7 +1452,6 @@ void DogSolver::update_w_coords(const Eigen::MatrixXd& W){
   //must be initialized in first iteration
   if(iter_i==0) constraints.subEdgesAngleConst.init_outside_points(W, x);
   else constraints.subEdgesAngleConst.update_outside_points(W);
-  ;cout <<"wcoords target: "<<W<<"\n";
 }
 
 void DogSolver::coarse_to_fine_update(){
@@ -1441,58 +1468,46 @@ void DogSolver::coarse_to_fine_update(){
       sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
     }
   }
+
+  Eigen::VectorXi fine_links = fine_coarse.get_fine_link_b();
+  int num_links = fine_links.size() / 3;
+  for(int i=0; i<num_links; ++i){
+    auto row = coarse_dog.getV().row(fine_coarse.fine_to_coarse(fine_links[i])) *2;//coarse scale
+    link_bc[i] = row[0];
+    link_bc[i + num_links] = row[1];
+    link_bc[i + 2 * num_links] = row[2];
+  }
+  int v_num = dog.get_v_num();
+  int num_submeshes = sub_dog.size();
+  vector<Eigen::VectorXd> sub_link_bc(num_submeshes);
+  for(int i=0; i<num_submeshes; ++i){
+    sub_link_bc[i].resize(3 * sub_links_size[i]);
+  }
+  vector<int> sub_i(num_submeshes, 0);
+  for(int i=0; i<num_links; ++i){
+    int u = fine_links[i];
+    int patch = dog.v_to_submesh_idx(u);
+    sub_link_bc[patch][sub_i[patch]] = link_bc[i];
+    sub_link_bc[patch][sub_i[patch] + sub_links_size[patch]] = link_bc[i + num_links];
+    sub_link_bc[patch][sub_i[patch] + 2 * sub_links_size[patch]] = link_bc[i + 2 * num_links];
+    ++sub_i[patch];
+  }
+  update_link_vertices_constraints(link_bc);
+  for(int i=0; i<num_submeshes; ++i){
+    sub_dogsolver[i]->update_link_vertices_constraints(sub_link_bc[i]);
+  }
 }
 
 void DogSolver::fine_to_coarse_update(){
-  //Eigen::MatrixXd coarse_V = fine_coarse.coarsen(dog.getV());
-  Eigen::MatrixXd coarse_V = p.admm_rho*fine_coarse.coarsen(dog.getV()) + (1-p.admm_rho)*coarse_dog.getV();
-  /* output rows that change a lot
-  for(int i=0; i<coarse_V.rows(); ++i){
-    auto bro = coarse_V.row(i);
-    auto oro = coarse_dog.getV().row(i);
-    if((bro-oro).norm() < 0.1){}else{
-      cout << "row "<<i<<" has problem: old "<<oro<<"   vs new "<<bro<<endl;
-      if(fine_coarse.coarse_to_fine(i)<0) cout<<"   and it's a coarseonly\n";
-    }
+  auto links = fine_coarse.get_coarse_link_b();
+  int num_links = links.size()/3;
+  for(int i=0; i<num_links; ++i){
+    auto row = dog.getV().row(fine_coarse.coarse_to_fine(links[i])) *0.5;//coarse scale
+    link_bc[i] = row[0];
+    link_bc[i + num_links] = row[1];
+    link_bc[i + 2 * num_links] = row[2];
   }
-  */
-  // don't actually update coarseonly vertices fully
-  if(false){
-    for(int i=0; i<coarse_V.rows(); ++i){
-      if(fine_coarse.coarse_to_fine(i)<0){
-        //coarse_V.row(i) = coarse_dog.getV().row(i);
-        coarse_V.row(i) = p.admm_rho*coarse_V.row(i) + (1-p.admm_rho)*coarse_dog.getV().row(i);
-      }
-    }
-  }
-  if(false){//procrustes?
-    const Eigen::MatrixXd& old_V = coarse_dog.getV();
-    Eigen::Matrix3d R; Eigen::RowVector3d t; double scale;
-    igl::procrustes(old_V, coarse_V,true,false, scale,R,t);
-    cout<<"iter "<<iter_i<<" R,t:\n"<<R<<endl<<t<<"  <- t, norm "<<t.norm()<<endl;
-  }
-  if(false){//data gathering
-    int num_coarseonly=0;
-    int num_other=0;
-    double sum_a=0;
-    double sum_b=0;
-    for(int i=0; i<coarse_V.rows(); ++i){
-      auto bro = coarse_V.row(i);
-      auto oro = coarse_dog.getV().row(i);
-      if(fine_coarse.coarse_to_fine(i)<0){
-        ++num_coarseonly;
-        sum_a+=(oro-bro).norm();
-      }else{
-        ++num_other;
-        sum_b+=(oro-bro).norm();
-      }
-    }
-    cout << "soso: "<<num_coarseonly<<" coarseonly have average diff "<<sum_a/num_coarseonly<<endl;
-    cout << "soso: "<<num_other<<" links have average diff "<<sum_b/num_other<<endl;
-  }
-  coarse_dog.update_V(coarse_V);
-  coarse_solver->set_opt_vars(coarse_dog.getV_vector());
-  Eigen::VectorXd new_V = coarse_dog.getV_vector();
+  coarse_solver->update_link_vertices_constraints(link_bc);
 }
 
 double DogSolver::get_obj_val() const {
