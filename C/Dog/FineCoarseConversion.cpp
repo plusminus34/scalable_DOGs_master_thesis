@@ -17,55 +17,7 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 	ctf.resize(coarse_V.rows(), -1);
 	ftc_edge.resize(fine_V.rows(), -1);
 
-	//Usually vertex 0 is the same in both Dogs
-	int fine_origin = 0; int coarse_origin = 0;
-	// sometimes it isn't
-	while( (fine_V.row(fine_origin) - coarse_V.row(coarse_origin) ).squaredNorm() > 0.0001
-			|| fine_dog.v_to_submesh_idx(fine_origin) != coarse_dog.v_to_submesh_idx(coarse_origin)){
-		++fine_origin;
-		if(fine_origin == fine_V.rows()){
-			fine_origin = 0;
-			++coarse_origin;
-			if(coarse_origin == coarse_V.rows()){
-				coarse_origin = 0;
-				cout << "Error: Couldn't find suitable origin for fine-to-coarse conversion\n";
-				break;
-			}
-		}
-	}
-	ftc[fine_origin] = coarse_origin;
-	ctf[coarse_origin] = fine_origin;
-
-	// Need to know about vertices near the patch boundary in the flooding
-	Eigen::MatrixXi fine_vertex_duplicates = Eigen::MatrixXi::Constant(fine_dog.get_v_num(), num_patches, -1);
-	Eigen::MatrixXi coarse_vertex_duplicates = Eigen::MatrixXi::Constant(coarse_dog.get_v_num(), num_patches, -1);
-	//vertex_duplicates(i,j)=v means that v is i's duplicate in submesh j
-	for(int i=0; i<fine_es.edge_const_1.size(); ++i){
-		int va1 = fine_es.edge_const_1[i].v1;
-		int va2 = fine_es.edge_const_1[i].v2;
-		int patch_a = fine_dog.v_to_submesh_idx(va1);
-		int vb1 = fine_es.edge_const_2[i].v1;
-		int vb2 = fine_es.edge_const_2[i].v2;
-		int patch_b = fine_dog.v_to_submesh_idx(vb1);
-		fine_vertex_duplicates(va1, patch_b) = vb1;
-		fine_vertex_duplicates(va2, patch_b) = vb2;
-		fine_vertex_duplicates(vb1, patch_a) = va1;
-		fine_vertex_duplicates(vb2, patch_a) = va2;
-	}
-	for(int i=0; i<coarse_es.edge_const_1.size(); ++i){
-		int va1 = coarse_es.edge_const_1[i].v1;
-		int va2 = coarse_es.edge_const_1[i].v2;
-		int patch_a = coarse_dog.v_to_submesh_idx(va1);
-		int vb1 = coarse_es.edge_const_2[i].v1;
-		int vb2 = coarse_es.edge_const_2[i].v2;
-		int patch_b = coarse_dog.v_to_submesh_idx(vb1);
-		coarse_vertex_duplicates(va1, patch_b) = vb1;
-		coarse_vertex_duplicates(va2, patch_b) = vb2;
-		coarse_vertex_duplicates(vb1, patch_a) = va1;
-		coarse_vertex_duplicates(vb2, patch_a) = va2;
-	}
-	vector<vector<int>> patch_adj = fine_dog.get_submesh_adjacency();
-	//Also needed: vertex-vertex adjacency
+	//Helper data structure: vertex-vertex adjacency
 	vector<vector<int>> fine_vv(fine_V.rows());
 	vector<vector<int>> coarse_vv(coarse_V.rows());
 	map<pair<int,int>, int> fine_edge_to_row;
@@ -87,105 +39,82 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		coarse_edge_to_row[pair<int,int>(v1,v2)] = i;
 	}
 
-	//There will be a set of vertices to consider, until it finishes
-	//Start by checking the neighbours of the origin
-	vector<int> tocheck(0);
-	vector<int> tocheck_next = fine_vv[fine_origin];
-	vector<int> coarse_tocheck(0);
-	vector<int> coarse_tocheck_next = coarse_vv[coarse_origin];
-	int flooding_iteration = 0;
-	vector<bool> patch_reached(num_patches, false);
-	patch_reached[fine_dog.v_to_submesh_idx(fine_origin)] = true;
+	// get bounding boxes of patches
+	vector<double> min_x(num_patches), max_x(num_patches), min_y(num_patches), max_y(num_patches);
+	double dx = 0.0, dy = 0.0;
+	for(int i=0; i<num_patches; ++i){
+		int mini,maxi;
+		coarse_dog.get_submesh_min_max_i(i, mini,maxi);
+		min_x[i] = max_x[i] = coarse_V(mini, 0);
+		min_y[i] = max_y[i] = coarse_V(mini, 1);
+		for(int j = mini + 1; j <= maxi; ++j){
+			if(coarse_V(j,0) < min_x[i]) min_x[i] = coarse_V(j,0);
+			else if(coarse_V(j,0) > max_x[i]) max_x[i] = coarse_V(j,0);
+			if(coarse_V(j,1) < min_y[i]) min_y[i] = coarse_V(j,1);
+			else if(coarse_V(j,1) > max_y[i]) max_y[i] = coarse_V(j,1);
+		}
+	}
+	// Assumption: Distances between adjacent vertices are constant across the Dog
+	for(int i=0; i<fine_vv[0].size(); ++i){
+		dx = max(dx, abs(fine_V(0,0) - fine_V(fine_vv[0][i],0)) );
+		dy = max(dy, abs(fine_V(0,1) - fine_V(fine_vv[0][i],1)) );
+	}
+	// construct grids
+	vector<Eigen::MatrixXi> fine_grid(num_patches);
+	vector<Eigen::MatrixXi> coarse_grid(num_patches);
+	for(int i=0; i<num_patches; ++i){
+		//create grid
+		int fine_x_dim = round( (max_x[i] - min_x[i]) / dx ) + 1;
+		int fine_y_dim = round( (max_y[i] - min_y[i]) / dy ) + 1;
+		fine_grid[i].setConstant(fine_x_dim, fine_y_dim, -1);
+		int coarse_x_dim = ceil(0.5 * fine_x_dim);
+		int coarse_y_dim = ceil(0.5 * fine_y_dim);
+		coarse_grid[i].setConstant( coarse_x_dim, coarse_y_dim, -1);
 
-	//Flooding to determine type of all vertices
-	while(tocheck_next.size() > 0){
-		tocheck = tocheck_next;
-		tocheck_next.clear();
-		++flooding_iteration;
-		//cout << "flood: starting iteration "<<flooding_iteration<<"\n";
-
-		if(flooding_iteration%2 == 1){
-			//Every odd iteration has no link points
-			for(int i=0; i<tocheck.size(); ++i){
-				ftc[tocheck[i]] = FINEONLY_I;
-				//cout << "flood: "<<tocheck[i]<<" is fine-only and has a coarse neighbour\n";
-			}
-		} else {
-			//Even iterations require more thought
-			for(int i=0; i<tocheck.size(); ++i){
-				ftc[tocheck[i]] = FINEONLY_X;
-				//cout << "flood: "<<tocheck[i]<<" is an x unless stated otherwise\n";
-			}
-			/*
-			TODO find out why exactly coarse flooding fails (brute force method used until then)
-			//Do a coarse iteration
-			coarse_tocheck = coarse_tocheck_next;
-			coarse_tocheck_next.clear();
-			for(int coarse_i=0; coarse_i<coarse_tocheck.size(); ++coarse_i){
-				int coarse_u = coarse_tocheck[coarse_i];
-				*/
-			for(int coarse_i = 0; coarse_i<coarse_V.rows(); ++coarse_i){
-				int coarse_u = coarse_i;
-				int coarse_patch = coarse_dog.v_to_submesh_idx(coarse_u);
-				Eigen::RowVector3d coarse_p = coarse_V.row(coarse_u);
-				for(int fine_i=0; fine_i<tocheck.size(); ++fine_i){
-					int fine_u = tocheck[fine_i];
-					int fine_patch = fine_dog.v_to_submesh_idx(fine_u);
-					Eigen::RowVector3d fine_p = fine_V.row(fine_u);
-					//Compare the current vertices to be checked (coarse and fine) to find link points
-					if(coarse_patch==fine_patch && (coarse_p-fine_p).squaredNorm() < 0.0001){//TODO better check for equality?
-						// They are the same
-						ctf[coarse_u] = fine_u;
-						ftc[fine_u] = coarse_u;
-						//cout << "flood: linking coarse "<<coarse_u<<" to fine "<<fine_u <<"\n";
-						//Try to cross the border between submeshes
-						for(int i=0; i<patch_adj[fine_patch].size(); ++i){
-							int other_patch = patch_adj[fine_patch][i];
-							if( !patch_reached[other_patch] && fine_vertex_duplicates(fine_u, other_patch) != -1){
-								// There are a duplicate of vertices fine_u,coarse_u on other_patch
-								patch_reached[other_patch] = true;
-								int other_fine_u = fine_vertex_duplicates(fine_u, other_patch);
-								int other_coarse_u = coarse_vertex_duplicates(coarse_u, other_patch);
-								ftc[other_fine_u] = other_coarse_u;
-								ctf[other_coarse_u] = other_fine_u;
-								// Check neighbours on the other patch in the next iteration
-								for(int j=0; j<fine_vv[other_fine_u].size(); ++j){
-									int willcheck = fine_vv[other_fine_u][j];
-									ftc[willcheck] = WILLBECHECKED;
-									tocheck_next.push_back(willcheck);
-								}
-								for(int j=0; j<coarse_vv[other_coarse_u].size(); ++j){
-									int willcheck = coarse_vv[other_coarse_u][j];
-									ctf[willcheck] = WILLBECHECKED;
-//									coarse_tocheck_next.push_back(willcheck);
-								}
-							}
-						}
-
-					}
-				}
-				/*
-				for(int j=0; j<coarse_vv[coarse_tocheck[coarse_i]].size(); ++j){
-					int coarse_u = coarse_vv[coarse_tocheck[coarse_i]][j];
-					if(ctf[coarse_u] == UNCHECKED){
-						ctf[coarse_u] = WILLBECHECKED;
-						coarse_tocheck_next.push_back(coarse_u);
-//						cout << "flood: coarse["<<coarse_u<<"] must be checked next coarse iteration\n";
-					}
-				}
-				*/
+		//fill vertices into grid
+		int mini,maxi;
+		fine_dog.get_submesh_min_max_i(i, mini,maxi);
+		for(int j = mini; j <= maxi; ++j){
+			int x_idx = round( (fine_V(j,0)-min_x[i])/dx );
+			int y_idx = round( (fine_V(j,1)-min_y[i])/dy );
+			fine_grid[i](x_idx, y_idx) = j;
+		}
+		coarse_dog.get_submesh_min_max_i(i, mini,maxi);
+		for(int j = mini; j <= maxi; ++j){
+			int x_idx = round( (coarse_V(j,0)-min_x[i]) / (2*dx) );
+			int y_idx = round( (coarse_V(j,1)-min_y[i]) / (2*dy) );
+			coarse_grid[i](x_idx, y_idx) = j;
+		}
+		// use grid to fill ftc and ctf
+		// first: find link vertices
+		for(int j=0; j<coarse_x_dim; ++j){
+			for(int k=0; k<coarse_y_dim; ++k){
+				int coarse_i = coarse_grid[i](j, k);
+				int fine_i = fine_grid[i](2*j, 2*k);
+				if(coarse_i > -1 && fine_i > -1){
+					ftc[fine_i] = coarse_i;
+					ctf[coarse_i] = fine_i;
+				}// else if(coarse_i > -1 && fine_i < 0){
+				//	fine_grid[i](2*j, 2*k) = CURVEONLY_LINK;
+				//	ctf[coarse_i] = CURVEONLY_LINK;
+				//}
+				// curve submeshes got removed, so curveonly vertices are irrelevant
 			}
 		}
-
-		//Set unchecked neighbours to be checked in the next iteration
-		for(int i=0; i<tocheck.size(); ++i){
-			for(int j=0; j<fine_vv[tocheck[i]].size(); ++j){
-				int v = fine_vv[tocheck[i]][j];
-				if(ftc[v] == UNCHECKED){
-					ftc[v] = WILLBECHECKED;
-					tocheck_next.push_back(v);
-	//				cout << "flood: "<<v<<" must be checked next iteration\n";
+		// go through fine grid and label the fineonly vertices
+		for(int j=0; j<fine_x_dim; ++j){
+			for(int k=0; k<fine_y_dim; ++k){
+				int fine_i = fine_grid[i](j, k);
+				if(fine_i < 0) continue;
+				if(ftc[fine_i] > -1) continue;
+				bool has_link_neighbour = false;
+				// find out if one of the adjacent vertices is a link vertex
+				for(int l=0; l<fine_vv[fine_i].size(); ++l){
+					int adj = fine_vv[fine_i][l];
+					if(ftc[adj] > -1) has_link_neighbour = true;
 				}
+				if(has_link_neighbour) ftc[fine_i] = FINEONLY_I;
+				else ftc[fine_i] = FINEONLY_X;
 			}
 		}
 	}
@@ -256,54 +185,8 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 		}
 	}
 
-	// get bounding boxes of patches
-	vector<double> min_x(num_patches), max_x(num_patches), min_y(num_patches), max_y(num_patches);
-	double dx = 0.0, dy = 0.0;
-	for(int i=0; i<num_patches; ++i){
-		int mini,maxi;
-		coarse_dog.get_submesh_min_max_i(i, mini,maxi);
-		min_x[i] = max_x[i] = coarse_V(mini, 0);
-		min_y[i] = max_y[i] = coarse_V(mini, 1);
-		for(int j = mini + 1; j <= maxi; ++j){
-			if(coarse_V(j,0) < min_x[i]) min_x[i] = coarse_V(j,0);
-			else if(coarse_V(j,0) > max_x[i]) max_x[i] = coarse_V(j,0);
-			if(coarse_V(j,1) < min_y[i]) min_y[i] = coarse_V(j,1);
-			else if(coarse_V(j,1) > max_y[i]) max_y[i] = coarse_V(j,1);
-		}
-	}
-	// Assumption: Distances between adjacent vertices are constant across the Dog
-	for(int i=0; i<fine_vv[0].size(); ++i){
-		dx = max(dx, abs(fine_V(0,0) - fine_V(fine_vv[0][i],0)) );
-		dy = max(dy, abs(fine_V(0,1) - fine_V(fine_vv[0][i],1)) );
-	}
-	// construct grids
-	vector<Eigen::MatrixXi> fine_grid(num_patches);
-	vector<Eigen::MatrixXi> coarse_grid(num_patches);
-	for(int i=0; i<num_patches; ++i){
-		//create grid
-		int fine_x_dim = round( (max_x[i] - min_x[i]) / dx ) + 1;
-		int fine_y_dim = round( (max_y[i] - min_y[i]) / dy ) + 1;
-		fine_grid[i].setConstant(fine_x_dim, fine_y_dim, -1);
-		int coarse_x_dim = ceil(0.5 * fine_x_dim);
-		int coarse_y_dim = ceil(0.5 * fine_y_dim);
-		coarse_grid[i].setConstant( coarse_x_dim, coarse_y_dim, -1);
-
-		//fill vertices into grid
-		int mini,maxi;
-		fine_dog.get_submesh_min_max_i(i, mini,maxi);
-		for(int j = mini; j <= maxi; ++j){
-			int x_idx = round( (fine_V(j,0)-min_x[i])/dx );
-			int y_idx = round( (fine_V(j,1)-min_y[i])/dy );
-			fine_grid[i](x_idx, y_idx) = j;
-		}
-		coarse_dog.get_submesh_min_max_i(i, mini,maxi);
-		for(int j = mini; j <= maxi; ++j){
-			int x_idx = round( (coarse_V(j,0)-min_x[i]) / (2*dx) );
-			int y_idx = round( (coarse_V(j,1)-min_y[i]) / (2*dy) );
-			coarse_grid[i](x_idx, y_idx) = j;
-		}
+	/* CURVEONLY_I are no longer relevant
 		//mark places where curve submeshes need additional vertices
-		//(Of course, curve submeshes got removed. But the labels are still useful.)
 		for(int j = mini; j <= maxi; ++j){
 			if(ctf[j] > -1 ) continue;// coarse-only vertices are relevant
 			int x_idx = round( (coarse_V(j,0)-min_x[i]) / (2*dx) );
@@ -319,7 +202,8 @@ FineCoarseConversion::FineCoarseConversion(const Dog& fine_dog, const Dog& coars
 			if(y_idx < coarse_y_dim-1 && coarse_grid[i](x_idx, y_idx+1) > -1 && fine_grid[i](2*x_idx, 2*y_idx+1) == -1)
 				fine_grid[i](2*x_idx, 2*y_idx+1) = CURVEONLY_I;
 		}
-	}
+	*/
+
 	// use grids to map fine I vertices to coarse edges
 	for(int i=0; i<coarse_qt.E.rows(); ++i){
 		double x0 = coarse_V(coarse_qt.E(i,0), 0);
