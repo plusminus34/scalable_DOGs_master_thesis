@@ -334,11 +334,13 @@ void DeformationController::write_output_file(){
 	//outfile << "Flip sign: " << p.flip_sign << endl;
 	//outfile << "ADMM rho: " << p.admm_rho << endl;
 	//outfile << "ADMM gamma: " << p.admm_gamma << endl;
+	outfile << "Link vertex weight: " << p.ftc_weight << endl;
 
-	outfile << "iteration" << endl;
-	outfile << 0;
-	for(int i=1; i<stored_iterations; ++i) outfile << ", " << i;
-	outfile << endl;
+	outfile << "Other data" << endl;
+	outfile << "Number of vertices: " << globalDog->get_v_num() << endl;
+	outfile << "Number of submeshes: " << globalDog->get_submesh_n() << endl;
+
+	outfile << "Data per iteration" << endl;
 
 	outfile << "bending" << endl;
 	outfile << obj_data(0,2);

@@ -1094,6 +1094,11 @@ void DogSolver::single_iteration_coarse_guess(double& constraints_deviation, dou
     //update coarse mesh?
     if(p.ftc_update) fine_to_coarse_update();
 
+    update_obj_weights({p.bending_weight, p.isometry_weight/dog.getQuadTopology().E.rows(),
+      p.stitching_weight, p.soft_pos_weight, p.soft_pos_weight, p.pair_weight,
+      p.dihedral_weight, p.dihedral_weight, p.fold_bias_weight, p.mv_bias_weight,
+      p.paired_boundary_bending_weight, 0});
+
     cout << "all subsolvers done\n";
   }
   ++iter_i;
@@ -1468,33 +1473,34 @@ void DogSolver::coarse_to_fine_update(){
       sub_edgeCoords[submesh_2].row(k2) = fine_coords.row(j);
     }
   }
-
-  Eigen::VectorXi fine_links = fine_coarse.get_fine_link_b();
-  int num_links = fine_links.size() / 3;
-  for(int i=0; i<num_links; ++i){
-    auto row = coarse_dog.getV().row(fine_coarse.fine_to_coarse(fine_links[i])) *2;//coarse scale
-    link_bc[i] = row[0];
-    link_bc[i + num_links] = row[1];
-    link_bc[i + 2 * num_links] = row[2];
-  }
-  int v_num = dog.get_v_num();
-  int num_submeshes = sub_dog.size();
-  vector<Eigen::VectorXd> sub_link_bc(num_submeshes);
-  for(int i=0; i<num_submeshes; ++i){
-    sub_link_bc[i].resize(3 * sub_links_size[i]);
-  }
-  vector<int> sub_i(num_submeshes, 0);
-  for(int i=0; i<num_links; ++i){
-    int u = fine_links[i];
-    int patch = dog.v_to_submesh_idx(u);
-    sub_link_bc[patch][sub_i[patch]] = link_bc[i];
-    sub_link_bc[patch][sub_i[patch] + sub_links_size[patch]] = link_bc[i + num_links];
-    sub_link_bc[patch][sub_i[patch] + 2 * sub_links_size[patch]] = link_bc[i + 2 * num_links];
-    ++sub_i[patch];
-  }
-  update_link_vertices_constraints(link_bc);
-  for(int i=0; i<num_submeshes; ++i){
-    sub_dogsolver[i]->update_link_vertices_constraints(sub_link_bc[i]);
+  if(p.ftc_weight > 0){
+    Eigen::VectorXi fine_links = fine_coarse.get_fine_link_b();
+    int num_links = fine_links.size() / 3;
+    for(int i=0; i<num_links; ++i){
+      auto row = coarse_dog.getV().row(fine_coarse.fine_to_coarse(fine_links[i])) *2;//coarse scale
+      link_bc[i] = row[0];
+      link_bc[i + num_links] = row[1];
+      link_bc[i + 2 * num_links] = row[2];
+    }
+    int v_num = dog.get_v_num();
+    int num_submeshes = sub_dog.size();
+    vector<Eigen::VectorXd> sub_link_bc(num_submeshes);
+    for(int i=0; i<num_submeshes; ++i){
+      sub_link_bc[i].resize(3 * sub_links_size[i]);
+    }
+    vector<int> sub_i(num_submeshes, 0);
+    for(int i=0; i<num_links; ++i){
+      int u = fine_links[i];
+      int patch = dog.v_to_submesh_idx(u);
+      sub_link_bc[patch][sub_i[patch]] = link_bc[i];
+      sub_link_bc[patch][sub_i[patch] + sub_links_size[patch]] = link_bc[i + num_links];
+      sub_link_bc[patch][sub_i[patch] + 2 * sub_links_size[patch]] = link_bc[i + 2 * num_links];
+      ++sub_i[patch];
+    }
+    update_link_vertices_constraints(link_bc);
+    for(int i=0; i<num_submeshes; ++i){
+      sub_dogsolver[i]->update_link_vertices_constraints(sub_link_bc[i]);
+    }
   }
 }
 

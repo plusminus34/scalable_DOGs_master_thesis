@@ -65,8 +65,8 @@ public:
 		bool flip_sign = false;
 		double admm_rho = 1;
 		double admm_gamma = 1;
-		bool ftc_update = false;
-		double ftc_weight = 0.001;
+		bool ftc_update = true;
+		double ftc_weight = 0.1;
 
 		void InitSerialization() {
 			Add(bending_weight,std::string("bending_weight"));
