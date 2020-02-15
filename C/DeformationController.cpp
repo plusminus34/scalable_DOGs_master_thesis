@@ -296,7 +296,7 @@ void DeformationController::set_cylindrical_boundary_constraints() {
 void DeformationController::store_data(){
 	current_iteration = 0;
 	stored_iterations = iterations_to_store;
-	obj_data = Eigen::MatrixXd::Zero(stored_iterations, 6);
+	obj_data = Eigen::MatrixXd::Zero(stored_iterations, 8);
 }
 
 void DeformationController::store_output_row(){
@@ -306,6 +306,26 @@ void DeformationController::store_output_row(){
 	obj_data(current_iteration, 3) = dogSolver->get_isometry_obj_val();
 	obj_data(current_iteration, 4) = dogSolver->get_obj_val();
 	obj_data(current_iteration, 5) = dogSolver->get_last_iteration_time();
+
+	//objective assuming constraints at final timestep
+	double timestep_tmp = deformation_timestep;
+	if ((is_time_dependent_deformation) && (timestep_tmp < 1) ) {
+		deformation_timestep = 1.0;
+		update_dihedral_constraints();
+		positionalConstraintsBuilder->get_constraint_positions(bc);
+		dogSolver->update_point_coords(bc);
+
+		obj_data(current_iteration, 6) = dogSolver->get_obj_val();
+
+		deformation_timestep = timestep_tmp;
+		update_dihedral_constraints();
+		positionalConstraintsBuilder->get_constraint_positions(bc);
+		dogSolver->update_point_coords(bc);
+	} else {
+		obj_data(current_iteration, 6) = obj_data(current_iteration, 4);
+	}
+
+	obj_data(current_iteration, 7) = dogSolver->get_folding_bias_obj_val() * p.fold_bias_weight;
 }
 
 void DeformationController::write_output_file(){
@@ -335,6 +355,7 @@ void DeformationController::write_output_file(){
 	//outfile << "ADMM rho: " << p.admm_rho << endl;
 	//outfile << "ADMM gamma: " << p.admm_gamma << endl;
 	outfile << "Link vertex weight: " << p.ftc_weight << endl;
+	outfile << "Time step: " << deformation_timestep_diff << endl;
 
 	outfile << "Other data" << endl;
 	outfile << "Number of vertices: " << globalDog->get_v_num() << endl;
@@ -370,6 +391,16 @@ void DeformationController::write_output_file(){
 	outfile << "iteration time [s]" << endl;
 	outfile << obj_data(0,5);
 	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i,5);
+	outfile << endl;
+
+	outfile << "objective (with final constraints)" << endl;
+	outfile << obj_data(0, 6);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i, 6);
+	outfile << endl;
+
+	outfile << "objective (global, no folding bias)" << endl;
+	outfile << obj_data(0, 4) - obj_data(0, 7);
+	for(int i=1; i<stored_iterations; ++i) outfile << ", " << obj_data(i, 4) - obj_data(i, 7);
 	outfile << endl;
 
 	outfile.close();

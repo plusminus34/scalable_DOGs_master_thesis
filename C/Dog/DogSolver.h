@@ -209,6 +209,7 @@ public:
 	double get_isometry_obj_val() const;
 	double get_pos_obj_val() const;
 	double get_stitching_obj_val() const;
+	double get_folding_bias_obj_val() const;
 
 	double get_last_iteration_time() const;
 

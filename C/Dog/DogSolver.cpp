@@ -1531,6 +1531,9 @@ double DogSolver::get_pos_obj_val() const {
 double DogSolver::get_stitching_obj_val() const {
   return obj.stitchingConstraintsPenalty.obj(x);
 }
+double DogSolver::get_folding_bias_obj_val() const {
+  return obj.foldingBinormalBiasObj.obj(x);
+}
 
 double DogSolver::get_last_iteration_time() const {
   return iteration_time;
