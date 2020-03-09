@@ -79,11 +79,12 @@
 
 \chapter{Abstract}\label{sec:abstract}
 % ----------------------------------------------------------------------------------------------
-\chapter{Previous work}\label{sec:prev_work}
+\chapter{Introduction}\label{sec:intro}\label{sec:prev_work}
 %TODO make this into something
-Developable surfaces, defined as being locally isometric to a plane, are TODO cool bc reasons
-This project uses the work from \cite{Rabinovich:DogNets:2018}, \cite{Rabinovich:DogShapeSpace:2018}, and \cite{Rabinovich:CurvedFolds:2019} as a base.
-They use Discrete Orthogonal Geodesic nets (DOGs) to simulate deformations of developable surfaces
+Developable surfaces, defined as smooth surfaces with zero Gaussian curvature, are locally isometric to a plane. They are of interest in areas like architecture or manufacturing because they can be obtained by transforming a plane via bending (but not stretching). As such, simulating developable surfaces is a TODO topic in computer graphics.\newline
+This project uses the work from \cite{Rabinovich:DogNets:2018}, \cite{Rabinovich:DogShapeSpace:2018}, and \cite{Rabinovich:CurvedFolds:2019} as a starting point. These papers introduce the idea of using Discrete Orthogonal Geodesic nets (abbreviated as DOGs) to simulate deformations of developable surfaces.
+ This approach has certain advantages compared to previous methods, mainly in terms of flexibility. They do not depend on predefined rulings, making it possible to explore the full shape space.\newline %TODO more and possibly correct
+\cite{Rabinovich:DogNets:2018} made an editor where the user can interactively deform a DOG. Said editor supports creased folds (\cite{Rabinovich:CurvedFolds:2019}) and various types of constraints. The goal of this project was to work on the solver algorithm, mostly trying to make it suited for parallelization later on.\newline
 
 % ----------------------------------------------------------------------------------------------
 \chapter{Problem setting}\label{sec:problem}
@@ -112,29 +113,41 @@ The goal of the optimization is to minimize the bending energy of the DOG while 
 \begin{equation}
 f_{obj}(\mathbf{x}) = w_{bend} \cdot E_{bending}(\mathbf{x}) + \sum_{i \in \mbox{soft constraints}} w_i \cdot E_i(\mathbf{x})
 \end{equation}
+$\mathbf{x}$ in this case is a vector of size $3|V|$, containing the coordinates of all mesh vertices.\newline
 %TODO bending energy ... which is |L(F0) - L(F)|^2, L being the Laplacian
 The bending energy is computed by comparing the Laplacian $L$ of the current configuration to the Laplacian of the flat state
 \begin{equation}
 E_{bending}(\mathbf{x}) = |L(\mathbf{x_0}) - L(\mathbf{x})|^2
 \end{equation}
 Among the soft constraints, the following are the most important:\newline
-The isometry constraints ensure that all edges in the mesh keep their original length. The squared difference between the squared original length and the current squared length of each edge is added to the objective with a rather high weight.
+The isometry constraints ensure that all edges in the mesh keep their original length. For each edge $e_i$, the squared difference between the current squared length $l_i^2$ and the correct squared length $l_{0i}^2$ is added to the objective. The weight associated with the isometry constraints should be rather high to ensure that almost no stretching happens. This is important because the allowed transformations for developable surfaces do not include stretching.
 \begin{equation}
-E_{isometry}(\mathbf{x}) = \sum_{e \in \mbox{edges}} (e.l^2 - e.l_0^2)^2
+E_{isometry}(\mathbf{x}) = \sum_{i = 1}^{n_{edges}} (l_i^2((\mathbf{x})) - l_{0i}^2)^2
 \end{equation}
-The position constraints are the most common user-defined constraints. The user may select vertices $\mathbf{v}_i$ and drag them to desired locations $\mathbf{x}_i$. These constraints are added to the objective as simple spring energies.
+Position constraints are the most common user-defined constraints. The user can select certain vertices to constrain, then drag them around so they have the desired positions. Each position constraint adds a simple spring energy to the objective. Assuming $P$ position constraints, each constraint having an associated vertex position $\mathbf{v}_i$ and target position $\mathbf{p}_i$, the energy from the position constraints can be written as:
 \begin{equation}
-E_{posconst}(\mathbf{x}) = \sum_{i \in \mbox{pos constraints}} (\mathbf{v}_i - \mathbf{x}_i) \cdot (\mathbf{v}_i - \mathbf{x}_i)
+E_{posconst}(\mathbf{x}) = \sum_{i = 1}^P (\mathbf{v}_i(\mathbf{x}) - \mathbf{p}_i) \cdot (\mathbf{v}_i(\mathbf{x}) - \mathbf{p}_i)
 \end{equation}
-The stitching constraints resemble the position constraints, but have two differences. First, the target location is not fixed: Two points should have equal positions. Second, the points in question are not mesh vertices but edge points, defined as a convex combination of two vertices. They are defined on the crease points - intersections of crease curves and mesh edges.
+%TODO edge point constraints
+Similar to the position constraints are the edge point constraints. Their only difference is that they are defined on an edge point $\mathbf{e}$ instead of a mesh vertex $\mathbf{v}$. Edge points are defined by an edge $e \in E$ and a relative distance $t \in ]0,1[$. As such, the edge point constraints add the following term to the objective:
 \begin{equation}
-E_{stitch}(\mathbf{x}) = \sum_{i \in \mbox{crease points}} (t_i\mathbf{v}_{1i} + (1-t_i)\mathbf{v}_{2i}) \cdot (t_i\mathbf{w}_{1i} + (1-t_i)\mathbf{w}_{2i})
+E_{edgepoints}(\mathbf{x}) = \sum_{i = 1}^R (\mathbf{e}_i(\mathbf{x}) - \mathbf{r}_i) \cdot (\mathbf{e}_i(\mathbf{x}) - \mathbf{r}_i)
 \end{equation}
-Angle constraints can also be defined on crease points. The solver will then attempt to make the folding angle at that location equal to the desired angle. Note that the angle between the edges involved is not equal to the folding angle, so the correct angle $alpha_i$ between edges from different patches needs to be precomputed when creating the constraint. The objective works with the cosine of the angles, making angles with absolute value greater than $\frac{\pi}{2}$ problematic.
 \begin{equation}
-E_{angleconst}(\mathbf{x}) = \sum_{i \in \mbox{angle constraints}} (\cos \angle (\mathbf{v}_{1i} - \mathbf{v}_{2i}, \mathbf{w}_{1i} - \mathbf{w}_{2i}) - cos(\alpha_i))^2
+\mathbf{e_i} = t_i \mathbf{v}_{ai} + (1-t_i) \mathbf{v}_{bi}
 \end{equation}
-There are still more elements of the objective function. Some are variants of the parts above (like positional constraints on edge points), others are rarely relevant and have more complicated formulas. They will not be described in more detail.\newline
+Where $R$ is the number of edge point constraints and the $r_i$ are the target positions. It should be noted that the users can't define edge point constraints directly, but they are still used sometimes.\newline
+%The stitching constraints resemble the position constraints, but have two differences. First, the target location is not fixed: Two points should have equal positions. Second, the points in question are not mesh vertices but edge points, defined as a convex combination of two vertices. They are defined on the crease points - intersections of crease curves and mesh edges.
+The stitching constraints have a very important role. They ensure that the different patches of the DOG are actually connected to each other. The way they are implemented resembles the edge point constraints. Instead of moving an edge point to a specific location, they hold two different edge points together.
+\begin{equation}
+E_{stitching}(\mathbf{x}) = \sum_{i = 1}^C (\mathbf{c}_{ai}(\mathbf{x}) - \mathbf{c}_{bi}(\mathbf{x})) \cdot (\mathbf{c}_{ai}(\mathbf{x}) - \mathbf{c}_{bi}(\mathbf{x}))
+\end{equation}
+The stitching constraints are generated automatically and can't be changed by the user (except for their weight). The stitching constraints are applied on all $C$ crease points, which are the points where the crease curves intersect the mesh edges. They come in pairs $\mathbf{c}_{ai}$ nad $\mathbf{c}_{bi}$, corresponding to duplicate edge points in two different patches.\newline
+Angle constraints can also be defined on crease points. The solver will then attempt to make the folding angle at that location equal to the desired angle. The angle between the edges involved is not actually the same as the folding angle (which uses the surface tangents). This means that the correct angle $alpha_i$ between edges from different patches needs to be computed when the constraint is created. The objective works with the cosine of the angles, making angles with absolute value greater than $\frac{\pi}{2}$ problematic. The energy for $A$ angle constraints between edges $e_{ai}$ and $e_{bi}$ from different patches is computed as:
+\begin{equation}
+E_{angleconst}(\mathbf{x}) = \sum_{i = 1}^A (\cos( \angle(e_{ai}, e_{bi})(\mathbf{x})) - \cos(\alpha_i ))^2
+\end{equation}
+There are still more parts of the objective function. Some are variants of the elements above (e.g. paired vertices), others are rarely relevant and have more complicated formulas. They will not be described in more detail.\newline
 %- details on optimization
 \section{Optimization}
 The optimization is formulated as a Sequential Quadratic Programming problem and solved using the PARDISO (TODO src) solver. Each iteration starts by updating all constraints. Following that, PARDISO computes a better solution for the current constraints.
