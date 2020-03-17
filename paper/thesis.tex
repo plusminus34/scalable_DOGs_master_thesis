@@ -72,12 +72,18 @@
 
 \title{Scalable DOGs}
 \author{Linus Wigger}
+%TODO supervisor should be mentioned
+%TODO title image
 
 \begin{document}
 \maketitle
 %{\centering \includegraphics*[width=0.5\textwidth]{../../../pics/initial_state}\\}
 
+% ----------------------------------------------------------------------------------------------
 \chapter{Abstract}\label{sec:abstract}
+%TODO
+This thesis builds upon previous work about developable surfaces modeled by discrete orthogonal geodesic nets. The goal was to improve an interactive editing tool by modifying the solver so it can be parallelized. Several methods were implemented and tested. The first approach was based on domain decomposition and separated the system into smaller mostly independent subproblems. This didn't work well because the separate units were unable to handle certain important things. To fix it, a more multigrid-inspired method involving a coarse mesh was created. Different variants were added and removed to avoid certain issues. The method that performed best in the end was one of the simpler ones. Compared to the old solver, it tends to have results of similar quality but needs less time to obtain them. There are also significant parts of the workload that can be done concurrently.\newline
+
 % ----------------------------------------------------------------------------------------------
 \chapter{Introduction}\label{sec:intro}\label{sec:prev_work}
 The simulation of developable surfaces as been a topic of interest in computer graphics for years. A surface is called developable if it is locally isometric to a plane. In other words, it can be obtained by bending a flat shape without stretching it. In areas like architecture, developable surfaces are useful because they are easy to manufacture. The problem is that developable surfaces are hard to design because many constraints have to be satisfied for a surface in 3D to be developable.\newline
@@ -236,10 +242,14 @@ Figure \ref{fig:ftc_ctf} shows an example of a small patch, its coarse version, 
 \section{FineCoarseConversion}\label{sec:conversion} %TODO merge with above?
 This section provides a detailed description of the data structure linking the fine and coarse meshes. It is initially constructed after the meshes were created from the crease pattern and exploits the fact that all vertices lie in the $xy$-plane at that moment.\newline
 At the beginning, finding the link vertices is the most important step. The most basic way to identify the link vertices is to compare the coordinates of vertices in the fine mesh with those in the coarse mesh, but this is a brute force approach that is very expensive for large meshes.\newline
-%TODO more
 Originally the method to find equivalent vertices in the fine and coarse meshes was a flooding algorithm. It started at one vertex and traversed the meshes in a BFS manner. This was quite error-prone and required quite a bit extra work to find a good origin and cross from one patch to another.\newline
-%TODO picture and/or formulas
-The flooding method was replaced by another algorithm which treats each patch separately. Using the bounding box of all vertices within each patch and the distance between adjacent vertices it creates two rectangular grids per patch (one for the fine patch and one for the coarse patch). Each mesh vertex is assigned to one position in a grid. The advantage here is that it is very easy to go from fine to coarse and vice versa. As an example, the vertex at coarse grid coordinates $(1,2)$ corresponds to the vertex at fine grid coordinates $(2,4)$, the vertex at coarse coordinates $(1,3)$ is linked to the vertex at fine coordinates $(2,6)$, and the vertex at fine coordinates $(2,5)$ is a fine-only I-vertex that lies between them.\newline
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{../../../pics/0317_conversiongrid}
+    \caption{Grids for fine (left) and coarse (right) versions of a patch}
+    \label{fig:conversion_grid}
+\end{figure}
+The flooding method was replaced by another algorithm which treats each patch separately. Using the bounding box of all vertices within each patch and the distance between adjacent vertices it creates two rectangular grids per patch (one for the fine patch and one for the coarse patch). This is pictured in figure \ref{fig:conversion_grid}. Each mesh vertex is assigned to one position in a grid. The advantage here is that it is very easy to go from fine to coarse and vice versa. As an example, the vertex at coarse grid coordinates $(1,1)$ corresponds to the vertex at fine grid coordinates $(2,2)$, the vertex at coarse coordinates $(1,2)$ is linked to the vertex at fine coordinates $(2,4)$, and the vertex at fine coordinates $(2,3)$ is a fine-only I-vertex that lies between them. Not all positions in the grid are filled: The fine position $(6,4)$ in figure \ref{fig:conversion_grid} is empty, but the corresponding coarse vertex at $(3,2)$ exists, thus the coarse vertex $11$ is coarse-only.\newline
 In the end, this data structure holds all information that might be needed when changing between the fine and the coarse DOG. Most often it is used to convert indices of link vertices from one resolution to the other. It can also be used to determine the type of a vertex, map fine-only vertices to coarse edges or quads, and assign crease points in the two resolutions to each other.\newline
 Mapping crease points to their coarse or fine equivalents works the same as for mesh vertices: For each curve there are two arrays, one storing the coarse-to-fine correspondences and one for fine-to-coarse. Initializing these does not require any grid: Traversing the coarse and fine curves while comparing coordinates is enough.\newline% %TODO integrate this last part
 \section{Constraints on the coarse mesh}\label{sec:coarse_constraints}
@@ -338,7 +348,6 @@ Second, the results of the curve submesh solver are almost indistuingishable fro
 %There are many ways that the curve submeshes (section \ref{sec:curve_submeshes}) could still be useful. 
 % ----------------------------------------------------------------------------------------------
 \chapter{Regarding parallelization}\label{sec:parallelization}
-%TODO write something
 The PARDISO solver which is used to actually compute the solution is supposed to be parallelized already. Unfortunately, running the program with a higher number of threads slows down the iterations. The reason for that is not clear: It might be that our systems are too small to profit from the multithreaded version of PARDISO. This is supported by the fact that the slowdown is less extreme for larger meshes. % For example, testing showed that solving a certain system with two different resolutions. %TODO include pic? test description/results of some kind
 Another possibility that shouldn't be ruled out completely is that there is some semi-hidden parameter setting in the PARDISO solver which isn't being set correctly.\newline
 Actually parallelizing the solver is not the goal of this project but finding alternative solver modes that can be parallelized is. The ADMM methods allow every patch to be optimized on its own, which would make it possible to perform almost all computations in parallel. Even the steps where certain variables get updated at the start and end of the iteration could be parallelized to some degree. As such, ADMM methods looked like a great way to make the code more scalable.\newline
@@ -419,7 +428,7 @@ The coarse solver also has visibly different results for small meshes (i.e. the 
       \label{fig:results_compare_curves}
 \end{figure}
 \section{Timing}
-%coarse is faster ... but any patterns? not really
+%coarse is faster ... but any patterns? not really %TODO mention hardware
 \begin{figure}
     \centering
     \includegraphics[width=0.99\linewidth]{../../../pics/0308_timeperiteration_examples}
