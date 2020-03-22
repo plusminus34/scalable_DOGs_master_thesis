@@ -73,46 +73,121 @@
 \title{Scalable DOGs}
 \author{Linus Wigger}
 %TODO supervisor should be mentioned
-%TODO title image
 
 \begin{document}
-\maketitle
-%{\centering \includegraphics*[width=0.5\textwidth]{../../../pics/initial_state}\\}
+%\maketitle
+\begin{titlepage}
+	\topmargin 1.0cm
+	\oddsidemargin 0.0cm
+	\evensidemargin 0.0cm
+	%\textwidth 6.5in
+	\centering
+	\Huge
+	\vspace{3.0cm}
+	\textbf{\textsf{Scalable DOGs}} \\[2.0cm]
+	\includegraphics*[width=0.72\textwidth]{../../../pics/0318_valley43_pic3} \\ % TITLE IMAGE - replace by attractive and representative images from your thesis
+	\vspace{3cm}
+	\sffamily
+	\Large
+	Linus Wigger
+	\\[0.8cm]
+	\large
+	Master Thesis % Bachelor Thesis
+	\\
+	March 2020
+	\\[1.3cm]
+	\emph{Supervisors:}\\
+	Dr.\ Michael Rabinovich\\ 					% The name of the thesis supervisor
+	Dr.\ Philipp Herholz\\ 					% The name of the thesis supervisor
+	Prof.\ Dr.\ Olga Sorkine-Hornung		% The supervising professor
+	\vfill
+	\includegraphics*[width=0.3\textwidth]{figures/ETH_logo} \hfill
+	\includegraphics*[width=0.2\textwidth]{figures/IGL_logo}
+	\vspace{3.4cm}
+\end{titlepage}
+%\clearemptydoublepage
+%%
+
+\pagenumbering{roman}
+\setcounter{page}{1}
 
 % ----------------------------------------------------------------------------------------------
-\chapter{Abstract}\label{sec:abstract}
-%TODO
-This thesis builds upon previous work about developable surfaces modeled by discrete orthogonal geodesic nets. The goal was to improve an interactive editing tool by modifying the solver so it can be parallelized. Several methods were implemented and tested. The first approach was based on domain decomposition and separated the system into smaller mostly independent subproblems. This didn't work well because the separate units were unable to handle certain important things. To fix it, a more multigrid-inspired method involving a coarse mesh was created. Different variants were added and removed to avoid certain issues. The method that performed best in the end was one of the simpler ones. Compared to the old solver, it tends to have results of similar quality but needs less time to obtain them. There are also significant parts of the workload that can be done concurrently.\newline
+\chapter*{Abstract}\label{sec:abstract}
+This thesis builds upon previous work about developable surfaces modeled by discrete orthogonal geodesic nets. The goal was to improve an interactive editing tool by making the solver faster, focussing on algorithms that can be parallelized later on. The procedure was mostly to try out different methods that profit from parallelization and see which ones work. The first approach, based on domain decomposition, was very slow. Augmenting it by a coarse solver provided much better results while still enabling parallelization better than the original solver. There were more extensions, but most of them were not particularly useful. The best results are thus obtained by solving a coarse version of the problem first, then using this coarse solution to aid in solving parts of the actual system locally. Compared to the old solver, it tends to have results of similar quality but needs less time to obtain them even before parallelization. Significant parts of the workload can be done concurrently.\newline
+
+
+\tableofcontents
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\cleardoublepage
+
+\pagenumbering{arabic}
+%\renewcommand*{\chapterpagestyle}{mychapterpagestyle}
+\renewcommand*{\chapterformat}{}
 
 % ----------------------------------------------------------------------------------------------
-\chapter{Introduction}\label{sec:intro}\label{sec:prev_work}
-The simulation of developable surfaces as been a topic of interest in computer graphics for years. A surface is called developable if it is locally isometric to a plane. In other words, it can be obtained by bending a flat shape without stretching it. In areas like architecture, developable surfaces are useful because they are easy to manufacture. The problem is that developable surfaces are hard to design because many constraints have to be satisfied for a surface in 3D to be developable.\newline
+\chapter{Introduction}\label{sec:intro}
+\section{Developable surfaces as DOGs}
+The simulation of developable surfaces has been a topic of interest in computer graphics for years. A surface is called developable if it is locally isometric to a plane. In other words, it can be obtained by bending a flat shape without stretching it. In areas like architecture, developable surfaces are useful because they are easy to manufacture. The problem is that developable surfaces are hard to design because many constraints have to be satisfied for a surface in 3D to be developable.\newline
 The base of this project is formed by the work from \cite{Rabinovich:DogNets:2018}, where the idea of using Discrete Orthogonal Geodesic nets (abbreviated as DOGs) to simulate deformations of developable surfaces is used. This was followed up by \cite{Rabinovich:DogShapeSpace:2018}, which goes into more detail about the possible deformations, and \cite{Rabinovich:CurvedFolds:2019}, where the focus lay on folding with curved creases.\newline
-\cite{Rabinovich:DogNets:2018}'s approach to modeling developable surfaces has advantages to other, previous methods in terms of flexibility. They do not depend on predefined rulings, making it possible to explore the full shape space of possible deformations without having to change the mesh topology.\newline %TODO more and possibly correct, include references to other papers?
-\cite{Rabinovich:DogNets:2018} made an editor where the user can interactively deform a DOG. Said editor supports curved folds (starting in \cite{Rabinovich:DogShapeSpace:2018}, extended by \cite{Rabinovich:CurvedFolds:2019}) and various types of user-defined constraints. The goal of this project was to work on the solver algorithm, mostly trying to make it suited for parallelization later on.\newline
+\cite{Rabinovich:DogNets:2018} made an editor where the user can interactively deform a DOG. This editor supports curved folds (starting in \cite{Rabinovich:DogShapeSpace:2018}, extended by \cite{Rabinovich:CurvedFolds:2019}) and various types of user-defined constraints. The goal of this project was to work on the solver algorithm, mostly trying to make it suited for parallelization later on.\newline
+\section{Previous work (old)}\label{sec:prev_work_old}
+\cite{Rabinovich:DogNets:2018}'s approach to modeling developable surfaces has advantages to other, previous methods in terms of flexibility.  had interactive deformations of developable surfaces before, but they relied on explicit rulings and splitting the mesh into regions that can only deform in certain ways. DOGs do not depend on such predefined structures, making it possible to explore the full shape space of possible deformations without having to change the mesh topology.\newline %TODO rewrite ;include more references like \cite{liu_et_al}
+%TODO Domain decomposition and multigrid methods were possible ways to go. Multigrid requires refinement and coarsening, which are hard to with DOGs, so we went with domain decomposition. \cite{DDM_book} says we use a non-overlapping method with (later on) a coarse global solver, so okay %TODO this part man
+% \cite{DDM_book} is a book about domain decomposition ...i didnt check it too much...
+% initially: multigrid or domain decomposition. multigrid needs extra stuff, so domain decomposition seems easier to use. From domain decomposition it went to admm, admm also led to anderson acceleration.  then admm turned out to be crap and adding a coarse solver was good. but that's no longer previous work, is it
+%the book says something about coarse
+%include short problem description here? it's finite elements, optimization, with constraints
+The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver is completely serial and uses Sequential Quadratic Programming. There were two main directions to take in making it more suited for parallelization: Domain decomposition and multigrid methods.\newline
+Multigrid requires refinement and coarsening operators, which are not easily available for DOGs. Meanwhile, domain decomposition is aided by the fact that the creases naturally split the mesh into multiple regions. For these reasons, the initial focus lay on domain decomposition methods.\newline
+\cite{DDM_book} and \cite{unused_paper} seemed to be good starting points but then the focus shifted to the alternating direction method of multipliers (ADMM) as taken from \cite{Deng2017ParallelMA} and from there to Anderson acceleration \cite{Peng_2018} and \cite{Zhang_2019}.%  %TODO this part still sucks
+%the bases for domain decomposition, then \cite{Deng2017ParallelMA} for ADMM and
+%The main task lies in solving a highly constrained optimization problem. There is already a solver (using SQP) but it's so serial. Two main directions for improvement were there: Domain decomposition or multigrid methods. Multigrid needs coarsening and/or subdivision, which is a bit of a problem for DOGs. Furthermore, the mesh was already split into multiple regions naturally by the creases. Domain decomposition it is! \cite{DDM_book} includes a lot of stuff but the next most interesting thing was ADMM (TODOcite) and from there Anderson acceleration (TODOcite)...
+
+\section{Previous work (TODO)}\label{sec:prev_work}
+%TODO
+%first comes a part about developable surfaces\newline
+Developable surfaces are easy to produce, but hard to design. Approaches based on recreating 3D surfaces with developable surfaces exist (like \cite{liu_et_al} or \cite{kilian-2008-cf}), but here the goal is to have an interactive editor to smoothly deform a developable surface. Such editors exist as seen in \cite{bo_et_al} and \cite{tang_et_al}. Developable surfaces are often modeled as a set of patches where each patch is either planar, cylindrical, or conical (\cite{bo_et_al} do this, as do \cite{kilian-2008-cf}). This approach leads to a limited set of possible deformations because each patch can only deform in one way. \cite{Rabinovich:DogNets:2018}'s method has an advantage here: There is no dependence on explicit rulings and other such predefined structures. This makes it possible to explore the full space of deformations without changing the mesh topology in any way.\newline
+%then comes a part about folding and editors maybe\newline
+%something about what is done
+The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver as described in \cite{Rabinovich:CurvedFolds:2019} is completely serial and uses sequential quadratic programming with a line search algorithm.
+%then comes a part about domain decomposition, multigrid, admm and whatever\newline
+
+
 
 % ----------------------------------------------------------------------------------------------
 \chapter{Problem setting}\label{sec:problem}
 %- dog with constraints given
-The DOG is a quad mesh consisting of sets of vertices $V$, edges $E$ and faces $F$, joined by many constraints of various types. The mesh is initially constructed from a crease pattern - a two-dimensional set of curves defining the flat shape of the surface and its folds. The creases are fixed at construction, meaning the mesh topology remains constant afterwards and the user can't add or remove creases.\newline
+A DOG is a mesh consisting of sets of vertices $V$, edges $E$ and quadrilateral faces $F$, joined by many constraints of various types. The mesh is initially constructed from a crease pattern - a two-dimensional set of curves defining the flat shape of the surface and its folds. The creases are fixed at construction, meaning the mesh topology remains constant afterwards and the user can't add or remove creases.\newline
 \begin{figure}
     \centering
-    \setlength{\tabcolsep}{0.0130\linewidth}
     \includegraphics[width=0.8\linewidth]{../../../pics/0213_dog_from_creasepattern}
     \caption{Left: A crease pattern with one fold; Right: DOG obtained from the crease pattern with resolution $9 \times 7$; Green mesh elements have duplicates
       \label{fig:dog_from_creasepattern}}
 \end{figure}
 \begin{figure}
     \centering
-    \setlength{\tabcolsep}{0.0130\linewidth}
-    \includegraphics[width=0.33\linewidth]{../../../pics/0224_patches_split}
+    \includegraphics[width=0.33\linewidth]{figures/0224_patches_split}
     \caption{Patches when separated from each other
       \label{fig:patches_split}}
 \end{figure}
-Figure \ref{fig:dog_from_creasepattern} shows an example of a crease pattern and the resulting mesh. The given resolution $9 \times 7$ is the number of vertices in $x$ and $y$ direction, leading to $8 \times 6$ base quads. The parts around the crease are coloured green to signify that they are actually duplicated. All of the patches separated by the creases are actually disconnected, as seen in figure \ref{fig:patches_split}. They are held together by constraints on the curve points (which are shown in pink). For those constraints to work, all patches involved need to contain the relevant mesh elements, hence the duplication. Crease patterns with more creases can end up with more than two instances of one vertex.\newline
+Figure \ref{fig:dog_from_creasepattern} shows an example of a crease pattern and the resulting mesh. The given resolution $9 \times 7$ is the number of vertices in $x$ and $y$ direction, leading to $8 \times 6$ base quads. The parts around the crease are coloured green to signify that they are duplicated. All of the patches separated by the creases are disconnected, as seen in figure \ref{fig:patches_split}. They are held together by constraints on the curve points (which are shown in pink). For those constraints to work, all patches involved need to contain the relevant mesh elements, hence the duplication. Crease patterns with more creases can end up with more than two instances of one vertex.\newline
 A constrained optimization problem is then formulated to allow for specific deformations of the mesh. Bending, rigid transformations, and folding along creases are allowed. Stretching should not be possible. At the same time, certain other constraints must be satisfied.\newline
-The most important constraints are the "DOG constraints". As described \cite{Rabinovich:DogNets:2018}, all angles between edges around a single vertex mus be equal to guarantee that the surface is developable. The DOG constraints are slightly different on the boundary: Corner vertices have only two adjacent edges, and the angle between them must be equal to their angle in the original flat state.
-%- objective to be minimized
+The most important constraints are the "DOG constraints". As described in \cite{Rabinovich:DogNets:2018}, all angles between edges around a single vertex must be equal to guarantee that the surface is developable. Figure \ref{fig:dog_constraints} shows an inner vertex with the adjacent angles. The DOG constraints are slightly different on the boundary: Corner vertices have only two adjacent edges, and the angle between them must be equal to their angle in the original flat state.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{figures/0322_dogangles}
+    \caption{The DOG constraints state that the angles $\alpha_1$, $\alpha_2$, $\alpha_3$, $\alpha_4$ around a vertex must be equal at all times. In the flat state (left), all of them are $\frac{\pi}{2}$; when deformed (right), the angles become smaller.}
+    \label{fig:dog_constraints}
+\end{figure}
 \section{Objective function}\label{sec:objective}
 The goal of the optimization is to minimize the bending energy of the DOG while satisfying all constraints. Most of the constraints are soft, meaning they are part of the objective function. The only constraints that always get enforced strictly are the DOG constraints. The objective function ends up as a weighted sum of various energy terms.
 \begin{equation}
@@ -123,176 +198,193 @@ The bending energy is computed by comparing the Laplacian $L$ of the current con
 \begin{equation}
 E_{bending}(\mathbf{x}) = |L(\mathbf{x_0}) - L(\mathbf{x})|^2
 \end{equation}
-The DOG Laplacian was developed in \cite{Rabinovich:DogShapeSpace:2018}, chapter $6$ to be specific.\newline
+For the definition of the DOG Laplacian, see \cite{Rabinovich:DogShapeSpace:2018}, chapter 6.\newline
 Among the soft constraints, the following are the most important:\newline
-The isometry constraints ensure that all edges in the mesh keep their original length. For each edge $e_i$, the squared difference between the current squared length $l_i^2$ and the target squared length $l_{0i}^2$ is added to the objective, where $l_{0i}$ is the length that the edge $e_i$ has in the initial state. The weight associated with the isometry constraints should be rather high to ensure that almost no stretching happens. This is important because the allowed transformations for developable surfaces do not include stretching.
+The \textbf{isometry constraints} ensure that all edges in the mesh keep their original length. For each edge $e_i$, the squared difference between the current squared length $l_i^2$ and the target squared length $l_{0i}^2$ is added to the objective, where $l_{0i}$ is the length that the edge $e_i$ has in the initial state. The weight associated with the isometry constraints should be rather high to ensure that almost no stretching happens. This is important because the allowed transformations for developable surfaces do not include stretching.
 \begin{equation}
 E_{isometry}(\mathbf{x}) = \sum_{i = 1}^{|E|} (l_i^2(\mathbf{x}) - l_{0i}^2)^2
 \end{equation}
-Position constraints are the most common user-defined constraints. The user can select certain vertices to constrain, then drag them around so they have the desired positions. Each position constraint adds a simple spring energy to the objective. Assuming $P$ position constraints, each constraint having an associated vertex position $\mathbf{v}_i$ and target position $\mathbf{p}_i$, the energy from the position constraints can be written as:
+\textbf{Position constraints} are the most common user-defined constraints. The user can select certain vertices to constrain, then drag them around so they have the desired positions. Each position constraint adds a simple spring energy to the objective. Assuming $P$ position constraints, each constraint having an associated vertex position $\mathbf{v}_i$ and target position $\mathbf{p}_i$, the energy from the position constraints can be written as:
 \begin{equation}
 E_{posconst}(\mathbf{x}) = \sum_{i = 1}^P (\mathbf{v}_i(\mathbf{x}) - \mathbf{p}_i) \cdot (\mathbf{v}_i(\mathbf{x}) - \mathbf{p}_i)
 \end{equation}
-Similar to the position constraints are the edge point constraints. Their only difference is that they are defined on an edge point $\mathbf{e}$ instead of a mesh vertex $\mathbf{v}$. Edge points are defined by an edge $e \in E$ and a relative distance $t \in ]0,1[$. As such, the edge point constraints add the following term to the objective:
+Similar to the position constraints are the \textbf{edge point constraints}. Their only difference is that they are defined on an edge point $\mathbf{e}$ instead of a mesh vertex $\mathbf{v}$. Edge points are defined by an edge $e \in E$ and a relative distance $t \in ]0,1[$. As such, the edge point constraints add the following term to the objective:
 \begin{equation}
 E_{edgepoints}(\mathbf{x}) = \sum_{i = 1}^R (\mathbf{e}_i(\mathbf{x}) - \mathbf{r}_i) \cdot (\mathbf{e}_i(\mathbf{x}) - \mathbf{r}_i)
 \end{equation}
 \begin{equation}
 \mathbf{e_i}(\mathbf{x}) = t_i \mathbf{v}_{ai}(\mathbf{x}) + (1-t_i) \mathbf{v}_{bi}(\mathbf{x})
 \end{equation}
-Where $R$ is the number of edge point constraints, the $r_i$ are the target positions, and $\mathbf{v}_{ai}$ and $\mathbf{v}_{bi}$ stand for the two vertices connected by the edge. It should be noted that the users can't define edge point constraints directly, but they are still used sometimes.\newline
-%The stitching constraints resemble the position constraints, but have two differences. First, the target location is not fixed: Two points should have equal positions. Second, the points in question are not mesh vertices but edge points, defined as a convex combination of two vertices. They are defined on the crease points - intersections of crease curves and mesh edges.
-The stitching constraints have a very important role. They ensure that the different patches of the DOG are actually connected to each other. The way they are implemented resembles the edge point constraints. Instead of moving an edge point to a specific location, they hold two different edge points together.
+In the equation above, $R$ is the number of edge point constraints, the $r_i$ are the target positions, and $\mathbf{v}_{ai}$ and $\mathbf{v}_{bi}$ stand for the two vertices connected by the edge. It should be noted that the users can't define edge point constraints directly, but they are still used sometimes.\newline
+The \textbf{stitching constraints} have a very important role. They ensure that the different patches of the DOG are connected to each other. The way they are implemented resembles the edge point constraints. Instead of moving an edge point to a specific location, they hold two different edge points together.
 \begin{equation}
 E_{stitching}(\mathbf{x}) = \sum_{i = 1}^C (\mathbf{c}_{ai}(\mathbf{x}) - \mathbf{c}_{bi}(\mathbf{x})) \cdot (\mathbf{c}_{ai}(\mathbf{x}) - \mathbf{c}_{bi}(\mathbf{x}))
 \end{equation}
 The stitching constraints are generated automatically and can't be changed by the user (except for their weight). The stitching constraints are applied on all $C$ crease points, which are the points where the crease curves intersect the mesh edges. They come in pairs $\mathbf{c}_{ai}$ nad $\mathbf{c}_{bi}$, corresponding to duplicate edge points in two different patches.\newline
-Angle constraints can also be defined on crease points. The solver will then attempt to make the folding angle at that location equal to the desired angle. The objective works with the cosine of the angles, making angles with absolute value greater than $\frac{\pi}{2}$ problematic. The energy for $A$ angle constraints between edges $e_{ai}$ and $e_{bi}$ from different patches is computed as:
+\textbf{Angle constraints} can also be defined on crease points. The solver will then attempt to make the folding angle at that location equal to the desired angle. The objective function works with the cosine of the angles, making angles with an absolute value greater than $\frac{\pi}{2}$ problematic. The energy for $A$ angle constraints between edges $e_{ai}$ and $e_{bi}$ from different patches is computed as:
 \begin{equation}
 E_{angleconst}(\mathbf{x}) = \sum_{i = 1}^A (\cos( \angle(e_{ai}, e_{bi})(\mathbf{x})) - \cos(\alpha_i ))^2
 \end{equation}
-The angle $\alpha_i$ between the edges involved is not actually the same as the folding angle, which is defined by the surface tangents. This means that the correct angle $\alpha_i$ between edges from different patches needs to be computed when the constraint is created. $\alpha_i$ gets computed automatically using the nearby curve points. The full explanation can be found in section 5.1 of \cite{Rabinovich:CurvedFolds:2019}: Given a target folding angle $\theta$, and the angle $\beta$ (called $\alpha$ in \cite{Rabinovich:CurvedFolds:2019}) between the surface tangent on one patch and the crease curve tangent, $\alpha$ must satisfy
+The angle $\alpha_i$ between the edges involved is not the same as the folding angle, which is defined by the surface tangents. This means that the correct angle $\alpha_i$ between edges from different patches needs to be computed when the constraint is created. $\alpha_i$ gets computed automatically using the nearby curve points. The full explanation can be found in section 5.1 of \cite{Rabinovich:CurvedFolds:2019}: Given a target folding angle $\theta$, and the angle $\beta$ (called $\alpha$ in \cite{Rabinovich:CurvedFolds:2019}) between the surface tangent on one patch and the crease curve tangent, $\alpha$ must satisfy
 \begin{equation}
-\cos{\alpha}= \cos^2 \beta + \sin^2 \beta \cos \theta
+\cos(\alpha)= \cos^2(\beta) + \sin^2(\beta)\cos(\theta)
 \end{equation}
 There are still more parts of the objective function. Some are variants of the elements above (e.g. paired vertices), others are rarely relevant and have more complicated formulas. They will not be described in more detail.\newline
-%- details on optimization
 \section{Optimization}\label{sec:optimization}
-The optimization is formulated as a Sequential Quadratic Programming problem and solved using the PARDISO solver (\cite{pardiso-6.0a}, \cite{pardiso-6.0b}, \cite{pardiso-6.0c}). Each iteration starts by updating all constraints. Following that, PARDISO computes a better solution for the current constraints. As mentioned, the DOG constraints are enforced directly in PARDISO while other constraints like the user-defined ones are part of the objective function, but that is not all:\newline
-There are also folding constraints which make sure that the patches are folded in the same direction on all crease points in a single curve. One of the extra terms of the objective function mentioned at the end of the previous section is used for this. It wasn't described explicitly there because the computations involved are not human-readable and the value of the end result is usually close to zero once the mesh is no longer flat.\newline
-That said, the folding constraints are enforced more strictly than others: If the mesh isn't folded when using the result from PARDISO, then the vertex positions get rolled back and the iteration is repeated with a higher weight ($\times 10$) for the folding constraints. This can happen multiple times in "one" iteration, but it rarely happens more than once.\newline
+The optimization is formulated as a Sequential Quadratic Programming problem and solved using the PARDISO solver (\cite{pardiso-6.0a}, \cite{pardiso-6.0b}, \cite{pardiso-6.0c}). Each iteration starts by updating all constraints. Following that, PARDISO computes a better solution for the current constraints. As mentioned, the DOG constraints are always enforced directly in PARDISO while other constraints like the user-defined ones are part of the objective function, but that is not all:\newline
+There are also folding constraints which make sure that the patches are folded in the same direction on all crease points in a single curve. One of the extra terms of the objective function mentioned at the end of the previous section is used for this.\newline
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{figures/0322_folding_constraints}
+    \caption{\textbf{Folding example}: Left: The osculating plane is formed by the three pink crease points; Middle: Mesh is folded at the central crease point because the visible parts of both edges are on the same side of the osculating plane; Right: The two copies of the edge are identical, making the mesh not folded}
+    \label{fig:folding_constraints}
+\end{figure}
+The folding constraints check the orientation of the edges at most crease points. At each interior crease point, there is a previous and a following crease point. Using the previous and next crease points, it is possible to define the local osculating plane of the curve, shown as a pink line on the right side of figure \ref{fig:folding_constraints}. There are also two mesh edges at a crease point (one per adjacent patch) which are colored blue and red in figure \ref{fig:folding_constraints}. The mesh is considered folded if the visible edges at the crease point are both on the same side of the osculating plane. For more details on the folding constraints, see \cite{Rabinovich:CurvedFolds:2019}, particularly section 6.3.\newline
+% It wasn't described explicitly there because the computations involved are not human-readable and the value of the end/result is usually close to zero once the mesh is no longer flat.\newline
+The folding constraints are enforced more strictly than others: If the mesh isn't folded when using the result from PARDISO, then the vertex positions get rolled back and the iteration is repeated with a higher weight ($\times 10$) for the folding constraints. This can happen multiple times in "one" iteration, but it rarely happens more than once.\newline
 There is a checkbox in the editor where the user can disable "folding mode". For simple crease patterns, this has only minor effects and the result looks almost the same. More problematic are larger meshes with multiple folds, especially when said folds result in many patches connected in series. In those cases, disabling folding mode makes it likely that adjacent patches are not folded, meaning there is no $C^0$ discontinuity on the patch border. This is undesirable because it defeats the point of having the creases.\newline
-For more details on the folding, see \cite{Rabinovich:CurvedFolds:2019}, particularly section 6.3. The methods introduced later on in this work tend to not care too much about the folding being correct, especially because they split the problem across patches and the folding constraints are difficult to enforce locally.\newline
+The methods introduced later on in this work tend to not care too much about the folding being correct, especially because they split the problem across patches and the folding constraints are difficult to enforce locally.\newline
 % ----------------------------------------------------------------------------------------------
 \chapter{ADMM}\label{sec:admm}
 As can be seen in the previous chapter, most parts of the objective function are separable in the sense that they can be split into contributions from different patches. This is the case for the bending energy, isometry constraints, and position constraints. The stitching and angle constraints connect vertices across patch boundaries and are therefore not separable.\newline
-The idea is to use the alternating direction method of multipliers (ADMM) as described in \cite{Deng2017ParallelMA}. This method can be applied to a problem of the form
+The idea is to use the alternating direction method of multipliers (ADMM) as described in \cite{Deng2017ParallelMA}. There the method is applied to a problem of the form
 \begin{equation}
 \begin{array}{lr}
 \mbox{min} & \Sigma_{i=1}^{N} f_i(\mathbf{x}_i) \\
 \mbox{s.t.} & \Sigma_{i=1}^{N} A_i \mathbf{x}_i = c
 \end{array}
 \end{equation}
-If $N$ is the number of patches, $f_i$ would be the objective function on the submesh corresponding to the patch $i$. The second part corresponds to patch-crossing constraints like the stitching constraints. The advantage of ADMM is that the local subproblems can be solved in parallel.\newline
+If $N$ is the number of patches, $f_i$ would be the objective function on the submesh corresponding to the patch $i$. The second part corresponds to patch-crossing constraints like the stitching constraints. It doesn't match our problem exactly, because the DOG constraints are not linear. The advantage of ADMM is that the local subproblems can be solved in parallel.\newline
 \section{Variant: Subsolvers}
 The most basic ADMM-like method optimizes each patch separately. The stitching constraints on the global mesh are replaced by edge point constraints on the patches. After each iteration, these edge point constraints get updated with the positions obtained in the adjacent patches. This method requires no additional objective terms.\newline
 \section{Variant: Variable Splitting ADMM}
-Variable Splitting ADMM (see algorithm 1 in \cite{Deng2017ParallelMA}) works similar to Subsolvers but adds a few extra elements: The local objective functions% $f_{obj}^i(\mathbf{x})$
- are extended by an additional term $\frac{\rho}{2}|A_i - z^{k+1}_i -\frac{\lambda_i^k}{\rho} |^2$. $\lambda$ and $z_i$ are extra variables that are updated in each iteration while $\rho$ is a new parameter that was usually simply set to $1$. The $z_i$ are set to $A_i x_i - \frac{1}{N}\sum_{j=1}^N(A_j x_j + \frac{\lambda_j}{\rho})$. After obtaining a new $x_i$ from the solver, the $\lambda_i$ get updated to $\lambda_i - \rho(A_i x_i - z_i +\frac{\lambda_i}{\rho})$
+Variable Splitting ADMM (see algorithm 1 in \cite{Deng2017ParallelMA}) works similar to Subsolvers but adds a few extra elements: The local objective functions %$f_{obj}^i(\mathbf{x})$
+ are extended by an additional term
+\begin{equation}
+\frac{\rho}{2}|A_i - z^{k+1}_i -\frac{\lambda_i^k}{\rho} |^2 
+\end{equation}
+$\lambda$ and $z_i$ are extra variables that are updated in each iteration. $\rho$ is a new parameter that is usually simply set to $1$. The $z_i$ are defined as $A_i x_i - \frac{1}{N}\sum_{j=1}^N(A_j x_j + \frac{\lambda_j}{\rho})$. After obtaining a new $x_i$ from the solver, the $\lambda_i$ get updated to $\lambda_i - \rho(A_i x_i - z_i +\frac{\lambda_i}{\rho})$
 \section{Variant: Proximal Jacobian ADMM}
-Proximal Jacobian ADMM (see algorithm 4 in \cite{Deng2017ParallelMA}) adds another extra term to VSADMM and changes the way $z_i$ and $\lambda$ are computed. A proximal term $\frac{\rho}{2} dx_i^T P dx_i$ is added, where $dx_i$ is the difference $x_i - x_{0i}$ ($x_{0i}$ being the resulting $x_i$ from the previous iteration) and $P$ is a diagonal matrix. $z_i$ in this variant is computed as $A_i x_i - \sum_{j=1}^N + \frac{\lambda}{\rho}$ and $\lambda$ (which is constant across patches) becomes $\lambda - \rho \gamma \sum_{i=1}^N A_i x_i$ ($\gamma$ being a damping parameter > 0).% %TODO P is what?
+Proximal Jacobian ADMM (see algorithm 4 in \cite{Deng2017ParallelMA}) adds another extra term to VSADMM and changes the way $z_i$ and $\lambda$ are computed. A proximal term is added to the objective function of each patch.
+\begin{equation}
+\frac{\rho}{2} dx_i^T P_i dx_i
+\end{equation}
+$dx_i$ is the difference $x_i - x_{0i}$ ($x_{0i}$ being the resulting $x_i$ from the previous iteration) and $P_i$ is a symmetric positive definite matrix. \cite{Deng2017ParallelMA} mention two common choices for $P_i$: $\tau_i I$ or $\tau_i I -\rho A_i^\top A_i$. We use the former, with $\tau_i = \frac{0.001}{N-1}$ ($N$ being the number of patches).\newline
+$z_i$ in this variant is computed as $A_i x_i - \sum_{j=1}^N + \frac{\lambda}{\rho}$ and $\lambda$ (which is constant across patches) becomes $\lambda - \rho \gamma \sum_{i=1}^N A_i x_i$ ($\gamma$ being a damping parameter > $0$).
 \section{ADMM results}
 \begin{figure}
     \centering
-    \includegraphics{../../../pics/0311_howtoflatten}
+    \includegraphics[width=0.6\linewidth]{figures/0311_howtoflatten}
     \caption{Setup for ADMM testing: Left is the initial state, right is how the final result should look like}
     \label{fig:admm_setup}
 \end{figure}
-The ADMM methods are not good for this problem. This can be demonstrated by a simple test: Starting from a folded configuration as seen in figure \ref{fig:admm_setup}, the goal is to minimize the bending energy by flattening the mesh. There are only minimal constraints: Beyond the fixed constraints (DOG, stitching, etc.) there is only a single positional constraint.\newline
+The ADMM methods are not a good choice for this problem. This can be demonstrated by a simple test: Starting from a folded configuration as seen in figure \ref{fig:admm_setup}, the goal is to minimize the bending energy by flattening the mesh. There are only minimal constraints: Beyond the fixed constraints (DOG, stitching, etc.) there is only a single positional constraint.\newline
 Figure \ref{fig:admm_results} plots the objective function for this simple problem over $1000$ iterations. Even ignoring the exact numbers (because all methods have slightly different objective functions) the existing "standard" solver reaches a solution very quickly (less than $50$ iterations after which the solution stays constant). The ADMM-based methods are slow at best and at worst there are stability issues: Proximal Jacobian ADMM can spontaneously break everything, even long after it looks like the DOG has stabilized.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.99\linewidth]{../../../pics/0221_flattenplot_from_1025}
+    \includegraphics[width=0.99\linewidth]{figures/0221_flattenplot_from_1025}
     \caption{Objective function values for flattening a simple DOG}
     \label{fig:admm_results}
 \end{figure}
-Angle constraints are difficult to enforce in the ADMM solver because, like the stitching constraints, they connect vertices from different patches to each other. Updating the coordinates of points outside the local patch after each iteration causes heavy jittering in the results (due to overshooting from both sides). Angle constraints could in theory be reformulated to work with a crease curve of the DOG instead of arbitrary edges. This would allow them to be split into two half-constraints that use only local information on each patch.\newline
-The main problem with the ADMM variants is that they assume the crease curves to be constant. Given that finding the shape of the curves in 3D is one of the more important aspects of the optimization, this is a very bad assumption. Additionally, ADMM as described in \cite{Deng2017ParallelMA} assumes that the problem  is convex, which it is not (due to all the constraints).\newline
+Angle constraints are difficult to enforce in the ADMM solver because, like the stitching constraints, they connect vertices from different patches to each other. Updating the coordinates of points outside the local patch after each iteration causes heavy jittering in the results (due to overshooting from both sides). The angle constraints could, in theory, be reformulated to work with a crease curve of the DOG instead of arbitrary edges. This would allow them to be split into two half-constraints that use only local information on each patch.\newline
+The main problem with the ADMM variants is that they assume the crease curves to be constant. Given that finding the shape of the curves in 3D is one of the more important aspects of the optimization, this is a very bad assumption. Additionally, ADMM, as described in \cite{Deng2017ParallelMA}, assumes that the problem  is convex, but it is not (due to all the constraints).\newline
 
 % ----------------------------------------------------------------------------------------------
 \chapter{Coarse method}\label{sec:coarse}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{../../../pics/0311_coarse_pipeline}
+    \includegraphics[width=0.8\linewidth]{figures/0311_coarse_pipeline}
     \caption{The four steps of the coarse method: 1) Solve on coarse mesh 2) Coarse-to-fine update 3) Solve on fine patch submeshes 4) Fine-to-coarse update}
      \label{fig:coarse_method}
 \end{figure}
-It's very important to know where in 3D the crease curves end up but the ADMM methods are unsuited for that. An approach that can handle deformations of the curves was needed.\newline
+In the ADMM methods, the crease curves were only deformed very slowly and the solution suffered from it. It is very important to find out where in 3D the crease curves end up: Knowing the shape of the curve limits the shape of the patches to a very small set (for a single curve with two adjacent patches there are only two possible folded configurations). More details on this can be found in \cite{Rabinovich:CurvedFolds:2019}, section 4.1.\newline
 The idea behind the following method is to quickly compute a guess for the crease curves in 3D and use these to optimize all patches locally. To compute the guess, a coarse version of the global DOG will be used.\newline
 In the spirit of multigrid methods, a single iteration with the coarse mesh works in four main steps, pictured in figure \ref{fig:coarse_method}:\newline%solve coarse globally; coarse-to-fine update; solve fine locally; fine-to-coarse update
 \begin{itemize}
-\item Coarse solve
+\item Coarse iteration
 \item Coarse-to-fine update
-\item Fine solve
+\item Fine iteration
 \item Fine-to-coarse update
 \end{itemize}
 %TODO pseudocode?
-The coarse solve is a standard global solver iteration. It is fast because it doesn't use the actual DOG but a coarse version of it. The fine solve consists of solving each patch separately (like in ADMM). The coarse-to-fine and fine-to-coarse updates transfer information between the two resolutions.\newline
-How exactly the four steps work varies slightly between most of the tried variants. The coarse and fine solves work the same for the most part, plus or minus a few constraints. The coarse-to-fine and especially fine-to-coarse updates can differ very much. It is like that because for DOGs there is no straightforward way to coarsen/subdivide a mesh while fulfilling all necessary constraints.\newline
-The coarse-to-fine update always involves the crease curves. The crease points from the coarse mesh get used as constraints in the appropriate fine patches. For some points on the fine curve this involves interpolating between coarse curve points
+The coarse iteration is a standard global solver iteration. It is fast because it does not use the actual DOG but a coarse version of it. The fine iteration consists of solving each patch separately (like in ADMM). The coarse-to-fine and fine-to-coarse updates transfer information between the two resolutions.\newline
+How exactly the four steps work varies slightly between most of the tried variants. The coarse and fine iterations work the same for the most part, plus or minus a few constraints. The coarse-to-fine and especially fine-to-coarse updates can differ very much. The reason is that for DOGs there is no straightforward way to coarsen/subdivide a mesh while fulfilling all necessary constraints.\newline
+The coarse-to-fine update always involves the crease curves. The crease points from the coarse mesh get used as constraints in the appropriate fine patches. For some points on the fine curve, this involves interpolating between coarse curve points.
 \section{Coarse mesh}\label{sec:coarse_construction}
 The coarse mesh gets constructed using the same method as the fine one, the only difference being its resolution, which is half the regular resolution in both $x$ and $y$, rounded up. As the resolution corresponds to the number of vertices in each direction, this ensures that each coarse edge consists of two fine edges and each coarse quad covers four fine quads (when looking at a flat DOG).\newline
 Given the fine and coarse meshes, an auxiliary data structure that links the two gets constructed. This data structure holds all information necessary to switch between resolutions. Important parts include the fine-to-coarse and coarse-to-fine arrays. For each vertex in the fine and coarse mesh, they store the index of the vertex that has the same position in the other resolution. Given that the fine mesh is roughly four times the size of the coarse mesh, there are of course many vertices with no direct counterpart. For those, the arrays store a negative number which can further identify the type of the vertex in question.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{../../../pics/0213_ftc_ctf}
+    \includegraphics[width=0.7\linewidth]{figures/0213_ftc_ctf}
     \caption{Top: Fine patch; Bottom: Coarse patch; Right: Fine-to-coarse and coarse-to-fine arrays
       \label{fig:ftc_ctf}}
 \end{figure}
 Figure \ref{fig:ftc_ctf} shows an example of a small patch, its coarse version, and the associated helper arrays. The type of a vertex determines its colour:\newline
 \begin{itemize}
-\item \textbf{Link} vertices are those that are part of both meshes. They are coloured green in the picture.
+\item \textbf{Link} vertices are those that are part of both meshes. They are colored green in the picture.
 \item \textbf{Fine-only} vertices appear only in the fine mesh. They can further be differentiated into
 \begin{itemize}
 \item \textbf{I}-vertices (shown in light blue) which are adjacent to at least one link vertex
-\item \textbf{X}-vertices (shown in purple) whose only direct neighbours are other fine-only vertices
+\item \textbf{X}-vertices (shown in purple) whose only direct neighbors are other fine-only vertices
 \end{itemize}
 \item \textbf{Coarse-only} vertices (red in the picture) can only appear near the creases. As their name implies, they exist only on the coarse mesh.
 \end{itemize}
-\section{FineCoarseConversion}\label{sec:conversion} %TODO merge with above?
-This section provides a detailed description of the data structure linking the fine and coarse meshes. It is initially constructed after the meshes were created from the crease pattern and exploits the fact that all vertices lie in the $xy$-plane at that moment.\newline
-At the beginning, finding the link vertices is the most important step. The most basic way to identify the link vertices is to compare the coordinates of vertices in the fine mesh with those in the coarse mesh, but this is a brute force approach that is very expensive for large meshes.\newline
+%\section{FineCoarseConversion}\label{sec:conversion} %TODO merge with above?
+\label{sec:conversion}
+%This section provides a detailed description of the data structure linking the fine and coarse meshes.
+The next part will describe how the actual connections between the fine and coarse mesh are made. The fine-to-coarse and coarse-to-fine arrays get built after the meshes have been created from the crease pattern. At that moment all vertices lie in the $xy$-plane, a fact which can be exploited to make things easier.\newline
+In the beginning, finding the link vertices is the most important step. The most basic way to identify the link vertices is to compare the coordinates of vertices in the fine mesh with those in the coarse mesh, but this is a brute force approach that is very expensive for large meshes.\newline
 Originally the method to find equivalent vertices in the fine and coarse meshes was a flooding algorithm. It started at one vertex and traversed the meshes in a BFS manner. This was quite error-prone and required quite a bit extra work to find a good origin and cross from one patch to another.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.9\linewidth]{../../../pics/0317_conversiongrid}
+    \includegraphics[width=0.9\linewidth]{figures/0317_conversiongrid}
     \caption{Grids for fine (left) and coarse (right) versions of a patch}
     \label{fig:conversion_grid}
 \end{figure}
-The flooding method was replaced by another algorithm which treats each patch separately. Using the bounding box of all vertices within each patch and the distance between adjacent vertices it creates two rectangular grids per patch (one for the fine patch and one for the coarse patch). This is pictured in figure \ref{fig:conversion_grid}. Each mesh vertex is assigned to one position in a grid. The advantage here is that it is very easy to go from fine to coarse and vice versa. As an example, the vertex at coarse grid coordinates $(1,1)$ corresponds to the vertex at fine grid coordinates $(2,2)$, the vertex at coarse coordinates $(1,2)$ is linked to the vertex at fine coordinates $(2,4)$, and the vertex at fine coordinates $(2,3)$ is a fine-only I-vertex that lies between them. Not all positions in the grid are filled: The fine position $(6,4)$ in figure \ref{fig:conversion_grid} is empty, but the corresponding coarse vertex at $(3,2)$ exists, thus the coarse vertex $11$ is coarse-only.\newline
+The flooding method was replaced by another algorithm that treats each patch separately. Using the bounding box of all vertices within each patch and the distance between adjacent vertices it creates two rectangular grids per patch (one for the fine patch and one for the coarse patch). This is pictured in figure \ref{fig:conversion_grid}. Each mesh vertex is assigned to one position in a grid. The advantage here is that it is very easy to go from fine to coarse and vice versa. As an example, the vertex at coarse grid coordinates $(1,1)$ corresponds to the vertex at fine grid coordinates $(2,2)$, the vertex at coarse coordinates $(1,2)$ is linked to the vertex at fine coordinates $(2,4)$, and the vertex at fine coordinates $(2,3)$ is a fine-only I-vertex that lies between them. Not all positions in the grid are filled: The fine position $(6,4)$ in figure \ref{fig:conversion_grid} is empty, but the corresponding coarse vertex at $(3,2)$ exists, thus the coarse vertex $11$ is coarse-only.\newline
 In the end, this data structure holds all information that might be needed when changing between the fine and the coarse DOG. Most often it is used to convert indices of link vertices from one resolution to the other. It can also be used to determine the type of a vertex, map fine-only vertices to coarse edges or quads, and assign crease points in the two resolutions to each other.\newline
-Mapping crease points to their coarse or fine equivalents works the same as for mesh vertices: For each curve there are two arrays, one storing the coarse-to-fine correspondences and one for fine-to-coarse. Initializing these does not require any grid: Traversing the coarse and fine curves while comparing coordinates is enough.\newline% %TODO integrate this last part
+Mapping crease points to their coarse or fine equivalents works the same as for mesh vertices: For each curve, there are two arrays, one storing the coarse-to-fine correspondences and one for fine-to-coarse. Initializing these does not require any grid: Traversing the coarse and fine curves while comparing coordinates is enough.\newline% %TODO integrate this last part
 \section{Constraints on the coarse mesh}\label{sec:coarse_constraints}
-The coarse mesh should provide good approximation of the fine solution. This means subjecting it to the same constraints as the fine mesh. For some constraints this is easier than for others.\newline
+The coarse mesh should provide a good approximation of the fine solution. This means subjecting it to the same constraints as the fine mesh. For some constraints, this is easier than for others.\newline
 The main DOG constraints of equal angles between edges around one vertex still apply, just using the topology of the coarse mesh now. Similarly, isometry and stitching constraints work like in the fine mesh but using other vertices.\newline
-The user-defined position and angle constraints can cause issues. If a constraint is defined on a fine-only vertex, then the coarse solver would need to approximate that constraint. This wasn't implemented, so all user-defined position constraints need to use link vertices.\newline
+The user-defined position and angle constraints can cause issues. If a constraint is defined on a fine-only vertex, then the coarse solver would need to approximate that constraint. This was not implemented, so all user-defined position constraints need to use link vertices.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{../../../pics/0311_coarse_angle}
+    \includegraphics[width=0.8\linewidth]{figures/0311_coarse_angle}
     \caption{Angle constraint between two patches: The mesh vertices involved in the angle constraint are circled in red/green (depending on the patch). The original resolution is on the left side, coarse is on the right side. Notice how the coarse version of the constraint uses different vertices}
       \label{fig:angleconstraint_ftc}
 \end{figure}
-As the angle constraints lie on edge points (i.e. between two mesh vertices) it is impossible to have all relevant vertices be link vertices. The constraint is thus modified a bit: Assuming one of the vertices involved is a link vertex, then the other is a fine-only I-vertex. In the coarse mesh, the I-vertex gets replaced by the next coarse vertex in that direction. Figure \ref{fig:angleconstraint_ftc} shows an example of how the vertices used change in the coarse mesh. Finding the coarse vertices in the location of the dashed circles is easy if a mapping from I-vertices to coarse edges is precomputed and stored in the FineCoarseConversion.\newline
+As the angle constraints lie on edge points (i.e. between two mesh vertices) it is impossible to have all relevant vertices be link vertices. The constraint is thus modified a bit: Assuming one of the vertices involved is a link vertex, then the other is a fine-only I-vertex. In the coarse mesh, the I-vertex gets replaced by the next coarse vertex in that direction. Figure \ref{fig:angleconstraint_ftc} shows an example of how the used vertices change in the coarse mesh. Finding the coarse vertices in the location of the dashed circles is easy if a mapping from I-vertices to coarse edges is precomputed and stored in the fine-coarse conversion data structure.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.9\linewidth]{../../../pics/0308_angleconstraint_ugliness}
+    \includegraphics[width=0.9\linewidth]{figures/0308_angleconstraint_ugliness}
     \caption{Angle constraint at the pink marker. On the right is zoomed-in view of the green rectangle. Blue arrows point to vertices that lie outside the local plane.}
       \label{fig:angleconstraint_ugliness}
 \end{figure}
-The coarse angle constraints definitely change the results of the computation, but arguably it is an improvement. Angle constraints often result in shapes like in figure \ref{fig:angleconstraint_ugliness}, where the angle constraint is technically satisfied at the crease point, but the mesh doesn't look smooth in that region. Taking a coarse angle constraint lessens this local irregularity.\newline
+The coarse angle constraints definitely change the results of the computation, but arguably it is an improvement. Angle constraints often result in shapes like in figure \ref{fig:angleconstraint_ugliness}, where the angle constraint is technically satisfied at the crease point, but the mesh does not look smooth in that region. Taking a coarse angle constraint lessens this local irregularity.\newline
 \section{First coarse solver}\label{sec:first_coarse} 
 The first serious variant of the coarse method starts with a global solver iteration on the DOG described in the previous section.\newline% %TODO do something with this section? 
 In the coarse-to-fine update, only the crease points are relevant. Interpolating between the coarse curve points results in coordinates for the fine curve points. These are used as edge point constraints and replace the stitching constraints on the patches.\newline
 The fine-to-coarse update is almost nonexistent in this variant. Assuming that any position constraints lie on link vertices, their target positions are equivalent in both coarse and fine.\newline
 \section{Coarse-to-fine update}\label{sec:ctf_update}
 %TODO how to interpolate curves and stuff ... needs reworking
-What the patches need from the coarse mesh are constraints for the stitching. Instead of stitching constraints (linking two edge points from different patches), the patches use edge point contraints (constraining edge points to fixed positions). The constrained edge points on the patches are the crease points and the weights are equal to half the stitching weight. This way, the edge point constraints on the patches correspond to the stitching contraints on the global DOG.\newline
+What the patches need from the coarse mesh are constraints for the stitching. Instead of stitching constraints (linking two edge points from different patches), the patches use edge point constraints (constraining edge points to fixed positions). The constrained edge points on the patches are the crease points and the weights are equal to half the stitching weight. This way, the edge point constraints on the patches correspond to the stitching constraints on the global DOG.\newline
 The positions for the local edge point constraints are taken from the crease curves of the coarse mesh. Not all fine crease points appear in the coarse DOG (compare the number of pink crease points in figure \ref{fig:ftc_ctf}), so some of them have to be interpolated somehow. The interpolation should be smooth, so simple linear interpolation is not the way to go.\newline
-What's done is that the coarse curve gets stored in a piecewise manner. A list of discrete lengths $l$, curvatures $k$ and torsions $t$ are stored. The length is defined as the distance between two crease points, the curvature is computed using three adjacent points, and the torsion needs four points. Using length, curvature, torsion and a starting point (with orientation), it's possible to reconstruct a curve in 3D. For the interpolation, FineCoarseConversion stores an offset for each fine crease point, describing where it lies between the closest coarse crease points as a single value in $[0,1]$. It is then possible to approximate positions for the fine crease points, using the new coarse crease points and the precomputed offsets.
+What is done is that the coarse curve gets stored in a piecewise manner. A list of discrete lengths $l$, curvatures $k$ and torsions $t$ are stored. The length is defined as the distance between two crease points, the curvature is computed using three adjacent points, and the torsion needs four points. Using length, curvature, torsion and a starting point (with orientation), it is possible to reconstruct a curve in 3D. For the interpolation, the fine-coarse conversion data structure stores an offset for each fine crease point, describing where it lies between the closest coarse crease points as a single value in $[0,1]$. It is then possible to approximate positions for the fine crease points, using the new coarse crease points and the precomputed offsets.
 %offsets are ... originally ... formula 
-Given $n$ fine crease points $\mathbf{c_0}, \mathbf{c_1}, ..., \mathbf{c_{n-1}}$, where the first and last points $\mathbf{c_0}$ and $\mathbf{c_{n-1}}$ are also coarse crease points, the offsets $o_k$ for the points in between are computed as:
+Given $n$ fine crease points $\mathbf{c}_0, \mathbf{c}_1, ..., \mathbf{c}_{n-1}$, where the first and last points $\mathbf{c}_0$ and $\mathbf{c}_{n-1}$ are also coarse crease points, the offsets $o_k$ for the points in between are computed as:
 \begin{equation}
-o_k = o_{k-1} + \frac{|\mathbf{c_k}-\mathbf{c_{k-1}}|}{\sum_{j=1}^{n-1}{|\mathbf{c_j}-\mathbf{c_{j-1}}|}}
+o_k = o_{k-1} + \frac{|\mathbf{c}_k-\mathbf{c}_{k-1}|}{\sum_{j=1}^{n-1}{|\mathbf{c}_j-\mathbf{c}_{j-1}|}}
 \end{equation}
 With $o_0$ initialized as $0$ (and $o_{n-1}$ is always $1$). This is not the only way of obtaining these offsets. One could also use a dot product:
 \begin{equation}
-o_k = \frac{(\mathbf{c_k}-\mathbf{c_0}) \cdot (\mathbf{c_{n-1}}-\mathbf{c_0})}{|\mathbf{c_{n-1}}-\mathbf{c_0}|}
+o_k = \frac{(\mathbf{c}_k-\mathbf{c}_0) \cdot (\mathbf{c}_{n-1}-\mathbf{c}_0)}{|\mathbf{c}_{n-1}-\mathbf{c}_0|}
 \end{equation}
-The offset formula above might end up with values outside the interval $[0,1]$, which is a reason not to use it. The best way to compute the offsets would probably involve optimizing the expected error in the approximation and could use more information than just the closest two coarse curve points. In practice the first variant (with the sum of fine lengths) worked well, so there was not much point in trying a different formula.\newline
+The offset formula above might end up with values outside the interval $[0,1]$, which is a reason not to use it. The best way to compute the offsets would probably involve optimizing the expected error in the approximation and could use more information than just the closest two coarse curve points. In practice, the first variant (with the sum of fine lengths) worked well, so there was not much point in trying a different formula.\newline
 %TODO mention the link vertex constraints?
 \section{Fine-to-coarse update}\label{ftc_update}
 Finding a good way to update the coarse mesh after the fine patches are done is quite difficult. The most straightforward approach would be to take the coordinates from the fine mesh and assign them to the appropriate vertices in the coarse mesh. This does not work for coarse-only vertices, so those need to be handled in another way.\newline
-The first coarse solver lacked a fine-to-coarse update and was not too bad, so it's not unthinkable that the fine-to-coarse update could just ignore the coarse-only vertices. That said, it is not a good idea to only update some parts of the coarse mesh while leaving others as they were.\newline
+The first coarse solver lacked a fine-to-coarse update and was not too bad, so it is not unthinkable that the fine-to-coarse update could just ignore the coarse-only vertices. That said, it is not a good idea to only update some parts of the coarse mesh while leaving others as they were.\newline
 % Two more methods: no coarseonly, curve submeshes ... have their own sections
 The following two sections (\ref{sec:coarse_construction_alt} and \ref{sec:curve_submeshes}) concern major changes made to remove the coarse-only vertices. The remainder of this section is dedicated to variants that do try to update the coarse-only vertices while keeping the existing meshes.\newline
 % silly extrapolation
@@ -300,42 +392,44 @@ To find a good update method for coarse-only vertices, some of their special qua
 \begin{figure}
     \centering
 %    \setlength{\tabcolsep}{0.0130\linewidth}
-%	\includegraphics[width=0.8\linewidth]{../../../pics/whatever}
-    \includegraphics[width=0.75\linewidth]{../../../pics/0221_nearby_fine_quads}
+%	\includegraphics[width=0.8\linewidth]{figures/whatever}
+    \includegraphics[width=0.75\linewidth]{figures/0221_nearby_fine_quads}
     \caption{Left: Potential fine quads near a coarse-only vertex; Top right: Minimum of one nearby quad; Bottom right: Realistic case with three nearby quads
       \label{fig:coarseonly_neighbourhood}}
 \end{figure}
-Each coarse-only vertex can potentially have any of the blue quads shown in figure \ref{fig:coarseonly_neighbourhood} nearby, but only one of them is guaranteed to exist. The four quads in the middle are never present (because if any of them were, the central vertex wouldn't be coarse-only). Realistically, there will never be a full ring around a coarse-only vertex and testing showed that the number of fine quads near a coarse-only vertex is usually between $1$ and $6$.\newline
+Each coarse-only vertex can potentially have any of the blue quads shown in figure \ref{fig:coarseonly_neighbourhood} nearby, but only one of them is guaranteed to exist. The four quads in the middle are never present (because if any of them were, the central vertex would not be coarse-only). Realistically, there will never be a full ring around a coarse-only vertex and testing showed that the number of fine quads near a coarse-only vertex is usually between $1$ and $6$.\newline
 Multiple methods using the nearby fine quads to extrapolate coordinates for the coarse-only vertex were implemented and tested, but none of them were particularly good and most had serious stability problems. As it happens, the whole plan was fundamentally flawed: The fine result may satisfy all necessary constraints on the fine DOG, but directly inserting some of those coordinates into the coarse mesh will generally not satisfy the coarse DOG constraints.\newline
 % soft constraints
 Instead of directly setting the coordinates to be equivalent, adding another set of soft constraints turned out to be a solution of sorts. Each link vertex in both resolutions gets an extra position constraint moving it to its equivalent in the other resolution. These link constraints have a much lower weight than actual position constraints, so they can keep the fine and coarse meshes in similar shapes, but not to the detriment of any important constraints.\newline
 %There are two glaring flaws with this: First, the coarse-only vertices do not get updated this way. Second, the fine coordinates may satisfy the DOG constraints on the fine mesh, but inserting them into the coarse mesh generally doesn't satisfy the coarse DOG constraints.\newline
 \section{Alternative coarse mesh construction}\label{sec:coarse_construction_alt}
+\subsection{Method description}
 To avoid having to update coarse-only vertices, one variant used a different strategy to obtain the coarse mesh. Instead of building it roughly the same way as the regular DOG, the coarse DOG is constructed by removing vertices from the fine mesh. By removing every second row and column of vertices and connecting the remaining vertices correctly, we get a coarser mesh where every vertex is a link vertex.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{../../../pics/0311_alternate_coarse}
-    \caption{Alternative coarse coarse construction: Right side is the coarse version of the left side. Red and blue quads correspond to different patches, green quads are duplicated.}
+    \includegraphics[width=0.75\linewidth]{figures/0321_alternate_coarse}
+    \caption{Alternative coarse construction: Right side is the coarse version of the left side. Red and blue quads correspond to different patches, green quads are duplicated.}
     \label{fig:alt_coarse}
 \end{figure}
-Figure \ref{fig:alt_coarse} shows a small DOG and its coarse version as obtained with the alternative construction. Note how there are no duplicated quads in the coarse mesh. The new coarse mesh no longer covers all fine patches. The most problematic part is what happens to the crease curves in the coarse mesh. Only a limited number of crease points are still in the coarse mesh (in figure \ref{fig:alt_coarse} they are marked by a solid black outline) and, crucially, the endpoints of the curve (i.e. where the crease curve intersects the mesh boundary) are not among them. This makes it impossible to interpolate coordinates for the crease points near the boundary.\newline
+Figure \ref{fig:alt_coarse} shows a small DOG and its coarse version as obtained with the alternative construction. Note how there are no duplicated quads in the coarse mesh. The new coarse mesh no longer covers all fine patches. The most problematic part is what happens to the crease curves in the coarse mesh. Only a limited number of crease points are still in the coarse mesh (in figure \ref{fig:alt_coarse} it's just three points across two creases) and, crucially, the endpoints of the curve (i.e. where the crease curve intersects the mesh boundary) are not among them. This makes it impossible to interpolate coordinates for the crease points near the boundary.\newline
 \subsection{Results}
-With the alternative coarse mesh construction, the endpoints of all crease curves and all crease points between the endpoints and the closest coarse crease point can't be interpolated from the coarse mesh. If nothing is done with those points, the results look like in figure \ref{fig:alt_coarse_result}. There is a clearly visible disconnect between the two patches at the boundary.\newline
+With the alternative coarse mesh construction, the endpoints of all crease curves and all crease points between the endpoints and the closest coarse crease point can not be interpolated from the coarse mesh. If nothing is done with those points, the results look like in figure \ref{fig:alt_coarse_result}. There is a clearly visible disconnect between the two patches at the boundary.\newline
 \begin{figure}
     \centering
-    \includegraphics{../../../pics/1218_unconstrained_curve_end}
-    \includegraphics{../../../pics/1218_dislocated}
-    \caption{Result when using the alternative coarse construction without any further constraints. The region near the curve end is problematic, especially if said region is larger like in the right mesh.}
+    %\includegraphics{figures/1218_unconstrained_curve_end}
+    \includegraphics{figures/0321_dislocated}
+    \caption{Results when using the alternative coarse construction without any further constraints. The regions near the curve ends are often disconnected (red circles), which is particularly problematic for the right example where said regions are quite large.}
       \label{fig:alt_coarse_result}
 \end{figure}
-It's possible to reconnect the boundary parts of the crease using edge point constraints. This leads back to the same problem that ADMM had: The crease points near the boundary assume that the curve shape is constant even though it isn't, and so those parts only change very slowly. By altering the associated weights at runtime, it's possible to get fast changes initially and connected patches later. It's still usually not worth it because one of the two problems almost always remains and the reweighting process would have to be automated for general user inputs.\newline
+It is possible to reconnect the boundary parts of the crease using edge point constraints. This leads back to the same problem that ADMM had: The crease points near the boundary assume that the curve shape is constant even though it isn't, and so those parts only change very slowly. By altering the associated weights at runtime, it's possible to get fast changes initially and connected patches later. It's still usually not worth it because one of the two problems almost always remains and the reweighting process would have to be automated for general user inputs.\newline
 
 
 \section{Curve submeshes}\label{sec:curve_submeshes}
-The idea behind this variant came upon realizing something: Most problems arise near the crease curves. Anything related to stitching, angle constrints, coarse-only vertices will only happen around a curve and never on the interior of a patch. The following idea came up: Create a new type of mesh that specifically handles these areas, where various problems had been showing up.\newline
+\subsection{Method description}
+The idea behind this variant came upon realizing something: Most problems arise near the crease curves. Anything related to stitching, angle constraints, coarse-only vertices will only happen around a curve and never on the interior of a patch. The following idea came up: Create a new type of mesh that specifically handles these areas, where various problems had been showing up.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.99\linewidth]{../../../pics/0306_curvesubmesh}
+    \includegraphics[width=0.99\linewidth]{figures/0306_curvesubmesh}
     \caption{From left to right: Coarse mesh, curve submesh, patch submeshes}
       \label{fig:curve_submesh}
 \end{figure}
@@ -344,33 +438,22 @@ A single iteration with curve submeshes works as follows: Initially, the coarse 
 \subsection{Results}
 The method using curve submeshes works reasonably well: The patches are connected at the creases. There are no bizarre deformations that break all constraints. Everything is fast enough to edit the constraints interactively. There are still two problems.\newline
 As mentioned in section \ref{ftc_update}, updating the coarse vertices with coordinates from fine vertices is not a good idea. The curve submeshes may have fine versions of the coarse-only vertices, but the fine-to-coarse update still needs another method.\newline
-Second, the results of the curve submesh solver are almost indistuingishable from those obtained by just using the coarse mesh and the fine patches. As there is no real point to introducing curve submeshes (and therefore more points of failure) if they don't actually improve the result, the curve submeshes were scrapped.\newline
+Second, the results of the curve submesh solver are almost indistinguishable from those obtained by just using the coarse mesh and the fine patches. As there is no real point to introducing curve submeshes (and therefore more points of failure) if they don't improve the result, the curve submeshes were scrapped.\newline
 %There are many ways that the curve submeshes (section \ref{sec:curve_submeshes}) could still be useful. 
 % ----------------------------------------------------------------------------------------------
 \chapter{Regarding parallelization}\label{sec:parallelization}
 The PARDISO solver which is used to actually compute the solution is supposed to be parallelized already. Unfortunately, running the program with a higher number of threads slows down the iterations. The reason for that is not clear: It might be that our systems are too small to profit from the multithreaded version of PARDISO. This is supported by the fact that the slowdown is less extreme for larger meshes. % For example, testing showed that solving a certain system with two different resolutions. %TODO include pic? test description/results of some kind
 Another possibility that shouldn't be ruled out completely is that there is some semi-hidden parameter setting in the PARDISO solver which isn't being set correctly.\newline
-Actually parallelizing the solver is not the goal of this project but finding alternative solver modes that can be parallelized is. The ADMM methods allow every patch to be optimized on its own, which would make it possible to perform almost all computations in parallel. Even the steps where certain variables get updated at the start and end of the iteration could be parallelized to some degree. As such, ADMM methods looked like a great way to make the code more scalable.\newline
-The coarse method still includes the local solvers that can be run in parallel, but it also has the coarse solve. The coarse mesh contains slightly more than $\frac{1}{4}$ times the vertices of the global mesh. Assuming the time per iteration scales linearly with the number of vertices, this would mean that the absolute maximum speedup when using a parallelized coarse method is $4$, but considering that solving the patches still takes some time, this is not realistic. If the workload of solving the patches can be perfectly split across four cores, then cutting the iteration time down to $50 - 60 \%$ of the original time seems reasonable.\newline
+Parallelizing the solver is not the goal of this project but finding alternative solver modes that can be parallelized is. The ADMM methods allow every patch to be optimized on its own, which would make it possible to perform almost all computations in parallel. Even the steps where certain variables get updated at the start and end of the iteration could be parallelized to some degree. As such, ADMM methods looked like a great way to make the code more scalable.\newline
+The coarse method still includes the local solvers that can be run in parallel, but it also has the coarse iteration. The coarse mesh contains slightly more than $\frac{1}{4}$ times the vertices of the global mesh. Assuming the time per iteration scales linearly with the number of vertices, this would mean that the absolute maximum speedup when using a parallelized coarse method is $4$, but considering that solving the patches still takes some time, this is not realistic. If the workload of solving the patches can be perfectly split across four cores, then cutting the iteration time down to $50 - 60 \%$ of the original time seems reasonable.\newline
 Using the methods described above, certain meshes profit more from parallelization than others. %As a rule of thumb, crease patterns with fewer creases than the number of threads will likely have some threads doing nothing, .
 There's not much point in using four threads for a crease pattern that has only two patches, one of them being several times the size of the other. The best meshes here are those where the patches can be split between threads in such a way that each thread has a similar amount of work. This works better if there are many patches. The best case would have the number of patches be a multiple of the number of threads, with patches of roughly equal size.\newline
 % ----------------------------------------------------------------------------------------------
 \chapter{Results}\label{sec:results}
-%Figure \ref{fig:results_plotblock} shows results from multiple tests with varying crease patterns, resolution, and solver method. Figure \ref{fig:results_legend} and table \ref{tab:res_and_vnum} hold related information. Shown on the left side of figure \ref{fig:results_plotblock} is the initial state, with a final result on the right. It's actually the result from using the standard solver and the second-largest mesh.\newline
-%What's happening: The mesh starts flat, then two positional constraints get added at the lower left and upper right corners. They are moved steadily over $250$ iterations before reaching their final positions (a dotted line marks iteration $250$ in each plot).\newline
-%As can be seen, the different variants of the coarse method perform qualitatively similar to the standard solver. There are occasional hiccups (like in the top left example with link weight $0.01$), but usually the result looks almost the same, no matter the method. In all cases, the standard solver gets the lowest objective values, which isn't surprising, given that it just tries to minimize the objective directly. For the coarse method, it seems like the fine-to-coarse update via soft positional constraints on the link vertices is usually better than having no fine-to-coarse update.\newline
-%As mentioned at figure \ref{fig:results_timeperiteration}, the time per iteration is averaged over iterations $10$ to $240$. Figure \ref{fig:results_cornerstime} shows how much time each iteration takes in an ordinary case. As can be seen, the time per iteration is roughly constant as long as the constraints are moving. The first few iterations often take longer, so they get left out of the average. After iteration $250$ (i.e. once the constraints are fixed) the solver tends to quickly reach a solution, whereupon the time per iteration drops dramatically, though not always: Especially if the mesh is larger, the convergence to a solution may take longer. In some cases, the standard solver actually becomes slower at the end. \newline
-%In most cases, the standard and coarse solver lead to very similar results (as in figure \ref{fig:results_compare_valley}), but the crease pattern "parallel\_curves\_4" is one of the exceptions. As seen in figure \ref{fig:results_compare_curves}, the two solver modes have significantly different results.\newline
-% In all examples the first few iterations are a bit rough (compared to how smooth the curves are afterwards). The process can be regarded as three phases: First the solver approaches some sort of "solution", which is often accompanied by a peak in the objective. In the second phase, the "solution" has been found, but the constraints are still changing. Once the constraints reach their final state, the DOG remains constant (though sometimes it ends up in a short loop that's not really visible).
 \section{Test setup}
-%- do it with 1curve, 4corners, valley, and parallelcurves4
-%- different resolutions
-%- standard, coarse with ftc 0 0.001 0.01 0.1 1
-%- posconstraints at two corner points, moving over 250 iterations
-%- store data for 300 iterations
 \begin{figure}
     \centering
-    \includegraphics[width=0.99\linewidth]{../../../pics/0308_creasepatterns_results}
+    \includegraphics[width=0.9\linewidth]{figures/0308_creasepatterns_results}
     \caption{Crease patterns: Flat initial state on the left, after bending on the right. From top to bottom: 1\_curve, 4\_corners, valley, parallel\_curves\_4}
     \label{fig:creasepatterns}
 \end{figure}
@@ -395,79 +478,100 @@ The bulk of data presented in the following sections is gathered by performing t
 \label{tab:res_and_vnum}
 \end{table}
 The resolutions used are tabulated in table \ref{tab:res_and_vnum}. The number of vertices is not just the product of $x$-resolution and $y$-resolution because the areas near creases are duplicated. Note how all resolutions are uneven: This ensures that the coarse DOG can be constructed correctly. Even resolutions would lead to an odd number of edges/quads in one direction, which makes it impossible to link the fine and coarse meshes correctly.\newline
-The following solver modes are used: Standard (optimization on the global regular mesh), Coarse with no fine-to-coarse update (as described in chapter \ref{sec:coarse}), Coarse with fine-to-coarse update (with varying weights for the soft constraints on the link vertices). Figure \ref{fig:results_legend} shows the line colours used for these methods in the later plots.\newline
-Most other methods (like ADMM) were deemed unlikely to be an improvement over the standard solver and will not be considered here. The variant using curve submeshes is the only exception, because it works better than other methods. The reason it doesn't show up here is that the code for the curve submeshes is incompatible with the other solver modes.\newline
+%The following solver modes are used: Standard (optimization on the global regular mesh), Coarse with no fine-to-coarse update (as described in chapter \ref{sec:coarse}), Coarse with fine-to-coarse update (with varying weights for the soft constraints on the link vertices). Figure \ref{fig:results_legend} shows the line colours used for these methods in the later plots.\newline
+The methods used are shown in figure \ref{fig:results_legend} with their associated line color in plots: Standard (black) is the original solver, optimizing on the entire mesh. Coarse (red) computes a coarse approximation of the solution and uses it for the optimization of the fine patches, but this is the version with no fine-to-coarse update. The four dashed lines correspond to the full coarse method including the fine-to-coarse update via link vertices (but using different weights).\newline
+Most other methods (like ADMM) were deemed unlikely to be an improvement over the standard solver and will not be considered here. The variant using curve submeshes is the only exception because it works better than other methods. The reason it doesn't show up here is that the code for the curve submeshes is incompatible with the other solver modes.\newline
 Once the DOG is ready, we add positional constraints at two corners (marked by blue dots in figure \ref{fig:creasepatterns}). Over $250$ iterations the constraints are moved linearly towards a target position. Data is also gathered for $50$ iterations after that to see how the solver behaves once the constraints are fixed.\newline
-
-\section{Test results}\label{sec:test_results}
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{../../../pics/0308_plotblock}
-    \caption{Objective function plotted over $300$ iterations for multiple crease patterns, resolutions, and solver modes. Starting from a flat initial state, the constraints reach their final state after $250$ iterations (marked by a dotted vertical line). Plots correspond to the crease patterns and resolutions in the same location in table \ref{tab:res_and_vnum}}
-      \label{fig:results_plotblock}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics{../../../pics/0302_legend}
+    \includegraphics{figures/0302_legend}
     \caption{Legend for figure \ref{fig:results_plotblock}}
     \label{fig:results_legend}
 \end{figure}
-Figure \ref{fig:results_plotblock} shows what happens with the objective functions. As can be seen, the standard and coarse solvers tend to have qualitatively similar results but the objective function always obtains lower values with the standard solver. That is because the standard solver optimizes the objective function directly while the coarse solver tries to do so using a different way. Interestingly, the coarse solver sometimes performs better without the fine-to-coarse update. It's still usually better to do the fine-to-coarse update (notice how the no-fine-to-coarse-update curve looks in the largest "1\_curve" setting in the upper right corner).\newline
-The resulting meshes usually look very similar, whether the standard solver or the coarse solver is used (compare figure \ref{fig:results_compare_valley}). There are exceptions however: The crease pattern "parallel\_curves\_4" (seen in figure \ref{fig:results_compare_curves}) has quite different results: In the coarse solver the mesh ends up looking like a half-circle from the side, but in the standard solver all adjacent patches have very different orientations.\newline %TODO refer to fold bias
-The coarse solver also has visibly different results for small meshes (i.e. the leftmost row). This happens because the coarse mesh still needs a certain size to work properly. In other words, making the resolution too low results in a coarse mesh that is too coarse to be useful.\newline
+\section{Test results}\label{sec:test_results}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{../../../pics/0303_standard_vs_coarse_valley}
+%    \includegraphics[width=1\linewidth]{figures/0308_plotblock}
+    \includegraphics[width=1\linewidth]{figures/0318_plotblock}
+    \caption{Objective function plotted over $300$ iterations for multiple crease patterns, resolutions, and solver modes. Starting from a flat initial state, the constraints reach their final state after $250$ iterations (marked by a dotted vertical line). Plots correspond to the crease patterns and resolutions in the same location in table \ref{tab:res_and_vnum} and lines inside the plots are identified in figure \ref{fig:results_legend}.}
+      \label{fig:results_plotblock}
+\end{figure}
+Figure \ref{fig:results_plotblock} shows what happens with the objective functions. As can be seen, the standard and coarse solvers tend to have qualitatively similar results but the objective function always obtains lower values with the standard solver. That is because the standard solver optimizes the objective function directly while the coarse solver tries to do so using a different way. Interestingly, the coarse solver sometimes performs better without the fine-to-coarse update. It's still usually better to do the fine-to-coarse update (notice how the no-fine-to-coarse-update curve looks in the largest "1\_curve" setting in the upper right corner).\newline
+The resulting meshes usually look very similar, whether the standard solver or the coarse solver is used (compare figure \ref{fig:results_compare_valley}). There are exceptions, however: The crease pattern "parallel\_curves\_4" (seen in figure \ref{fig:results_compare_curves}) has quite different results: In the coarse solver the mesh ends up looking like a half-circle from the side, but in the standard solver all adjacent patches have very different orientations.\newline %TODO refer to fold bias
+The coarse method also has visibly different results for small meshes (i.e. the leftmost row). This happens because the coarse mesh still needs a certain size to work properly. In other words, making the resolution too low results in a coarse mesh that is too coarse to be useful.\newline
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/0303_standard_vs_coarse_valley}
     \caption{Comparison between final state for crease pattern "valley" using standard solver (left) or coarse solver (right)}
       \label{fig:results_compare_valley}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{../../../pics/0303_standard_vs_coarse_parallel_curves_4}
+    \includegraphics[width=0.8\linewidth]{figures/0303_standard_vs_coarse_parallel_curves_4}
     \caption{Comparison between final state for crease pattern "parallel\_curves\_4" using standard solver (left) or coarse solver (right)}
       \label{fig:results_compare_curves}
 \end{figure}
 \section{Timing}
-%coarse is faster ... but any patterns? not really %TODO mention hardware
 \begin{figure}
     \centering
-    \includegraphics[width=0.99\linewidth]{../../../pics/0308_timeperiteration_examples}
+    \includegraphics[width=0.99\linewidth]{figures/0308_timeperiteration_examples}
     \caption{Time needed for iterations $1$ to $300$. Crease pattern "4\_corners" with resolution $41 \times 41$ on the left, crease pattern "parallel\_curves\_4" with resolution $39 \times 65$ on the right}
     \label{fig:results_cornerstime}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{../../../pics/0302_timeperiteration}
-    \caption{Time per iteration, taken as the averaged in iterations $10$-$240$}
+    \includegraphics[width=0.7\linewidth]{figures/0302_timeperiteration}
+    \caption{Time per iteration, taken as the average value across iterations $10$-$240$}
       \label{fig:results_timeperiteration}
 \end{figure}
-%also mention how the time varies between iterations, take averages, etc
-The time per iteration, plotted over $300$ iterations, usually looks like the left example in figure \ref{fig:results_cornerstime}. The first iteration often takes more time than the later ones, then the time per iteration is roughly the same during the phase where the constraints are moving. Once the constraints arrive at their final positions, the solver usually finds a solution very quickly, after which there is nothing happening and the time per iteration is greatly decreased.\newline
-The right side of figure \ref{fig:results_cornerstime} shows a more problematic example. About every second iteration in that case takes more time than the one before and after it. This happens because sometimes the solver needs to go back and redo the iteration with different parameters to enforce the folding constraints mentioned in section \ref{sec:optimization} (notice how the time the time for a standard iteration is almost exactly $0.5$, $1$ or $1.5$ seconds). It can also happen on the coarse mesh, but the difference in iteration time is less extreme there due to two factors: The coarse mesh is a smaller system than the global mesh, and the solver iterations on the fine patches also make up a major part of the work.\newline
-Another thing that can be seen in the plot on the right is that sometimes the iterations don't become faster at the end. In fact, the time for later iterations can even be higher than for early iterations. This seems to happen only with the standard solver and not when using the coarse method.\newline
-Following this, an average "time per iteration" is computed using iterations $10$ to $240$ and compared between solver mode and the number of vertices in figure \ref{fig:results_timeperiteration}. The time per iteration seems to scale linearly with the number of vertices and the coarse solver is consistently faster than standard for the same mesh size.\newline %TODO certain crease patterns profit more
-
-\section{Problem cases}\label{sec:problem_cases}
-As seen in section \ref{sec:test_results}, particularly figure \ref{fig:results_compare_curves}, the crease pattern "parallel\_curves\_4" gets quite different results in the coarse solver. There are two main reasons to this: First, the folding constraints are enforced less strictly than in the standard solver. They can't be enforced on the local level, but the coarse mesh should provide a reasonable base. The second problem with that particular crease pattern is that the creases are relatively straight. In the coarse mesh their shape is even less distinct. This results in a lot of leeway in terms of possible folding deformations of the coarse mesh, and the final choice may be optimal for the coarse mesh but not the fine one.\newline
+The time per iteration, plotted over $300$ iterations, usually looks like the left example in figure \ref{fig:results_cornerstime}. The first iteration often takes more time than the later ones, then the time per iteration stays roughly the same during the phase where the constraints are moving. Once the constraints arrive at their final positions, the solver usually finds a solution very quickly. After this, nothing is happening and the time per iteration is greatly decreased.\newline
+The right side of figure \ref{fig:results_cornerstime} shows a more problematic example. Roughly every second iteration takes more time than the one before and after it. This happens because sometimes the solver needs to go back and redo the iteration with different parameters to enforce the folding constraints mentioned in section \ref{sec:optimization} (notice how the time for a standard iteration is almost exactly $0.5$, $1$ or $1.5$ seconds). It can also happen on the coarse mesh, but the difference in iteration time is less extreme there due to two factors: The coarse mesh is a smaller system than the global mesh, and the solver iterations on the fine patches also make up a major part of the work.\newline
+Another thing that can be seen in the plot on the right is that sometimes the iterations don't become faster at the end. The time for later iterations can even be higher than for early iterations. This seems to happen only with the standard solver and not when using the coarse method.\newline
+Following this, an average "time per iteration" is computed using iterations $10$ to $240$ and compared between solver mode and the number of vertices in figure \ref{fig:results_timeperiteration}. The time per iteration seems to scale linearly with the number of vertices and the coarse method is consistently faster than standard for the same mesh size.\newline
+The time per iteration is consistently lower when using the coarse method instead of the standard solver. What is not really visible (due to the relatively low number of samples) is that the time per iteration usually scales linearly in the number of vertices. How much faster the coarse method is, depends on the crease pattern. Table \ref{tab:timing} shows the values obtained from dividing the average time per standard iteration by the average time per iteration using the coarse method. A speedup around $1.3$ seems common, but it's much higher if the standard solver repeats iterations because of folding constraints. On the other hand, the speedup is generally not very high for the crease pattern "1\_curve" and for small meshes.\newline
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{crease pattern} & \# vertices & \# vertices & \# vertices & \# vertices \\ \cline{2-5}
+ & speedup & speedup & speedup & speedup \\ \hline
+ 
+\multirow{2}{*}{1\_curve} & $721$ & $1435$ & $2389$ & $4969$ \\ \cline{2-5}
+ & $1.004$ & $1.004$ & $1.336$ & $1.077$ \\ \hline
+\multirow{2}{*}{4\_corners} & $569$ & $1937$ & $4105$ & $7073$ \\ \cline{2-5}
+ & $1.053$ & $1.176$ & $1.341$ & $1.322$ \\ \hline
+\multirow{2}{*}{valley} & $639$ & $2069$ & $4301$ & $7327$ \\ \cline{2-5}
+ & $1.139$ & $1.923$ & $1.395$ & $1.780$ \\ \hline
+\multirow{2}{*}{parallel\_curves\_4} & $1498$ & $2943$ & $3847$ & $4867$ \\ \cline{2-5}
+ & $1.246$ & $1.646$ & $1.219$ & $1.298$ \\ \hline
+\end{tabular}
+\caption{Speedup measured as the time for a standard solver iteration divided by the time per iteration when using the coarse method}
+\label{tab:timing}
+\end{table}
+%TODO mention hardware in a nice way
+All time measurements in the part above were taken on the same machine: It has an Intel\textsuperscript{\textregistered} Core\textsuperscript{\texttrademark} i5-3427U CPU running at $1.80$ GHz with $7.7$ GiB of memory.
+%The processor used for obtaining these numbers is "Intel Core i5-3427U CPU @ 1.80GHz (with four cores, but they weren't fully used), 7.7 GiB memory, 64-bit, Ubuntu 18.04.4 LTS"
+\section{Limitations}\label{sec:problem_cases}
+As seen in section \ref{sec:test_results}, particularly figure \ref{fig:results_compare_curves}, the crease pattern "parallel\_curves\_4" gets quite different results in the coarse solver. There are two main reasons for this: First, the folding constraints are enforced less strictly than in the standard solver. They can't be enforced on the local level, but the coarse mesh should provide a reasonable base. The second problem with that particular crease pattern is that the creases are relatively straight. In the coarse mesh, their shape is even less distinct. This results in a lot of leeway in terms of possible folding deformations of the coarse mesh, and the final choice may be optimal for the coarse mesh but not the fine one.\newline
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{../../../pics/0315_problempatterns}
+    \includegraphics[width=0.8\linewidth]{figures/0315_problempatterns}
     \caption{Examples of crease patterns that can currently not be used}
       \label{fig:problempatterns}
 \end{figure}
 The coarse solver assumes that each crease neatly separates two patches. This is not the case for many crease patterns, like most of those in figure \ref{fig:problempatterns}. Crease curves that intersect each other (upper left and bottom right) or themselves (upper right) violate this assumption. A relatively simple way to make intersecting curves work with the current system would be to replace each curve by one or more curve segments. These curve segments should not intersect and always separate exactly two patches (contrast the upper right pattern in figure \ref{fig:problempatterns} where a single curve creates three patches).\newline
 The lower left crease pattern in figure \ref{fig:problempatterns} shows another problem case in the shape of a non-smooth crease. This is particularly bad for the coarse method because the coarse-to-fine update involves interpolating points on the curve and the current interpolation method fails around sharp turns.\newline
-All examples in figure \ref{fig:problempatterns} are also problematic for the standard solver. The editor tends crash. It often happens during the mesh construction, in which case the coarse mesh can be at fault. Even if everything seems to work, the results tend to either stay flat or deform horribly and violate all constraints.\newline
+All examples in figure \ref{fig:problempatterns} are also problematic for the standard solver. The editor tends to crash. It often happens during the mesh construction, in which case the coarse mesh can be at fault. Even if everything seems to work, the results tend to either stay flat or deform horribly and violate all constraints.\newline
 \chapter{Conclusion}\label{sec:conclusion}
 Of all the methods tried to make the solver faster and more amenable to parallelization, the one using a coarse solution as a guess appears to perform best.\newline
 The ADMM-based methods were extremely slow and not stable in addition to that. Working on each patch mostly independently would be great when parallelizing, but the results showed that there needs to be something to compute the shapes of the creases in 3D. Local solutions from all patches are insufficient.\newline
-The coarse method, using the curves from a coarse solution as constraints when solving on the patches, has the best results among all tested methods. It's main advantages compared to the standard solver lies in being faster when using large meshes. It still includes local solver iterations on each patch, meaning that part of the algorithm is relatively easy to parallelize.\newline
-The coarse method does have certain disadvantages: It requires a certain resolution to work properly, so the standard solver remains useful for small meshes. The results are obiously different from what comes out of the standard solver, but usually they don't seem wrong, just a bit suboptimal.\newline
-It is currently not possible to switch between different solver modes at runtime. The standard solver does not update the coarse mesh and getting coarse vertex coordinates from the fine mesh is very difficult (as discussed in section \ref{ftc_update}). Switching from coarse to standard usually fails because the folding constraints are not satisfied. The coarse solver does enforce the folding constraints on the coarse mesh, but the patches break them at the regular resolution.\newline
-In terms of methods that could still become useful, the curve submeshes seem most promising. The cycle of coarse $\rightarrow$ curve $\rightarrow$ fine $\rightarrow$ curve $\rightarrow$ coarse would have to be re-examined, as it's possible that certain steps should be replaced, combined, or even removed. The curve-to-fine update is straightforward but for the others it's possible that there are better constraints to keep everything consistent.\newline
+The coarse method, using the curves from a coarse solution as constraints when solving on the patches, has the best results among all tested methods. Its main advantages compared to the standard solver lies in being faster when using large meshes. It still includes local solver iterations on each patch, meaning that part of the algorithm is relatively easy to parallelize.\newline
+The coarse method does have certain disadvantages: It requires a certain resolution to work properly, so the standard solver remains useful for small meshes. The results are obviously different from what comes out of the standard solver, but usually, they don't seem wrong, just a bit suboptimal.\newline
+It is currently not possible to switch between different solver modes at runtime. The standard solver does not update the coarse mesh, and getting coarse vertex coordinates from the fine mesh is very difficult (as discussed in section \ref{ftc_update}). Switching from coarse to standard usually fails because the folding constraints are not satisfied. The coarse solver does enforce the folding constraints on the coarse mesh, but the patches break them at the regular resolution.\newline
+In terms of methods that could still become useful, the curve submeshes seem most promising. The cycle of coarse $\rightarrow$ curve $\rightarrow$ fine $\rightarrow$ curve $\rightarrow$ coarse would have to be re-examined, as it is possible that certain steps should be replaced, combined, or even removed. The curve-to-fine update is straightforward but for the others, there may be better constraints to keep everything consistent.\newline
 Anderson acceleration (as seen in \cite{Peng_2018} or the more ADMM-related \cite{Zhang_2019}) was considered at one point. It promises fast convergence for nonlinear and nonconvex optimization problems using local-global solvers, so it should be applicable here. There was an attempt to include Anderson acceleration here, but there were problems with the stability (which may have been due to an incorrect implementation).\newline
 The most obvious follow-up work would be to parallelize the solver. PARDISO is actually supposed to work with multiple threads already, but for some unclear reasons it only increases the time for solving the system in this case, so the program is currently completely serial.\newline
-Beyond that, the coarse method can still be extended in different ways. On one hand, it might be a good idea to introduce more levels than just "fine" and "coarse". Going in a slightly different direction, creating a fully adaptive multigrid solver that uses the higher resolutions in difficult regions  (e.g. near patch boundaries) and coarse parts for the simpler areas (e.g. in the middle of a large patch) would be great for working with more problematic crease patterns (see section \ref{sec:problem_cases}). Either way, it would probably be a good idea to think about the fine-coarse exchange some more: Finding a way to refine or coarsen parts of the mesh while satisfying the DOG constraints would open the door to various existing multigrid algorithms.\newline
+Beyond that, the coarse method can still be extended in different ways. On the one hand, it might be a good idea to introduce more levels than just "fine" and "coarse". Going in a slightly different direction, creating a fully adaptive multigrid solver that uses the higher resolutions in difficult regions  (e.g. near patch boundaries) and coarse parts for the simpler areas (e.g. in the middle of a large patch) would be great for working with more problematic crease patterns (see section \ref{sec:problem_cases}). Either way, it would probably be a good idea to think about the fine-coarse exchange some more: Finding a way to refine or coarsen parts of the mesh while satisfying the DOG constraints would open the door to various existing multigrid algorithms.\newline
 
 
 %\clearpage
