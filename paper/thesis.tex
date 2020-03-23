@@ -2,7 +2,8 @@
 
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[footnotesize,sl,SL,hang,tight]{subfigure}  % helpful package for aligning figures next to each other
-\usepackage{multirow}
+\usepackage{multirow}%For my tables
+\usepackage{cite}%makes citations contain linebreaks instead of overflowing
 \usepackage{longtable} % tables over several pages
 \usepackage[font={small,sl},hang,labelfont=bf]{caption} % configure captions
 \usepackage{booktabs} % publication quality tables for LaTeX
@@ -72,7 +73,6 @@
 
 \title{Scalable DOGs}
 \author{Linus Wigger}
-%TODO supervisor should be mentioned
 
 \begin{document}
 %\maketitle
@@ -139,29 +139,23 @@ This thesis builds upon previous work about developable surfaces modeled by disc
 The simulation of developable surfaces has been a topic of interest in computer graphics for years. A surface is called developable if it is locally isometric to a plane. In other words, it can be obtained by bending a flat shape without stretching it. In areas like architecture, developable surfaces are useful because they are easy to manufacture. The problem is that developable surfaces are hard to design because many constraints have to be satisfied for a surface in 3D to be developable.\newline
 The base of this project is formed by the work from \cite{Rabinovich:DogNets:2018}, where the idea of using Discrete Orthogonal Geodesic nets (abbreviated as DOGs) to simulate deformations of developable surfaces is used. This was followed up by \cite{Rabinovich:DogShapeSpace:2018}, which goes into more detail about the possible deformations, and \cite{Rabinovich:CurvedFolds:2019}, where the focus lay on folding with curved creases.\newline
 \cite{Rabinovich:DogNets:2018} made an editor where the user can interactively deform a DOG. This editor supports curved folds (starting in \cite{Rabinovich:DogShapeSpace:2018}, extended by \cite{Rabinovich:CurvedFolds:2019}) and various types of user-defined constraints. The goal of this project was to work on the solver algorithm, mostly trying to make it suited for parallelization later on.\newline
-\section{Previous work (old)}\label{sec:prev_work_old}
-\cite{Rabinovich:DogNets:2018}'s approach to modeling developable surfaces has advantages to other, previous methods in terms of flexibility.  had interactive deformations of developable surfaces before, but they relied on explicit rulings and splitting the mesh into regions that can only deform in certain ways. DOGs do not depend on such predefined structures, making it possible to explore the full shape space of possible deformations without having to change the mesh topology.\newline %TODO rewrite ;include more references like \cite{liu_et_al}
-%TODO Domain decomposition and multigrid methods were possible ways to go. Multigrid requires refinement and coarsening, which are hard to with DOGs, so we went with domain decomposition. \cite{DDM_book} says we use a non-overlapping method with (later on) a coarse global solver, so okay %TODO this part man
-% \cite{DDM_book} is a book about domain decomposition ...i didnt check it too much...
-% initially: multigrid or domain decomposition. multigrid needs extra stuff, so domain decomposition seems easier to use. From domain decomposition it went to admm, admm also led to anderson acceleration.  then admm turned out to be crap and adding a coarse solver was good. but that's no longer previous work, is it
-%the book says something about coarse
-%include short problem description here? it's finite elements, optimization, with constraints
-The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver is completely serial and uses Sequential Quadratic Programming. There were two main directions to take in making it more suited for parallelization: Domain decomposition and multigrid methods.\newline
-Multigrid requires refinement and coarsening operators, which are not easily available for DOGs. Meanwhile, domain decomposition is aided by the fact that the creases naturally split the mesh into multiple regions. For these reasons, the initial focus lay on domain decomposition methods.\newline
-\cite{DDM_book} and \cite{unused_paper} seemed to be good starting points but then the focus shifted to the alternating direction method of multipliers (ADMM) as taken from \cite{Deng2017ParallelMA} and from there to Anderson acceleration \cite{Peng_2018} and \cite{Zhang_2019}.%  %TODO this part still sucks
-%the bases for domain decomposition, then \cite{Deng2017ParallelMA} for ADMM and
-%The main task lies in solving a highly constrained optimization problem. There is already a solver (using SQP) but it's so serial. Two main directions for improvement were there: Domain decomposition or multigrid methods. Multigrid needs coarsening and/or subdivision, which is a bit of a problem for DOGs. Furthermore, the mesh was already split into multiple regions naturally by the creases. Domain decomposition it is! \cite{DDM_book} includes a lot of stuff but the next most interesting thing was ADMM (TODOcite) and from there Anderson acceleration (TODOcite)...
+%\section{Previous work (old)}\label{sec:prev_work_old}
+%\cite{Rabinovich:DogNets:2018}'s approach to modeling developable surfaces has advantages to other, previous methods in terms of flexibility.  had interactive deformations of developable surfaces before, but they relied on explicit rulings and splitting the mesh into regions that can only deform in certain ways. DOGs do not depend on such predefined structures, making it possible to explore the full shape space of possible deformations without having to change the mesh topology.\newline
+%The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver is completely serial and uses Sequential Quadratic Programming. There were two main directions to take in making it more suited for parallelization: Domain decomposition and multigrid methods.\newline
+%Multigrid requires refinement and coarsening operators, which are not easily available for DOGs. Meanwhile, domain decomposition is aided by the fact that the creases naturally split the mesh into multiple regions. For these reasons, the initial focus lay on domain decomposition methods.\newline
+%\cite{DDM_book} and \cite{unused_paper} seemed to be good starting points but then the focus shifted to the alternating direction method of multipliers (ADMM) as taken from \cite{Deng2017ParallelMA} and from there to Anderson acceleration \cite{Peng_2018} and \cite{Zhang_2019}..
 
-\section{Previous work (TODO)}\label{sec:prev_work}
-%TODO
+\section{Previous work}\label{sec:prev_work}
 %first comes a part about developable surfaces\newline
-Developable surfaces are easy to produce, but hard to design. Approaches based on recreating 3D surfaces with developable surfaces exist (like \cite{liu_et_al} or \cite{kilian-2008-cf}), but here the goal is to have an interactive editor to smoothly deform a developable surface. Such editors exist as seen in \cite{bo_et_al} and \cite{tang_et_al}. Developable surfaces are often modeled as a set of patches where each patch is either planar, cylindrical, or conical (\cite{bo_et_al} do this, as do \cite{kilian-2008-cf}). This approach leads to a limited set of possible deformations because each patch can only deform in one way. \cite{Rabinovich:DogNets:2018}'s method has an advantage here: There is no dependence on explicit rulings and other such predefined structures. This makes it possible to explore the full space of deformations without changing the mesh topology in any way.\newline
+Developable surfaces are easy to produce but hard to design. Different tools for designing such shapes have been created over the years. There are various approaches based on recreating 3D surfaces using developable surfaces, for example \cite{liu_et_al}, \cite{kilian-2008-cf}, or \cite{Stein:2018:DSF}, all with different models for the developable surfaces. In our case the goal is to have an interactive editor to smoothly deform a developable surface. Such editors exist, as seen in \cite{bo_et_al}, \cite{tang_et_al} and \cite{Rabinovich:DogNets:2018}. Developable surfaces are often modeled as a set of patches where each patch is either planar, cylindrical, or conical (\cite{bo_et_al} do this, as do \cite{kilian-2008-cf}). This approach leads to a limited set of possible deformations because each patch type can only deform in certain ways. \cite{Rabinovich:DogNets:2018}'s method has an advantage here: There is no dependence on explicit rulings and other such predefined structures. This makes it possible to explore the full space of deformations without changing the mesh topology in any way.\newline
 %then comes a part about folding and editors maybe\newline
 %something about what is done
-The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver as described in \cite{Rabinovich:CurvedFolds:2019} is completely serial and uses sequential quadratic programming with a line search algorithm.
+The DOG editor's main workload consists of solving a highly constrained optimization problem. The existing solver as described in \cite{Rabinovich:CurvedFolds:2019} uses sequential quadratic programming with a line search algorithm and is completely serial.\newline
 %then comes a part about domain decomposition, multigrid, admm and whatever\newline
-
-
+Domain decomposition methods (\cite{DDM_book}) solve a big problem by splitting it into multiple smaller problems. This is very applicable to our setting where the creases naturally separate the mesh into multiple connected components. Methods that are based on domain decomposition are easy to parallelize. The subproblems are still linked, and so it is necessary to have some information exchange between them. \cite{unused_paper} do this by duplicating vertices on interfaces between the subdomains and defining consensus variables that are targeted by the copies. \cite{DDM_book} also mention the possibilities of having overlapping subdomains or adding a coarse solver.\newline
+%ADMM is not domain decomposition
+One popular method for constrained optimization problems is the alternating direction method of multipliers (ADMM). In its most basic form it requires the objective function to be separable, but \cite{Deng2017ParallelMA} describe how to parallelize it for multiple connected subproblems. \cite{Zhang_2019} combine ADMM  with Anderson acceleration (\cite{Peng_2018}) and obtain a very fast solver.\newline
+\cite{Rabinovich:CurvedFolds:2019} mention multigrid solvers as a possibility for increasing the speed and allowing more detailed crease patterns. Multigrid solvers like in \cite{kazhdan_multigrid} discretize a problem at multiple resolutions and decide which resolution to use locally. It is difficult to use such a hierarchical approach with DOGs because the constraints that have to be satisfied may be incompatible between different levels.\newline
 
 % ----------------------------------------------------------------------------------------------
 \chapter{Problem setting}\label{sec:problem}
@@ -229,6 +223,7 @@ The angle $\alpha_i$ between the edges involved is not the same as the folding a
 \begin{equation}
 \cos(\alpha)= \cos^2(\beta) + \sin^2(\beta)\cos(\theta)
 \end{equation}
+Unless noted otherwise, the values of the weights are $w_{bend} = 1$,  $w_{iso} = \frac{20000}{|E|}$, $w_{soft} = 25$, $w_{stitch} = 10$, $w_{angle} = 1000$. The weight for soft constraints $w_{soft}$ applies to both position and edge point constraints. The stitching weight $w_{stitch}$ used to be higher, but this caused problems with some of the later methods.\newline
 There are still more parts of the objective function. Some are variants of the elements above (e.g. paired vertices), others are rarely relevant and have more complicated formulas. They will not be described in more detail.\newline
 \section{Optimization}\label{sec:optimization}
 The optimization is formulated as a Sequential Quadratic Programming problem and solved using the PARDISO solver (\cite{pardiso-6.0a}, \cite{pardiso-6.0b}, \cite{pardiso-6.0c}). Each iteration starts by updating all constraints. Following that, PARDISO computes a better solution for the current constraints. As mentioned, the DOG constraints are always enforced directly in PARDISO while other constraints like the user-defined ones are part of the objective function, but that is not all:\newline
@@ -236,7 +231,7 @@ There are also folding constraints which make sure that the patches are folded i
 \begin{figure}
     \centering
     \includegraphics[width=0.4\linewidth]{figures/0322_folding_constraints}
-    \caption{\textbf{Folding example}: Left: The osculating plane is formed by the three pink crease points; Middle: Mesh is folded at the central crease point because the visible parts of both edges are on the same side of the osculating plane; Right: The two copies of the edge are identical, making the mesh not folded}
+    \caption{Folding example: Left: The osculating plane is formed by the three pink crease points; Middle: Mesh is folded at the central crease point because the visible parts of both edges are on the same side of the osculating plane; Right: The two copies of the edge are identical, making the mesh not folded}
     \label{fig:folding_constraints}
 \end{figure}
 The folding constraints check the orientation of the edges at most crease points. At each interior crease point, there is a previous and a following crease point. Using the previous and next crease points, it is possible to define the local osculating plane of the curve, shown as a pink line on the right side of figure \ref{fig:folding_constraints}. There are also two mesh edges at a crease point (one per adjacent patch) which are colored blue and red in figure \ref{fig:folding_constraints}. The mesh is considered folded if the visible edges at the crease point are both on the same side of the osculating plane. For more details on the folding constraints, see \cite{Rabinovich:CurvedFolds:2019}, particularly section 6.3.\newline
@@ -256,7 +251,8 @@ The idea is to use the alternating direction method of multipliers (ADMM) as des
 \end{equation}
 If $N$ is the number of patches, $f_i$ would be the objective function on the submesh corresponding to the patch $i$. The second part corresponds to patch-crossing constraints like the stitching constraints. It doesn't match our problem exactly, because the DOG constraints are not linear. The advantage of ADMM is that the local subproblems can be solved in parallel.\newline
 \section{Variant: Subsolvers}
-The most basic ADMM-like method optimizes each patch separately. The stitching constraints on the global mesh are replaced by edge point constraints on the patches. After each iteration, these edge point constraints get updated with the positions obtained in the adjacent patches. This method requires no additional objective terms.\newline
+The most basic ADMM-like method optimizes each patch separately. The stitching constraints on the global mesh are replaced by edge point constraints on the patches. These edge point constraints are given a weight of $0.5 w_{stitch}$ instead of $w_{soft}$. This should preserve the objective function because each stitching constraint gets split into two separate edge point constraints.\newline
+After each iteration, these edge point constraints get updated with the positions obtained in the adjacent patches. This method requires no additional objective terms.\newline
 \section{Variant: Variable Splitting ADMM}
 Variable Splitting ADMM (see algorithm 1 in \cite{Deng2017ParallelMA}) works similar to Subsolvers but adds a few extra elements: The local objective functions %$f_{obj}^i(\mathbf{x})$
  are extended by an additional term
@@ -278,7 +274,7 @@ $z_i$ in this variant is computed as $A_i x_i - \sum_{j=1}^N + \frac{\lambda}{\r
     \caption{Setup for ADMM testing: Left is the initial state, right is how the final result should look like}
     \label{fig:admm_setup}
 \end{figure}
-The ADMM methods are not a good choice for this problem. This can be demonstrated by a simple test: Starting from a folded configuration as seen in figure \ref{fig:admm_setup}, the goal is to minimize the bending energy by flattening the mesh. There are only minimal constraints: Beyond the fixed constraints (DOG, stitching, etc.) there is only a single positional constraint.\newline
+The ADMM methods are not a good choice for this problem. This can be demonstrated by a simple test: Starting from a folded configuration as seen in figure \ref{fig:admm_setup}, the goal is to minimize the bending energy by flattening the mesh. There are only minimal constraints: Beyond the fixed constraints (DOG, stitching, etc.) there is a single positional constraint (used to keep the mesh in one location, not to deform it). The stitching weight $w_{stitch}$ still has a value of $10000$ at this point.\newline
 Figure \ref{fig:admm_results} plots the objective function for this simple problem over $1000$ iterations. Even ignoring the exact numbers (because all methods have slightly different objective functions) the existing "standard" solver reaches a solution very quickly (less than $50$ iterations after which the solution stays constant). The ADMM-based methods are slow at best and at worst there are stability issues: Proximal Jacobian ADMM can spontaneously break everything, even long after it looks like the DOG has stabilized.\newline
 \begin{figure}
     \centering
@@ -329,7 +325,6 @@ Figure \ref{fig:ftc_ctf} shows an example of a small patch, its coarse version, 
 \end{itemize}
 \item \textbf{Coarse-only} vertices (red in the picture) can only appear near the creases. As their name implies, they exist only on the coarse mesh.
 \end{itemize}
-%\section{FineCoarseConversion}\label{sec:conversion} %TODO merge with above?
 \label{sec:conversion}
 %This section provides a detailed description of the data structure linking the fine and coarse meshes.
 The next part will describe how the actual connections between the fine and coarse mesh are made. The fine-to-coarse and coarse-to-fine arrays get built after the meshes have been created from the crease pattern. At that moment all vertices lie in the $xy$-plane, a fact which can be exploited to make things easier.\newline
@@ -343,7 +338,7 @@ Originally the method to find equivalent vertices in the fine and coarse meshes 
 \end{figure}
 The flooding method was replaced by another algorithm that treats each patch separately. Using the bounding box of all vertices within each patch and the distance between adjacent vertices it creates two rectangular grids per patch (one for the fine patch and one for the coarse patch). This is pictured in figure \ref{fig:conversion_grid}. Each mesh vertex is assigned to one position in a grid. The advantage here is that it is very easy to go from fine to coarse and vice versa. As an example, the vertex at coarse grid coordinates $(1,1)$ corresponds to the vertex at fine grid coordinates $(2,2)$, the vertex at coarse coordinates $(1,2)$ is linked to the vertex at fine coordinates $(2,4)$, and the vertex at fine coordinates $(2,3)$ is a fine-only I-vertex that lies between them. Not all positions in the grid are filled: The fine position $(6,4)$ in figure \ref{fig:conversion_grid} is empty, but the corresponding coarse vertex at $(3,2)$ exists, thus the coarse vertex $11$ is coarse-only.\newline
 In the end, this data structure holds all information that might be needed when changing between the fine and the coarse DOG. Most often it is used to convert indices of link vertices from one resolution to the other. It can also be used to determine the type of a vertex, map fine-only vertices to coarse edges or quads, and assign crease points in the two resolutions to each other.\newline
-Mapping crease points to their coarse or fine equivalents works the same as for mesh vertices: For each curve, there are two arrays, one storing the coarse-to-fine correspondences and one for fine-to-coarse. Initializing these does not require any grid: Traversing the coarse and fine curves while comparing coordinates is enough.\newline% %TODO integrate this last part
+Mapping crease points to their coarse or fine equivalents works the same as for mesh vertices: For each curve, there are two arrays, one storing the coarse-to-fine correspondences and one for fine-to-coarse. Initializing these does not require any grid: Traversing the coarse and fine curves while comparing coordinates is enough.\newline
 \section{Constraints on the coarse mesh}\label{sec:coarse_constraints}
 The coarse mesh should provide a good approximation of the fine solution. This means subjecting it to the same constraints as the fine mesh. For some constraints, this is easier than for others.\newline
 The main DOG constraints of equal angles between edges around one vertex still apply, just using the topology of the coarse mesh now. Similarly, isometry and stitching constraints work like in the fine mesh but using other vertices.\newline
