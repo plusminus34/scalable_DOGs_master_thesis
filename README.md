@@ -1,7 +1,9 @@
-Masterarbeit - Scalable DOGs
+# Scalable DOGs - Master thesis
 
-DOGs sind "Discrete Orthogonal Geodesic nets", keine Hunde.
+This repo contains my master thesis. It may look similar to my bachelor thesis, what with deforming virtual sheets of paper, but that's not really the case. Here the basic system was already in place and my goal was to implement new solver methods that could make the whole thing faster. The final results were (in my opinion) not very impressive, but it was cool to try different methods and think about why they could or couldn't work.
 
-paper/thesis.pdf ist der geschriebene Bericht
+The written report is found in paper/thesis.pdf.
 
-Code ist im Ordner C
+My code is in the folder "C"
+
+Also, there are no animals involved. DOGs are Discrete Orthogonal Geodesic nets.
